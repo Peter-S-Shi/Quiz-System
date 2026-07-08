@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quiz Studio</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">QS</span>
+          <div>
+            <h1>Quiz Studio</h1>
+            <p>编辑试卷，马上练习</p>
+          </div>
+        </div>
+        <nav class="mode-tabs" aria-label="主要模式">
+          <button class="tab-button active" id="editModeButton" type="button">编辑</button>
+          <button class="tab-button" id="quizModeButton" type="button">做题</button>
+        </nav>
+        <button class="icon-button" id="themeToggle" type="button" title="切换亮色和暗色背景" aria-label="切换亮色和暗色背景">◐</button>
+      </header>
+
+      <main>
+        <section class="workspace edit-workspace" id="editorView">
+          <aside class="side-panel">
+            <div class="paper-fields">
+              <label>
+                <span>试卷名称</span>
+                <input id="paperTitle" type="text" maxlength="80">
+              </label>
+              <label>
+                <span>说明</span>
+                <textarea id="paperDescription" rows="3" maxlength="240"></textarea>
+              </label>
+            </div>
+
+            <div class="add-strip">
+              <button type="button" data-add-type="single">单选</button>
+              <button type="button" data-add-type="multiple">多选</button>
+              <button type="button" data-add-type="blank">填空</button>
+              <button type="button" data-add-type="truefalse">判断</button>
+              <button type="button" data-add-type="matching">匹配</button>
+            </div>
+
+            <div class="question-list-header">
+              <strong>题目</strong>
+              <span id="questionCount">0</span>
+            </div>
+            <div class="question-list" id="questionList"></div>
+
+            <div class="utility-row">
+              <button class="secondary-button" id="exportButton" type="button">导出</button>
+              <label class="secondary-button file-label">
+                导入
+                <input id="importInput" type="file" accept="application/json,.json">
+              </label>
+            </div>
+          </aside>
+
+          <section class="editor-panel">
+            <div id="questionEditor"></div>
+          </section>
+        </section>
+
+        <section class="workspace quiz-workspace hidden" id="quizView">
+          <section class="quiz-panel" id="quizPanel"></section>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
