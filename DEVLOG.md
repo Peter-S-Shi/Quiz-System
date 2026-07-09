@@ -1,5 +1,11 @@
 # Development Log
 
+## 2026-07-09
+
+- Added an interface language selector with Chinese and English support.
+- Centralized UI copy in an extensible language dictionary for future locales.
+- Kept quiz paper content independent from the interface language so authored questions are not rewritten by language switching.
+
 ## 2026-07-08
 
 - Created the first static prototype of Quiz Studio.
