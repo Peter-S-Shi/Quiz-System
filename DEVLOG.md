@@ -1,5 +1,11 @@
 # Development Log
 
+## 2026-07-17
+
+- Rewrote the main README as a more standard English project document.
+- Added a Chinese README translation in `README.zh-CN.md`.
+- Documented localization, project structure, data behavior, and current prototype scope.
+
 ## 2026-07-09
 
 - Added an interface language selector with Chinese and English support.
