@@ -16,6 +16,15 @@ The current version is a static web application. It runs directly in the browser
 - Shuffled answer options when starting a quiz session.
 - Shuffled right-side answers for matching questions.
 - Immediate feedback with correct and wrong answer indicators.
+- Saved in-progress practice sessions with refresh recovery.
+- Unanswered-question checks before submitting each answer.
+- Answer history and score records in local browser storage.
+- Wrong-question retry sessions.
+- Random question selection and question-type filters.
+- Result review with user-answer and correct-answer comparison.
+- Local quiz library for managing multiple papers.
+- Paper creation, duplication, renaming, deletion, search, categories, and tags.
+- Full local library backup and import.
 - Light and dark theme support.
 - Chinese and English interface language support.
 - Local browser storage for draft quiz papers.
@@ -33,8 +42,9 @@ No build step is required.
 2. Use the **Edit** view to create or update a quiz paper.
 3. Add questions and mark the correct answers.
 4. Switch to the **Quiz** view.
-5. Start the quiz and submit answers.
-6. Review the final score and per-question feedback.
+5. Choose optional question type filters or a random question count.
+6. Start the quiz, submit answers, and recover progress after refresh if needed.
+7. Review the final score, per-question answer comparison, history, and wrong-question retry options.
 
 ## Project Structure
 
@@ -42,7 +52,7 @@ No build step is required.
 Quiz System/
   index.html        Application shell
   styles.css        Interface styling and responsive layout
-  app.js            Quiz editor, quiz session logic, grading, and localization
+  app.js            Quiz library, editor, quiz session logic, grading, and localization
   README.md         English project documentation
   README.zh-CN.md   Chinese project documentation
   MILESTONES.md     English milestone roadmap
@@ -62,11 +72,11 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-This is an early prototype focused on objective question workflows. Planned future expansion may include question bank management, user accounts, exam history, backend persistence, AI-assisted question generation, and subjective question grading.
+This is an early local-first prototype focused on objective question workflows, practice history, and a browser-based quiz library. Planned future expansion may include a modular Quiz Core, JSON Schema, public examples, CI, deployment, user accounts, backend persistence, AI-assisted question generation, and subjective question grading.
 
 ## Data and Privacy
 
-Quiz papers are saved in the browser's local storage by default. Exported JSON files remain under the user's control.
+Quiz papers, practice progress, local library metadata, and answer history are saved in the browser's local storage by default. Exported JSON files remain under the user's control.
 
 No data is sent to a server in the current static version.
 

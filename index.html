@@ -30,6 +30,8 @@
       <main>
         <section class="workspace edit-workspace" id="editorView">
           <aside class="side-panel">
+            <section class="library-panel" id="libraryPanel"></section>
+
             <div class="paper-fields">
               <label>
                 <span data-label="paper-title">试卷名称</span>
@@ -38,6 +40,14 @@
               <label>
                 <span data-label="paper-description">说明</span>
                 <textarea id="paperDescription" rows="3" maxlength="240"></textarea>
+              </label>
+              <label>
+                <span data-label="paper-category">分类</span>
+                <input id="paperCategory" type="text" maxlength="60">
+              </label>
+              <label>
+                <span data-label="paper-tags">标签</span>
+                <input id="paperTags" type="text" maxlength="160">
               </label>
             </div>
 

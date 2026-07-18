@@ -214,6 +214,92 @@ select:focus {
   gap: 14px;
 }
 
+.library-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.library-heading,
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.library-heading span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.library-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.library-list {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 3px;
+}
+
+.library-item {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px;
+  color: var(--text);
+  background: var(--surface);
+  text-align: left;
+}
+
+.library-item.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+}
+
+.library-item strong,
+.library-item small {
+  display: block;
+}
+
+.library-item strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.library-item small,
+.library-empty,
+label small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.library-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.library-tags span {
+  min-height: 22px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--surface-2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .add-strip {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -356,6 +442,10 @@ select:focus {
   border-radius: 8px;
 }
 
+.compact-empty {
+  min-height: 120px;
+}
+
 .editor-stack {
   display: grid;
   gap: 18px;
@@ -426,6 +516,62 @@ select:focus {
 .quiz-start {
   display: grid;
   gap: 22px;
+}
+
+.recover-box,
+.practice-setup,
+.history-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--surface);
+}
+
+.recover-box {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.recover-box p,
+.practice-setup h3,
+.history-panel p {
+  margin: 0;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.filter-check {
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: var(--surface-2);
+}
+
+.history-item span {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .quiz-title-block h2 {
@@ -627,6 +773,17 @@ select:focus {
   border-color: color-mix(in srgb, var(--danger) 52%, var(--line));
 }
 
+.answer-compare {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.answer-compare p {
+  margin: 0;
+  color: var(--muted);
+}
+
 .toast {
   position: fixed;
   right: 22px;
@@ -678,7 +835,8 @@ select:focus {
 
   .field-grid,
   .match-line,
-  .pair-row {
+  .pair-row,
+  .filter-grid {
     grid-template-columns: 1fr;
   }
 

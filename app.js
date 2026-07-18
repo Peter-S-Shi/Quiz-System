@@ -1,6 +1,12 @@
-const STORAGE_KEY = "quiz-studio-paper-v1";
+const LEGACY_STORAGE_KEY = "quiz-studio-paper-v1";
+const LIBRARY_KEY = "quiz-studio-library-v1";
+const ACTIVE_PAPER_KEY = "quiz-studio-active-paper";
+const ACTIVE_SESSION_KEY = "quiz-studio-active-session-v1";
+const HISTORY_KEY = "quiz-studio-history-v1";
 const THEME_KEY = "quiz-studio-theme";
 const LANG_KEY = "quiz-studio-language";
+
+const QUESTION_TYPES = ["single", "multiple", "blank", "truefalse", "matching"];
 
 const locales = {
   zh: {
@@ -16,9 +22,36 @@ const locales = {
       edit: "编辑",
       quiz: "做题",
     },
+    library: {
+      title: "本地试卷库",
+      search: "搜索标题、分类或标签",
+      empty: "没有匹配的试卷",
+      newPaper: "新建",
+      duplicatePaper: "复制",
+      renamePaper: "重命名",
+      deletePaper: "删除",
+      exportBackup: "备份",
+      importBackup: "导入备份",
+      active: "当前",
+      category: "分类",
+      tags: "标签",
+      recent: "最近打开",
+      updated: "更新",
+      untitled: "未命名试卷",
+      defaultCategory: "默认",
+      tagHint: "用逗号分隔多个标签",
+      renamePrompt: "输入新的试卷名称",
+      deleteConfirm: "确定删除这套试卷吗？此操作只影响浏览器本地数据。",
+      backupImported: "已导入备份",
+      paperImported: "已导入试卷",
+      backupImportFail: "导入失败，请选择有效的试卷或备份 JSON 文件。",
+      copySuffix: "副本",
+    },
     paper: {
       title: "试卷名称",
       description: "说明",
+      category: "分类",
+      tags: "标签",
       unnamedPaper: "未命名试卷",
       ready: "准备开始答题。",
     },
@@ -30,12 +63,32 @@ const locales = {
       addOption: "添加选项",
       addPair: "添加配对",
       startQuiz: "开始做题",
+      resumeQuiz: "继续上次进度",
+      startWrongQuiz: "错题重练",
       backToEdit: "返回编辑",
       quit: "退出",
       submitAnswer: "提交答案",
       viewResults: "查看结果",
       nextQuestion: "下一题",
+      previousQuestion: "上一题",
       retry: "再做一次",
+      clearHistory: "清空记录",
+    },
+    practice: {
+      setupTitle: "练习设置",
+      typeFilter: "题型筛选",
+      randomCount: "随机抽题数量",
+      randomHint: "留空或 0 表示使用全部符合条件的题目",
+      recoverTitle: "发现未完成练习",
+      recoverBody: "可以继续上次刷新前的答题进度。",
+      historyTitle: "答题历史",
+      noHistory: "还没有答题记录",
+      lastScore: "最近成绩",
+      questionCount: "{count} 题",
+      unanswered: "未答 {count} 题",
+      answered: "已答 {count} / {total}",
+      noWrongQuestions: "最近没有可重练的错题",
+      allTypes: "全部题型",
     },
     question: {
       listTitle: "题目",
@@ -79,20 +132,31 @@ const locales = {
       wrong: "答错",
       correctFeedback: "答对了",
       wrongFeedback: "答错了",
-      correctAnswer: "正确答案：{answer}",
-      acceptedAnswers: "可接受答案：{answers}",
-      correctPairs: "正确配对：{pairs}",
+      correctAnswer: "正确答案",
+      yourAnswer: "你的答案",
+      noAnswer: "未作答",
+      acceptedAnswers: "可接受答案",
+      correctPairs: "正确配对",
       separator: "、",
       pairSeparator: "；",
     },
     toast: {
       noReadyQuestions: "还没有可作答的完整题目，请先检查题目和答案。",
+      noFilteredQuestions: "没有符合筛选条件的完整题目。",
+      answerRequired: "请先完成当前题目，再提交答案。",
+      sessionSaved: "练习进度已自动保存",
+      sessionResumed: "已恢复上次练习进度",
       added: "已添加{type}",
       duplicated: "已复制题目",
       deleted: "已删除题目",
+      paperCreated: "已新建试卷",
+      paperDuplicated: "已复制试卷",
+      paperRenamed: "已重命名试卷",
+      paperDeleted: "已删除试卷",
       importSuccess: "导入成功",
       importFail: "导入失败，请选择正确的 JSON 试卷文件。",
       unsupportedLanguage: "暂不支持该语言。",
+      historyCleared: "答题历史已清空",
     },
     samplePaper: {
       title: "第一份 Quiz 试卷",
@@ -123,9 +187,36 @@ const locales = {
       edit: "Edit",
       quiz: "Quiz",
     },
+    library: {
+      title: "Local quiz library",
+      search: "Search title, category, or tags",
+      empty: "No matching papers",
+      newPaper: "New",
+      duplicatePaper: "Duplicate",
+      renamePaper: "Rename",
+      deletePaper: "Delete",
+      exportBackup: "Backup",
+      importBackup: "Import backup",
+      active: "Current",
+      category: "Category",
+      tags: "Tags",
+      recent: "Recent",
+      updated: "Updated",
+      untitled: "Untitled paper",
+      defaultCategory: "Default",
+      tagHint: "Separate tags with commas",
+      renamePrompt: "Enter a new paper name",
+      deleteConfirm: "Delete this paper? This only affects local browser data.",
+      backupImported: "Backup imported",
+      paperImported: "Paper imported",
+      backupImportFail: "Import failed. Choose a valid paper or backup JSON file.",
+      copySuffix: "Copy",
+    },
     paper: {
       title: "Paper title",
       description: "Description",
+      category: "Category",
+      tags: "Tags",
       unnamedPaper: "Untitled paper",
       ready: "Ready to start.",
     },
@@ -137,12 +228,32 @@ const locales = {
       addOption: "Add option",
       addPair: "Add pair",
       startQuiz: "Start quiz",
+      resumeQuiz: "Resume progress",
+      startWrongQuiz: "Retry wrong",
       backToEdit: "Back to edit",
       quit: "Quit",
       submitAnswer: "Submit answer",
       viewResults: "View results",
       nextQuestion: "Next question",
+      previousQuestion: "Previous",
       retry: "Try again",
+      clearHistory: "Clear history",
+    },
+    practice: {
+      setupTitle: "Practice setup",
+      typeFilter: "Question type filter",
+      randomCount: "Random question count",
+      randomHint: "Leave blank or 0 to use all matching questions",
+      recoverTitle: "Unfinished practice found",
+      recoverBody: "You can continue the progress saved before refresh.",
+      historyTitle: "Answer history",
+      noHistory: "No answer history yet",
+      lastScore: "Latest score",
+      questionCount: "{count} questions",
+      unanswered: "{count} unanswered",
+      answered: "{count} / {total} answered",
+      noWrongQuestions: "No wrong questions are available from recent attempts",
+      allTypes: "All types",
     },
     question: {
       listTitle: "Questions",
@@ -186,20 +297,31 @@ const locales = {
       wrong: "Wrong",
       correctFeedback: "Correct",
       wrongFeedback: "Wrong",
-      correctAnswer: "Correct answer: {answer}",
-      acceptedAnswers: "Accepted answers: {answers}",
-      correctPairs: "Correct pairs: {pairs}",
+      correctAnswer: "Correct answer",
+      yourAnswer: "Your answer",
+      noAnswer: "No answer",
+      acceptedAnswers: "Accepted answers",
+      correctPairs: "Correct pairs",
       separator: ", ",
       pairSeparator: "; ",
     },
     toast: {
       noReadyQuestions: "No complete questions are ready yet. Please check prompts and answers first.",
+      noFilteredQuestions: "No complete questions match the selected filters.",
+      answerRequired: "Please answer the current question before submitting.",
+      sessionSaved: "Practice progress saved automatically",
+      sessionResumed: "Practice progress resumed",
       added: "Added {type}",
       duplicated: "Question duplicated",
       deleted: "Question deleted",
+      paperCreated: "Paper created",
+      paperDuplicated: "Paper duplicated",
+      paperRenamed: "Paper renamed",
+      paperDeleted: "Paper deleted",
       importSuccess: "Import complete",
       importFail: "Import failed. Please choose a valid JSON paper file.",
       unsupportedLanguage: "This language is not supported yet.",
+      historyCleared: "Answer history cleared",
     },
     samplePaper: {
       title: "First Quiz Paper",
@@ -220,11 +342,14 @@ const locales = {
 };
 
 let language = loadLanguage();
-let paper = loadPaper();
+let library = loadLibrary();
+let activePaperId = loadActivePaperId();
+let paper = getActivePaper();
 let selectedQuestionId = paper.questions[0]?.id ?? null;
 let currentMode = "edit";
-let session = null;
+let session = loadActiveSession();
 let toastTimer = null;
+let librarySearch = "";
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
@@ -232,8 +357,11 @@ const editModeButton = document.getElementById("editModeButton");
 const quizModeButton = document.getElementById("quizModeButton");
 const themeToggle = document.getElementById("themeToggle");
 const languageSelect = document.getElementById("languageSelect");
+const libraryPanel = document.getElementById("libraryPanel");
 const paperTitle = document.getElementById("paperTitle");
 const paperDescription = document.getElementById("paperDescription");
+const paperCategory = document.getElementById("paperCategory");
+const paperTags = document.getElementById("paperTags");
 const questionCount = document.getElementById("questionCount");
 const questionListTitle = document.getElementById("questionListTitle");
 const questionList = document.getElementById("questionList");
@@ -258,18 +386,29 @@ function bindGlobalEvents() {
   quizModeButton.addEventListener("click", () => setMode("quiz"));
   themeToggle.addEventListener("click", toggleTheme);
 
-  languageSelect.addEventListener("change", (event) => {
-    setLanguage(event.target.value);
-  });
+  languageSelect.addEventListener("change", (event) => setLanguage(event.target.value));
 
   paperTitle.addEventListener("input", () => {
     paper.title = paperTitle.value;
-    savePaper();
+    savePaper({ clearSession: false });
+    renderLibraryPanel();
   });
 
   paperDescription.addEventListener("input", () => {
     paper.description = paperDescription.value;
-    savePaper();
+    savePaper({ clearSession: false });
+  });
+
+  paperCategory.addEventListener("input", () => {
+    paper.category = paperCategory.value;
+    savePaper({ clearSession: false });
+    renderLibraryPanel();
+  });
+
+  paperTags.addEventListener("input", () => {
+    paper.tags = parseTags(paperTags.value);
+    savePaper({ clearSession: false });
+    renderLibraryPanel();
   });
 
   document.querySelectorAll("[data-add-type]").forEach((button) => {
@@ -281,9 +420,13 @@ function bindGlobalEvents() {
 }
 
 function renderAll() {
+  paper = getActivePaper();
   renderChrome();
+  renderLibraryPanel();
   paperTitle.value = paper.title;
   paperDescription.value = paper.description;
+  paperCategory.value = paper.category || "";
+  paperTags.value = (paper.tags || []).join(", ");
   renderQuestionList();
   renderQuestionEditor();
   renderQuizStart();
@@ -301,6 +444,9 @@ function renderChrome() {
   languageSelect.value = language;
   document.querySelector("[data-label='paper-title']").textContent = t("paper.title");
   document.querySelector("[data-label='paper-description']").textContent = t("paper.description");
+  document.querySelector("[data-label='paper-category']").textContent = t("paper.category");
+  document.querySelector("[data-label='paper-tags']").textContent = t("paper.tags");
+  paperTags.placeholder = t("library.tagHint");
   questionListTitle.textContent = t("question.listTitle");
   exportButton.textContent = t("actions.export");
   importLabelText.textContent = t("actions.import");
@@ -316,10 +462,7 @@ function setMode(mode) {
   quizView.classList.toggle("hidden", mode !== "quiz");
   editModeButton.classList.toggle("active", mode === "edit");
   quizModeButton.classList.toggle("active", mode === "quiz");
-  if (mode === "quiz") {
-    session = null;
-    renderQuizStart();
-  }
+  if (mode === "quiz") renderQuizStart();
 }
 
 function setLanguage(nextLanguage) {
@@ -334,12 +477,142 @@ function setLanguage(nextLanguage) {
   renderAll();
 }
 
+function renderLibraryPanel() {
+  const query = librarySearch.trim().toLowerCase();
+  const papers = [...library.papers]
+    .sort((first, second) => new Date(second.lastOpenedAt || second.updatedAt) - new Date(first.lastOpenedAt || first.updatedAt))
+    .filter((item) => {
+      const haystack = [item.title, item.category, ...(item.tags || [])].join(" ").toLowerCase();
+      return !query || haystack.includes(query);
+    });
+
+  libraryPanel.innerHTML = `
+    <div class="library-heading">
+      <strong>${t("library.title")}</strong>
+      <span>${library.papers.length}</span>
+    </div>
+    <input id="librarySearch" type="search" value="${escapeHtml(librarySearch)}" placeholder="${t("library.search")}">
+    <div class="library-actions">
+      <button class="small-button" type="button" id="newPaper">${t("library.newPaper")}</button>
+      <button class="small-button" type="button" id="duplicatePaper">${t("library.duplicatePaper")}</button>
+      <button class="small-button" type="button" id="renamePaper">${t("library.renamePaper")}</button>
+      <button class="danger-button small-button" type="button" id="deletePaper">${t("library.deletePaper")}</button>
+    </div>
+    <div class="library-list">
+      ${papers.length ? papers.map(renderLibraryItem).join("") : `<div class="library-empty">${t("library.empty")}</div>`}
+    </div>
+    <div class="utility-row">
+      <button class="secondary-button" id="exportBackup" type="button">${t("library.exportBackup")}</button>
+      <label class="secondary-button file-label">
+        <span>${t("library.importBackup")}</span>
+        <input id="backupInput" type="file" accept="application/json,.json">
+      </label>
+    </div>
+  `;
+
+  document.getElementById("librarySearch").addEventListener("input", (event) => {
+    librarySearch = event.target.value;
+    renderLibraryPanel();
+  });
+  document.getElementById("newPaper").addEventListener("click", createLibraryPaper);
+  document.getElementById("duplicatePaper").addEventListener("click", duplicateLibraryPaper);
+  document.getElementById("renamePaper").addEventListener("click", renameLibraryPaper);
+  document.getElementById("deletePaper").addEventListener("click", deleteLibraryPaper);
+  document.getElementById("exportBackup").addEventListener("click", exportLibraryBackup);
+  document.getElementById("backupInput").addEventListener("change", importLibraryBackup);
+
+  libraryPanel.querySelectorAll("[data-open-paper]").forEach((button) => {
+    button.addEventListener("click", () => openLibraryPaper(button.dataset.openPaper));
+  });
+}
+
+function renderLibraryItem(item) {
+  const isActive = item.id === activePaperId;
+  const tags = (item.tags || []).slice(0, 3).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
+  return `
+    <button class="library-item ${isActive ? "active" : ""}" type="button" data-open-paper="${item.id}">
+      <span>
+        <strong>${escapeHtml(item.title || t("library.untitled"))}</strong>
+        <small>${escapeHtml(item.category || t("library.defaultCategory"))} · ${t("library.updated")} ${formatDate(item.updatedAt)}</small>
+      </span>
+      <span class="library-tags">${tags}${isActive ? `<span>${t("library.active")}</span>` : ""}</span>
+    </button>
+  `;
+}
+
+function createLibraryPaper() {
+  const nextPaper = normalizePaper({
+    id: makeId(),
+    title: t("library.untitled"),
+    description: "",
+    category: "",
+    tags: [],
+    questions: [],
+  });
+  library.papers.push(nextPaper);
+  activePaperId = nextPaper.id;
+  localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+  selectedQuestionId = null;
+  clearActiveSession();
+  saveLibrary();
+  renderAll();
+  showToast(t("toast.paperCreated"));
+}
+
+function duplicateLibraryPaper() {
+  const copy = clonePaperForLibrary(paper);
+  copy.title = `${paper.title || t("library.untitled")} ${t("library.copySuffix")}`;
+  library.papers.push(copy);
+  activePaperId = copy.id;
+  localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+  selectedQuestionId = copy.questions[0]?.id ?? null;
+  clearActiveSession();
+  saveLibrary();
+  renderAll();
+  showToast(t("toast.paperDuplicated"));
+}
+
+function renameLibraryPaper() {
+  const nextTitle = window.prompt(t("library.renamePrompt"), paper.title || t("library.untitled"));
+  if (!nextTitle) return;
+  paper.title = nextTitle.trim();
+  savePaper({ clearSession: false });
+  renderAll();
+  showToast(t("toast.paperRenamed"));
+}
+
+function deleteLibraryPaper() {
+  if (!window.confirm(t("library.deleteConfirm"))) return;
+  library.papers = library.papers.filter((item) => item.id !== activePaperId);
+  if (!library.papers.length) library.papers.push(normalizePaper(createDefaultPaper()));
+  activePaperId = library.papers[0].id;
+  localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+  paper = getActivePaper();
+  selectedQuestionId = paper.questions[0]?.id ?? null;
+  clearActiveSession();
+  saveLibrary();
+  renderAll();
+  showToast(t("toast.paperDeleted"));
+}
+
+function openLibraryPaper(id) {
+  if (id === activePaperId) return;
+  activePaperId = id;
+  localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+  paper = getActivePaper();
+  paper.lastOpenedAt = new Date().toISOString();
+  selectedQuestionId = paper.questions[0]?.id ?? null;
+  session = loadActiveSession();
+  saveLibrary();
+  renderAll();
+}
+
 function renderQuestionList() {
   questionCount.textContent = paper.questions.length;
 
   if (!paper.questions.length) {
     questionList.innerHTML = `
-      <div class="empty-state">
+      <div class="empty-state compact-empty">
         <div>${t("question.emptyList")}<br>${t("question.emptyListHint")}</div>
       </div>
     `;
@@ -387,7 +660,6 @@ function renderQuestionEditor() {
           <button class="danger-button small-button" type="button" id="deleteQuestion">${t("actions.delete")}</button>
         </div>
       </div>
-
       <div class="editor-heading">
         <div class="field-grid">
           <label>
@@ -397,12 +669,11 @@ function renderQuestionEditor() {
           <label>
             <span>${t("question.type")}</span>
             <select id="questionType">
-              ${Object.keys(locales[language].types).map((value) => `<option value="${value}" ${question.type === value ? "selected" : ""}>${typeLabel(value)}</option>`).join("")}
+              ${QUESTION_TYPES.map((value) => `<option value="${value}" ${question.type === value ? "selected" : ""}>${typeLabel(value)}</option>`).join("")}
             </select>
           </label>
         </div>
       </div>
-
       <div class="answer-section" id="answerEditor">
         ${renderAnswerEditor(question)}
       </div>
@@ -589,10 +860,15 @@ function bindAnswerEditor(question) {
 function renderQuizStart() {
   if (currentMode !== "quiz") return;
 
-  const stats = Object.keys(locales[language].types).map((type) => ({
+  const stats = QUESTION_TYPES.map((type) => ({
     type,
     count: paper.questions.filter((question) => question.type === type).length,
   }));
+  const history = getPaperHistory(activePaperId);
+  const lastHistory = history[0];
+  const savedSession = loadActiveSession();
+  const hasSavedSession = savedSession && savedSession.paperId === activePaperId;
+  const wrongIds = getWrongQuestionIds();
 
   quizPanel.innerHTML = `
     <div class="quiz-start">
@@ -600,6 +876,13 @@ function renderQuizStart() {
         <h2>${escapeHtml(paper.title || t("paper.unnamedPaper"))}</h2>
         <p>${escapeHtml(paper.description || t("paper.ready"))}</p>
       </div>
+      ${hasSavedSession ? `
+        <div class="recover-box">
+          <strong>${t("practice.recoverTitle")}</strong>
+          <p>${t("practice.recoverBody")}</p>
+          <button class="primary-button" id="resumeQuiz" type="button">${t("actions.resumeQuiz")}</button>
+        </div>
+      ` : ""}
       <div class="stats-grid">
         ${stats.map((item) => `
           <div class="stat-tile">
@@ -608,44 +891,115 @@ function renderQuizStart() {
           </div>
         `).join("")}
       </div>
+      <div class="practice-setup">
+        <h3>${t("practice.setupTitle")}</h3>
+        <div class="filter-grid">
+          ${QUESTION_TYPES.map((type) => `
+            <label class="inline-check filter-check">
+              <span>${typeShortLabel(type)}</span>
+              <input type="checkbox" data-type-filter="${type}" checked>
+            </label>
+          `).join("")}
+        </div>
+        <label>
+          <span>${t("practice.randomCount")}</span>
+          <input id="randomCount" type="number" min="0" step="1" placeholder="0">
+          <small>${t("practice.randomHint")}</small>
+        </label>
+      </div>
+      <div class="history-panel">
+        <div class="history-heading">
+          <strong>${t("practice.historyTitle")}</strong>
+          <button class="small-button" id="clearHistory" type="button" ${history.length ? "" : "disabled"}>${t("actions.clearHistory")}</button>
+        </div>
+        ${lastHistory ? `
+          <p class="meta-text">${t("practice.lastScore")}: ${lastHistory.percent}% · ${formatDate(lastHistory.completedAt)} · ${t("practice.questionCount", { count: lastHistory.questionCount })}</p>
+        ` : `<p class="meta-text">${t("practice.noHistory")}</p>`}
+        <div class="history-list">
+          ${history.slice(0, 5).map(renderHistoryItem).join("")}
+        </div>
+      </div>
       <div class="quiz-actions">
         <button class="primary-button" id="startQuiz" type="button" ${paper.questions.length ? "" : "disabled"}>${t("actions.startQuiz")}</button>
+        <button class="secondary-button" id="startWrongQuiz" type="button" ${wrongIds.length ? "" : "disabled"}>${t("actions.startWrongQuiz")}</button>
         <button class="secondary-button" id="backToEdit" type="button">${t("actions.backToEdit")}</button>
       </div>
     </div>
   `;
 
-  document.getElementById("startQuiz").addEventListener("click", startQuiz);
+  if (hasSavedSession) {
+    document.getElementById("resumeQuiz").addEventListener("click", () => {
+      session = savedSession;
+      showToast(t("toast.sessionResumed"));
+      renderCurrentQuestion();
+    });
+  }
+  document.getElementById("startQuiz").addEventListener("click", () => startQuiz());
+  document.getElementById("startWrongQuiz").addEventListener("click", () => startQuiz({ questionIds: wrongIds, wrongOnly: true }));
   document.getElementById("backToEdit").addEventListener("click", () => setMode("edit"));
+  document.getElementById("clearHistory").addEventListener("click", clearPaperHistory);
 }
 
-function startQuiz() {
-  const validQuestions = paper.questions.filter(isQuestionReady);
+function renderHistoryItem(item) {
+  return `
+    <div class="history-item">
+      <strong>${item.percent}%</strong>
+      <span>${item.correctCount}/${item.questionCount} · ${formatDate(item.completedAt)}</span>
+    </div>
+  `;
+}
+
+function startQuiz(options = {}) {
+  const checkedTypeFilters = Array.from(document.querySelectorAll("[data-type-filter]:checked")).map((input) => input.dataset.typeFilter);
+  const selectedTypes = options.questionIds
+    ? QUESTION_TYPES
+    : (checkedTypeFilters.length ? checkedTypeFilters : QUESTION_TYPES);
+  const requestedCount = Number(document.getElementById("randomCount")?.value || 0);
+  let validQuestions = paper.questions.filter(isQuestionReady);
+
+  if (options.questionIds) {
+    validQuestions = validQuestions.filter((question) => options.questionIds.includes(question.id));
+  } else {
+    validQuestions = validQuestions.filter((question) => selectedTypes.includes(question.type));
+  }
+
+  if (requestedCount > 0 && requestedCount < validQuestions.length) {
+    validQuestions = shuffle(validQuestions).slice(0, requestedCount);
+  }
+
   if (!validQuestions.length) {
-    showToast(t("toast.noReadyQuestions"));
+    showToast(options.wrongOnly ? t("practice.noWrongQuestions") : t("toast.noFilteredQuestions"));
     return;
   }
 
   session = {
+    id: makeId(),
+    paperId: activePaperId,
+    paperTitle: paper.title,
+    startedAt: new Date().toISOString(),
     questions: validQuestions.map(prepareQuizQuestion),
     index: 0,
     answers: {},
     results: [],
     submitted: false,
     feedback: null,
+    completed: false,
   };
+  persistSession();
   renderCurrentQuestion();
 }
 
 function renderCurrentQuestion() {
   const question = session.questions[session.index];
   const progress = Math.round((session.index / session.questions.length) * 100);
+  const answeredCount = session.questions.filter((item) => isAnswerComplete(item, session.answers[item.id])).length;
+  const unansweredCount = session.questions.length - answeredCount;
 
   quizPanel.innerHTML = `
     <div class="quiz-question">
       <div class="progress-line">
         <span>${t("question.progress", { current: session.index + 1, total: session.questions.length })}</span>
-        <span>${typeLabel(question.type)}</span>
+        <span>${t("practice.answered", { count: answeredCount, total: session.questions.length })} · ${t("practice.unanswered", { count: unansweredCount })}</span>
       </div>
       <div class="progress-track"><div class="progress-bar" style="width: ${progress}%"></div></div>
       <div class="question-prompt">
@@ -658,13 +1012,18 @@ function renderCurrentQuestion() {
       </div>
       <div class="quiz-actions">
         <button class="secondary-button" type="button" id="quitQuiz">${t("actions.quit")}</button>
+        <button class="secondary-button" type="button" id="previousQuestion" ${session.index === 0 ? "disabled" : ""}>${t("actions.previousQuestion")}</button>
         <button class="primary-button" type="button" id="${session.submitted ? "nextQuestion" : "submitAnswer"}">${session.submitted ? nextLabel() : t("actions.submitAnswer")}</button>
       </div>
     </div>
   `;
 
   bindQuizAnswer(question);
-  document.getElementById("quitQuiz").addEventListener("click", renderQuizStart);
+  document.getElementById("quitQuiz").addEventListener("click", () => {
+    persistSession();
+    renderQuizStart();
+  });
+  document.getElementById("previousQuestion").addEventListener("click", goPreviousQuestion);
 
   if (session.submitted) {
     document.getElementById("nextQuestion").addEventListener("click", goNextQuestion);
@@ -735,6 +1094,8 @@ function bindQuizAnswer(question) {
     document.querySelectorAll("input[name='choiceAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
         session.answers[question.id] = input.value;
+        persistSession();
+        renderCurrentQuestion();
       });
     });
     return;
@@ -744,6 +1105,8 @@ function bindQuizAnswer(question) {
     document.querySelectorAll("input[name='choiceAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
         session.answers[question.id] = Array.from(document.querySelectorAll("input[name='choiceAnswer']:checked")).map((item) => item.value);
+        persistSession();
+        renderCurrentQuestion();
       });
     });
     return;
@@ -752,6 +1115,7 @@ function bindQuizAnswer(question) {
   if (question.type === "blank") {
     document.getElementById("blankAnswer").addEventListener("input", (event) => {
       session.answers[question.id] = event.target.value;
+      persistSession();
     });
     return;
   }
@@ -760,6 +1124,8 @@ function bindQuizAnswer(question) {
     document.querySelectorAll("input[name='judgeAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
         session.answers[question.id] = input.value === "true";
+        persistSession();
+        renderCurrentQuestion();
       });
     });
     return;
@@ -769,16 +1135,34 @@ function bindQuizAnswer(question) {
     select.addEventListener("change", () => {
       session.answers[question.id] ||= {};
       session.answers[question.id][select.dataset.matchAnswer] = select.value;
+      persistSession();
+      renderCurrentQuestion();
     });
   });
 }
 
 function submitCurrentAnswer() {
   const question = session.questions[session.index];
-  const result = gradeQuestion(question, session.answers[question.id]);
+  const answer = session.answers[question.id];
+  if (!isAnswerComplete(question, answer)) {
+    showToast(t("toast.answerRequired"));
+    return;
+  }
+
+  const result = gradeQuestion(question, answer);
   session.results[session.index] = result;
   session.submitted = true;
   session.feedback = result;
+  persistSession();
+  renderCurrentQuestion();
+}
+
+function goPreviousQuestion() {
+  if (session.index === 0) return;
+  session.index -= 1;
+  session.submitted = Boolean(session.results[session.index]);
+  session.feedback = session.results[session.index] || null;
+  persistSession();
   renderCurrentQuestion();
 }
 
@@ -789,14 +1173,26 @@ function goNextQuestion() {
   }
 
   session.index += 1;
-  session.submitted = false;
-  session.feedback = null;
+  session.submitted = Boolean(session.results[session.index]);
+  session.feedback = session.results[session.index] || null;
+  persistSession();
   renderCurrentQuestion();
 }
 
 function renderResults() {
+  session.questions.forEach((question, index) => {
+    if (!session.results[index]) session.results[index] = gradeQuestion(question, session.answers[question.id]);
+  });
+
   const correctCount = session.results.filter((result) => result.correct).length;
   const percent = Math.round((correctCount / session.questions.length) * 100);
+  const missedQuestionIds = session.results.filter((item) => !item.correct).map((item) => item.questionId);
+  session.completed = true;
+  session.completedAt = new Date().toISOString();
+  session.correctCount = correctCount;
+  session.percent = percent;
+  recordHistory();
+  localStorage.removeItem(ACTIVE_SESSION_KEY);
 
   quizPanel.innerHTML = `
     <div class="quiz-start">
@@ -817,20 +1213,25 @@ function renderResults() {
             <div class="review-item ${result.correct ? "correct" : "wrong"}">
               <strong>${index + 1}. ${escapeHtml(question.prompt)}</strong>
               <p class="meta-text">${typeLabel(question.type)} · ${result.correct ? t("result.correct") : t("result.wrong")}</p>
-              <p>${escapeHtml(result.detail)}</p>
+              <div class="answer-compare">
+                <p><strong>${t("result.yourAnswer")}:</strong> ${escapeHtml(formatAnswer(question, session.answers[question.id]) || t("result.noAnswer"))}</p>
+                <p><strong>${result.correctLabel}:</strong> ${escapeHtml(result.correctAnswer)}</p>
+              </div>
             </div>
           `;
         }).join("")}
       </div>
       <div class="quiz-actions">
         <button class="secondary-button" id="backToEditorAfterResult" type="button">${t("actions.backToEdit")}</button>
+        <button class="secondary-button" id="retryWrongAfterResult" type="button" ${missedQuestionIds.length ? "" : "disabled"}>${t("actions.startWrongQuiz")}</button>
         <button class="primary-button" id="retryQuiz" type="button">${t("actions.retry")}</button>
       </div>
     </div>
   `;
 
   document.getElementById("backToEditorAfterResult").addEventListener("click", () => setMode("edit"));
-  document.getElementById("retryQuiz").addEventListener("click", startQuiz);
+  document.getElementById("retryQuiz").addEventListener("click", () => startQuiz());
+  document.getElementById("retryWrongAfterResult").addEventListener("click", () => startQuiz({ questionIds: missedQuestionIds, wrongOnly: true }));
 }
 
 function renderFeedback(result) {
@@ -839,7 +1240,7 @@ function renderFeedback(result) {
       <span class="feedback-icon">${result.correct ? "✓" : "×"}</span>
       <div>
         <strong>${result.correct ? t("result.correctFeedback") : t("result.wrongFeedback")}</strong>
-        <p>${escapeHtml(result.detail)}</p>
+        <p>${escapeHtml(result.correctAnswer)}</p>
       </div>
     </div>
   `;
@@ -849,10 +1250,7 @@ function gradeQuestion(question, answer) {
   if (question.type === "single") {
     const correctId = question.options.find((option) => option.correct)?.id;
     const correctText = question.options.find((option) => option.id === correctId)?.text || "";
-    return {
-      correct: answer === correctId,
-      detail: t("result.correctAnswer", { answer: correctText }),
-    };
+    return makeResult(question, answer === correctId, t("result.correctAnswer"), correctText);
   }
 
   if (question.type === "multiple") {
@@ -860,40 +1258,40 @@ function gradeQuestion(question, answer) {
     const answerIds = Array.isArray(answer) ? [...answer].sort() : [];
     const correct = JSON.stringify(correctIds) === JSON.stringify(answerIds);
     const correctText = question.options.filter((option) => option.correct).map((option) => option.text).join(t("result.separator"));
-    return {
-      correct,
-      detail: t("result.correctAnswer", { answer: correctText }),
-    };
+    return makeResult(question, correct, t("result.correctAnswer"), correctText);
   }
 
   if (question.type === "blank") {
     const normalizedAnswer = normalizeText(answer || "", question.caseSensitive);
     const accepted = question.answers.map((item) => normalizeText(item, question.caseSensitive));
-    return {
-      correct: accepted.includes(normalizedAnswer),
-      detail: t("result.acceptedAnswers", { answers: question.answers.join(t("result.separator")) }),
-    };
+    return makeResult(question, accepted.includes(normalizedAnswer), t("result.acceptedAnswers"), question.answers.join(t("result.separator")));
   }
 
   if (question.type === "truefalse") {
-    return {
-      correct: answer === question.answer,
-      detail: t("result.correctAnswer", { answer: question.answer ? t("question.true") : t("question.false") }),
-    };
+    return makeResult(question, answer === question.answer, t("result.correctAnswer"), question.answer ? t("question.true") : t("question.false"));
   }
 
   const answerMap = answer || {};
   const correct = question.pairs.every((pair) => answerMap[pair.id] === pair.rightId);
+  const correctPairs = question.pairs.map((pair) => `${pair.left} = ${pair.right}`).join(t("result.pairSeparator"));
+  return makeResult(question, correct, t("result.correctPairs"), correctPairs);
+}
+
+function makeResult(question, correct, correctLabel, correctAnswer) {
   return {
+    questionId: question.sourceId || question.id,
+    sessionQuestionId: question.id,
+    type: question.type,
+    prompt: question.prompt,
     correct,
-    detail: t("result.correctPairs", {
-      pairs: question.pairs.map((pair) => `${pair.left} = ${pair.right}`).join(t("result.pairSeparator")),
-    }),
+    correctLabel,
+    correctAnswer,
   };
 }
 
 function prepareQuizQuestion(question) {
   const cloned = structuredClone(question);
+  cloned.sourceId = question.id;
 
   if (cloned.type === "single" || cloned.type === "multiple") {
     cloned.options = shuffle(cloned.options);
@@ -922,6 +1320,15 @@ function isQuestionReady(question) {
   if (question.type === "blank") return question.answers?.some(Boolean);
   if (question.type === "truefalse") return typeof question.answer === "boolean";
   if (question.type === "matching") return question.pairs?.length >= 2 && question.pairs.every((pair) => pair.left.trim() && pair.right.trim());
+  return false;
+}
+
+function isAnswerComplete(question, answer) {
+  if (question.type === "single") return Boolean(answer);
+  if (question.type === "multiple") return Array.isArray(answer) && answer.length > 0;
+  if (question.type === "blank") return Boolean(String(answer || "").trim());
+  if (question.type === "truefalse") return typeof answer === "boolean";
+  if (question.type === "matching") return question.pairs.every((pair) => answer?.[pair.id]);
   return false;
 }
 
@@ -989,10 +1396,7 @@ function convertQuestionType(question, nextType) {
 
 function duplicateQuestion(id) {
   const index = paper.questions.findIndex((question) => question.id === id);
-  const copy = structuredClone(paper.questions[index]);
-  copy.id = makeId();
-  if (copy.options) copy.options = copy.options.map((option) => ({ ...option, id: makeId() }));
-  if (copy.pairs) copy.pairs = copy.pairs.map((pair) => ({ ...pair, id: makeId() }));
+  const copy = cloneQuestion(paper.questions[index]);
   paper.questions.splice(index + 1, 0, copy);
   selectedQuestionId = copy.id;
   savePaper();
@@ -1027,24 +1431,106 @@ function saveAndRenderList() {
   renderQuestionList();
 }
 
-function savePaper() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(paper));
+function savePaper(options = {}) {
+  const { clearSession = true } = options;
+  paper.updatedAt = new Date().toISOString();
+  const index = library.papers.findIndex((item) => item.id === activePaperId);
+  if (index >= 0) library.papers[index] = paper;
+  if (clearSession) clearActiveSession();
+  saveLibrary();
 }
 
-function loadPaper() {
+function loadLibrary() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : createDefaultPaper();
+    const savedLibrary = JSON.parse(localStorage.getItem(LIBRARY_KEY));
+    if (savedLibrary?.papers?.length) return normalizeLibrary(savedLibrary);
   } catch {
-    return createDefaultPaper();
+    // Fall through to legacy migration.
   }
+
+  try {
+    const legacyPaper = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
+    if (legacyPaper?.questions) return normalizeLibrary({ schemaVersion: 1, papers: [legacyPaper] });
+  } catch {
+    // Fall through to default library.
+  }
+
+  return normalizeLibrary({ schemaVersion: 1, papers: [createDefaultPaper()] });
+}
+
+function normalizeLibrary(value) {
+  const papers = (value.papers || []).map(normalizePaper);
+  const normalized = {
+    schemaVersion: 1,
+    papers: papers.length ? papers : [normalizePaper(createDefaultPaper())],
+  };
+  localStorage.setItem(LIBRARY_KEY, JSON.stringify(normalized));
+  return normalized;
+}
+
+function normalizePaper(value) {
+  const now = new Date().toISOString();
+  return {
+    id: value.id || makeId(),
+    title: value.title || "",
+    description: value.description || "",
+    category: value.category || "",
+    tags: Array.isArray(value.tags) ? value.tags : parseTags(value.tags || ""),
+    createdAt: value.createdAt || now,
+    updatedAt: value.updatedAt || now,
+    lastOpenedAt: value.lastOpenedAt || now,
+    questions: Array.isArray(value.questions) ? value.questions.map(normalizeQuestion) : [],
+  };
+}
+
+function normalizeQuestion(question) {
+  const normalized = { ...question, id: question.id || makeId(), type: QUESTION_TYPES.includes(question.type) ? question.type : "single", prompt: question.prompt || "" };
+  if (normalized.type === "single" || normalized.type === "multiple") {
+    normalized.options = Array.isArray(question.options) ? question.options.map((option) => ({
+      id: option.id || makeId(),
+      text: option.text || "",
+      correct: Boolean(option.correct),
+    })) : createQuestion(normalized.type).options;
+    ensureChoiceValidity(normalized);
+  }
+  if (normalized.type === "blank") {
+    normalized.answers = Array.isArray(question.answers) ? question.answers : [];
+    normalized.caseSensitive = Boolean(question.caseSensitive);
+  }
+  if (normalized.type === "truefalse") normalized.answer = Boolean(question.answer);
+  if (normalized.type === "matching") {
+    normalized.pairs = Array.isArray(question.pairs) ? question.pairs.map((pair) => ({
+      id: pair.id || makeId(),
+      left: pair.left || "",
+      right: pair.right || "",
+    })) : createQuestion("matching").pairs;
+  }
+  return normalized;
+}
+
+function loadActivePaperId() {
+  const saved = localStorage.getItem(ACTIVE_PAPER_KEY);
+  const id = library.papers.some((item) => item.id === saved) ? saved : library.papers[0].id;
+  localStorage.setItem(ACTIVE_PAPER_KEY, id);
+  return id;
+}
+
+function getActivePaper() {
+  return library.papers.find((item) => item.id === activePaperId) || library.papers[0];
+}
+
+function saveLibrary() {
+  localStorage.setItem(LIBRARY_KEY, JSON.stringify(library));
 }
 
 function createDefaultPaper() {
   const sample = locales[language].samplePaper;
   return {
+    id: makeId(),
     title: sample.title,
     description: sample.description,
+    category: t("library.defaultCategory"),
+    tags: ["sample"],
     questions: [
       {
         id: makeId(),
@@ -1096,36 +1582,196 @@ function createDefaultPaper() {
 }
 
 function exportPaper() {
-  const blob = new Blob([JSON.stringify(paper, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${paper.title || "quiz-paper"}.json`;
-  link.click();
-  URL.revokeObjectURL(url);
+  downloadJson(normalizePaper(paper), `${safeFileName(paper.title || "quiz-paper")}.json`);
 }
 
 function importPaper(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  readJsonFile(file, (imported) => {
+    if (!Array.isArray(imported.questions)) throw new Error("Invalid paper");
+    const nextPaper = normalizePaper({ ...imported, id: makeId(), createdAt: undefined, updatedAt: undefined, lastOpenedAt: undefined });
+    library.papers.push(nextPaper);
+    activePaperId = nextPaper.id;
+    localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+    selectedQuestionId = nextPaper.questions[0]?.id ?? null;
+    clearActiveSession();
+    saveLibrary();
+    renderAll();
+    showToast(t("library.paperImported"));
+  }, () => showToast(t("toast.importFail")));
+
+  event.target.value = "";
+}
+
+function exportLibraryBackup() {
+  const backup = {
+    schemaVersion: 1,
+    exportedAt: new Date().toISOString(),
+    library,
+    history: loadHistory(),
+  };
+  downloadJson(backup, `quiz-studio-backup-${new Date().toISOString().slice(0, 10)}.json`);
+}
+
+function importLibraryBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  readJsonFile(file, (imported) => {
+    if (imported.library?.papers?.length) {
+      library = normalizeLibrary(imported.library);
+      if (Array.isArray(imported.history)) localStorage.setItem(HISTORY_KEY, JSON.stringify(imported.history));
+      activePaperId = library.papers[0].id;
+      localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+      showToast(t("library.backupImported"));
+    } else if (Array.isArray(imported.questions)) {
+      const nextPaper = normalizePaper({ ...imported, id: makeId() });
+      library.papers.push(nextPaper);
+      activePaperId = nextPaper.id;
+      localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+      showToast(t("library.paperImported"));
+    } else {
+      throw new Error("Invalid backup");
+    }
+    paper = getActivePaper();
+    selectedQuestionId = paper.questions[0]?.id ?? null;
+    clearActiveSession();
+    saveLibrary();
+    renderAll();
+  }, () => showToast(t("library.backupImportFail")));
+
+  event.target.value = "";
+}
+
+function readJsonFile(file, onSuccess, onError) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const imported = JSON.parse(reader.result);
-      if (!Array.isArray(imported.questions)) throw new Error("Invalid paper");
-      paper = imported;
-      selectedQuestionId = paper.questions[0]?.id ?? null;
-      savePaper();
-      renderAll();
-      showToast(t("toast.importSuccess"));
+      onSuccess(JSON.parse(reader.result));
     } catch {
-      showToast(t("toast.importFail"));
-    } finally {
-      event.target.value = "";
+      onError();
     }
   };
+  reader.onerror = onError;
   reader.readAsText(file);
+}
+
+function downloadJson(data, fileName) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function persistSession() {
+  if (!session || session.completed) return;
+  localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(session));
+}
+
+function loadActiveSession() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ACTIVE_SESSION_KEY));
+    return saved?.paperId === activePaperId && !saved.completed ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearActiveSession() {
+  localStorage.removeItem(ACTIVE_SESSION_KEY);
+  session = null;
+}
+
+function recordHistory() {
+  const history = loadHistory();
+  const entry = {
+    id: session.id,
+    paperId: activePaperId,
+    paperTitle: paper.title,
+    completedAt: session.completedAt,
+    questionCount: session.questions.length,
+    correctCount: session.correctCount,
+    percent: session.percent,
+    missedQuestionIds: session.results.filter((item) => !item.correct).map((item) => item.questionId),
+    results: session.results,
+  };
+  const withoutDuplicate = history.filter((item) => item.id !== entry.id);
+  withoutDuplicate.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(withoutDuplicate.slice(0, 100)));
+}
+
+function loadHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(HISTORY_KEY));
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function getPaperHistory(paperId) {
+  return loadHistory()
+    .filter((item) => item.paperId === paperId)
+    .sort((first, second) => new Date(second.completedAt) - new Date(first.completedAt));
+}
+
+function getWrongQuestionIds() {
+  const ids = [];
+  getPaperHistory(activePaperId).forEach((entry) => {
+    (entry.missedQuestionIds || []).forEach((id) => {
+      if (!ids.includes(id) && paper.questions.some((question) => question.id === id)) ids.push(id);
+    });
+  });
+  return ids;
+}
+
+function clearPaperHistory() {
+  const kept = loadHistory().filter((item) => item.paperId !== activePaperId);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(kept));
+  renderQuizStart();
+  showToast(t("toast.historyCleared"));
+}
+
+function formatAnswer(question, answer) {
+  if (!isAnswerComplete(question, answer)) return "";
+  if (question.type === "single") return question.options.find((option) => option.id === answer)?.text || "";
+  if (question.type === "multiple") return question.options.filter((option) => answer.includes(option.id)).map((option) => option.text).join(t("result.separator"));
+  if (question.type === "blank") return answer;
+  if (question.type === "truefalse") return answer ? t("question.true") : t("question.false");
+  return question.pairs.map((pair) => {
+    const selected = question.rightOptions.find((option) => option.id === answer[pair.id])?.text || "";
+    return `${pair.left} = ${selected}`;
+  }).join(t("result.pairSeparator"));
+}
+
+function clonePaperForLibrary(source) {
+  const now = new Date().toISOString();
+  return {
+    ...structuredClone(source),
+    id: makeId(),
+    createdAt: now,
+    updatedAt: now,
+    lastOpenedAt: now,
+    questions: source.questions.map(cloneQuestion),
+  };
+}
+
+function cloneQuestion(question) {
+  const copy = structuredClone(question);
+  copy.id = makeId();
+  if (copy.options) copy.options = copy.options.map((option) => ({ ...option, id: makeId() }));
+  if (copy.pairs) copy.pairs = copy.pairs.map((pair) => ({ ...pair, id: makeId() }));
+  return copy;
+}
+
+function parseTags(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  return String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
 }
 
 function toggleTheme() {
@@ -1179,6 +1825,20 @@ function shuffle(items) {
 function makeId() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function formatDate(value) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat(language === "zh" ? "zh-CN" : "en", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function safeFileName(value) {
+  return String(value || "quiz-paper").replace(/[\\/:*?"<>|]+/g, "-").slice(0, 80);
 }
 
 function escapeHtml(value) {

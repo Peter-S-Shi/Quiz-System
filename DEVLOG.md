@@ -8,6 +8,8 @@
 - Clarified the future JSON data boundary: public examples should live in `examples/`, while real user quiz data should live in ignored local folders such as `user-data/` or `exports/`.
 - Added English and Chinese milestone roadmap documents and defined Milestone 2 as practice flow enhancements.
 - Expanded the roadmap vision with Milestone 3 local quiz library, Milestone 4 quiz core and open data format, Milestone 5 public release preparation, and long-term optional directions.
+- Landed the first Milestone 2 implementation: saved practice sessions, refresh recovery, unanswered checks, result answer comparison, answer history, wrong-question retry, random question selection, and question-type filters.
+- Landed the first Milestone 3 implementation: local multi-paper library, paper create/duplicate/rename/delete, category and tag metadata, search, updated/recent timestamps, full library backup import/export, and legacy single-paper migration.
 
 ## 2026-07-17
 

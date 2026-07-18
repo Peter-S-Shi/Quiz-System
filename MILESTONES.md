@@ -23,19 +23,19 @@ Scope completed:
 
 ## Milestone 2: Practice Flow Enhancements
 
-Status: Planned
+Status: First implementation landed
 
 Milestone 2 will improve the learner's practice loop. The goal is to make each quiz attempt recoverable, reviewable, repeatable, and easier to filter.
 
 Planned scope:
 
-- Save in-progress quiz attempts and recover them after refresh.
-- Check for unanswered questions before final submission.
-- Improve the result overview and answer comparison experience.
-- Record answer history and scores.
-- Allow wrong questions to be practiced separately.
-- Support random question selection.
-- Support filtering by question type.
+- Save in-progress quiz attempts and recover them after refresh. First implementation landed.
+- Check for unanswered questions before answer submission. First implementation landed.
+- Improve the result overview and answer comparison experience. First implementation landed.
+- Record answer history and scores. First implementation landed.
+- Allow wrong questions to be practiced separately. First implementation landed.
+- Support random question selection. First implementation landed.
+- Support filtering by question type. First implementation landed.
 
 Recommended implementation order:
 
@@ -64,18 +64,18 @@ Data and privacy notes:
 
 ## Milestone 3: Local Quiz Library
 
-Status: Vision
+Status: First implementation landed
 
 Milestone 3 will move Quiz Studio from a single-paper workflow to a local quiz library. The goal is to let users manage many quiz papers safely and quickly on the same device.
 
 Planned scope:
 
-- Manage multiple quiz papers.
-- Create, duplicate, rename, and delete quiz papers.
-- Organize quiz papers with categories, tags, and search.
-- Track recently opened papers and last updated times.
-- Provide safer import, export, and full local backup workflows.
-- Migrate older single-paper local data into the quiz library.
+- Manage multiple quiz papers. First implementation landed.
+- Create, duplicate, rename, and delete quiz papers. First implementation landed.
+- Organize quiz papers with categories, tags, and search. First implementation landed.
+- Track recently opened papers and last updated times. First implementation landed.
+- Provide safer import, export, and full local backup workflows. First implementation landed.
+- Migrate older single-paper local data into the quiz library. First implementation landed.
 
 Expected outcome:
 
