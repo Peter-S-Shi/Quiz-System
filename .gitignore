@@ -26,7 +26,11 @@ data/*.sqlite
 data/*.sqlite3
 data/*.csv
 data/*.xlsx
+user-data/
 exports/
+
+# Keep public sample JSON and future schemas commit-friendly.
+# Use examples/ for synthetic quizzes that are safe to share.
 
 # Common dependency/build folders for future expansion
 node_modules/
