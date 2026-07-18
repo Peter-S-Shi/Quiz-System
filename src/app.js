@@ -1,12 +1,28 @@
-const LEGACY_STORAGE_KEY = "quiz-studio-paper-v1";
-const LIBRARY_KEY = "quiz-studio-library-v1";
-const ACTIVE_PAPER_KEY = "quiz-studio-active-paper";
-const ACTIVE_SESSION_KEY = "quiz-studio-active-session-v1";
-const HISTORY_KEY = "quiz-studio-history-v1";
-const THEME_KEY = "quiz-studio-theme";
-const LANG_KEY = "quiz-studio-language";
+import { formatAnswer, gradeQuestion } from "./core/grading.js";
+import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
+import {
+  QUESTION_TYPES,
+  clonePaperForLibrary,
+  cloneQuestion,
+  convertQuestionType,
+  createQuestion,
+  ensureChoiceValidity,
+  isAnswerComplete,
+  isQuestionReady,
+  prepareQuizQuestion,
+} from "./core/question-registry.js";
+import { makeId, parseTags, safeFileName } from "./core/utils.js";
+import { STORAGE_KEYS, loadJson, removeStoredValue, saveJson } from "./storage/local-storage.js";
 
-const QUESTION_TYPES = ["single", "multiple", "blank", "truefalse", "matching"];
+const {
+  LEGACY_PAPER: LEGACY_STORAGE_KEY,
+  LIBRARY: LIBRARY_KEY,
+  ACTIVE_PAPER: ACTIVE_PAPER_KEY,
+  ACTIVE_SESSION: ACTIVE_SESSION_KEY,
+  HISTORY: HISTORY_KEY,
+  THEME: THEME_KEY,
+  LANGUAGE: LANG_KEY,
+} = STORAGE_KEYS;
 
 const locales = {
   zh: {
@@ -17,6 +33,7 @@ const locales = {
       mainMode: "主要模式",
       theme: "切换亮色和暗色背景",
       language: "界面语言",
+      skip: "跳到主要内容",
     },
     modes: {
       edit: "编辑",
@@ -182,6 +199,7 @@ const locales = {
       mainMode: "Main mode",
       theme: "Switch light and dark background",
       language: "Interface language",
+      skip: "Skip to main content",
     },
     modes: {
       edit: "Edit",
@@ -353,6 +371,7 @@ let librarySearch = "";
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
+const skipLink = document.getElementById("skipLink");
 const editModeButton = document.getElementById("editModeButton");
 const quizModeButton = document.getElementById("quizModeButton");
 const themeToggle = document.getElementById("themeToggle");
@@ -378,6 +397,7 @@ function init() {
   document.documentElement.dataset.theme = localStorage.getItem(THEME_KEY) || "light";
   document.documentElement.lang = locales[language].code;
   bindGlobalEvents();
+  registerServiceWorker();
   renderAll();
 }
 
@@ -435,6 +455,7 @@ function renderAll() {
 function renderChrome() {
   document.documentElement.lang = locales[language].code;
   document.querySelector(".brand p").textContent = t("tagline");
+  skipLink.textContent = t("aria.skip");
   document.querySelector(".mode-tabs").setAttribute("aria-label", t("aria.mainMode"));
   editModeButton.textContent = t("modes.edit");
   quizModeButton.textContent = t("modes.quiz");
@@ -1149,7 +1170,7 @@ function submitCurrentAnswer() {
     return;
   }
 
-  const result = gradeQuestion(question, answer);
+  const result = gradeQuestion(question, answer, getGradeLabels());
   session.results[session.index] = result;
   session.submitted = true;
   session.feedback = result;
@@ -1181,7 +1202,7 @@ function goNextQuestion() {
 
 function renderResults() {
   session.questions.forEach((question, index) => {
-    if (!session.results[index]) session.results[index] = gradeQuestion(question, session.answers[question.id]);
+    if (!session.results[index]) session.results[index] = gradeQuestion(question, session.answers[question.id], getGradeLabels());
   });
 
   const correctCount = session.results.filter((result) => result.correct).length;
@@ -1214,7 +1235,7 @@ function renderResults() {
               <strong>${index + 1}. ${escapeHtml(question.prompt)}</strong>
               <p class="meta-text">${typeLabel(question.type)} · ${result.correct ? t("result.correct") : t("result.wrong")}</p>
               <div class="answer-compare">
-                <p><strong>${t("result.yourAnswer")}:</strong> ${escapeHtml(formatAnswer(question, session.answers[question.id]) || t("result.noAnswer"))}</p>
+                <p><strong>${t("result.yourAnswer")}:</strong> ${escapeHtml(formatAnswer(question, session.answers[question.id], getGradeLabels()) || t("result.noAnswer"))}</p>
                 <p><strong>${result.correctLabel}:</strong> ${escapeHtml(result.correctAnswer)}</p>
               </div>
             </div>
@@ -1246,92 +1267,6 @@ function renderFeedback(result) {
   `;
 }
 
-function gradeQuestion(question, answer) {
-  if (question.type === "single") {
-    const correctId = question.options.find((option) => option.correct)?.id;
-    const correctText = question.options.find((option) => option.id === correctId)?.text || "";
-    return makeResult(question, answer === correctId, t("result.correctAnswer"), correctText);
-  }
-
-  if (question.type === "multiple") {
-    const correctIds = question.options.filter((option) => option.correct).map((option) => option.id).sort();
-    const answerIds = Array.isArray(answer) ? [...answer].sort() : [];
-    const correct = JSON.stringify(correctIds) === JSON.stringify(answerIds);
-    const correctText = question.options.filter((option) => option.correct).map((option) => option.text).join(t("result.separator"));
-    return makeResult(question, correct, t("result.correctAnswer"), correctText);
-  }
-
-  if (question.type === "blank") {
-    const normalizedAnswer = normalizeText(answer || "", question.caseSensitive);
-    const accepted = question.answers.map((item) => normalizeText(item, question.caseSensitive));
-    return makeResult(question, accepted.includes(normalizedAnswer), t("result.acceptedAnswers"), question.answers.join(t("result.separator")));
-  }
-
-  if (question.type === "truefalse") {
-    return makeResult(question, answer === question.answer, t("result.correctAnswer"), question.answer ? t("question.true") : t("question.false"));
-  }
-
-  const answerMap = answer || {};
-  const correct = question.pairs.every((pair) => answerMap[pair.id] === pair.rightId);
-  const correctPairs = question.pairs.map((pair) => `${pair.left} = ${pair.right}`).join(t("result.pairSeparator"));
-  return makeResult(question, correct, t("result.correctPairs"), correctPairs);
-}
-
-function makeResult(question, correct, correctLabel, correctAnswer) {
-  return {
-    questionId: question.sourceId || question.id,
-    sessionQuestionId: question.id,
-    type: question.type,
-    prompt: question.prompt,
-    correct,
-    correctLabel,
-    correctAnswer,
-  };
-}
-
-function prepareQuizQuestion(question) {
-  const cloned = structuredClone(question);
-  cloned.sourceId = question.id;
-
-  if (cloned.type === "single" || cloned.type === "multiple") {
-    cloned.options = shuffle(cloned.options);
-  }
-
-  if (cloned.type === "matching") {
-    cloned.pairs = cloned.pairs.map((pair) => ({
-      id: pair.id,
-      left: pair.left,
-      right: pair.right,
-      rightId: pair.id,
-    }));
-    cloned.rightOptions = shuffle(cloned.pairs.map((pair) => ({
-      id: pair.id,
-      text: pair.right,
-    })));
-  }
-
-  return cloned;
-}
-
-function isQuestionReady(question) {
-  if (!question.prompt.trim()) return false;
-  if (question.type === "single") return question.options.length >= 2 && question.options.some((option) => option.correct && option.text.trim());
-  if (question.type === "multiple") return question.options.length >= 2 && question.options.filter((option) => option.correct && option.text.trim()).length >= 1;
-  if (question.type === "blank") return question.answers?.some(Boolean);
-  if (question.type === "truefalse") return typeof question.answer === "boolean";
-  if (question.type === "matching") return question.pairs?.length >= 2 && question.pairs.every((pair) => pair.left.trim() && pair.right.trim());
-  return false;
-}
-
-function isAnswerComplete(question, answer) {
-  if (question.type === "single") return Boolean(answer);
-  if (question.type === "multiple") return Array.isArray(answer) && answer.length > 0;
-  if (question.type === "blank") return Boolean(String(answer || "").trim());
-  if (question.type === "truefalse") return typeof answer === "boolean";
-  if (question.type === "matching") return question.pairs.every((pair) => answer?.[pair.id]);
-  return false;
-}
-
 function addQuestion(type) {
   const question = createQuestion(type);
   paper.questions.push(question);
@@ -1339,59 +1274,6 @@ function addQuestion(type) {
   savePaper();
   renderAll();
   showToast(t("toast.added", { type: typeLabel(type) }));
-}
-
-function createQuestion(type) {
-  const base = { id: makeId(), type, prompt: "" };
-
-  if (type === "single") {
-    return {
-      ...base,
-      options: [
-        { id: makeId(), text: "", correct: true },
-        { id: makeId(), text: "", correct: false },
-        { id: makeId(), text: "", correct: false },
-        { id: makeId(), text: "", correct: false },
-      ],
-    };
-  }
-
-  if (type === "multiple") {
-    return {
-      ...base,
-      options: [
-        { id: makeId(), text: "", correct: true },
-        { id: makeId(), text: "", correct: true },
-        { id: makeId(), text: "", correct: false },
-        { id: makeId(), text: "", correct: false },
-      ],
-    };
-  }
-
-  if (type === "blank") return { ...base, answers: [""], caseSensitive: false };
-  if (type === "truefalse") return { ...base, answer: true };
-  return {
-    ...base,
-    pairs: [
-      { id: makeId(), left: "", right: "" },
-      { id: makeId(), left: "", right: "" },
-    ],
-  };
-}
-
-function convertQuestionType(question, nextType) {
-  const replacement = createQuestion(nextType);
-  question.type = nextType;
-
-  delete question.options;
-  delete question.answers;
-  delete question.caseSensitive;
-  delete question.answer;
-  delete question.pairs;
-
-  Object.entries(replacement).forEach(([key, value]) => {
-    if (key !== "id" && key !== "type" && key !== "prompt") question[key] = value;
-  });
 }
 
 function duplicateQuestion(id) {
@@ -1410,16 +1292,6 @@ function deleteQuestion(id) {
   savePaper();
   renderAll();
   showToast(t("toast.deleted"));
-}
-
-function ensureChoiceValidity(question) {
-  if (!question.options.length) return;
-  if (question.type === "single") {
-    const selected = question.options.filter((option) => option.correct);
-    question.options.forEach((option, index) => {
-      option.correct = selected.length ? option.id === selected[0].id : index === 0;
-    });
-  }
 }
 
 function getSelectedQuestion() {
@@ -1441,70 +1313,18 @@ function savePaper(options = {}) {
 }
 
 function loadLibrary() {
-  try {
-    const savedLibrary = JSON.parse(localStorage.getItem(LIBRARY_KEY));
-    if (savedLibrary?.papers?.length) return normalizeLibrary(savedLibrary);
-  } catch {
-    // Fall through to legacy migration.
-  }
+  const savedLibrary = loadJson(LIBRARY_KEY);
+  if (savedLibrary?.papers?.length) return normalizeAndSaveLibrary(savedLibrary);
 
-  try {
-    const legacyPaper = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
-    if (legacyPaper?.questions) return normalizeLibrary({ schemaVersion: 1, papers: [legacyPaper] });
-  } catch {
-    // Fall through to default library.
-  }
+  const legacyPaper = loadJson(LEGACY_STORAGE_KEY);
+  if (legacyPaper?.questions) return normalizeAndSaveLibrary({ schemaVersion: CURRENT_SCHEMA_VERSION, papers: [legacyPaper] });
 
-  return normalizeLibrary({ schemaVersion: 1, papers: [createDefaultPaper()] });
+  return normalizeAndSaveLibrary({ schemaVersion: CURRENT_SCHEMA_VERSION, papers: [createDefaultPaper()] });
 }
 
-function normalizeLibrary(value) {
-  const papers = (value.papers || []).map(normalizePaper);
-  const normalized = {
-    schemaVersion: 1,
-    papers: papers.length ? papers : [normalizePaper(createDefaultPaper())],
-  };
-  localStorage.setItem(LIBRARY_KEY, JSON.stringify(normalized));
-  return normalized;
-}
-
-function normalizePaper(value) {
-  const now = new Date().toISOString();
-  return {
-    id: value.id || makeId(),
-    title: value.title || "",
-    description: value.description || "",
-    category: value.category || "",
-    tags: Array.isArray(value.tags) ? value.tags : parseTags(value.tags || ""),
-    createdAt: value.createdAt || now,
-    updatedAt: value.updatedAt || now,
-    lastOpenedAt: value.lastOpenedAt || now,
-    questions: Array.isArray(value.questions) ? value.questions.map(normalizeQuestion) : [],
-  };
-}
-
-function normalizeQuestion(question) {
-  const normalized = { ...question, id: question.id || makeId(), type: QUESTION_TYPES.includes(question.type) ? question.type : "single", prompt: question.prompt || "" };
-  if (normalized.type === "single" || normalized.type === "multiple") {
-    normalized.options = Array.isArray(question.options) ? question.options.map((option) => ({
-      id: option.id || makeId(),
-      text: option.text || "",
-      correct: Boolean(option.correct),
-    })) : createQuestion(normalized.type).options;
-    ensureChoiceValidity(normalized);
-  }
-  if (normalized.type === "blank") {
-    normalized.answers = Array.isArray(question.answers) ? question.answers : [];
-    normalized.caseSensitive = Boolean(question.caseSensitive);
-  }
-  if (normalized.type === "truefalse") normalized.answer = Boolean(question.answer);
-  if (normalized.type === "matching") {
-    normalized.pairs = Array.isArray(question.pairs) ? question.pairs.map((pair) => ({
-      id: pair.id || makeId(),
-      left: pair.left || "",
-      right: pair.right || "",
-    })) : createQuestion("matching").pairs;
-  }
+function normalizeAndSaveLibrary(value) {
+  const normalized = normalizeLibrary(value, { createDefaultPaper });
+  saveJson(LIBRARY_KEY, normalized);
   return normalized;
 }
 
@@ -1520,7 +1340,7 @@ function getActivePaper() {
 }
 
 function saveLibrary() {
-  localStorage.setItem(LIBRARY_KEY, JSON.stringify(library));
+  saveJson(LIBRARY_KEY, library);
 }
 
 function createDefaultPaper() {
@@ -1607,7 +1427,7 @@ function importPaper(event) {
 
 function exportLibraryBackup() {
   const backup = {
-    schemaVersion: 1,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     library,
     history: loadHistory(),
@@ -1621,8 +1441,8 @@ function importLibraryBackup(event) {
 
   readJsonFile(file, (imported) => {
     if (imported.library?.papers?.length) {
-      library = normalizeLibrary(imported.library);
-      if (Array.isArray(imported.history)) localStorage.setItem(HISTORY_KEY, JSON.stringify(imported.history));
+      library = normalizeLibrary(imported.library, { createDefaultPaper });
+      if (Array.isArray(imported.history)) saveJson(HISTORY_KEY, imported.history);
       activePaperId = library.papers[0].id;
       localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
       showToast(t("library.backupImported"));
@@ -1670,20 +1490,16 @@ function downloadJson(data, fileName) {
 
 function persistSession() {
   if (!session || session.completed) return;
-  localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(session));
+  saveJson(ACTIVE_SESSION_KEY, session);
 }
 
 function loadActiveSession() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(ACTIVE_SESSION_KEY));
-    return saved?.paperId === activePaperId && !saved.completed ? saved : null;
-  } catch {
-    return null;
-  }
+  const saved = loadJson(ACTIVE_SESSION_KEY);
+  return saved?.paperId === activePaperId && !saved.completed ? saved : null;
 }
 
 function clearActiveSession() {
-  localStorage.removeItem(ACTIVE_SESSION_KEY);
+  removeStoredValue(ACTIVE_SESSION_KEY);
   session = null;
 }
 
@@ -1702,16 +1518,12 @@ function recordHistory() {
   };
   const withoutDuplicate = history.filter((item) => item.id !== entry.id);
   withoutDuplicate.unshift(entry);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(withoutDuplicate.slice(0, 100)));
+  saveJson(HISTORY_KEY, withoutDuplicate.slice(0, 100));
 }
 
 function loadHistory() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(HISTORY_KEY));
-    return Array.isArray(saved) ? saved : [];
-  } catch {
-    return [];
-  }
+  const saved = loadJson(HISTORY_KEY, []);
+  return Array.isArray(saved) ? saved : [];
 }
 
 function getPaperHistory(paperId) {
@@ -1732,46 +1544,9 @@ function getWrongQuestionIds() {
 
 function clearPaperHistory() {
   const kept = loadHistory().filter((item) => item.paperId !== activePaperId);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(kept));
+  saveJson(HISTORY_KEY, kept);
   renderQuizStart();
   showToast(t("toast.historyCleared"));
-}
-
-function formatAnswer(question, answer) {
-  if (!isAnswerComplete(question, answer)) return "";
-  if (question.type === "single") return question.options.find((option) => option.id === answer)?.text || "";
-  if (question.type === "multiple") return question.options.filter((option) => answer.includes(option.id)).map((option) => option.text).join(t("result.separator"));
-  if (question.type === "blank") return answer;
-  if (question.type === "truefalse") return answer ? t("question.true") : t("question.false");
-  return question.pairs.map((pair) => {
-    const selected = question.rightOptions.find((option) => option.id === answer[pair.id])?.text || "";
-    return `${pair.left} = ${selected}`;
-  }).join(t("result.pairSeparator"));
-}
-
-function clonePaperForLibrary(source) {
-  const now = new Date().toISOString();
-  return {
-    ...structuredClone(source),
-    id: makeId(),
-    createdAt: now,
-    updatedAt: now,
-    lastOpenedAt: now,
-    questions: source.questions.map(cloneQuestion),
-  };
-}
-
-function cloneQuestion(question) {
-  const copy = structuredClone(question);
-  copy.id = makeId();
-  if (copy.options) copy.options = copy.options.map((option) => ({ ...option, id: makeId() }));
-  if (copy.pairs) copy.pairs = copy.pairs.map((pair) => ({ ...pair, id: makeId() }));
-  return copy;
-}
-
-function parseTags(value) {
-  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
-  return String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
 }
 
 function toggleTheme() {
@@ -1792,6 +1567,18 @@ function typeShortLabel(type) {
   return t(`shortTypes.${type}`);
 }
 
+function getGradeLabels() {
+  return {
+    correctAnswer: t("result.correctAnswer"),
+    acceptedAnswers: t("result.acceptedAnswers"),
+    correctPairs: t("result.correctPairs"),
+    separator: t("result.separator"),
+    pairSeparator: t("result.pairSeparator"),
+    trueLabel: t("question.true"),
+    falseLabel: t("question.false"),
+  };
+}
+
 function t(path, params = {}) {
   const value = path.split(".").reduce((current, key) => current?.[key], locales[language]);
   const fallback = path.split(".").reduce((current, key) => current?.[key], locales.zh);
@@ -1808,25 +1595,6 @@ function loadLanguage() {
   return locales[saved] ? saved : "zh";
 }
 
-function normalizeText(value, caseSensitive) {
-  const trimmed = String(value).trim();
-  return caseSensitive ? trimmed : trimmed.toLowerCase();
-}
-
-function shuffle(items) {
-  const copy = [...items];
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
-  }
-  return copy;
-}
-
-function makeId() {
-  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
-  return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 function formatDate(value) {
   if (!value) return "";
   return new Intl.DateTimeFormat(language === "zh" ? "zh-CN" : "en", {
@@ -1835,10 +1603,6 @@ function formatDate(value) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
-}
-
-function safeFileName(value) {
-  return String(value || "quiz-paper").replace(/[\\/:*?"<>|]+/g, "-").slice(0, 80);
 }
 
 function escapeHtml(value) {
@@ -1855,4 +1619,13 @@ function showToast(message) {
   toast.classList.add("show");
   window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2400);
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {
+      // Offline support is optional; the app remains usable without it.
+    });
+  });
 }

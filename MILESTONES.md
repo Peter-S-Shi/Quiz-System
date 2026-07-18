@@ -85,19 +85,19 @@ Expected outcome:
 
 ## Milestone 4: Quiz Core and Open Data Format
 
-Status: Vision
+Status: First implementation landed
 
 Milestone 4 will turn the prototype's internal logic into a more durable foundation. The goal is to separate the quiz core from the interface so question formats, grading, storage, and future integrations can evolve cleanly.
 
 Planned scope:
 
-- Split the current single-file `app.js` structure into smaller modules.
-- Create independent question models, validators, and grading engines.
-- Establish a unified Question Type Registry.
-- Add `schemaVersion` and data migration support.
-- Decouple storage logic from UI rendering.
-- Add unit tests, formatting checks, and basic CI.
-- Publish JSON Schema files and synthetic example quiz files.
+- Split the current single-file `app.js` structure into smaller modules. First implementation landed.
+- Create independent question models, validators, and grading engines. First implementation landed.
+- Establish a unified Question Type Registry. First implementation landed.
+- Add `schemaVersion` and data migration support. First implementation landed.
+- Decouple storage logic from UI rendering. First implementation landed.
+- Add unit tests, formatting checks, and basic CI. First implementation landed.
+- Publish JSON Schema files and synthetic example quiz files. First implementation landed.
 
 Expected outcome:
 
@@ -108,19 +108,19 @@ Expected outcome:
 
 ## Milestone 5: Public Release Preparation
 
-Status: Vision
+Status: First implementation landed
 
 Milestone 5 will prepare Quiz Studio for a first stable public release. The goal is to make the app easier to use, easier to trust, and easier for others to run or contribute to.
 
 Planned scope:
 
-- Improve responsive design and accessibility.
-- Support offline use or Progressive Web App behavior.
-- Deploy with GitHub Pages.
-- Expand README, user guide, and developer documentation.
-- Add license, contributing guidelines, and release notes.
-- Provide sample quizzes and safety guidance.
-- Complete the first stable public version.
+- Improve responsive design and accessibility. First implementation landed.
+- Support offline use or Progressive Web App behavior. First implementation landed.
+- Deploy with GitHub Pages. Workflow prepared; repository settings may still need to enable Pages.
+- Expand README, user guide, and developer documentation. First implementation landed.
+- Add license, contributing guidelines, and release notes. First implementation landed.
+- Provide sample quizzes and safety guidance. First implementation landed.
+- Complete the first stable public version. Stable preparation landed; final public release tag should be created after manual smoke testing.
 
 Expected outcome:
 

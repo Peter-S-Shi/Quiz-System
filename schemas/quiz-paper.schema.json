@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/quiz-studio/schemas/quiz-paper.schema.json",
+  "title": "Quiz Studio Paper",
+  "type": "object",
+  "required": ["schemaVersion", "id", "title", "questions"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "lastOpenedAt": {
+      "type": "string"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    }
+  },
+  "$defs": {
+    "question": {
+      "type": "object",
+      "required": ["id", "type", "prompt"],
+      "oneOf": [
+        { "$ref": "#/$defs/singleChoice" },
+        { "$ref": "#/$defs/multipleChoice" },
+        { "$ref": "#/$defs/blank" },
+        { "$ref": "#/$defs/trueFalse" },
+        { "$ref": "#/$defs/matching" }
+      ]
+    },
+    "baseQuestion": {
+      "type": "object",
+      "required": ["id", "type", "prompt"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "type": "string" },
+        "prompt": { "type": "string" }
+      }
+    },
+    "option": {
+      "type": "object",
+      "required": ["id", "text", "correct"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "type": "string" },
+        "correct": { "type": "boolean" }
+      }
+    },
+    "singleChoice": {
+      "allOf": [
+        { "$ref": "#/$defs/baseQuestion" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "single" },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "items": { "$ref": "#/$defs/option" }
+            }
+          },
+          "required": ["options"]
+        }
+      ]
+    },
+    "multipleChoice": {
+      "allOf": [
+        { "$ref": "#/$defs/baseQuestion" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "multiple" },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "items": { "$ref": "#/$defs/option" }
+            }
+          },
+          "required": ["options"]
+        }
+      ]
+    },
+    "blank": {
+      "allOf": [
+        { "$ref": "#/$defs/baseQuestion" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "blank" },
+            "answers": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "caseSensitive": { "type": "boolean" }
+          },
+          "required": ["answers"]
+        }
+      ]
+    },
+    "trueFalse": {
+      "allOf": [
+        { "$ref": "#/$defs/baseQuestion" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "truefalse" },
+            "answer": { "type": "boolean" }
+          },
+          "required": ["answer"]
+        }
+      ]
+    },
+    "matching": {
+      "allOf": [
+        { "$ref": "#/$defs/baseQuestion" },
+        {
+          "type": "object",
+          "properties": {
+            "type": { "const": "matching" },
+            "pairs": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "required": ["id", "left", "right"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "left": { "type": "string" },
+                  "right": { "type": "string" }
+                }
+              }
+            }
+          },
+          "required": ["pairs"]
+        }
+      ]
+    }
+  }
+}

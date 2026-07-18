@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "example-basic-quiz",
+  "title": "Sample Web Basics Quiz",
+  "description": "Synthetic sample data for testing import and public documentation.",
+  "category": "Examples",
+  "tags": ["sample", "web"],
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "lastOpenedAt": "2026-01-01T00:00:00.000Z",
+  "questions": [
+    {
+      "id": "q-single-html",
+      "type": "single",
+      "prompt": "Which language is used to describe the structure of a web page?",
+      "options": [
+        { "id": "html", "text": "HTML", "correct": true },
+        { "id": "css", "text": "CSS", "correct": false },
+        { "id": "json", "text": "JSON", "correct": false },
+        { "id": "sql", "text": "SQL", "correct": false }
+      ]
+    },
+    {
+      "id": "q-multiple-assets",
+      "type": "multiple",
+      "prompt": "Which files can be part of a static web app?",
+      "options": [
+        { "id": "index", "text": "index.html", "correct": true },
+        { "id": "styles", "text": "styles.css", "correct": true },
+        { "id": "script", "text": "app.js", "correct": true },
+        { "id": "private-key", "text": "A private key file", "correct": false }
+      ]
+    },
+    {
+      "id": "q-blank-local",
+      "type": "blank",
+      "prompt": "Complete the phrase: local-____ app.",
+      "answers": ["first"],
+      "caseSensitive": false
+    },
+    {
+      "id": "q-truefalse-privacy",
+      "type": "truefalse",
+      "prompt": "Synthetic examples are safer to commit than real user quiz data.",
+      "answer": true
+    },
+    {
+      "id": "q-matching-files",
+      "type": "matching",
+      "prompt": "Match each file type with a common purpose.",
+      "pairs": [
+        { "id": "pair-html", "left": "HTML", "right": "Structure" },
+        { "id": "pair-css", "left": "CSS", "right": "Style" },
+        { "id": "pair-js", "left": "JavaScript", "right": "Interaction" }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可以让用户创建可编辑的试卷、完成客观题练习、获得即时反馈，并在中文和英文界面之间切换。
 
-当前版本是一个静态 Web 应用。它可以直接在浏览器中运行，并把试卷数据保存到浏览器本地存储中，因此第一版原型不需要服务器或数据库。
+当前版本是一个静态 ES module Web 应用。它需要通过本地静态服务器在浏览器中打开，并把试卷数据保存到浏览器本地存储中，因此第一版原型不需要后端数据库。
 
 ## 功能
 
@@ -29,12 +29,38 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 - 支持中文和英文界面。
 - 使用浏览器本地存储保存试卷草稿。
 - 支持 JSON 试卷文件的导入和导出。
+- 拆分出模块化 Quiz Core，用于题目模型、校验、判分和迁移。
+- 提供公开 JSON Schema 和合成示例 quiz 数据。
+- 提供 PWA 文件，为静态托管和离线能力做准备。
+- 提供 CI 和 GitHub Pages workflow 文件。
 
 ## 开始使用
 
-用现代浏览器打开 `index.html`。
+用本地静态服务器启动仓库，然后通过该服务器打开 `index.html`。
 
 不需要构建步骤。
+
+示例：
+
+```bash
+python -m http.server 8000
+```
+
+然后打开 `http://localhost:8000`。
+
+## 验证
+
+```bash
+npm test
+npm run check
+```
+
+如果本机没有 npm，可以直接运行等价的核心检查：
+
+```bash
+node --check src/app.js
+node --test
+```
 
 ## 使用方式
 
@@ -52,7 +78,13 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 Quiz System/
   index.html        应用页面结构
   styles.css        界面样式和响应式布局
-  app.js            试卷库、试卷编辑、做题逻辑、判分和多语言支持
+  src/app.js        试卷库、试卷编辑、练习流程和多语言支持
+  src/core/         题型注册、校验、判分和迁移
+  src/storage/      浏览器存储边界
+  schemas/          公开 JSON Schema 文件
+  examples/         合成公开示例 quiz 文件
+  docs/             用户、开发和安全文档
+  .github/          CI 和 GitHub Pages workflows
   README.md         英文项目文档
   README.zh-CN.md   中文项目文档
   MILESTONES.md     英文里程碑路线图
@@ -72,7 +104,7 @@ Quiz System/
 
 ## 当前状态
 
-这是一个本地优先的早期原型，重点是客观题工作流、练习历史和浏览器本地试卷库。未来可以继续扩展模块化 Quiz Core、JSON Schema、公开示例、CI、部署、用户账号、后端持久化、AI 辅助出题和主观题批改。
+这是一个本地优先原型，已经具备模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 文件、公开 schema、示例、测试和 CI/Pages workflow 准备。未来可以继续扩展用户账号、后端持久化、AI 辅助出题和主观题批改。
 
 ## 数据和隐私
 
@@ -83,3 +115,5 @@ Quiz System/
 ## 开发说明
 
 这个项目在当前阶段刻意保持轻量，使用原生 HTML、CSS 和 JavaScript。这样可以先快速打磨产品行为，再决定是否引入更大的前端框架或后端架构。
+
+架构和验证细节见 `docs/DEVELOPER_GUIDE.zh-CN.md`。

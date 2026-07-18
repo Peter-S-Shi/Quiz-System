@@ -42,6 +42,23 @@ body {
   font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
 }
 
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 12px;
+  z-index: 100;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: white;
+  background: var(--accent);
+  transform: translateY(-140%);
+  transition: 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 button,
 input,
 textarea,

@@ -1,0 +1,26 @@
+export const STORAGE_KEYS = {
+  LEGACY_PAPER: "quiz-studio-paper-v1",
+  LIBRARY: "quiz-studio-library-v1",
+  ACTIVE_PAPER: "quiz-studio-active-paper",
+  ACTIVE_SESSION: "quiz-studio-active-session-v1",
+  HISTORY: "quiz-studio-history-v1",
+  THEME: "quiz-studio-theme",
+  LANGUAGE: "quiz-studio-language",
+};
+
+export function loadJson(key, fallback = null) {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function saveJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+export function removeStoredValue(key) {
+  localStorage.removeItem(key);
+}

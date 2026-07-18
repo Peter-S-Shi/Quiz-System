@@ -2,7 +2,7 @@
 
 Quiz Studio is a local-first quiz authoring and practice prototype. It lets users create editable quiz papers, answer objective questions, receive immediate feedback, and switch the interface between Chinese and English.
 
-The current version is a static web application. It runs directly in the browser and stores paper data in local browser storage, so no server or database is required for the first prototype.
+The current version is a static ES module web application. It runs in a browser through a local static server and stores paper data in local browser storage, so no backend database is required for the first prototype.
 
 ## Features
 
@@ -29,12 +29,38 @@ The current version is a static web application. It runs directly in the browser
 - Chinese and English interface language support.
 - Local browser storage for draft quiz papers.
 - JSON import and export for quiz paper files.
+- Modular Quiz Core for question models, validation, grading, and migrations.
+- Public JSON Schema and synthetic sample quiz data.
+- PWA files for offline-capable static hosting.
+- CI and GitHub Pages workflow files.
 
 ## Getting Started
 
-Open `index.html` in a modern browser.
+Serve the repository with a local static server, then open `index.html` through that server.
 
 No build step is required.
+
+Example:
+
+```bash
+python -m http.server 8000
+```
+
+Then open `http://localhost:8000`.
+
+## Validation
+
+```bash
+npm test
+npm run check
+```
+
+If npm is not available locally, the equivalent core checks are:
+
+```bash
+node --check src/app.js
+node --test
+```
 
 ## Usage
 
@@ -52,7 +78,13 @@ No build step is required.
 Quiz System/
   index.html        Application shell
   styles.css        Interface styling and responsive layout
-  app.js            Quiz library, editor, quiz session logic, grading, and localization
+  src/app.js        Quiz library, editor, quiz session flow, and localization
+  src/core/         Question registry, validation, grading, and migrations
+  src/storage/      Browser storage boundary
+  schemas/          Public JSON Schema files
+  examples/         Synthetic public sample quiz files
+  docs/             User, developer, and safety documentation
+  .github/          CI and GitHub Pages workflows
   README.md         English project documentation
   README.zh-CN.md   Chinese project documentation
   MILESTONES.md     English milestone roadmap
@@ -72,7 +104,7 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-This is an early local-first prototype focused on objective question workflows, practice history, and a browser-based quiz library. Planned future expansion may include a modular Quiz Core, JSON Schema, public examples, CI, deployment, user accounts, backend persistence, AI-assisted question generation, and subjective question grading.
+This is a local-first prototype with a modular Quiz Core, browser-based quiz library, practice history, PWA files, public schema, examples, tests, and CI/Pages workflow preparation. Planned future expansion may include user accounts, backend persistence, AI-assisted question generation, and subjective question grading.
 
 ## Data and Privacy
 
@@ -83,3 +115,5 @@ No data is sent to a server in the current static version.
 ## Development Notes
 
 This project is intentionally lightweight at this stage. It uses plain HTML, CSS, and JavaScript so the product behavior can evolve quickly before introducing a larger framework or backend architecture.
+
+See `docs/DEVELOPER_GUIDE.md` for architecture and validation details.

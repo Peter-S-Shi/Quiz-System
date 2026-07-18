@@ -3,10 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#2563eb">
     <title>Quiz Studio</title>
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
+    <a class="skip-link" id="skipLink" href="#mainContent">跳到主要内容</a>
     <div class="app-shell">
       <header class="topbar">
         <div class="brand">
@@ -27,7 +30,7 @@
         <button class="icon-button" id="themeToggle" type="button" title="切换亮色和暗色背景" aria-label="切换亮色和暗色背景">◐</button>
       </header>
 
-      <main>
+      <main id="mainContent" tabindex="-1">
         <section class="workspace edit-workspace" id="editorView">
           <aside class="side-panel">
             <section class="library-panel" id="libraryPanel"></section>
@@ -86,6 +89,6 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js"></script>
+    <script type="module" src="src/app.js"></script>
   </body>
 </html>
