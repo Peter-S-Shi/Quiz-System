@@ -1,5 +1,11 @@
 # Development Log
 
+## 2026-07-18
+
+- Defined the current Quiz Studio application as Milestone 1: Foundation Prototype.
+- Confirmed the Milestone 1 scope covers editable quiz papers, objective question types, shuffled answer choices, bilingual UI, theme switching, local persistence, JSON import/export, and project documentation.
+- Strengthened Git ignore rules for local environments, caches, generated data stores, and private export files before future GitHub synchronization.
+
 ## 2026-07-17
 
 - Rewrote the main README as a more standard English project document.

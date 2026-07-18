@@ -14,6 +14,20 @@ Desktop.ini
 tmp/
 temp/
 
+# Python/runtime local files
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Local-only data stores and exports
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/*.csv
+data/*.xlsx
+exports/
+
 # Common dependency/build folders for future expansion
 node_modules/
 dist/
