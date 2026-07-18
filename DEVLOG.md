@@ -7,6 +7,7 @@
 - Strengthened Git ignore rules for local environments, caches, generated data stores, and private export files before future GitHub synchronization.
 - Clarified the future JSON data boundary: public examples should live in `examples/`, while real user quiz data should live in ignored local folders such as `user-data/` or `exports/`.
 - Added English and Chinese milestone roadmap documents and defined Milestone 2 as practice flow enhancements.
+- Expanded the roadmap vision with Milestone 3 local quiz library, Milestone 4 quiz core and open data format, Milestone 5 public release preparation, and long-term optional directions.
 
 ## 2026-07-17
 

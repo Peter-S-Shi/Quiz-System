@@ -61,3 +61,88 @@ Data and privacy notes:
 - Real user quiz content should stay in ignored local folders such as `user-data/` or `exports/`.
 - Public sample quizzes should use synthetic content and may live in `examples/`.
 - Future JSON schemas or fixtures should be safe to commit only when they do not contain personal or real quiz data.
+
+## Milestone 3: Local Quiz Library
+
+Status: Vision
+
+Milestone 3 will move Quiz Studio from a single-paper workflow to a local quiz library. The goal is to let users manage many quiz papers safely and quickly on the same device.
+
+Planned scope:
+
+- Manage multiple quiz papers.
+- Create, duplicate, rename, and delete quiz papers.
+- Organize quiz papers with categories, tags, and search.
+- Track recently opened papers and last updated times.
+- Provide safer import, export, and full local backup workflows.
+- Migrate older single-paper local data into the quiz library.
+
+Expected outcome:
+
+- Users can keep a growing local collection of quiz papers without losing the simplicity of the Milestone 1 editor.
+- Data management remains local-first and privacy-conscious.
+- Import, export, and backup workflows clearly separate public examples from private user data.
+
+## Milestone 4: Quiz Core and Open Data Format
+
+Status: Vision
+
+Milestone 4 will turn the prototype's internal logic into a more durable foundation. The goal is to separate the quiz core from the interface so question formats, grading, storage, and future integrations can evolve cleanly.
+
+Planned scope:
+
+- Split the current single-file `app.js` structure into smaller modules.
+- Create independent question models, validators, and grading engines.
+- Establish a unified Question Type Registry.
+- Add `schemaVersion` and data migration support.
+- Decouple storage logic from UI rendering.
+- Add unit tests, formatting checks, and basic CI.
+- Publish JSON Schema files and synthetic example quiz files.
+
+Expected outcome:
+
+- New question types can be added through a clear registry pattern.
+- Saved quiz data can evolve through explicit versioning and migrations.
+- Core grading and validation can be tested without relying on the browser UI.
+- Public JSON formats are documented enough for future tools, imports, and integrations.
+
+## Milestone 5: Public Release Preparation
+
+Status: Vision
+
+Milestone 5 will prepare Quiz Studio for a first stable public release. The goal is to make the app easier to use, easier to trust, and easier for others to run or contribute to.
+
+Planned scope:
+
+- Improve responsive design and accessibility.
+- Support offline use or Progressive Web App behavior.
+- Deploy with GitHub Pages.
+- Expand README, user guide, and developer documentation.
+- Add license, contributing guidelines, and release notes.
+- Provide sample quizzes and safety guidance.
+- Complete the first stable public version.
+
+Expected outcome:
+
+- Users can open and use the app comfortably across common screen sizes.
+- The project has enough documentation for non-developer users and future contributors.
+- Public examples are synthetic and safe to share.
+- The first stable version is tagged and documented.
+
+## Long-Term Optional Directions
+
+These directions are intentionally outside the core milestone path for now. They may become future milestones after the local-first product is stable.
+
+- AI-assisted question generation.
+- Desktop application packaging.
+- Cloud sync and user accounts.
+- Sharing, collaboration, and teacher workflows.
+
+## Roadmap Principle
+
+The current roadmap is:
+
+1. Complete the practice experience.
+2. Build the local quiz library.
+3. Extract a reusable quiz core and open data format.
+4. Prepare the first stable public release.
