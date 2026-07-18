@@ -45,8 +45,14 @@ Quiz System/
   app.js            试卷编辑、做题逻辑、判分和多语言支持
   README.md         英文项目文档
   README.zh-CN.md   中文项目文档
+  MILESTONES.md     英文里程碑路线图
+  MILESTONES.zh-CN.md 中文里程碑路线图
   DEVLOG.md         开发日志
 ```
+
+## 路线图
+
+项目开发按照里程碑组织。已完成和计划中的里程碑范围见 `MILESTONES.zh-CN.md`。
 
 ## 多语言支持
 

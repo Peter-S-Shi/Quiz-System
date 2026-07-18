@@ -45,8 +45,14 @@ Quiz System/
   app.js            Quiz editor, quiz session logic, grading, and localization
   README.md         English project documentation
   README.zh-CN.md   Chinese project documentation
+  MILESTONES.md     English milestone roadmap
+  MILESTONES.zh-CN.md Chinese milestone roadmap
   DEVLOG.md         Development log
 ```
+
+## Roadmap
+
+Project development is organized by milestones. See `MILESTONES.md` for completed and planned milestone scope.
 
 ## Localization
 
