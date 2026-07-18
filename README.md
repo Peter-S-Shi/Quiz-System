@@ -32,7 +32,7 @@ The current version is a static ES module web application. It runs in a browser 
 - Modular Quiz Core for question models, validation, grading, and migrations.
 - Public JSON Schema and synthetic sample quiz data.
 - PWA files for offline-capable static hosting.
-- CI and GitHub Pages workflow files.
+- CI workflow files and a manual-only GitHub Pages workflow for future public release.
 
 ## Getting Started
 
@@ -84,7 +84,7 @@ Quiz System/
   schemas/          Public JSON Schema files
   examples/         Synthetic public sample quiz files
   docs/             User, developer, and safety documentation
-  .github/          CI and GitHub Pages workflows
+  .github/          CI and manual future GitHub Pages workflows
   README.md         English project documentation
   README.zh-CN.md   Chinese project documentation
   MILESTONES.md     English milestone roadmap
@@ -104,7 +104,7 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-This is a local-first prototype with a modular Quiz Core, browser-based quiz library, practice history, PWA files, public schema, examples, tests, and CI/Pages workflow preparation. Planned future expansion may include user accounts, backend persistence, AI-assisted question generation, and subjective question grading.
+This is a local-first private prototype with a modular Quiz Core, browser-based quiz library, practice history, PWA files, public schema, examples, tests, and CI preparation. GitHub Pages deployment is manual-only and intended for a future public repository. Planned future expansion may include user accounts, backend persistence, AI-assisted question generation, and subjective question grading.
 
 ## Data and Privacy
 

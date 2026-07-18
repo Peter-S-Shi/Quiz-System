@@ -12,6 +12,7 @@
 - Landed the first Milestone 3 implementation: local multi-paper library, paper create/duplicate/rename/delete, category and tag metadata, search, updated/recent timestamps, full library backup import/export, and legacy single-paper migration.
 - Landed the first Milestone 4 implementation: modular Quiz Core, question type registry, grading module, schema migration module, storage boundary, unit tests, CI, JSON Schema, and synthetic example quiz data.
 - Landed the first Milestone 5 preparation: PWA manifest and service worker, GitHub Pages workflow, MIT license, contributing guide, user/developer/safety documentation, changelog, and release notes.
+- Changed GitHub Pages deployment to manual-only because the repository remains private and Pages deployment is deferred until a future public release.
 
 ## 2026-07-17
 

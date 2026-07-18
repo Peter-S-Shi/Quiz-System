@@ -32,7 +32,7 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 - 拆分出模块化 Quiz Core，用于题目模型、校验、判分和迁移。
 - 提供公开 JSON Schema 和合成示例 quiz 数据。
 - 提供 PWA 文件，为静态托管和离线能力做准备。
-- 提供 CI 和 GitHub Pages workflow 文件。
+- 提供 CI workflow 文件，并保留仅手动触发的 GitHub Pages workflow，供未来公开发布时使用。
 
 ## 开始使用
 
@@ -84,7 +84,7 @@ Quiz System/
   schemas/          公开 JSON Schema 文件
   examples/         合成公开示例 quiz 文件
   docs/             用户、开发和安全文档
-  .github/          CI 和 GitHub Pages workflows
+  .github/          CI 和未来手动 GitHub Pages workflows
   README.md         英文项目文档
   README.zh-CN.md   中文项目文档
   MILESTONES.md     英文里程碑路线图
@@ -104,7 +104,7 @@ Quiz System/
 
 ## 当前状态
 
-这是一个本地优先原型，已经具备模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 文件、公开 schema、示例、测试和 CI/Pages workflow 准备。未来可以继续扩展用户账号、后端持久化、AI 辅助出题和主观题批改。
+这是一个本地优先的 private 原型，已经具备模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 文件、公开 schema、示例、测试和 CI 准备。GitHub Pages 部署目前仅保留手动触发，等未来仓库公开后再启用。未来可以继续扩展用户账号、后端持久化、AI 辅助出题和主观题批改。
 
 ## 数据和隐私
 

@@ -28,4 +28,4 @@ node --test
 
 ## Release Preparation
 
-The repository includes CI and GitHub Pages workflows. GitHub Pages may still need to be enabled in repository settings before deployment succeeds.
+The repository includes CI and a manual-only GitHub Pages workflow. Pages deployment is deferred while the repository remains private and should be enabled only when the project is ready to become public.

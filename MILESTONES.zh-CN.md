@@ -116,7 +116,7 @@ Milestone 5 会为 Quiz Studio 的第一个稳定公开版本做准备。目标�
 
 - 完善响应式设计和可访问性。首版已落地。
 - 支持离线使用或 PWA。首版已落地。
-- 使用 GitHub Pages 部署。workflow 已准备，仓库设置中可能仍需启用 Pages。
+- 使用 GitHub Pages 部署。private 阶段暂缓；workflow 已改为仅手动触发，供未来公开发布时使用。
 - 完善 README、使用指南和开发文档。首版已落地。
 - 添加 License、CONTRIBUTING 和版本发布说明。首版已落地。
 - 提供示例 quiz 和安全说明。首版已落地。

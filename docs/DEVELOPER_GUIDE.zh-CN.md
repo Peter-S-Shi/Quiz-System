@@ -28,4 +28,4 @@ node --test
 
 ## 发布准备
 
-仓库已经包含 CI 和 GitHub Pages workflow。GitHub Pages 可能还需要在仓库设置中启用，部署才会真正成功。
+仓库已经包含 CI 和仅手动触发的 GitHub Pages workflow。private 阶段暂缓部署，等项目准备公开时再启用 Pages。

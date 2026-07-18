@@ -116,7 +116,7 @@ Planned scope:
 
 - Improve responsive design and accessibility. First implementation landed.
 - Support offline use or Progressive Web App behavior. First implementation landed.
-- Deploy with GitHub Pages. Workflow prepared; repository settings may still need to enable Pages.
+- Deploy with GitHub Pages. Deferred while the repository remains private; workflow is manual-only for future public release.
 - Expand README, user guide, and developer documentation. First implementation landed.
 - Add license, contributing guidelines, and release notes. First implementation landed.
 - Provide sample quizzes and safety guidance. First implementation landed.

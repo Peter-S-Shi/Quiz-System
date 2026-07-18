@@ -10,10 +10,10 @@ Highlights:
 - Objective question workflows for single choice, multiple choice, blank, true/false, and one-to-one matching.
 - Local quiz library, practice history, refresh recovery, wrong-question retry, random selection, and type filters.
 - Modular Quiz Core with tests and open JSON Schema.
-- PWA files and GitHub Pages deployment workflow.
+- PWA files and a manual-only GitHub Pages deployment workflow for future public release.
 
 Known limitations:
 
 - Data is stored in browser local storage, not cloud sync.
 - Subjective grading is not included.
-- GitHub Pages deployment may require repository Pages settings to be enabled.
+- GitHub Pages deployment is deferred while the repository remains private.
