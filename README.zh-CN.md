@@ -48,6 +48,8 @@ python -m http.server 8000
 
 然后打开 `http://localhost:8000`。
 
+在 Windows 上，也可以直接双击 `start-local.bat`。它会在 `8000` 端口启动本地服务器，并自动用浏览器打开应用。
+
 ## 验证
 
 ```bash
@@ -78,6 +80,7 @@ node --test
 Quiz System/
   index.html        应用页面结构
   styles.css        界面样式和响应式布局
+  start-local.bat   Windows 本地启动器
   src/app.js        试卷库、试卷编辑、练习流程和多语言支持
   src/core/         题型注册、校验、判分和迁移
   src/storage/      浏览器存储边界

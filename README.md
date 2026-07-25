@@ -48,6 +48,8 @@ python -m http.server 8000
 
 Then open `http://localhost:8000`.
 
+On Windows, you can also double-click `start-local.bat`. It starts a local server on port `8000` and opens the app in your browser.
+
 ## Validation
 
 ```bash
@@ -78,6 +80,7 @@ node --test
 Quiz System/
   index.html        Application shell
   styles.css        Interface styling and responsive layout
+  start-local.bat   Windows local launcher
   src/app.js        Quiz library, editor, quiz session flow, and localization
   src/core/         Question registry, validation, grading, and migrations
   src/storage/      Browser storage boundary

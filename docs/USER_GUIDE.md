@@ -2,6 +2,8 @@
 
 Quiz Studio runs locally in the browser. It stores quiz papers, practice progress, and answer history in browser storage.
 
+On Windows, double-click `start-local.bat` from the project folder to start the local server and open the app.
+
 ## Create And Manage Papers
 
 - Use the local quiz library to create, duplicate, rename, delete, search, categorize, and tag papers.
