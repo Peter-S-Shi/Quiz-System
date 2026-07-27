@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "manual-qa-boundary-sample",
+  "title": "Manual QA Boundary Sample - Symbols, Unicode, And Longer Text",
+  "description": "Synthetic boundary data for layout, scoring, filtering, backup, and import checks. Contains no real personal data.",
+  "category": "Manual QA Boundary",
+  "tags": ["manual-qa", "boundary", "unicode", "long-text", "v1"],
+  "createdAt": "2026-01-02T00:00:00.000Z",
+  "updatedAt": "2026-01-02T00:00:00.000Z",
+  "lastOpenedAt": "2026-01-02T00:00:00.000Z",
+  "questions": [
+    {
+      "id": "boundary-single-long",
+      "type": "single",
+      "prompt": "Long single-choice prompt: choose the answer that best describes a local-first quiz tool after importing, editing, practicing, refreshing, reviewing history, exporting, and backing up a synthetic paper.",
+      "options": [
+        { "id": "boundary-single-local", "text": "It keeps user-owned quiz data in browser storage unless the user exports it.", "correct": true },
+        { "id": "boundary-single-server", "text": "It requires a hosted database before any local quiz can be edited.", "correct": false },
+        { "id": "boundary-single-public", "text": "It publishes every practice result automatically.", "correct": false },
+        { "id": "boundary-single-empty", "text": "It cannot show answer feedback.", "correct": false }
+      ]
+    },
+    {
+      "id": "boundary-multiple-symbols",
+      "type": "multiple",
+      "prompt": "Select every safe synthetic test marker: alpha-1, beta_2, gamma.plus, 中文样例.",
+      "options": [
+        { "id": "boundary-multiple-alpha", "text": "alpha-1", "correct": true },
+        { "id": "boundary-multiple-beta", "text": "beta_2", "correct": true },
+        { "id": "boundary-multiple-gamma", "text": "gamma.plus", "correct": true },
+        { "id": "boundary-multiple-unsafe", "text": "unsafe real-data marker", "correct": false }
+      ]
+    },
+    {
+      "id": "boundary-blank-case",
+      "type": "blank",
+      "prompt": "Type the exact mixed-case answer: QuizCore",
+      "answers": ["QuizCore"],
+      "caseSensitive": true
+    },
+    {
+      "id": "boundary-truefalse-private",
+      "type": "truefalse",
+      "prompt": "Manual QA notes should use synthetic data and avoid sensitive details.",
+      "answer": true
+    },
+    {
+      "id": "boundary-matching-many",
+      "type": "matching",
+      "prompt": "Match each QA area to its expected review focus.",
+      "pairs": [
+        { "id": "boundary-pair-start", "left": "Startup", "right": "Local server opens app" },
+        { "id": "boundary-pair-edit", "left": "Editor", "right": "Question data can be changed" },
+        { "id": "boundary-pair-practice", "left": "Practice", "right": "Answers are scored" },
+        { "id": "boundary-pair-backup", "left": "Backup", "right": "Library round trip is safe" },
+        { "id": "boundary-pair-a11y", "left": "Accessibility", "right": "Keyboard and readable layout work" }
+      ]
+    }
+  ]
+}

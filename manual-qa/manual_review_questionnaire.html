@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz Studio Manual QA Questionnaire</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9dee8;
+      --accent: #2563eb;
+      --accent-soft: #e8f0ff;
+      --ok: #15803d;
+      --bad: #b42318;
+      --warn: #b54708;
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body[data-theme="dark"] {
+      --bg: #111827;
+      --panel: #182133;
+      --text: #f2f5f9;
+      --muted: #a6b0c3;
+      --line: #344054;
+      --accent: #7aa2ff;
+      --accent-soft: #172b55;
+      --ok: #86efac;
+      --bad: #fda29b;
+      --warn: #fdb022;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 0;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 { font-size: clamp(1.45rem, 2vw, 2rem); }
+    h2 { font-size: 1.2rem; }
+    h3 { font-size: 1rem; }
+
+    .muted { color: var(--muted); }
+
+    .toolbar, .meta-grid, .counts, .module-grid, .sample-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .toolbar {
+      grid-template-columns: repeat(6, auto);
+      align-items: center;
+      justify-content: end;
+    }
+
+    button, label.file-button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 8px 12px;
+      cursor: pointer;
+      font: inherit;
+      white-space: nowrap;
+    }
+
+    button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+    button.danger { color: var(--bad); }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid var(--accent-soft);
+      border-color: var(--accent);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 9px 10px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 82px;
+      resize: vertical;
+    }
+
+    main { padding: 24px 0 48px; }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .meta-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .sample-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .module-grid { grid-template-columns: 260px minmax(0, 1fr); align-items: start; }
+
+    .field label, .qa-field label {
+      display: block;
+      font-weight: 650;
+      margin-bottom: 6px;
+    }
+
+    .privacy {
+      border-left: 4px solid var(--warn);
+      padding-left: 12px;
+      color: var(--muted);
+    }
+
+    .counts {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      margin-top: 12px;
+    }
+
+    .count {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: var(--bg);
+    }
+
+    .count strong { display: block; font-size: 1.25rem; }
+
+    progress {
+      width: 100%;
+      height: 12px;
+      accent-color: var(--accent);
+    }
+
+    nav {
+      position: sticky;
+      top: 86px;
+      display: grid;
+      gap: 8px;
+    }
+
+    nav a {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      text-decoration: none;
+      background: var(--panel);
+    }
+
+    nav a.active { border-color: var(--accent); background: var(--accent-soft); }
+
+    .qa-item {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-top: 12px;
+      background: var(--bg);
+    }
+
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .steps {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .qa-grid .wide { grid-column: span 3; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: var(--accent-soft);
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+
+    .status-pass { color: var(--ok); }
+    .status-fail { color: var(--bad); }
+    .status-blocked { color: var(--warn); }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 900px) {
+      .topbar, .module-grid { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content: stretch; }
+      .meta-grid, .sample-grid, .counts, .qa-grid { grid-template-columns: 1fr; }
+      .qa-grid .wide { grid-column: span 1; }
+      nav { position: static; }
+      button, label.file-button { width: 100%; }
+    }
+
+    @media print {
+      header, nav, .toolbar { position: static; }
+      button, label.file-button, input[type="file"] { display: none; }
+      body { background: white; color: black; }
+      section, .qa-item { break-inside: avoid; border-color: #999; }
+      textarea { min-height: 70px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div>
+        <h1 data-i18n="title">Quiz Studio Manual QA Questionnaire</h1>
+        <div class="muted" data-i18n="subtitle">Retrospective full-product manual review baseline</div>
+      </div>
+      <div class="toolbar">
+        <button id="langButton" type="button">中文</button>
+        <button id="themeButton" type="button" data-i18n="darkMode">Dark</button>
+        <button id="exportJson" type="button" class="primary" data-i18n="exportJson">Export JSON</button>
+        <button id="exportMarkdown" type="button" data-i18n="exportMarkdown">Export Markdown</button>
+        <label class="file-button" for="importJson" data-i18n="importJson">Import JSON</label>
+        <input id="importJson" class="hidden" type="file" accept="application/json,.json">
+        <button id="resetButton" type="button" class="danger" data-i18n="reset">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <h2 data-i18n="metadata">Review Metadata</h2>
+      <p class="privacy" data-i18n="privacy">Use synthetic notes and generic tester codes only. Do not enter personal data, login details, local absolute paths, or sensitive quiz content.</p>
+      <div class="meta-grid" id="metadataFields"></div>
+      <div class="counts" id="counts"></div>
+      <progress id="progress" value="0" max="100"></progress>
+    </section>
+
+    <section>
+      <h2 data-i18n="samples">Synthetic Samples</h2>
+      <div class="sample-grid">
+        <div>
+          <h3>quiz-normal-sample.json</h3>
+          <p class="muted" data-i18n="normalSample">Valid five-type quiz for ordinary import, practice, export, backup, and review flows.</p>
+        </div>
+        <div>
+          <h3>quiz-boundary-sample.json</h3>
+          <p class="muted" data-i18n="boundarySample">Valid boundary quiz for long text, symbols, bilingual content, search, shuffle, and scoring checks.</p>
+        </div>
+        <div>
+          <h3>quiz-invalid-sample.json</h3>
+          <p class="muted" data-i18n="invalidSample">Intentionally invalid quiz file for import rejection and recovery behavior.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="module-grid">
+      <nav id="moduleNav" aria-label="Manual QA modules"></nav>
+      <div id="modules"></div>
+    </div>
+
+    <p class="footer-note" data-i18n="handoff">Recommended handoff: export JSON for structured evidence, export Markdown for readable review notes, then store both in the local results folder.</p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "quizStudioManualQaBaseline.v1";
+    const STATUS_KEYS = ["notTested", "pass", "fail", "blocked", "na"];
+    const metaFields = [
+      ["project", "Project", "项目", "Quiz Studio"],
+      ["purpose", "Purpose", "目的", "Feature Complete Review manual QA"],
+      ["appVersion", "App version or commit", "应用版本或提交", ""],
+      ["reviewDate", "Date", "日期", new Date().toISOString().slice(0, 10)],
+      ["testerCode", "Tester code", "测试代号", ""],
+      ["osBrowser", "OS and browser", "系统和浏览器", ""],
+      ["environment", "Environment", "环境", "Local static server"],
+      ["schemaVersion", "Quiz schema version", "试卷格式版本", "1"]
+    ];
+
+    const text = {
+      en: {
+        title: "Quiz Studio Manual QA Questionnaire",
+        subtitle: "Retrospective full-product manual review baseline",
+        darkMode: "Dark",
+        lightMode: "Light",
+        metadata: "Review Metadata",
+        privacy: "Use synthetic notes and generic tester codes only. Do not enter personal data, login details, local absolute paths, or sensitive quiz content.",
+        samples: "Synthetic Samples",
+        normalSample: "Valid five-type quiz for ordinary import, practice, export, backup, and review flows.",
+        boundarySample: "Valid boundary quiz for long text, symbols, bilingual content, search, shuffle, and scoring checks.",
+        invalidSample: "Intentionally invalid quiz file for import rejection and recovery behavior.",
+        exportJson: "Export JSON",
+        exportMarkdown: "Export Markdown",
+        importJson: "Import JSON",
+        reset: "Reset",
+        handoff: "Recommended handoff: export JSON for structured evidence, export Markdown for readable review notes, then store both in the local results folder.",
+        purpose: "Purpose",
+        prerequisites: "Prerequisites",
+        sample: "Sample",
+        expected: "Expected result",
+        status: "Status",
+        actual: "Actual result and evidence",
+        repro: "Repro steps",
+        screenshot: "Screenshot filename",
+        improvement: "Improvement suggestions",
+        severity: "Severity or impact",
+        stepLabel: "Steps",
+        saved: "Saved locally",
+        confirmReset: "Reset all local questionnaire answers?",
+        invalidImport: "Import failed. Choose a valid manual QA export JSON file.",
+        notTested: "Not tested",
+        pass: "Pass",
+        fail: "Fail",
+        blocked: "Blocked",
+        na: "N/A",
+        total: "Total",
+        complete: "Complete"
+      },
+      zh: {
+        title: "Quiz Studio 手工 QA 问卷",
+        subtitle: "回顾式全产品手工验收基线",
+        darkMode: "暗色",
+        lightMode: "亮色",
+        metadata: "评审元信息",
+        privacy: "只使用合成备注和通用测试代号。不要输入个人信息、凭据、本地绝对路径或敏感试卷内容。",
+        samples: "合成样例",
+        normalSample: "有效五题型试卷，用于普通导入、练习、导出、备份和结果回顾流程。",
+        boundarySample: "有效边界试卷，用于长文本、符号、双语内容、搜索、乱序和判分检查。",
+        invalidSample: "故意无效的试卷文件，用于验证导入拒绝和恢复行为。",
+        exportJson: "导出 JSON",
+        exportMarkdown: "导出 Markdown",
+        importJson: "导入 JSON",
+        reset: "重置",
+        handoff: "建议交付：导出 JSON 作为结构化证据，导出 Markdown 作为可读评审记录，然后都保存在本地 results 文件夹。",
+        purpose: "目的",
+        prerequisites: "前置条件",
+        sample: "样例",
+        expected: "预期结果",
+        status: "状态",
+        actual: "实际结果和证据",
+        repro: "复现步骤",
+        screenshot: "截图文件名",
+        improvement: "改进建议",
+        severity: "严重度或影响",
+        stepLabel: "步骤",
+        saved: "已本地保存",
+        confirmReset: "确认清空本地问卷填写内容？",
+        invalidImport: "导入失败。请选择有效的手工 QA 导出 JSON 文件。",
+        notTested: "未测试",
+        pass: "通过",
+        fail: "失败",
+        blocked: "阻塞",
+        na: "不适用",
+        total: "总数",
+        complete: "完成"
+      }
+    };
+
+    const modules = [
+      {
+        id: "00-startup",
+        title: { en: "00 Startup And Basics", zh: "00 启动与基础" },
+        purpose: { en: "Confirm the local launch path, browser basics, language, theme, and file access expectations.", zh: "确认本地启动方式、浏览器基础行为、语言、主题和文件访问预期。" },
+        prerequisites: { en: "Use the local launcher or a static server. Avoid direct file opening for the app itself.", zh: "使用本地启动器或静态服务器。不要用 file 方式直接打开应用本体。" },
+        items: [
+          qa("startup-launch", "Launch with start-local.bat", "使用 start-local.bat 启动", ["Run the local launcher.", "Open the browser tab it creates.", "Confirm the app loads without console-visible blocking errors."], ["运行本地启动器。", "打开它创建的浏览器标签。", "确认应用能加载，没有明显阻塞错误。"], "The app opens through a local server and all primary controls are clickable.", "应用通过本地服务器打开，主要控件可点击。"),
+          qa("startup-language-theme", "Switch language and theme", "切换语言和主题", ["Switch between English and Chinese.", "Switch between light and dark mode.", "Refresh and check persistence."], ["在英文和中文之间切换。", "在亮色和暗色之间切换。", "刷新并检查是否保留。"], "Language and theme update immediately and persist after refresh.", "语言和主题立即更新，刷新后仍保留。"),
+          qa("startup-file-warning", "Confirm direct file limitation is understandable", "确认直接文件打开限制可理解", ["Review README or user guide startup instructions.", "Confirm tester knows to use local server for ES modules."], ["查看 README 或用户指南中的启动说明。", "确认测试者知道 ES module 应通过本地服务器打开。"], "Startup instructions are clear enough for a non-developer tester.", "启动说明足够清楚，非开发测试者也能理解。")
+        ]
+      },
+      {
+        id: "01-core-journey",
+        title: { en: "01 Core User Journey", zh: "01 核心做题流程" },
+        purpose: { en: "Validate a complete create/import, practice, feedback, submit, review, and retry flow.", zh: "验证完整的新建或导入、练习、反馈、提交、回顾和重练流程。" },
+        prerequisites: { en: "Use quiz-normal-sample.json or the built-in starter paper.", zh: "使用 quiz-normal-sample.json 或内置起始试卷。" },
+        items: [
+          qa("core-import-practice", "Import a normal sample and start practice", "导入普通样例并开始练习", ["Import quiz-normal-sample.json.", "Open the imported paper.", "Start a full quiz."], ["导入 quiz-normal-sample.json。", "打开导入后的试卷。", "开始完整练习。"], "All five objective question types appear and are answerable.", "五种客观题型都出现且可作答。"),
+          qa("core-feedback", "Check immediate correct and wrong feedback", "检查答对和答错反馈", ["Answer at least one item correctly.", "Answer at least one item incorrectly.", "Observe feedback markers."], ["至少答对一题。", "至少答错一题。", "观察反馈标记。"], "Correct answers show positive feedback and wrong answers show clear negative feedback.", "答对显示正向反馈，答错显示清晰负向反馈。"),
+          qa("core-results", "Review final answer comparison", "检查最终答案对比", ["Complete a quiz.", "Open result review.", "Compare user answers and correct answers for each question type."], ["完成一次练习。", "打开结果总览。", "逐题型对比用户答案和正确答案。"], "Score, per-question status, user answer, and correct answer are understandable.", "分数、逐题状态、用户答案和正确答案都容易理解。")
+        ]
+      },
+      {
+        id: "02-library",
+        title: { en: "02 Paper Library", zh: "02 本地试卷库" },
+        purpose: { en: "Review multi-paper management, selection, metadata, search, categories, tags, and recent update behavior.", zh: "检查多试卷管理、选择、元数据、搜索、分类、标签和更新时间行为。" },
+        prerequisites: { en: "Use at least two papers, including one imported sample.", zh: "至少使用两套试卷，其中一套来自导入样例。" },
+        items: [
+          qa("library-create-copy", "Create, duplicate, rename, and select papers", "新建、复制、重命名和选择试卷", ["Create a new paper.", "Duplicate an existing paper.", "Rename the copy.", "Switch between papers."], ["新建一套试卷。", "复制已有试卷。", "重命名副本。", "在试卷之间切换。"], "The active paper is clear and metadata changes stay with the correct paper.", "当前试卷清晰，元数据变化保存在正确试卷上。"),
+          qa("library-search-tags", "Search, category, and tag behavior", "搜索、分类和标签行为", ["Set category and tags.", "Search by title, category, and tag.", "Clear search."], ["设置分类和标签。", "按标题、分类和标签搜索。", "清空搜索。"], "Filtering is predictable and no papers are lost.", "筛选行为可预期，不会丢失试卷。"),
+          qa("library-delete", "Delete confirmation and fallback", "删除确认和兜底行为", ["Create a disposable synthetic paper.", "Delete it after confirmation.", "Check remaining active paper."], ["创建一套可删除的合成试卷。", "确认后删除。", "检查剩余当前试卷。"], "Deletion is confirmed, scoped, and leaves a usable active paper.", "删除有确认、范围正确，并保留可用的当前试卷。")
+        ]
+      },
+      {
+        id: "03-editing",
+        title: { en: "03 Question Editing", zh: "03 题目编辑" },
+        purpose: { en: "Validate question creation, type conversion, deletion, completeness checks, and bilingual UI labels.", zh: "验证题目创建、题型转换、删除、完整性检查和双语界面标签。" },
+        prerequisites: { en: "Use a disposable synthetic paper.", zh: "使用一套可删除的合成试卷。" },
+        items: [
+          qa("editing-types", "Create all supported question types", "创建所有已支持题型", ["Add single, multiple, blank, true/false, and matching questions.", "Check type labels in editor and quiz start summary."], ["添加单选、多选、填空、判断和匹配题。", "检查编辑器和做题开始区的题型标签。"], "Each type can be created and is labeled as single/multiple/blank/true-false/matching.", "每种题型都可创建，并标明单选、多选、填空、判断或匹配。"),
+          qa("editing-options", "Edit choices, answers, and matching pairs", "编辑选项、答案和匹配对", ["Add and remove choice options.", "Mark correct answers.", "Edit blank answers and case sensitivity.", "Add and remove matching pairs."], ["添加和删除选项。", "标记正确答案。", "编辑填空答案和大小写设置。", "添加和删除匹配对。"], "Editor changes persist and invalid incomplete questions do not break practice start.", "编辑变化会保存，不完整题目不会破坏练习启动。"),
+          qa("editing-delete-question", "Delete a question safely", "安全删除题目", ["Delete a disposable question.", "Refresh.", "Confirm it stays deleted."], ["删除一道可丢弃题目。", "刷新。", "确认它仍被删除。"], "Question deletion is scoped to the active paper and does not affect other papers.", "题目删除只影响当前试卷，不影响其他试卷。")
+        ]
+      },
+      {
+        id: "04-history-filters",
+        title: { en: "04 Search, Filters, And History", zh: "04 搜索、筛选和历史" },
+        purpose: { en: "Review practice filters, random selection, saved progress, wrong-question retry, and history records.", zh: "检查练习筛选、随机抽题、进度保存、错题重练和历史记录。" },
+        prerequisites: { en: "Use a paper with all five question types and complete at least one mixed-result attempt.", zh: "使用包含五种题型的试卷，并完成至少一次有对有错的练习。" },
+        items: [
+          qa("filters-types-random", "Use type filters and random count", "使用题型筛选和随机数量", ["Select only one or two question types.", "Set a small random count.", "Start practice more than once."], ["只选择一到两种题型。", "设置较小的随机数量。", "多次开始练习。"], "Only eligible questions appear, count limits are respected, and repeated starts can vary.", "只出现符合条件的题目，数量限制生效，多次开始可有变化。"),
+          qa("history-records", "Check answer history", "检查答题历史", ["Complete two attempts.", "Compare history score and timestamp order.", "Clear history after confirming."], ["完成两次练习。", "比较历史分数和时间排序。", "确认后清空历史。"], "History records are ordered, readable, and clearable without changing papers.", "历史记录排序清楚、可读，清空不会改变试卷。"),
+          qa("wrong-retry", "Retry wrong questions", "错题重练", ["Complete an attempt with missed questions.", "Start wrong-question retry.", "Confirm only missed questions appear."], ["完成一次有错题的练习。", "开始错题重练。", "确认只出现错题。"], "Wrong-question retry focuses on recent missed questions and disables when none exist.", "错题重练聚焦最近错题，没有错题时按钮不可用。"),
+          qa("refresh-recovery", "Recover active session after refresh", "刷新后恢复未完成练习", ["Start a quiz.", "Answer part of it.", "Refresh the browser.", "Continue the attempt."], ["开始练习。", "作答一部分。", "刷新浏览器。", "继续本次练习。"], "Progress and entered answers recover without duplicate history entries.", "进度和已填答案恢复，不产生重复历史记录。")
+        ]
+      },
+      {
+        id: "05-import-export",
+        title: { en: "05 Import, Export, Backup, And Recovery", zh: "05 导入、导出、备份和恢复" },
+        purpose: { en: "Validate single-paper JSON, full-library backup, invalid import behavior, and recovery from user mistakes.", zh: "验证单试卷 JSON、完整试卷库备份、无效导入行为和误操作恢复。" },
+        prerequisites: { en: "Use all three sample files from samples/.", zh: "使用 samples/ 中的三类样例文件。" },
+        items: [
+          qa("io-paper-roundtrip", "Single paper export and re-import", "单试卷导出再导入", ["Export a sample paper.", "Import the exported file.", "Compare title, metadata, and question count."], ["导出一套样例试卷。", "导入导出的文件。", "对比标题、元数据和题目数量。"], "Round-tripped paper remains usable and appears as a separate library item.", "往返后的试卷仍可使用，并作为独立试卷出现在库中。"),
+          qa("io-backup-roundtrip", "Full library backup round trip", "完整试卷库备份往返", ["Create multiple synthetic papers.", "Export backup.", "Import backup in the same browser after confirming expectations."], ["创建多套合成试卷。", "导出备份。", "在确认预期后于同一浏览器导入备份。"], "Library and history restore safely with clear user feedback.", "试卷库和历史能安全恢复，并有清晰反馈。"),
+          qa("io-invalid", "Invalid import rejection", "无效导入拒绝", ["Import quiz-invalid-sample.json as paper.", "Import it as backup if the UI allows.", "Check existing library and history."], ["以试卷方式导入 quiz-invalid-sample.json。", "如果界面允许，再以备份方式导入。", "检查现有试卷库和历史。"], "Invalid data is rejected or safely normalized without corrupting existing data.", "无效数据被拒绝，或被安全规范化，不破坏现有数据。")
+        ]
+      },
+      {
+        id: "06-recovery",
+        title: { en: "06 Interruption, Errors, And Recovery", zh: "06 中断、错误和恢复" },
+        purpose: { en: "Review how the app behaves during refreshes, canceled file dialogs, incomplete input, and destructive confirmations.", zh: "检查刷新、取消文件选择、不完整输入和破坏性确认时的行为。" },
+        prerequisites: { en: "Use synthetic data only and keep a backup export available.", zh: "只使用合成数据，并保留一份备份导出。" },
+        items: [
+          qa("recovery-cancel-file", "Cancel import file picker", "取消导入文件选择", ["Open import.", "Cancel without selecting a file.", "Continue using the app."], ["打开导入。", "不选择文件直接取消。", "继续使用应用。"], "Canceling import does not change data or leave a broken UI state.", "取消导入不会改变数据，也不会让界面进入异常状态。"),
+          qa("recovery-incomplete-answer", "Unanswered question check", "未答题检查", ["Start a quiz.", "Try submitting each question type without answering.", "Then answer normally."], ["开始练习。", "每种题型都尝试不作答直接提交。", "之后正常作答。"], "The app blocks incomplete submission with understandable feedback.", "应用阻止未完成提交，并给出可理解反馈。"),
+          qa("recovery-destructive", "Destructive action confirmations", "破坏性操作确认", ["Attempt delete paper and clear history.", "Cancel first.", "Confirm second on disposable data."], ["尝试删除试卷和清空历史。", "第一次取消。", "第二次在可丢弃数据上确认。"], "Cancel leaves data untouched; confirm changes only the intended target.", "取消不会改变数据；确认只影响预期目标。")
+        ]
+      },
+      {
+        id: "07-cross-module",
+        title: { en: "07 Cross-Module Consistency", zh: "07 跨模块一致性" },
+        purpose: { en: "Validate that library, editor, quiz, history, and import/export states stay consistent.", zh: "验证试卷库、编辑器、做题、历史、导入导出状态保持一致。" },
+        prerequisites: { en: "Use at least two papers with different categories and question counts.", zh: "至少使用两套分类和题数不同的试卷。" },
+        items: [
+          qa("cross-active-paper", "Active paper consistency", "当前试卷一致性", ["Switch active papers.", "Edit one paper.", "Start practice.", "Return to library."], ["切换当前试卷。", "编辑其中一套。", "开始练习。", "返回试卷库。"], "The active paper remains clear and no edits leak into another paper.", "当前试卷始终清楚，编辑不会串到其他试卷。"),
+          qa("cross-language-content", "Interface language does not rewrite content", "界面语言不改写试卷内容", ["Switch language.", "Review authored question text.", "Export paper."], ["切换界面语言。", "检查用户编写的题目文本。", "导出试卷。"], "Only UI labels change; authored quiz content remains unchanged.", "只有界面标签变化，用户编写的试卷内容不变。"),
+          qa("cross-shuffle-review", "Shuffle does not break answer review", "乱序不破坏答案回顾", ["Start the same choice quiz twice.", "Observe option order.", "Submit and review answers."], ["同一选择题练习开始两次。", "观察选项顺序。", "提交并回顾答案。"], "Choice order may vary, but grading and answer comparison remain correct.", "选项顺序可以变化，但判分和答案对比保持正确。")
+        ]
+      },
+      {
+        id: "08-privacy",
+        title: { en: "08 Privacy, Sensitive Data, And Local Data", zh: "08 隐私、敏感数据和本地数据" },
+        purpose: { en: "Confirm local-first behavior, safe examples, and privacy expectations for exports and QA artifacts.", zh: "确认本地优先行为、安全样例，以及导出文件和 QA 产物的隐私预期。" },
+        prerequisites: { en: "Use synthetic quiz content and generic tester codes.", zh: "使用合成试卷内容和通用测试代号。" },
+        items: [
+          qa("privacy-local-first", "No expected server dependency", "无预期服务器数据依赖", ["Use the app through the local server.", "Review visible import/export behavior.", "Confirm no account login is required."], ["通过本地服务器使用应用。", "查看可见的导入导出行为。", "确认不需要账号登录。"], "The product remains understandable as a local-first browser app.", "产品作为本地优先浏览器应用是清楚的。"),
+          qa("privacy-exports", "Exported data remains user-controlled", "导出数据由用户控制", ["Export paper and backup files.", "Confirm filenames and contents are expected.", "Avoid entering real data."], ["导出试卷和备份文件。", "确认文件名和内容符合预期。", "避免输入真实数据。"], "Export behavior is explicit and does not imply automatic publishing.", "导出行为明确，不暗示自动发布。"),
+          qa("privacy-qa-results", "QA result hygiene", "QA 结果卫生", ["Export this questionnaire.", "Review fields for sensitive data before sharing or committing.", "Use generic screenshot names."], ["导出本问卷。", "分享或提交前检查字段是否含敏感数据。", "使用通用截图名。"], "QA evidence can be reviewed without exposing personal data.", "QA 证据可被审阅，同时不暴露个人信息。")
+        ]
+      },
+      {
+        id: "09-accessibility",
+        title: { en: "09 Accessibility, Responsive Layout, And Clarity", zh: "09 可访问性、响应式和清晰度" },
+        purpose: { en: "Review keyboard access, readable text, mobile layout, contrast, and bilingual comprehension.", zh: "检查键盘访问、文本可读性、移动布局、对比度和双语理解。" },
+        prerequisites: { en: "Test at desktop width and a narrow mobile-like width.", zh: "在桌面宽度和接近手机的窄宽度下测试。" },
+        items: [
+          qa("a11y-keyboard", "Keyboard navigation", "键盘导航", ["Use Tab and Shift+Tab through core controls.", "Activate buttons and form fields with keyboard."], ["用 Tab 和 Shift+Tab 经过核心控件。", "用键盘激活按钮和表单。"], "Focus is visible and the main workflow is keyboard reachable.", "焦点可见，主要流程可用键盘到达。"),
+          qa("a11y-responsive", "Responsive layout", "响应式布局", ["Resize to narrow width.", "Review library, editor, practice, and result screens.", "Check no text overlaps or becomes unusable."], ["调整到窄屏宽度。", "检查试卷库、编辑器、练习和结果页。", "确认文字不重叠且仍可使用。"], "Controls remain readable, reachable, and visually coherent.", "控件保持可读、可达且视觉一致。"),
+          qa("a11y-language", "Bilingual clarity", "双语清晰度", ["Review all major screens in English.", "Review them again in Chinese.", "Note untranslated or confusing labels."], ["用英文检查所有主要界面。", "再用中文检查一遍。", "记录未翻译或难懂标签。"], "Both languages cover the same functional surface clearly.", "两种语言都清楚覆盖同一功能表面。")
+        ]
+      },
+      {
+        id: "10-performance",
+        title: { en: "10 Performance, Capacity, And Stability", zh: "10 性能、容量和稳定性" },
+        purpose: { en: "Find obvious slowdowns, layout stalls, or storage stress before release hardening.", zh: "在发布硬化前发现明显卡顿、布局停滞或存储压力。" },
+        prerequisites: { en: "Use boundary sample and duplicate synthetic papers as needed.", zh: "使用边界样例，并按需复制合成试卷。" },
+        items: [
+          qa("perf-large-library", "Larger local library scan", "较大本地试卷库扫描", ["Duplicate synthetic papers until the library has at least ten items.", "Search and switch papers.", "Observe responsiveness."], ["复制合成试卷，直到试卷库至少有十项。", "搜索并切换试卷。", "观察响应速度。"], "Library operations remain responsive and do not lose active selection.", "试卷库操作保持响应，不丢失当前选择。"),
+          qa("perf-boundary-text", "Long text and symbols", "长文本和符号", ["Import boundary sample.", "Open editor and quiz views.", "Submit and review results."], ["导入边界样例。", "打开编辑器和练习视图。", "提交并回顾结果。"], "Long prompts and symbols remain readable and do not break scoring.", "长题干和符号保持可读，不破坏判分。"),
+          qa("perf-refresh-repeat", "Repeated refresh stability", "重复刷新稳定性", ["Start and abandon several sessions.", "Refresh multiple times.", "Complete a final session."], ["开始并中断几次练习。", "多次刷新。", "完成最后一次练习。"], "The app avoids duplicate active sessions, frozen controls, or corrupted history.", "应用不会出现重复活动会话、控件冻结或历史损坏。")
+        ]
+      },
+      {
+        id: "11-subjective",
+        title: { en: "11 Subjective Feedback And Release Blockers", zh: "11 主观反馈和发布阻塞" },
+        purpose: { en: "Capture release readiness judgment, confusing workflows, missing evidence, and must-fix blockers.", zh: "记录发布就绪判断、困惑流程、缺失证据和必须修复的阻塞项。" },
+        prerequisites: { en: "Complete the earlier modules first.", zh: "先完成前面的模块。" },
+        items: [
+          qa("subjective-confidence", "Overall confidence", "整体信心", ["Review all module statuses.", "State whether the product is ready for Feature Freeze."], ["查看所有模块状态。", "判断产品是否可以进入功能冻结。"], "Tester gives a clear go, no-go, or conditional-go recommendation.", "测试者给出清楚的通过、不通过或有条件通过建议。"),
+          qa("subjective-confusion", "Most confusing workflows", "最令人困惑的流程", ["List any confusing labels, steps, or states.", "Rank by user impact."], ["列出令人困惑的标签、步骤或状态。", "按用户影响排序。"], "Confusion points are specific enough to become hardening tasks.", "困惑点足够具体，可转化为硬化任务。"),
+          qa("subjective-blockers", "Release blockers", "发布阻塞项", ["List all failures marked severe or blocker.", "Add repro steps and expected fixes."], ["列出所有严重或阻塞失败。", "添加复现步骤和预期修复方向。"], "Release blockers are actionable and separated from nice-to-have improvements.", "发布阻塞项可执行，并与可选改进分开。")
+        ]
+      }
+    ];
+
+    function qa(id, enTitle, zhTitle, enSteps, zhSteps, enExpected, zhExpected) {
+      return {
+        id,
+        title: { en: enTitle, zh: zhTitle },
+        steps: { en: enSteps, zh: zhSteps },
+        expected: { en: enExpected, zh: zhExpected }
+      };
+    }
+
+    let state = loadState();
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.schema === "quiz-studio-manual-qa-v1") return parsed;
+        } catch {}
+      }
+      const answers = {};
+      modules.forEach((module) => module.items.forEach((item) => {
+        answers[item.id] = { status: "notTested", actual: "", repro: "", screenshot: "", improvement: "", severity: "" };
+      }));
+      const metadata = Object.fromEntries(metaFields.map(([key, , , value]) => [key, value]));
+      return { schema: "quiz-studio-manual-qa-v1", language: "en", theme: "light", metadata, answers, updatedAt: new Date().toISOString() };
+    }
+
+    function saveState() {
+      state.updatedAt = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      document.title = `${tr("title")} - ${tr("saved")}`;
+    }
+
+    function tr(key) {
+      return text[state.language][key] || text.en[key] || key;
+    }
+
+    function localized(value) {
+      return value[state.language] || value.en;
+    }
+
+    function render() {
+      document.documentElement.lang = state.language === "zh" ? "zh-CN" : "en";
+      document.body.dataset.theme = state.theme;
+      document.querySelectorAll("[data-i18n]").forEach((node) => {
+        node.textContent = tr(node.dataset.i18n);
+      });
+      document.getElementById("langButton").textContent = state.language === "en" ? "中文" : "English";
+      document.getElementById("themeButton").textContent = state.theme === "light" ? tr("darkMode") : tr("lightMode");
+      renderMetadata();
+      renderNavigation();
+      renderModules();
+      renderCounts();
+    }
+
+    function renderMetadata() {
+      const root = document.getElementById("metadataFields");
+      root.innerHTML = metaFields.map(([key, en, zh]) => `
+        <div class="field">
+          <label for="meta-${key}">${state.language === "zh" ? zh : en}</label>
+          <input id="meta-${key}" data-meta="${key}" value="${escapeHtml(state.metadata[key] || "")}">
+        </div>
+      `).join("");
+      root.querySelectorAll("[data-meta]").forEach((input) => {
+        input.addEventListener("input", () => {
+          state.metadata[input.dataset.meta] = input.value;
+          saveState();
+        });
+      });
+    }
+
+    function renderNavigation() {
+      const nav = document.getElementById("moduleNav");
+      nav.innerHTML = modules.map((module) => {
+        const done = module.items.filter((item) => state.answers[item.id]?.status !== "notTested").length;
+        return `<a href="#${module.id}"><span>${escapeHtml(localized(module.title))}</span><span class="pill">${done}/${module.items.length}</span></a>`;
+      }).join("");
+    }
+
+    function renderModules() {
+      const root = document.getElementById("modules");
+      root.innerHTML = modules.map((module) => `
+        <section id="${module.id}">
+          <h2>${escapeHtml(localized(module.title))}</h2>
+          <p><strong>${tr("purpose")}:</strong> ${escapeHtml(localized(module.purpose))}</p>
+          <p class="muted"><strong>${tr("prerequisites")}:</strong> ${escapeHtml(localized(module.prerequisites))}</p>
+          ${module.items.map(renderItem).join("")}
+        </section>
+      `).join("");
+
+      root.querySelectorAll("[data-answer]").forEach((field) => {
+        field.addEventListener("input", updateAnswerField);
+        field.addEventListener("change", updateAnswerField);
+      });
+    }
+
+    function renderItem(item) {
+      const answer = state.answers[item.id] || {};
+      const statusClass = answer.status === "pass" ? "status-pass" : answer.status === "fail" ? "status-fail" : answer.status === "blocked" ? "status-blocked" : "";
+      return `
+        <article class="qa-item" id="${item.id}">
+          <div class="item-head">
+            <h3>${escapeHtml(localized(item.title))}</h3>
+            <span class="pill ${statusClass}">${tr(answer.status || "notTested")}</span>
+          </div>
+          <div>
+            <strong>${tr("stepLabel")}</strong>
+            <ol class="steps">${localized(item.steps).map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol>
+          </div>
+          <p><strong>${tr("expected")}:</strong> ${escapeHtml(localized(item.expected))}</p>
+          <div class="qa-grid">
+            <div class="qa-field">
+              <label for="${item.id}-status">${tr("status")}</label>
+              <select id="${item.id}-status" data-answer="${item.id}" data-field="status">
+                ${STATUS_KEYS.map((key) => `<option value="${key}" ${answer.status === key ? "selected" : ""}>${tr(key)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="qa-field">
+              <label for="${item.id}-severity">${tr("severity")}</label>
+              <input id="${item.id}-severity" data-answer="${item.id}" data-field="severity" value="${escapeHtml(answer.severity || "")}" placeholder="P0 / P1 / P2 / low">
+            </div>
+            <div class="qa-field">
+              <label for="${item.id}-screenshot">${tr("screenshot")}</label>
+              <input id="${item.id}-screenshot" data-answer="${item.id}" data-field="screenshot" value="${escapeHtml(answer.screenshot || "")}" placeholder="screenshot-01.png">
+            </div>
+            <div class="qa-field wide">
+              <label for="${item.id}-actual">${tr("actual")}</label>
+              <textarea id="${item.id}-actual" data-answer="${item.id}" data-field="actual">${escapeHtml(answer.actual || "")}</textarea>
+            </div>
+            <div class="qa-field wide">
+              <label for="${item.id}-repro">${tr("repro")}</label>
+              <textarea id="${item.id}-repro" data-answer="${item.id}" data-field="repro">${escapeHtml(answer.repro || "")}</textarea>
+            </div>
+            <div class="qa-field wide">
+              <label for="${item.id}-improvement">${tr("improvement")}</label>
+              <textarea id="${item.id}-improvement" data-answer="${item.id}" data-field="improvement">${escapeHtml(answer.improvement || "")}</textarea>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function updateAnswerField(event) {
+      const itemId = event.target.dataset.answer;
+      const field = event.target.dataset.field;
+      state.answers[itemId] ||= {};
+      state.answers[itemId][field] = event.target.value;
+      saveState();
+      renderCounts();
+      renderNavigation();
+    }
+
+    function renderCounts() {
+      const all = modules.flatMap((module) => module.items);
+      const counts = Object.fromEntries(STATUS_KEYS.map((key) => [key, 0]));
+      all.forEach((item) => {
+        counts[state.answers[item.id]?.status || "notTested"] += 1;
+      });
+      const complete = all.length - counts.notTested;
+      const percent = all.length ? Math.round((complete / all.length) * 100) : 0;
+      document.getElementById("progress").value = percent;
+      document.getElementById("counts").innerHTML = [
+        ["total", all.length],
+        ["complete", `${complete} (${percent}%)`],
+        ...STATUS_KEYS.map((key) => [key, counts[key]])
+      ].map(([key, value]) => `<div class="count"><span>${tr(key)}</span><strong>${value}</strong></div>`).join("");
+    }
+
+    function exportJson() {
+      download(`quiz-studio-manual-qa-${dateStamp()}.json`, JSON.stringify(state, null, 2), "application/json");
+    }
+
+    function exportMarkdown() {
+      const lines = [
+        `# ${tr("title")}`,
+        "",
+        `- ${tr("complete")}: ${document.getElementById("progress").value}%`,
+        `- Updated: ${state.updatedAt}`,
+        "",
+        "## Metadata",
+        ...metaFields.map(([key, en, zh]) => `- ${state.language === "zh" ? zh : en}: ${state.metadata[key] || ""}`),
+        ""
+      ];
+      modules.forEach((module) => {
+        lines.push(`## ${localized(module.title)}`, "", `${localized(module.purpose)}`, "");
+        module.items.forEach((item) => {
+          const answer = state.answers[item.id] || {};
+          lines.push(`### ${localized(item.title)}`);
+          lines.push(`- ${tr("status")}: ${tr(answer.status || "notTested")}`);
+          lines.push(`- ${tr("severity")}: ${answer.severity || ""}`);
+          lines.push(`- ${tr("screenshot")}: ${answer.screenshot || ""}`);
+          lines.push(`- ${tr("expected")}: ${localized(item.expected)}`);
+          lines.push("");
+          lines.push(`${tr("actual")}:`);
+          lines.push(answer.actual || "");
+          lines.push("");
+          lines.push(`${tr("repro")}:`);
+          lines.push(answer.repro || "");
+          lines.push("");
+          lines.push(`${tr("improvement")}:`);
+          lines.push(answer.improvement || "");
+          lines.push("");
+        });
+      });
+      download(`quiz-studio-manual-qa-${dateStamp()}.md`, lines.join("\n"), "text/markdown");
+    }
+
+    function importJson(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result));
+          if (parsed.schema !== "quiz-studio-manual-qa-v1" || !parsed.answers || !parsed.metadata) throw new Error("invalid");
+          state = { ...loadState(), ...parsed };
+          saveState();
+          render();
+        } catch {
+          alert(tr("invalidImport"));
+        } finally {
+          event.target.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function dateStamp() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    document.getElementById("langButton").addEventListener("click", () => {
+      state.language = state.language === "en" ? "zh" : "en";
+      saveState();
+      render();
+    });
+
+    document.getElementById("themeButton").addEventListener("click", () => {
+      state.theme = state.theme === "light" ? "dark" : "light";
+      saveState();
+      render();
+    });
+
+    document.getElementById("exportJson").addEventListener("click", exportJson);
+    document.getElementById("exportMarkdown").addEventListener("click", exportMarkdown);
+    document.getElementById("importJson").addEventListener("change", importJson);
+    document.getElementById("resetButton").addEventListener("click", () => {
+      if (!confirm(tr("confirmReset"))) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = loadState();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "manual-qa-normal-sample",
+  "title": "Manual QA Normal Sample",
+  "description": "Synthetic quiz paper for ordinary manual QA flows.",
+  "category": "Manual QA",
+  "tags": ["manual-qa", "normal", "synthetic"],
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "lastOpenedAt": "2026-01-01T00:00:00.000Z",
+  "questions": [
+    {
+      "id": "normal-single-capital",
+      "type": "single",
+      "prompt": "Which option names a markup language?",
+      "options": [
+        { "id": "normal-single-html", "text": "HTML", "correct": true },
+        { "id": "normal-single-css", "text": "CSS", "correct": false },
+        { "id": "normal-single-json", "text": "JSON", "correct": false },
+        { "id": "normal-single-sql", "text": "SQL", "correct": false }
+      ]
+    },
+    {
+      "id": "normal-multiple-static",
+      "type": "multiple",
+      "prompt": "Which files are commonly part of a static browser app?",
+      "options": [
+        { "id": "normal-multiple-html", "text": "index.html", "correct": true },
+        { "id": "normal-multiple-css", "text": "styles.css", "correct": true },
+        { "id": "normal-multiple-js", "text": "app.js", "correct": true },
+        { "id": "normal-multiple-db", "text": "production.db", "correct": false }
+      ]
+    },
+    {
+      "id": "normal-blank-local",
+      "type": "blank",
+      "prompt": "Complete the phrase: local-____ application.",
+      "answers": ["first"],
+      "caseSensitive": false
+    },
+    {
+      "id": "normal-truefalse-storage",
+      "type": "truefalse",
+      "prompt": "The current prototype stores quiz data in browser storage.",
+      "answer": true
+    },
+    {
+      "id": "normal-matching-files",
+      "type": "matching",
+      "prompt": "Match each file type with a common role.",
+      "pairs": [
+        { "id": "normal-pair-html", "left": "HTML", "right": "Structure" },
+        { "id": "normal-pair-css", "left": "CSS", "right": "Presentation" },
+        { "id": "normal-pair-js", "left": "JavaScript", "right": "Interaction" }
+      ]
+    }
+  ]
+}

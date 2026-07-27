@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "",
+  "title": "Manual QA Invalid Sample",
+  "description": "Synthetic invalid file for import rejection testing.",
+  "questions": [
+    {
+      "id": "",
+      "type": "unsupported-type",
+      "prompt": "",
+      "options": []
+    },
+    {
+      "type": "single",
+      "prompt": "This question is missing a stable id and has too few options.",
+      "options": [
+        { "id": "only-option", "text": "Only option", "correct": true }
+      ]
+    }
+  ]
+}
