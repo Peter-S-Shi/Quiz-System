@@ -8,6 +8,8 @@ Desktop.ini
 .idea/
 *.swp
 *.swo
+prompt-draft/
+prompt-drafts/
 
 # Logs and temporary files
 *.log
