@@ -90,14 +90,16 @@ Quiz System/
   .github/          CI 和未来手动 GitHub Pages workflows
   README.md         英文项目文档
   README.zh-CN.md   中文项目文档
-  MILESTONES.md     英文里程碑路线图
-  MILESTONES.zh-CN.md 中文里程碑路线图
+  ROADMAP.md        英文生命周期路线图
+  ROADMAP.zh-CN.md  中文生命周期路线图
+  PROJECT_STATUS.md 当前项目状态
+  PROJECT_STATUS.zh-CN.md 中文当前项目状态
   DEVLOG.md         开发日志
 ```
 
 ## 路线图
 
-项目开发按照里程碑组织。已完成和计划中的里程碑范围见 `MILESTONES.zh-CN.md`。
+项目开发按照生命周期阶段组织。完整路线见 `ROADMAP.zh-CN.md`，当前发布状态见 `PROJECT_STATUS.zh-CN.md`。
 
 ## 多语言支持
 
@@ -107,7 +109,11 @@ Quiz System/
 
 ## 当前状态
 
-这是一个本地优先的 private 原型，已经具备模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 文件、公开 schema、示例、测试和 CI 准备。GitHub Pages 部署目前仅保留手动触发，等未来仓库公开后再启用。未来可以继续扩展用户账号、后端持久化、AI 辅助出题和主观题批改。
+当前阶段：Feature Complete Review。
+
+Quiz Studio 是一个本地优先的 private pre-release 原型。v1 候选功能范围的首版实现已经落地，包括模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 基础、公开 schema、示例、测试和 CI 准备。但当前版本尚未 Release Ready。
+
+完整人工 QA、Product Hardening、Feature Freeze、Release Candidate 验证和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
 
 ## 数据和隐私
 

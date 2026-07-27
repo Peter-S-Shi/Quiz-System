@@ -1,5 +1,11 @@
 # Release Notes
 
+## Pre-release Preparation
+
+Quiz Studio is currently in Feature Complete Review. The v1 candidate feature set has first implementations landed, but full manual QA, Product Hardening, Feature Freeze, Release Candidate validation, and final clean-environment verification are not complete.
+
+This is not a `v1.0.0` release.
+
 ## v0.1.0 Stable Preparation
 
 This release prepares Quiz Studio as a local-first static quiz authoring and practice app.

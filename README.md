@@ -90,14 +90,16 @@ Quiz System/
   .github/          CI and manual future GitHub Pages workflows
   README.md         English project documentation
   README.zh-CN.md   Chinese project documentation
-  MILESTONES.md     English milestone roadmap
-  MILESTONES.zh-CN.md Chinese milestone roadmap
+  ROADMAP.md        English lifecycle roadmap
+  ROADMAP.zh-CN.md  Chinese lifecycle roadmap
+  PROJECT_STATUS.md Current project status
+  PROJECT_STATUS.zh-CN.md Chinese current project status
   DEVLOG.md         Development log
 ```
 
 ## Roadmap
 
-Project development is organized by milestones. See `MILESTONES.md` for completed and planned milestone scope.
+Project development is organized by lifecycle stages. See `ROADMAP.md` for the full roadmap and `PROJECT_STATUS.md` for the current release status.
 
 ## Localization
 
@@ -107,7 +109,11 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-This is a local-first private prototype with a modular Quiz Core, browser-based quiz library, practice history, PWA files, public schema, examples, tests, and CI preparation. GitHub Pages deployment is manual-only and intended for a future public repository. Planned future expansion may include user accounts, backend persistence, AI-assisted question generation, and subjective question grading.
+Current phase: Feature Complete Review.
+
+Quiz Studio is a local-first private pre-release prototype. The v1 candidate feature set has first implementations landed, including the modular Quiz Core, browser-based quiz library, practice history, PWA foundation, public schema, examples, tests, and CI preparation. It is not yet Release Ready.
+
+Full manual QA, Product Hardening, Feature Freeze, Release Candidate validation, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
 
 ## Data and Privacy
 

@@ -2,6 +2,9 @@
 
 ## 2026-07-18
 
+- Renamed milestone roadmap files to `ROADMAP.md` and `ROADMAP.zh-CN.md`.
+- Established Feature Complete Review, Feature Freeze Gate, Product Hardening, Release Candidate, and Current Version Complete lifecycle stages.
+- Added `PROJECT_STATUS.md` and `PROJECT_STATUS.zh-CN.md` as current-state authority documents.
 - Added a Windows `start-local.bat` launcher so the ES module app can be opened through a local static server without manually typing the server command each time.
 - Defined the current Quiz Studio application as Milestone 1: Foundation Prototype.
 - Confirmed the Milestone 1 scope covers editable quiz papers, objective question types, shuffled answer choices, bilingual UI, theme switching, local persistence, JSON import/export, and project documentation.
