@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import Ajv2020 from "ajv/dist/2020.js";
 
 import { createLibraryBackup, parseLibraryBackup } from "../src/core/backup.js";
 import {
@@ -136,7 +137,7 @@ test("translation library rejects malformed material and orphaned relationships"
   );
 });
 
-test("generic Learner Response supports translation without fabricated objective grading", () => {
+test("Translation Learner Response passes runtime and public schema without objective grading", async () => {
   const document = getTranslationDocument(createSyntheticTranslationLibrary(), "document-1");
   const response = normalizeLearnerResponse({
     schemaVersion: 1,
@@ -160,9 +161,18 @@ test("generic Learner Response supports translation without fabricated objective
   assert.equal(Object.hasOwn(response.summary, "correctCount"), false);
   assert.equal(Object.hasOwn(response.summary, "percent"), false);
 
+  const schema = JSON.parse(await readFile(new URL("../schemas/learner-response.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  assert.equal(validateSchema(response), true, JSON.stringify(validateSchema.errors));
+
   const quizResponse = createQuizLearnerResponse({ id: "quiz-response-1", session: makeCompletedQuizSession() });
   assert.deepEqual(validateLearnerResponse(quizResponse), { valid: true, errors: [] });
   assert.equal(quizResponse.summary.percent, 100);
+  assert.equal(validateSchema(quizResponse), true, JSON.stringify(validateSchema.errors));
+
+  const quizWithoutItemType = structuredClone(quizResponse);
+  delete quizWithoutItemType.material.snapshot.items[0].type;
+  assert.equal(validateSchema(quizWithoutItemType), false);
 });
 
 test("full backup preserves Translation data and legacy backups remain readable", () => {

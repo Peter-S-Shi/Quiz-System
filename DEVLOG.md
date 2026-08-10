@@ -2,6 +2,7 @@
 
 ## 2026-08-10
 
+- Aligned the public Learner Response schema with generic material snapshots: only `id` is universally required, while Objective Quiz snapshots conditionally retain the `type` requirement. Added executable Draft 2020-12 schema regression coverage for both Translation and Objective Quiz responses.
 - Recorded M6.0 as user accepted and implemented M6.1 Translation Domain and Persistence Foundation without starting M6.2 UI work.
 - Added a separate Translation Library aggregate with stable Folder, Document, and ordered Item identities; generic language metadata; optional reference translations; immutable core operations; and explicit cascade deletion.
 - Added the `quiz-studio-translation-library-v1` local storage boundary and included validated Translation data in complete backups while preserving legacy-backup behavior.
