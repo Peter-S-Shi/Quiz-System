@@ -574,6 +574,21 @@
         ]
       },
       {
+        id: "m6-4-learner-annotations",
+        title: { en: "M6.4 Learner Answer Marking Delta", zh: "M6.4 学习者作答标记增量" },
+        purpose: { en: "Build evidence for M6.4 learner-controlled metacognitive marking (Unknown / Uncertain / Should know) on the learner's own Translation Practice answers. Individual M6.4 acceptance is intentionally deferred; this evidence will be reused in the comprehensive M6-wide acceptance after M6.7.", zh: "为 M6.4 学习者对自己 Translation Practice 作答的主动元认知标记（不认识/不确定/应该会但想不起来）积累验收证据。M6.4 有意不做单独验收，本模块的证据将在 M6.7 之后的整体 M6 验收中复用。" },
+        prerequisites: { en: "Start Translation Practice on a synthetic document and write an answer with at least a few distinct words.", zh: "对一份合成翻译文档开始练习，并书写一段包含几个不同单词的译文。" },
+        items: [
+          qa("m6-4-mark-kinds", "Mark a single word and a multiword phrase with each kind", "用三种类型分别标记单词和多词短语", ["Select one word in your answer and mark it Unknown.", "Select a multiword phrase and mark it Uncertain.", "Mark another span Should know."], ["选中译文中的一个单词并标记为不认识。", "选中一个多词短语并标记为不确定。", "把另一段标记为应该会但想不起来。"], "Each mark appears immediately below the answer with the correct category and quoted text, and no automatic score or vocabulary entry is produced.", "每条标记立即出现在答案下方，分类和引用文字正确，且不会产生自动分数或词汇记录。"),
+          qa("m6-4-overlap-duplicate", "Overlap rejection and exact-duplicate replacement", "重叠拒绝与完全相同片段的替换", ["Try to mark a span that overlaps a different existing mark.", "Mark the exact same span as an existing mark with a different category."], ["尝试标记一个与已有标记重叠的范围。", "对某个已有标记的完全相同范围，用不同类别再次标记。"], "The overlapping attempt is rejected with a clear message and no duplicate is created; the exact-duplicate re-mark replaces the category in place.", "重叠的尝试被清晰提示拒绝，且不产生重复项；对完全相同范围的再次标记会原地替换分类。"),
+          qa("m6-4-manage-marks", "Change and remove marks", "修改和删除标记", ["Change an existing mark's category using the dropdown.", "Remove a different mark."], ["用下拉菜单修改某条已有标记的分类。", "删除另一条标记。"], "The category updates in place without affecting other marks, and removal only deletes the intended mark.", "分类原地更新，不影响其他标记；删除只影响目标标记。"),
+          qa("m6-4-edit-invalidation", "Editing the answer safely invalidates stale marks", "编辑作答会安全地使失效标记失效", ["Mark a word.", "Edit the answer so that word's text changes or shifts.", "Observe the notice and the mark list."], ["标记一个单词。", "编辑译文，使该单词的文字发生变化或位移。", "观察提示和标记列表。"], "The mark whose anchored text no longer matches is removed automatically with an unobtrusive notice; marks still anchored correctly remain.", "锚定文字已不匹配的标记会被自动移除并有不打扰的提示；仍然正确锚定的标记保持不变。"),
+          qa("m6-4-refresh-resume", "Marks survive refresh and resume", "标记在刷新和恢复后仍然保留", ["Add a mark.", "Refresh the browser.", "Resume the unfinished session."], ["添加一条标记。", "刷新浏览器。", "继续未完成的练习。"], "The resumed session shows the same mark with the same category and text.", "恢复后的练习显示相同的标记，分类和文字都一致。"),
+          qa("m6-4-finish-evidence", "Finalized evidence preserves marks without fake grading", "finalized evidence 保留标记且不产生虚假判分", ["Finish the session with at least one mark present.", "Inspect the finalized evidence (e.g. via export)."], ["在至少有一条标记的情况下完成练习。", "检查 finalized evidence（例如通过导出）。"], "The evidence contains the marks tagged with the correct item, alongside the unmodified original answer text, with no score, correctness judgment, or vocabulary record anywhere.", "evidence 中包含带有正确条目标记的标记信息，以及未被修改的原始作答文本，任何地方都不出现分数、对错判断或词汇记录。"),
+          qa("m6-4-quiz-regression", "Objective Quiz remains unaffected", "Objective Quiz 不受影响", ["Complete an Objective Quiz attempt while a marked Translation session exists.", "Confirm grading and history behave normally."], ["在存在带标记的翻译练习 session 时完成一次 Objective Quiz。", "确认判分和历史记录行为正常。"], "Objective Quiz scoring, history, and Learner Response creation are unaffected by the annotation feature.", "Objective Quiz 的判分、历史记录和 Learner Response 生成不受标记功能影响。")
+        ]
+      },
+      {
         id: "11-subjective",
         title: { en: "11 Subjective Feedback And Release Blockers", zh: "11 主观反馈和发布阻塞" },
         purpose: { en: "Capture release readiness judgment, confusing workflows, missing evidence, and must-fix blockers.", zh: "记录发布就绪判断、困惑流程、缺失证据和必须修复的阻塞项。" },

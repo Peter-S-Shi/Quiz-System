@@ -72,6 +72,23 @@
       }
     },
     "provenance": { "$ref": "#/$defs/provenance" },
+    "learnerAnnotations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["itemId", "id", "kind", "start", "end", "text", "createdAt"],
+        "additionalProperties": false,
+        "properties": {
+          "itemId": { "type": "string", "minLength": 1 },
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["unknown", "uncertain", "should_know"] },
+          "start": { "type": "integer", "minimum": 0 },
+          "end": { "type": "integer", "minimum": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "createdAt": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "extensions": { "type": "object" }
   },
   "allOf": [

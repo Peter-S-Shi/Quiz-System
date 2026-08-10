@@ -1,6 +1,6 @@
 # Translation 领域模型与持久化
 
-Milestone 6.1 为 Translation Practice 建立了数据基础。Milestone 6.2 在此基础上加入了第一个面向用户的消费者：Translation Library 工作区，包含文件夹/文档/条目管理和材料导入导出。Milestone 6.3 加入了 Translation Practice 练习 session 本身：基于主动回忆的练习、session 恢复，以及生成非客观 Learner Response 的 finalization。
+Milestone 6.1 为 Translation Practice 建立了数据基础。Milestone 6.2 在此基础上加入了第一个面向用户的消费者：Translation Library 工作区，包含文件夹/文档/条目管理和材料导入导出。Milestone 6.3 加入了 Translation Practice 练习 session 本身：基于主动回忆的练习、session 恢复，以及生成非客观 Learner Response 的 finalization。Milestone 6.4 加入了学习者对自己作答文本、由学习者主动控制的元认知标记。
 
 ## 聚合模型
 
@@ -81,6 +81,19 @@ Milestone 6.3 在 `src/core/translation-session.js` 中加入第一个 Translati
 - 只有在 Learner Response 成功写入后，active session 才会被清空；因此 finalization 过程中的存储失败会保留可恢复的 session，而不会静默丢弃学习者的作答。
 - 对同一文档重复练习会生成新的 session ID 和新的 Learner Response ID；现有的幂等/不可变 `upsertLearnerResponse()` 写入路径保证此前已完成的证据不会被覆盖。
 
+## 学习者作答标记（M6.4）
+
+Milestone 6.4 在 `src/core/translation-annotations.js` 中加入学习者对自己作答文本的、由学习者主动控制的元认知标记。
+
+- 一条标记（annotation）的结构是 `{ id, kind, start, end, text, createdAt }`，其中 `kind` 为 `unknown`、`uncertain` 或 `should_know` 之一——这是学习者的元认知信号，绝不是自动判分结果。`start`/`end` 是学习者自己作答文本中的字符偏移量；`text` 是被截取的片段，并与锚点保持同步。
+- 标记只能指向学习者自己对某个 Translation Item 的作答。它们保存在 session 中的 `annotations: { [itemId]: Annotation[] }`，与现有的 `answers`、`revealed` 采用相同的键方式追加存储。
+- `validateAnnotation()` 会拒绝零长度或首尾颠倒的范围、未知的 kind，以及任何截取 `text` 与 `answerText.slice(start, end)` 不一致的片段——锚点必须始终与它指向的文本一致。
+- `addAnnotation()` 确定性地执行重叠策略：对完全相同的范围再次标记会替换其分类，而不是累积重复项；与另一条已有标记部分重叠的范围会被拒绝，直到学习者先移除或调整冲突的标记。
+- 编辑作答不会留下失效的锚点：`setTranslationAnswer()` 会针对新文本重新校验该条目的标记，静默丢弃锚定范围已不匹配的标记，因此标记绝不会在编辑后指向错误的文本。
+- `normalizeAnnotationList()`（被 `normalizeTranslationSession()` 使用）在恢复时只会丢弃个别格式错误或已失效的标记条目，而不是拒绝整个 session——一条损坏的标记只会优雅降级，不会阻塞学习者作答的恢复。
+- 学习者的作答文本本身不会被改写为带标记符或 HTML 的内容；标记始终是叠加在纯文本规范作答之上的独立结构化元数据层，这也是后续 M6.5 批改/修订和 M6.6 外部复核能够独立叠加的前提。
+- 完成练习时，`createTranslationLearnerResponse()` 会把每个条目的标记复制进顶层的 `learnerAnnotations` 数组（每条都带有对应的 `itemId`），作为 Learner Response 合约（`schemas/learner-response.schema.json`）的一个可选的追加属性。没有标记的 response 完全省略该字段，因此现有的 M6.0-M6.3 Translation 和 Objective Quiz Learner Response 不受影响，在更新后的 schema 下依然有效。
+
 ## 延后范围
 
-学习者选段标记、`unknown / uncertain / should_know` 分类、rich correction、Teacher Review 往返、remediation UI 和 AI 集成都属于后续 M6 工作。
+Rich correction、建议/插入式修改文本、Teacher Review 往返、remediation 生成和 AI 集成都属于后续 M6 工作。

@@ -35,10 +35,13 @@ import {
   remapDocumentForCopy,
 } from "./core/translation-import.js";
 import {
+  addTranslationAnnotation,
+  changeTranslationAnnotationKind,
   createTranslationSession,
   goToTranslationIndex,
   isTranslationSessionForDocument,
   normalizeTranslationSession,
+  removeTranslationAnnotation,
   setTranslationAnswer,
   setTranslationRevealed,
 } from "./core/translation-session.js";
@@ -239,6 +242,9 @@ const locales = {
       translationPracticeDiscarded: "已放弃本次翻译练习",
       translationResponseSaveFail: "无法保存翻译作答记录，请检查浏览器存储空间后重试。",
       translationPracticeSaved: "翻译练习已完成，原始作答已保存。",
+      translationAnnotationsInvalidated: "答案已修改，对应位置的标记已自动移除。",
+      translationAnnotationSelectionRequired: "请先在译文中选中一段文字，再进行标记。",
+      translationAnnotationOverlap: "该范围与已有标记重叠，请先移除或调整已有标记。",
     },
     translationPractice: {
       recoverTitle: "发现未完成的翻译练习",
@@ -261,6 +267,13 @@ const locales = {
       completeSummary: "共 {count} 条翻译",
       backToDocument: "返回文档",
       practiceAgain: "再练一次",
+      markSelectionAs: "把选中内容标记为",
+      noAnnotations: "还没有标记",
+      kind: {
+        unknown: "不认识",
+        uncertain: "不确定",
+        should_know: "应该会但想不起来",
+      },
     },
     translation: {
       title: "翻译练习库",
@@ -496,6 +509,9 @@ const locales = {
       translationPracticeDiscarded: "Translation practice discarded",
       translationResponseSaveFail: "The translation response could not be saved. Check browser storage space and try again.",
       translationPracticeSaved: "Translation practice complete. The original response has been saved.",
+      translationAnnotationsInvalidated: "The answer changed, so the mark(s) anchored to that text were removed automatically.",
+      translationAnnotationSelectionRequired: "Select some text in your translation first, then mark it.",
+      translationAnnotationOverlap: "This range overlaps an existing mark. Remove or adjust the existing mark first.",
     },
     translationPractice: {
       recoverTitle: "Unfinished translation practice found",
@@ -518,6 +534,13 @@ const locales = {
       completeSummary: "{count} translation items",
       backToDocument: "Back to document",
       practiceAgain: "Practice again",
+      markSelectionAs: "Mark selection as",
+      noAnnotations: "No marks yet",
+      kind: {
+        unknown: "Unknown",
+        uncertain: "Uncertain",
+        should_know: "Should know",
+      },
     },
     translation: {
       title: "Translation Library",
@@ -2269,6 +2292,7 @@ function renderTranslationPracticeScreen() {
         <span>${t("translationPractice.yourTranslation")}</span>
         <textarea id="translationAnswerEditor" rows="6">${escapeHtml(activeSession.answers[item.id] || "")}</textarea>
       </label>
+      <div id="annotationSection">${renderAnnotationSectionHtml(item.id)}</div>
       <div class="quiz-actions">
         <button class="secondary-button" type="button" id="previousTranslationItem" ${activeSession.index === 0 ? "disabled" : ""}>${t("actions.previousQuestion")}</button>
         <button class="secondary-button" type="button" id="nextTranslationItem" ${activeSession.index === total - 1 ? "disabled" : ""}>${t("actions.nextQuestion")}</button>
@@ -2278,9 +2302,17 @@ function renderTranslationPracticeScreen() {
   `;
 
   document.getElementById("exitTranslationPractice").addEventListener("click", exitTranslationPractice);
+  bindAnnotationSectionEvents(item.id);
   document.getElementById("translationAnswerEditor").addEventListener("input", (event) => {
+    const beforeCount = (translationSession.annotations[item.id] || []).length;
     translationSession = setTranslationAnswer(translationSession, item.id, event.target.value);
     persistTranslationSession();
+    const afterCount = (translationSession.annotations[item.id] || []).length;
+    if (afterCount < beforeCount) {
+      showToast(t("toast.translationAnnotationsInvalidated"));
+      document.getElementById("annotationSection").innerHTML = renderAnnotationSectionHtml(item.id);
+      bindAnnotationSectionEvents(item.id);
+    }
   });
   document.getElementById("previousTranslationItem").addEventListener("click", () => {
     translationSession = goToTranslationIndex(translationSession, translationSession.index - 1);
@@ -2316,6 +2348,93 @@ function renderReferenceBlock(item, revealed) {
       <button class="small-button" type="button" id="revealTranslationReference">${t("translationPractice.hideReference")}</button>
     </div>
   `;
+}
+
+function renderAnnotationSectionHtml(itemId) {
+  const annotations = translationSession.annotations[itemId] || [];
+  return `
+    <div class="annotation-toolbar">
+      <span class="meta-text">${t("translationPractice.markSelectionAs")}</span>
+      <button type="button" class="small-button" data-mark-kind="unknown">${t("translationPractice.kind.unknown")}</button>
+      <button type="button" class="small-button" data-mark-kind="uncertain">${t("translationPractice.kind.uncertain")}</button>
+      <button type="button" class="small-button" data-mark-kind="should_know">${t("translationPractice.kind.should_know")}</button>
+    </div>
+    <div class="annotation-list">
+      ${annotations.length ? annotations.map(renderAnnotationRow).join("") : `<p class="meta-text">${t("translationPractice.noAnnotations")}</p>`}
+    </div>
+  `;
+}
+
+function renderAnnotationRow(annotation) {
+  return `
+    <div class="annotation-row" data-annotation-id="${annotation.id}">
+      <span class="annotation-kind-pill annotation-kind-${annotation.kind}">${t(`translationPractice.kind.${annotation.kind}`)}</span>
+      <span class="annotation-text">&ldquo;${escapeHtml(annotation.text)}&rdquo;</span>
+      <div class="row-actions">
+        <select data-change-annotation-kind="${annotation.id}" aria-label="${t("translationPractice.markSelectionAs")}">
+          <option value="unknown" ${annotation.kind === "unknown" ? "selected" : ""}>${t("translationPractice.kind.unknown")}</option>
+          <option value="uncertain" ${annotation.kind === "uncertain" ? "selected" : ""}>${t("translationPractice.kind.uncertain")}</option>
+          <option value="should_know" ${annotation.kind === "should_know" ? "selected" : ""}>${t("translationPractice.kind.should_know")}</option>
+        </select>
+        <button type="button" class="danger-button small-button" data-remove-annotation="${annotation.id}">${t("actions.delete")}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderAnnotationRowReadOnly(annotation) {
+  return `
+    <div class="annotation-row">
+      <span class="annotation-kind-pill annotation-kind-${annotation.kind}">${t(`translationPractice.kind.${annotation.kind}`)}</span>
+      <span class="annotation-text">&ldquo;${escapeHtml(annotation.text)}&rdquo;</span>
+    </div>
+  `;
+}
+
+function bindAnnotationSectionEvents(itemId) {
+  document.querySelectorAll("[data-mark-kind]").forEach((button) => {
+    button.addEventListener("mousedown", (event) => event.preventDefault());
+    button.addEventListener("click", () => markTranslationSelection(itemId, button.dataset.markKind));
+  });
+  document.querySelectorAll("[data-change-annotation-kind]").forEach((select) => {
+    select.addEventListener("change", (event) => {
+      translationSession = changeTranslationAnnotationKind(translationSession, itemId, select.dataset.changeAnnotationKind, event.target.value);
+      persistTranslationSession();
+      refreshAnnotationSection(itemId);
+    });
+  });
+  document.querySelectorAll("[data-remove-annotation]").forEach((button) => {
+    button.addEventListener("click", () => {
+      translationSession = removeTranslationAnnotation(translationSession, itemId, button.dataset.removeAnnotation);
+      persistTranslationSession();
+      refreshAnnotationSection(itemId);
+    });
+  });
+}
+
+function refreshAnnotationSection(itemId) {
+  const section = document.getElementById("annotationSection");
+  if (!section) return;
+  section.innerHTML = renderAnnotationSectionHtml(itemId);
+  bindAnnotationSectionEvents(itemId);
+}
+
+function markTranslationSelection(itemId, kind) {
+  const textarea = document.getElementById("translationAnswerEditor");
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) {
+    showToast(t("toast.translationAnnotationSelectionRequired"));
+    return;
+  }
+  const text = textarea.value.slice(start, end);
+  try {
+    translationSession = addTranslationAnnotation(translationSession, itemId, { kind, start, end, text });
+    persistTranslationSession();
+    refreshAnnotationSection(itemId);
+  } catch {
+    showToast(t("toast.translationAnnotationOverlap"));
+  }
 }
 
 function finishTranslationPractice() {
@@ -2356,6 +2475,11 @@ function renderTranslationPracticeComplete() {
               <p><strong>${t("translationPractice.yourTranslation")}:</strong> ${escapeHtml(completedSession.answers[item.id] || t("result.noAnswer"))}</p>
               ${item.referenceTranslation ? `<p><strong>${t("translationPractice.referenceLabel")}:</strong> ${escapeHtml(item.referenceTranslation)}</p>` : ""}
             </div>
+            ${(completedSession.annotations[item.id] || []).length ? `
+              <div class="annotation-list">
+                ${completedSession.annotations[item.id].map(renderAnnotationRowReadOnly).join("")}
+              </div>
+            ` : ""}
           </div>
         `).join("")}
       </div>

@@ -4,6 +4,9 @@
 
 ### Added
 
+- Hardened M6.4 annotation integrity: persisted-session recovery now enforces the same overlap policy as live marking (deterministically dropping later-conflicting or exact-duplicate-span entries instead of letting both survive), and finalized `learnerAnnotations` are now cross-validated at runtime against the corresponding learner answer text (anchor range, exact text match, and per-item overlap), so a tampered or externally supplied Learner Response cannot pass validation on field shape alone.
+- Added M6.4 learner-controlled metacognitive marking (`unknown` / `uncertain` / `should_know`) on spans of the learner's own Translation Practice answer text, with deterministic overlap/duplicate handling and automatic invalidation of marks whose anchored text no longer matches after an edit.
+- Extended the Learner Response public contract additively with an optional `learnerAnnotations` array, preserved through finalization, backup, and restore; responses without annotations are unchanged from their prior shape.
 - Added the M6.3 Translation Practice workflow: start practice from a Translation Document, write independent translations with source text visible and reference translation hidden by default with a learner-controlled reveal, navigate between items, and finish into a protected non-objective Learner Response.
 - Added a dedicated Translation Session model with document-item snapshotting, so later document edits never rewrite an in-progress or finalized session.
 - Added isolated Translation active-session recovery (separate storage key from the Objective Quiz active session) with Resume / Discard choices and safe rejection of malformed session data.
@@ -20,6 +23,7 @@
 
 ### Documentation
 
+- Added bilingual learner-marking usage, developer architecture notes, and an M6.4 manual-QA delta.
 - Added bilingual Translation Practice usage, developer architecture notes, and an M6.3 manual-QA delta.
 - Recorded the user's decision to defer individual M6.x acceptance for M6.2-M6.7 to one comprehensive M6-wide acceptance after M6.7.
 - Added bilingual Translation Library usage, developer architecture notes, and an M6.2 manual-QA delta.

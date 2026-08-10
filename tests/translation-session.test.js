@@ -5,6 +5,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 
 import { createLibraryBackup, parseLibraryBackup } from "../src/core/backup.js";
 import {
+  createQuizLearnerResponse,
   createTranslationLearnerResponse,
   validateLearnerResponse,
 } from "../src/core/interchange.js";
@@ -21,10 +22,13 @@ import {
   updateTranslationItem,
 } from "../src/core/translation-domain.js";
 import {
+  addTranslationAnnotation,
+  changeTranslationAnnotationKind,
   createTranslationSession,
   goToTranslationIndex,
   isTranslationSessionForDocument,
   normalizeTranslationSession,
+  removeTranslationAnnotation,
   setTranslationAnswer,
   setTranslationRevealed,
 } from "../src/core/translation-session.js";
@@ -299,4 +303,232 @@ test("full backup and parseLearnerResponseCollection remain compatible with Tran
 
   assert.equal(restored.hasLearnerResponses, true);
   assert.deepEqual(restored.learnerResponses, parseLearnerResponseCollection([response]));
+});
+
+test("annotations can be added, changed, removed through the session and rejected for unknown items", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  assert.equal(session.annotations["item-1"].length, 1);
+  assert.equal(session.annotations["item-1"][0].kind, "unknown");
+
+  session = changeTranslationAnnotationKind(session, "item-1", session.annotations["item-1"][0].id, "should_know");
+  assert.equal(session.annotations["item-1"][0].kind, "should_know");
+
+  const annotationId = session.annotations["item-1"][0].id;
+  session = removeTranslationAnnotation(session, "item-1", annotationId);
+  assert.equal(Object.hasOwn(session.annotations, "item-1"), false);
+
+  assert.throws(() => addTranslationAnnotation(session, "missing-item", { kind: "unknown", start: 0, end: 5, text: "Hello" }), /Translation Item not found/);
+});
+
+test("navigation between items does not lose annotations", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+
+  session = goToTranslationIndex(session, 1);
+  session = goToTranslationIndex(session, 0);
+
+  assert.equal(session.annotations["item-1"].length, 1);
+  assert.equal(session.annotations["item-1"][0].text, "Hello");
+});
+
+test("editing an answer automatically invalidates annotations whose anchored text no longer matches", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = addTranslationAnnotation(session, "item-1", { kind: "uncertain", start: 6, end: 11, text: "there" });
+  assert.equal(session.annotations["item-1"].length, 2);
+
+  session = setTranslationAnswer(session, "item-1", "Hello world");
+  assert.equal(session.annotations["item-1"].length, 1);
+  assert.equal(session.annotations["item-1"][0].text, "Hello");
+
+  session = setTranslationAnswer(session, "item-1", "Completely different");
+  assert.equal(Object.hasOwn(session.annotations, "item-1"), false);
+});
+
+test("annotations survive session serialization and recovery", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+
+  const reloaded = normalizeTranslationSession(JSON.parse(JSON.stringify(session)));
+  assert.equal(reloaded.annotations["item-1"].length, 1);
+  assert.equal(reloaded.annotations["item-1"][0].kind, "unknown");
+  assert.equal(reloaded.annotations["item-1"][0].text, "Hello");
+});
+
+test("malformed persisted annotations are dropped without corrupting session recovery", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+
+  const corrupted = JSON.parse(JSON.stringify(session));
+  corrupted.annotations["item-1"].push({ id: "bad", kind: "not-a-kind", start: 0, end: 5, text: "Hello", createdAt: "t" });
+  corrupted.annotations["item-2"] = [{ id: "orphan", kind: "unknown", start: 0, end: 3, text: "xyz", createdAt: "t" }];
+
+  const reloaded = normalizeTranslationSession(corrupted);
+  assert.notEqual(reloaded, null);
+  assert.equal(reloaded.annotations["item-1"].length, 1);
+  assert.equal(Object.hasOwn(reloaded.annotations, "item-2"), false);
+});
+
+test("normalizeTranslationSession resolves overlapping persisted annotations deterministically", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+
+  const corrupted = JSON.parse(JSON.stringify(session));
+  corrupted.annotations["item-1"] = [
+    { id: "a1", kind: "unknown", start: 0, end: 5, text: "Hello", createdAt: "2026-01-01T00:00:00.000Z" },
+    { id: "a2", kind: "should_know", start: 2, end: 8, text: "llo th", createdAt: "2026-01-01T00:00:01.000Z" },
+    { id: "a3", kind: "uncertain", start: 6, end: 11, text: "there", createdAt: "2026-01-01T00:00:02.000Z" },
+  ];
+
+  const reloaded = normalizeTranslationSession(corrupted);
+  assert.deepEqual(reloaded.annotations["item-1"].map((item) => item.id), ["a1", "a3"]);
+});
+
+test("finalization preserves annotations as learnerAnnotations without modifying the learner answer", async () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = addTranslationAnnotation(session, "item-1", { kind: "uncertain", start: 6, end: 11, text: "there" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  assert.equal(response.responses.find((item) => item.itemId === "item-1").answer, "Hello there");
+  assert.equal(response.learnerAnnotations.length, 2);
+  assert.deepEqual(response.learnerAnnotations.map((item) => item.kind).sort(), ["uncertain", "unknown"]);
+  response.learnerAnnotations.forEach((annotation) => assert.equal(annotation.itemId, "item-1"));
+
+  assert.deepEqual(validateLearnerResponse(response), { valid: true, errors: [] });
+
+  const schema = JSON.parse(await readFile(new URL("../schemas/learner-response.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  assert.equal(validateSchema(response), true, JSON.stringify(validateSchema.errors));
+});
+
+test("older Translation and Objective Quiz Learner Responses without annotations remain valid", async () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello");
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const unannotatedResponse = createTranslationLearnerResponse({ id: "response-1", session });
+  assert.equal(Object.hasOwn(unannotatedResponse, "learnerAnnotations"), false);
+  assert.deepEqual(validateLearnerResponse(unannotatedResponse), { valid: true, errors: [] });
+
+  const quizResponse = createQuizLearnerResponse({
+    id: "quiz-response-1",
+    session: {
+      id: "quiz-session-1",
+      paperId: "paper-1",
+      paperTitle: "Synthetic Quiz",
+      startedAt: CREATED_AT,
+      completedAt: "2026-03-01T09:10:00.000Z",
+      questions: [{ id: "question-1", type: "blank", prompt: "Type A", answers: ["A"] }],
+      answers: { "question-1": "A" },
+      results: [{ questionId: "question-1", correct: true, correctAnswer: "A" }],
+      correctCount: 1,
+      percent: 100,
+    },
+  });
+  assert.equal(Object.hasOwn(quizResponse, "learnerAnnotations"), false);
+  assert.deepEqual(validateLearnerResponse(quizResponse), { valid: true, errors: [] });
+
+  const schema = JSON.parse(await readFile(new URL("../schemas/learner-response.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  assert.equal(validateSchema(unannotatedResponse), true, JSON.stringify(validateSchema.errors));
+  assert.equal(validateSchema(quizResponse), true, JSON.stringify(validateSchema.errors));
+});
+
+test("validateLearnerResponse rejects a finalized annotation whose text no longer matches the learner answer", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  const tampered = structuredClone(response);
+  tampered.learnerAnnotations[0].text = "Howdy";
+  const result = validateLearnerResponse(tampered);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /does not match the anchored answer span/);
+});
+
+test("validateLearnerResponse rejects a finalized annotation range outside the learner answer", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  const tampered = structuredClone(response);
+  tampered.learnerAnnotations[0].end = 500;
+  const result = validateLearnerResponse(tampered);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /range is outside the learner answer/);
+});
+
+test("validateLearnerResponse rejects overlapping finalized annotations for the same item", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  const tampered = structuredClone(response);
+  tampered.learnerAnnotations.push({
+    itemId: "item-1",
+    id: "injected",
+    kind: "should_know",
+    start: 2,
+    end: 8,
+    text: "llo th",
+    createdAt: "2026-03-01T09:11:00.000Z",
+  });
+  const result = validateLearnerResponse(tampered);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /overlap/);
+});
+
+test("finalized annotated evidence remains immutable and full backup/restore stays compatible", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  let collection = upsertLearnerResponse([], response);
+  collection = upsertLearnerResponse(collection, response);
+  assert.equal(collection.length, 1);
+
+  const tampered = { ...response, learnerAnnotations: [] };
+  assert.throws(() => upsertLearnerResponse(collection, tampered), /cannot be replaced/);
+
+  const quizLibrary = { schemaVersion: 1, papers: [{ id: "paper-1", title: "Synthetic Quiz", questions: [] }] };
+  const backup = createLibraryBackup({
+    library: quizLibrary,
+    history: [],
+    learnerResponses: [response],
+    translationLibrary: createTranslationLibrary(),
+    exportedAt: "2026-03-01T09:20:00.000Z",
+  });
+  const restored = parseLibraryBackup(JSON.parse(JSON.stringify(backup)));
+  assert.deepEqual(restored.learnerResponses, parseLearnerResponseCollection([response]));
+  assert.equal(restored.learnerResponses[0].learnerAnnotations.length, 1);
 });

@@ -13,6 +13,7 @@ Quiz Studio is a static ES module app.
 - `src/core/translation-domain.js`: Translation Folder, Document, and ordered Item models, validation, and immutable core operations.
 - `src/core/translation-import.js`: DOM-independent parsing for source-only and bilingual batch import, portable JSON import validation, and document-ID collision handling for the Translation Library UI.
 - `src/core/translation-session.js`: DOM-independent Translation Practice session model — snapshotting a document's items at session start, per-item answers and optional reference-reveal state, navigation, and safe rejection of malformed persisted sessions.
+- `src/core/translation-annotations.js`: DOM-independent learner metacognitive marking (`unknown`/`uncertain`/`should_know`) on the learner's own answer text — validation, overlap/duplicate policy, answer-edit revalidation, and safe normalization of persisted marks.
 - `src/core/migrations.js`: schema versioning and data normalization.
 - `src/storage/local-storage.js`: local browser storage boundary.
 - `schemas/`: public Quiz Paper, Learner Response, and Teacher Review JSON Schemas.
@@ -41,6 +42,12 @@ A Translation Practice session snapshots the target document's items at `createT
 The active session is stored under a key separate from the Objective Quiz active session (`quiz-studio-translation-active-session-v1` vs `quiz-studio-active-session-v1`), so the two features cannot silently overwrite each other even when both have unfinished sessions at the same time. `normalizeTranslationSession()` rejects malformed persisted data by returning `null`, which the UI treats the same as "no unfinished session" rather than crashing recovery.
 
 Finishing a session calls `createTranslationLearnerResponse()` (in `interchange.js`) to build a finalized, non-objective Learner Response — it never sets `result`, `correctCount`, or `percent`. The response is persisted through the existing `upsertLearnerResponse()` idempotent/immutable-write path before the active session key is cleared, so a storage failure during finalization leaves the recoverable active session intact instead of silently losing the learner's work.
+
+## Learner Annotations
+
+Annotations anchor to character ranges in the learner's own answer text (`{ id, kind, start, end, text, createdAt }`) and are never rendered as inline markup — the answer stays plain text, and marks are a parallel structured layer keyed by item ID in `session.annotations`. `translation-session.js` re-validates an item's annotations every time its answer changes (inside `setTranslationAnswer()`), dropping any whose anchor no longer matches so a stale mark can never point at the wrong text.
+
+The overlap policy lives in `addAnnotation()`: an exact duplicate span replaces the existing mark's category; a different, partially-overlapping span throws and the UI surfaces that as a toast rather than silently accepting bad data. `createTranslationLearnerResponse()` flattens all per-item annotations into a top-level `learnerAnnotations` array on finalization, included only when non-empty so unannotated responses are byte-identical to their pre-M6.4 shape.
 
 ## Validation
 

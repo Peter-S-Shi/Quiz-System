@@ -971,6 +971,78 @@ label small {
   white-space: pre-wrap;
 }
 
+.annotation-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.annotation-list {
+  display: grid;
+  gap: 8px;
+}
+
+.annotation-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: var(--surface);
+}
+
+.annotation-row .row-actions {
+  flex: 0 0 auto;
+}
+
+.annotation-row select {
+  min-height: 32px;
+  width: auto;
+}
+
+.annotation-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.annotation-kind-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.annotation-kind-unknown {
+  background: color-mix(in srgb, var(--danger) 16%, var(--surface-2));
+  color: var(--danger);
+}
+
+.annotation-kind-uncertain {
+  background: color-mix(in srgb, var(--warning) 20%, var(--surface-2));
+  color: var(--warning);
+}
+
+.annotation-kind-should_know {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .annotation-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 900px) {
   .translation-item-row {
     grid-template-columns: 1fr;

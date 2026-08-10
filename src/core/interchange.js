@@ -9,6 +9,7 @@ export const DOCUMENT_TYPES = Object.freeze({
 
 const ACTOR_TYPES = new Set(["anonymous", "human", "external-ai", "agent", "system"]);
 const REVIEW_JUDGMENTS = new Set(["correct", "incorrect", "partial", "needs-review"]);
+const LEARNER_ANNOTATION_KINDS = new Set(["unknown", "uncertain", "should_know"]);
 const TEACHER_REVIEW_KEYS = new Set([
   "schemaVersion",
   "documentType",
@@ -111,6 +112,17 @@ export function createTranslationLearnerResponse({ id = makeId(), session }) {
     itemId: item.id,
     answer: String(session.answers?.[item.id] ?? ""),
   }));
+  const learnerAnnotations = items.flatMap((item) => (Array.isArray(session.annotations?.[item.id])
+    ? session.annotations[item.id].map((annotation) => ({
+      itemId: item.id,
+      id: annotation.id,
+      kind: annotation.kind,
+      start: annotation.start,
+      end: annotation.end,
+      text: annotation.text,
+      createdAt: annotation.createdAt,
+    }))
+    : []));
 
   return {
     schemaVersion: INTERCHANGE_SCHEMA_VERSION,
@@ -140,6 +152,7 @@ export function createTranslationLearnerResponse({ id = makeId(), session }) {
     provenance: {
       purpose: "practice",
     },
+    ...(learnerAnnotations.length ? { learnerAnnotations } : {}),
   };
 }
 
@@ -181,6 +194,19 @@ export function normalizeLearnerResponse(value = {}) {
         : {}),
     },
     ...(provenance ? { provenance } : {}),
+    ...(Array.isArray(value.learnerAnnotations) && value.learnerAnnotations.length
+      ? {
+        learnerAnnotations: value.learnerAnnotations.map((item) => ({
+          itemId: String(item?.itemId || ""),
+          id: String(item?.id || ""),
+          kind: String(item?.kind || ""),
+          start: Number(item?.start),
+          end: Number(item?.end),
+          text: String(item?.text ?? ""),
+          createdAt: String(item?.createdAt || ""),
+        })),
+      }
+      : {}),
     ...(isPlainObject(value.extensions) ? { extensions: cloneValue(value.extensions) } : {}),
   };
 }
@@ -225,6 +251,67 @@ export function validateLearnerResponse(value) {
   if (value.summary?.itemCount !== value.responses?.length) {
     errors.push("Learner Response summary itemCount must match the response count.");
   }
+
+  if (Object.prototype.hasOwnProperty.call(value, "learnerAnnotations")) {
+    if (!Array.isArray(value.learnerAnnotations)) {
+      errors.push("Learner Response learnerAnnotations must be an array.");
+    } else {
+      const answerByItemId = new Map();
+      (Array.isArray(value.responses) ? value.responses : []).forEach((response) => {
+        if (nonEmptyString(response?.itemId) && typeof response.answer === "string") {
+          answerByItemId.set(response.itemId, response.answer);
+        }
+      });
+
+      const annotationIds = new Set();
+      const annotationsByItemId = new Map();
+      value.learnerAnnotations.forEach((annotation, index) => {
+        if (!isPlainObject(annotation)) {
+          errors.push(`Learner annotation ${index} must be an object.`);
+          return;
+        }
+        if (!nonEmptyString(annotation.id)) errors.push(`Learner annotation ${index} requires an id.`);
+        else if (annotationIds.has(annotation.id)) errors.push(`Duplicate learner annotation id: ${annotation.id}`);
+        else annotationIds.add(annotation.id);
+        if (!nonEmptyString(annotation.itemId)) errors.push(`Learner annotation ${index} requires an itemId.`);
+        else if (!itemIds.has(annotation.itemId)) errors.push(`Learner annotation references unknown itemId: ${annotation.itemId}`);
+        if (!LEARNER_ANNOTATION_KINDS.has(annotation.kind)) errors.push(`Invalid learner annotation kind: ${annotation.kind}`);
+        if (!Number.isInteger(annotation.start) || annotation.start < 0) errors.push(`Learner annotation ${index} has an invalid start.`);
+        if (!Number.isInteger(annotation.end) || annotation.end <= annotation.start) errors.push(`Learner annotation ${index} has an invalid end.`);
+        if (typeof annotation.text !== "string" || !annotation.text.length) errors.push(`Learner annotation ${index} requires text.`);
+        if (!nonEmptyString(annotation.createdAt)) errors.push(`Learner annotation ${index} requires createdAt.`);
+
+        if (nonEmptyString(annotation.itemId) && itemIds.has(annotation.itemId)) {
+          const answerText = answerByItemId.get(annotation.itemId);
+          if (typeof answerText !== "string") {
+            errors.push(`Learner annotation ${index} references an item with no learner answer text.`);
+          } else if (Number.isInteger(annotation.start) && Number.isInteger(annotation.end)
+            && annotation.start >= 0 && annotation.end > annotation.start
+            && typeof annotation.text === "string") {
+            if (annotation.end > answerText.length) {
+              errors.push(`Learner annotation ${index} range is outside the learner answer.`);
+            } else if (answerText.slice(annotation.start, annotation.end) !== annotation.text) {
+              errors.push(`Learner annotation ${index} text does not match the anchored answer span.`);
+            } else {
+              if (!annotationsByItemId.has(annotation.itemId)) annotationsByItemId.set(annotation.itemId, []);
+              annotationsByItemId.get(annotation.itemId).push(annotation);
+            }
+          }
+        }
+      });
+
+      annotationsByItemId.forEach((list, itemId) => {
+        for (let i = 0; i < list.length; i += 1) {
+          for (let j = i + 1; j < list.length; j += 1) {
+            if (list[i].start < list[j].end && list[j].start < list[i].end) {
+              errors.push(`Learner annotations for itemId ${itemId} overlap.`);
+            }
+          }
+        }
+      });
+    }
+  }
+
   if (value.material?.type === "quiz-paper") {
     (Array.isArray(value.responses) ? value.responses : []).forEach((response) => {
       if (!Object.prototype.hasOwnProperty.call(response, "result")) {

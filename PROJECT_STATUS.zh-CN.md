@@ -6,7 +6,7 @@ Feature Development - Scope Reopened（功能开发阶段，范围已重新开�
 
 ## 当前里程碑
 
-Milestone 6.3：Translation Practice and Session Recovery - implementation complete / M6-wide acceptance deferred
+Milestone 6.4：Learner Answer Marking and Annotation Foundation - implementation complete / M6-wide acceptance deferred
 
 ## 验收政策（已变更）
 
@@ -14,13 +14,13 @@ Milestone 6.3：Translation Practice and Session Recovery - implementation compl
 
 ## 当前发布范围
 
-当前版本范围包括 Milestone 1-5 基线和已批准的 Milestone 6 工作线。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 Translation Library and Material Import/Export 和 M6.3 Translation Practice and Session Recovery 均已完成实现，验收统一推迟到 M6 整体验收时进行。M6.3 加入了第一个可用的、基于主动回忆原则的 Translation Practice 工作流：从文档开始练习、原文可见而参考译文默认隐藏地书写译文、在条目间导航、恢复中断的 session，并最终生成受保护的非客观 Learner Response。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
+当前版本范围包括 Milestone 1-5 基线和已批准的 Milestone 6 工作线。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 Translation Library and Material Import/Export、M6.3 Translation Practice and Session Recovery 和 M6.4 Learner Answer Marking and Annotation Foundation 均已完成实现，验收统一推迟到 M6 整体验收时进行。M6.4 加入了学习者对自己 Translation Practice 作答片段的、由学习者主动控制的元认知标记（`unknown`/`uncertain`/`should_know`），并作为结构化证据保存在 finalized Learner Response 中。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
 
 ## Feature Complete 状态
 
 旧范围下曾达到候选评审；当前范围已重新开放，因此不再属于功能完整状态。
 
-Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6.0 和 M6.1 已验收。M6.2 和 M6.3 已完成实现，验收推迟到 M6 整体验收；M6.4-M6.7 仍未实现。所有 Milestone 6 工作实现、并完成推迟的 M6 整体验收后，必须重新执行全产品 Feature Complete Review。
+Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6.0 和 M6.1 已验收。M6.2、M6.3 和 M6.4 已完成实现，验收推迟到 M6 整体验收；M6.5-M6.7 仍未实现。所有 Milestone 6 工作实现、并完成推迟的 M6 整体验收后，必须重新执行全产品 Feature Complete Review。
 
 ## Feature Freeze 状态
 
@@ -31,8 +31,8 @@ Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地
 ## 当前发布阻断项
 
 - 尚未完成项目级完整人工验收。
-- 覆盖 M6.0-M6.7 的整体 M6 验收尚未进行；M6.2 和 M6.3 已完成实现，但按设计不做单独验收。
-- Translation Practice 练习 session 现已存在，但 Learner Answer Marking（M6.4）、Rich Correction（M6.5）、External Teacher Round Trip（M6.6）和 History/Retry/Portability（M6.7）尚未开始。
+- 覆盖 M6.0-M6.7 的整体 M6 验收尚未进行；M6.2、M6.3 和 M6.4 已完成实现，但按设计不做单独验收。
+- Learner Answer Marking 现已存在，但 Rich Correction（M6.5）、External Teacher Round Trip（M6.6）和 History/Retry/Portability（M6.7）尚未开始。
 - 数据迁移、备份往返、答题进度恢复和破坏性工作流尚未获得正式端到端验证。
 - 仓库保持 private 时，公开 Pages 部署继续暂缓。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
@@ -45,14 +45,14 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 44 项 core/interchange/translation/import/session 自动测试通过，覆盖稳定 Translation 持久化、顺序、source-only 与 reference 材料、孤儿防护、显式 cascade 删除、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容、公开示例校验、批量导入解析、格式错误行拒绝、JSON 导入文件夹重新分配、重复 ID 冲突处理、导出/导入往返对公开 schema 的校验、Translation session 快照在后续文档编辑下保持稳定、按条目 ID 持久化答案与导航、格式错误 session 被安全拒绝、非客观 finalization，以及隔离的 active-session 存储 key。
+- 73 项 core/interchange/translation/import/session/annotation 自动测试通过，覆盖稳定 Translation 持久化、顺序、source-only 与 reference 材料、孤儿防护、显式 cascade 删除、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容、公开示例校验、批量导入解析、格式错误行拒绝、JSON 导入文件夹重新分配、重复 ID 冲突处理、导出/导入往返对公开 schema 的校验、Translation session 快照在后续文档编辑下保持稳定、按条目 ID 持久化答案与导航、格式错误 session 被安全拒绝、非客观 finalization、隔离的 active-session 存储 key、全部三种标记类型、多词片段、零长度/无效范围/未知类型拒绝、锚定文本匹配、完全相同片段的替换与重叠拒绝、编辑作答后的失效处理、标记在 session 序列化/恢复中的存续、个别格式错误标记的安全丢弃与 `learnerAnnotations` 的 schema/向后兼容性、从存储恢复的持久化标记的确定性重叠消解，以及对 finalized `learnerAnnotations` 锚点相对于对应作答文本的运行时交叉校验（文本匹配、范围内、同条目不重叠）。
 - CI workflow 已存在。
-- 本地浏览器 smoke test 完整走过 M6.3 练习旅程：开始练习、逐条作答与导航、显示/隐藏可选参考译文、刷新后恢复且答案/位置/显示状态完全一致、完成后进入无虚假分数的复盘页、确认只有在证据成功保存后才清空 active session、导出作答记录、刷新后确认证据仍存在、再次练习生成不同 response ID 且不影响第一次证据，并在存在未完成 Translation session 的同时运行 Objective Quiz session，确认互不干扰，控制台无错误。测试过程中发现并修复了一个真实 bug（在完成页显示时切换选择其他文档不会离开完成页）。此前的 smoke test 已覆盖完整的 M6.2 Translation Library 旅程，控制台无错误。
+- 本地浏览器 smoke test 完整走过 M6.4 标记旅程：用三种类型分别标记单词和多词短语、标记重叠片段被拒绝并弹出提示、对完全相同片段再次标记会替换分类、通过 UI 移除和修改标记、编辑作答后确认受影响标记被自动移除并有提示同时文本框保持焦点、刷新后恢复且标记完整保留、完成练习后检查 finalized evidence（无分数、无词汇记录，`learnerAnnotations` 存在且 `itemId`/`kind`/`text` 正确），并确认 Objective Quiz 不受影响——控制台无错误。此前的 smoke test 已覆盖完整的 M6.3 练习/恢复旅程（含发现并修复的一个 bug）和 M6.2 Translation Library 旅程。
 - 浏览器测试工具确认了导出下载会正确触发（文件名和事件正确），但未捕获下载文件的实际落盘内容，因此人工检查下载文件内容仍属于推迟的 M6 整体验收范围。
 - 完整 v1 用户旅程的人工验收尚未完成。
 - 尚未执行干净 clone 验证。
 - GitHub Pages 部署为仅手动触发，并继续暂缓。
-- M6.0 和 M6.1 已验收。M6.2 和 M6.3 已有自动化测试和 smoke test 覆盖；两者的正式验收都按政策推迟到 M6.7 之后的整体验收。
+- M6.0 和 M6.1 已验收。M6.2、M6.3 和 M6.4 已有自动化测试和 smoke test 覆盖；三者的正式验收都按政策推迟到 M6.7 之后的整体验收。
 
 ## 已知风险
 
@@ -60,10 +60,11 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - ES module 应用不支持通过浏览器 `file://` 直接打开；用户必须使用本地静态服务器或 `start-local.bat`。
 - 当前功能面已经较大，但人工 QA 证据还不足。
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。
-- Translation Practice 练习 session 现已存在，但学习者选段标记、rich correction 和外部 Teacher Review 往返仍是后续 M6 子里程碑尚未设计的 UX 边界。
+- 学习者作答标记现已存在，但 rich correction 和外部 Teacher Review 往返仍是后续 M6 子里程碑尚未设计的 UX 边界。
 - 目前界面除了刚完成练习后的即时复盘页外，没有单独的入口可以浏览某份翻译文档历史上的 Learner Response；详细的历史/重练视图明确属于 M6.7 范围。
-- 如果某份翻译文档在其 Learner Response evidence 存在期间被删除，该 evidence 依然有效（它自带 material 快照），但不再能通过文档编辑器直接找到；这与现有 Objective Quiz 的行为一致（删除试卷不会删除其 Learner Response）。
+- 如果某份翻译文档在其 Learner Response evidence（包括其中的学习者标记）存在期间被删除，该 evidence 依然有效（它自带 material 快照），但不再能通过文档编辑器直接找到；这与现有 Objective Quiz 的行为一致（删除试卷不会删除其 Learner Response）。
 - 把验收推迟到 M6 结束意味着 M6.2-M6.7 之间的集成问题可能比逐里程碑验收更晚才被发现；在此期间更依赖回归测试和 CI。
+- 学习者是否显示过隐藏的参考译文只记录在 active session 中，不会带入 finalized evidence；如果后续某个 M6.x 需要这个信号用于批改/复核，需要专门做一次追加式设计决策，而不是天然可用。
 
 ## 未知或未验证事项
 
@@ -79,6 +80,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 在真实浏览器中人工检查下载的 Translation Document JSON 文件的实际内容（自动化 smoke test 只验证了下载触发和文件名，未验证落盘字节）。
 - 真实浏览器关闭后重新打开（而非仅刷新）时 Translation Practice session 的恢复情况（已验证基于刷新的恢复，未单独验证完整关闭重开）。
 - 在真实浏览器中人工检查下载的 Translation Learner Response JSON 文件的实际内容。
+- 在触屏/移动端视口下进行标记、复盘和删除操作（文本选择的操作方式与桌面端指针/键盘选择不同）。
 
 ## Deferred Features
 
@@ -91,14 +93,14 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-按已批准的子里程碑顺序，下一个是 M6.4 Learner Answer Marking and Annotation Foundation，但未经新的 prompt 不得开始。在覆盖 M6.0-M6.7 的整体 M6 验收完成前，不开始 Product Hardening 或 Feature Freeze 工作。
+按已批准的子里程碑顺序，下一个是 M6.5 Rich Correction / Revision Workspace，但未经新的 prompt 不得开始。在覆盖 M6.0-M6.7 的整体 M6 验收完成前，不开始 Product Hardening 或 Feature Freeze 工作。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程：`origin`
-- M6.3 开始前已验证的基线：`2774d58 Build M6.2 Translation Library and material import/export`（squash merge，已包含 CI 依赖安装修复）
+- M6.4 开始前已验证的基线：`cc90254 Build M6.3 Translation Practice and session recovery`（squash merge，位于 main）
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步目标：经过验证的 M6.3 feature work 位于 `milestone/6.3-translation-practice` 分支，将开出 Pull Request 提交到 `main`，未经明确指示不得合并
+- 同步目标：一次 M6.4 标记完整性收尾补丁（持久化 session 恢复时的确定性重叠消解；对 finalized `learnerAnnotations` 锚点相对于对应作答文本的运行时交叉校验）已推送到既有的 `milestone/6.4-learner-annotations` 分支及其已开出的 Pull Request 上，未经明确指示不得合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：正在为 `milestone/6.3-translation-practice` 创建 Pull Request 供独立评审；未经用户明确指示不得合并
+- Pull Request 状态：`milestone/6.4-learner-annotations` 的既有 Pull Request 已更新为包含本次完整性收尾补丁；未经用户明确指示不得合并
