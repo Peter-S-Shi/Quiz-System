@@ -379,6 +379,23 @@ test("createRemediationRequestPackage embeds the intended Learner Response and T
   assert.deepEqual(validateRemediationRequestPackage(pkg), { valid: true, errors: [] });
 });
 
+test("both app-localized remediation export instructions describe required provenance metadata", async () => {
+  const appSource = await readFile(new URL("../src/app.js", import.meta.url), "utf8");
+  const instructions = [...appSource.matchAll(/remediationTaskInstruction:\s*"((?:\\.|[^"\\])*)"/g)]
+    .map((match) => match[1]);
+
+  assert.equal(instructions.length, 2);
+  instructions.forEach((instruction) => {
+    assert.match(instruction, /sourceResponseId/);
+    assert.match(instruction, /sourceReviewId/);
+    assert.match(instruction, /createdAt/);
+    assert.match(instruction, /ISO 8601/);
+    assert.match(instruction, /author/);
+    assert.match(instruction, /external-ai/);
+    assert.match(instruction, /sourceMaterialId/);
+  });
+});
+
 test("public remediation-request schema accepts a valid package", async () => {
   const schema = JSON.parse(await readFile(new URL("../schemas/remediation-request.schema.json", import.meta.url), "utf8"));
   const validateSchema = new Ajv2020({ strict: false }).compile(schema);
