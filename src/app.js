@@ -12,6 +12,7 @@ import {
   createTranslationLearnerResponse,
   normalizeTeacherReview,
   toPortableLearnerResponse,
+  toPortableTeacherReview,
 } from "./core/interchange.js";
 import {
   findLearnerResponse,
@@ -21,9 +22,18 @@ import {
 } from "./core/learning-records.js";
 import {
   findTeacherReviewForResponse,
+  findTeacherReviewsForResponse,
   parseTeacherReviewCollection,
   upsertTeacherReview,
 } from "./core/review-records.js";
+import {
+  classifyTeacherReviewImport,
+  createRemediationRequestPackage,
+  createReviewRequestPackage,
+  parseExternalTeacherReviewText,
+  parseRemediationTranslationDocumentText,
+  validateRemediationProvenance,
+} from "./core/review-transport.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
 import {
   addTranslationItem,
@@ -265,6 +275,13 @@ const locales = {
       correctionReviewSaveFail: "无法保存批改，请检查浏览器存储空间后重试。",
       correctionResponseNotFound: "未找到对应的原始作答记录，无法打开批改工作区。",
       correctionColorRequired: "请先在颜色选择器中选择一种颜色。",
+      reviewRequestExportFail: "无法导出外部评阅请求。",
+      reviewImportFail: "导入 Teacher Review 失败，请检查文件内容。",
+      reviewImportSuccess: "Teacher Review 已导入。",
+      reviewExportFail: "无法导出批改 JSON。",
+      remediationRequestExportFail: "无法导出补救练习请求。",
+      remediationImportFail: "导入补救练习材料失败，请检查文件内容或所选文件夹。",
+      remediationImportSuccess: "补救练习材料已导入。",
     },
     translationPractice: {
       recoverTitle: "发现未完成的翻译练习",
@@ -330,6 +347,32 @@ const locales = {
       save: "保存批改",
       finalizedResponses: "已完成的作答记录",
       colorDefault: "默认颜色（不设置）",
+      availableReviews: "已有批改",
+      openReview: "打开",
+      newReview: "新建批改",
+      reviewer: "评阅者",
+      exportReviewRequest: "导出外部评阅请求",
+      importReview: "导入 Teacher Review",
+      exportReviewJson: "导出批改 JSON",
+      exportRemediationRequest: "导出补救练习请求",
+      importRemediationMaterial: "导入补救练习材料",
+      importRemediationHint: "导入外部生成的、带补救溯源信息的翻译文档 JSON。",
+      taskInstruction: "请阅读这份 Quiz Studio 外部评阅请求 JSON。返回且仅返回一个符合 Quiz Studio Teacher Review 契约（documentType 为 \"quiz-studio.teacher-review\"）的 JSON 对象。请原样保留 responseId 和各 itemId 的值，不要改写 learnerResponse。",
+      remediationTaskInstruction: "请阅读这份 Quiz Studio 补救练习请求 JSON。结合学习者的作答、标记和 Teacher Review，返回且仅返回一个符合 Quiz Studio Translation Document 契约（documentType 为 \"quiz-studio.translation-document\"）的 JSON 对象，用于针对性的补救练习。请在其中包含 provenance 字段，purpose 设为 \"remediation\"，sourceResponseId 和 sourceReviewId 使用本请求中的对应取值。",
+      importPreviewTitle: "导入 Teacher Review 预览",
+      targetResponse: "目标作答记录",
+      reviewId: "Review ID",
+      importStatus: "导入状态",
+      importStatusNew: "新增批改",
+      importStatusIdempotent: "内容相同，重复导入不会产生变化",
+      importStatusUpdate: "将更新已有批改（需要确认）",
+      importStatusReassignedReject: "该 Review ID 已属于另一份作答记录，已拒绝导入",
+      reviewedItemCount: "已评阅 {count} 个条目",
+      correctionCount: "{count} 条批改",
+      remediationRecommendationCount: "{count} 条补救建议",
+      reassignedRejectError: "该 Review ID 已属于另一份作答记录，不能被静默改指，已拒绝导入。",
+      sourceResponse: "来源作答记录",
+      sourceReview: "来源 Teacher Review",
       color: {
         red: "红色",
         blue: "蓝色",
@@ -598,6 +641,13 @@ const locales = {
       correctionReviewSaveFail: "The review could not be saved. Check browser storage space and try again.",
       correctionResponseNotFound: "The original response could not be found, so the Correction Workspace could not be opened.",
       correctionColorRequired: "Select a color in the color picker first.",
+      reviewRequestExportFail: "The review request could not be exported.",
+      reviewImportFail: "The Teacher Review could not be imported. Check the file content.",
+      reviewImportSuccess: "Teacher Review imported.",
+      reviewExportFail: "The review JSON could not be exported.",
+      remediationRequestExportFail: "The remediation request could not be exported.",
+      remediationImportFail: "The remediation material could not be imported. Check the file content or the selected folder.",
+      remediationImportSuccess: "Remediation material imported.",
     },
     translationPractice: {
       recoverTitle: "Unfinished translation practice found",
@@ -663,6 +713,32 @@ const locales = {
       save: "Save review",
       finalizedResponses: "Finalized responses",
       colorDefault: "Default color (none)",
+      availableReviews: "Available reviews",
+      openReview: "Open",
+      newReview: "New review",
+      reviewer: "Reviewer",
+      exportReviewRequest: "Export for external review",
+      importReview: "Import Teacher Review",
+      exportReviewJson: "Export review JSON",
+      exportRemediationRequest: "Export remediation request",
+      importRemediationMaterial: "Import remediation material",
+      importRemediationHint: "Import an externally produced Translation Document JSON that carries remediation provenance.",
+      taskInstruction: "Read this Quiz Studio review-request JSON. Return exactly one JSON object conforming to the Quiz Studio Teacher Review contract (documentType \"quiz-studio.teacher-review\"). Preserve responseId and itemId values exactly. Do not rewrite the learnerResponse.",
+      remediationTaskInstruction: "Read this Quiz Studio remediation-request JSON. Using the learner's answers, marks, and the teacher review, return exactly one JSON object conforming to the Quiz Studio Translation Document contract (documentType \"quiz-studio.translation-document\") for targeted follow-up practice. Include a provenance object with purpose \"remediation\", sourceResponseId, and sourceReviewId set to the values from this request.",
+      importPreviewTitle: "Import Teacher Review Preview",
+      targetResponse: "Target response",
+      reviewId: "Review ID",
+      importStatus: "Import status",
+      importStatusNew: "New review",
+      importStatusIdempotent: "Identical content; re-importing has no effect",
+      importStatusUpdate: "Will update the existing review (confirmation required)",
+      importStatusReassignedReject: "This review ID already belongs to a different response; import rejected",
+      reviewedItemCount: "{count} items reviewed",
+      correctionCount: "{count} corrections",
+      remediationRecommendationCount: "{count} remediation recommendations",
+      reassignedRejectError: "This review ID already belongs to a different response and cannot be silently reassigned, so the import was rejected.",
+      sourceResponse: "Source response",
+      sourceReview: "Source Teacher Review",
       color: {
         red: "Red",
         blue: "Blue",
@@ -776,6 +852,8 @@ let translationLastResponseId = null;
 let correctionWorkspaceResponseId = null;
 let correctionReviewDraft = null;
 let correctionItemIndex = 0;
+let reviewImportDraft = null;
+let remediationImportDraft = null;
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
@@ -2162,6 +2240,17 @@ function renderImportForms() {
         </label>
       </div>
     </details>
+    <details class="translation-import-form">
+      <summary class="small-button">${t("review.importRemediationMaterial")}</summary>
+      <div class="translation-form">
+        <p class="meta-text">${t("review.importRemediationHint")}</p>
+        <label><span>${t("translation.importTargetFolder")}</span><select id="remediationImportFolder" ${disabled}>${folderOptions}</select></label>
+        <label class="secondary-button file-label">
+          <span>${t("actions.import")}</span>
+          <input type="file" id="remediationImportFile" accept="application/json,.json" ${disabled}>
+        </label>
+      </div>
+    </details>
   `;
 }
 
@@ -2239,6 +2328,34 @@ function bindImportFormEvents() {
       event.target.value = "";
     });
   }
+
+  const remediationFileInput = document.getElementById("remediationImportFile");
+  if (remediationFileInput) {
+    remediationFileInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const folderId = document.getElementById("remediationImportFolder").value;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const { document: parsedDocument, errors } = parseRemediationTranslationDocumentText(reader.result);
+        const provenanceValidation = parsedDocument
+          ? validateRemediationProvenance(parsedDocument, { learnerResponses: loadLearnerResponses(), teacherReviews: loadTeacherReviews() })
+          : { valid: true, errors: [] };
+        remediationImportDraft = {
+          folderId,
+          document: parsedDocument,
+          errors: [...errors, ...provenanceValidation.errors],
+          allowCopy: false,
+        };
+        selectedTranslationDocumentId = null;
+        translationPracticeActive = false;
+        renderTranslationMainPanel();
+      };
+      reader.onerror = () => showToast(t("toast.remediationImportFail"));
+      reader.readAsText(file);
+      event.target.value = "";
+    });
+  }
 }
 
 function validateDraftMetadata({ title, sourceLanguage, targetLanguage }) {
@@ -2250,6 +2367,14 @@ function validateDraftMetadata({ title, sourceLanguage, targetLanguage }) {
 }
 
 function renderTranslationMainPanel() {
+  if (reviewImportDraft) {
+    renderReviewImportPreview();
+    return;
+  }
+  if (remediationImportDraft) {
+    renderRemediationImportPreview();
+    return;
+  }
   if (correctionWorkspaceResponseId) {
     renderCorrectionWorkspace(correctionWorkspaceResponseId);
     return;
@@ -2332,6 +2457,11 @@ function renderTranslationDocumentEditor(doc) {
               <span class="meta-text">${escapeHtml(new Date(response.finalizedAt || response.session.completedAt || Date.now()).toLocaleString())}</span>
               <div class="row-actions">
                 <button class="small-button" type="button" data-open-review="${response.id}">${t("review.openWorkspace")}</button>
+                <button class="small-button" type="button" data-export-review-request="${response.id}">${t("review.exportReviewRequest")}</button>
+                <label class="secondary-button small-button file-label">
+                  <span>${t("review.importReview")}</span>
+                  <input type="file" data-import-review="${response.id}" accept="application/json,.json">
+                </label>
               </div>
             </div>
           `).join("")}
@@ -2385,6 +2515,12 @@ function bindTranslationDocumentEditorEvents(doc) {
   document.getElementById("addTranslationItem").addEventListener("click", () => addTranslationItemToDocument(doc.id));
   document.querySelectorAll("[data-open-review]").forEach((button) => {
     button.addEventListener("click", () => openCorrectionWorkspace(button.dataset.openReview));
+  });
+  document.querySelectorAll("[data-export-review-request]").forEach((button) => {
+    button.addEventListener("click", () => exportReviewRequest(button.dataset.exportReviewRequest));
+  });
+  document.querySelectorAll("[data-import-review]").forEach((input) => {
+    input.addEventListener("change", (event) => startTeacherReviewImport(input.dataset.importReview, event));
   });
 
   document.querySelectorAll("[data-item-source]").forEach((textarea) => {
@@ -2667,6 +2803,7 @@ function renderTranslationPracticeComplete() {
       <div class="quiz-actions">
         <button class="secondary-button" id="backToDocumentAfterPractice" type="button">${t("translationPractice.backToDocument")}</button>
         <button class="secondary-button" id="exportTranslationResponseAfterPractice" type="button">${t("actions.exportResponse")}</button>
+        <button class="secondary-button" id="exportReviewRequestAfterPractice" type="button">${t("review.exportReviewRequest")}</button>
         <button class="secondary-button" id="openCorrectionWorkspaceAfterPractice" type="button">${t("review.openWorkspace")}</button>
         <button class="primary-button" id="retryTranslationPractice" type="button">${t("translationPractice.practiceAgain")}</button>
       </div>
@@ -2679,6 +2816,7 @@ function renderTranslationPracticeComplete() {
     renderTranslationView();
   });
   document.getElementById("exportTranslationResponseAfterPractice").addEventListener("click", () => exportLearnerResponse(translationLastResponseId));
+  document.getElementById("exportReviewRequestAfterPractice").addEventListener("click", () => exportReviewRequest(translationLastResponseId));
   document.getElementById("openCorrectionWorkspaceAfterPractice").addEventListener("click", () => {
     translationPracticeActive = false;
     openCorrectionWorkspace(translationLastResponseId);
@@ -2699,6 +2837,66 @@ function openCorrectionWorkspace(responseId) {
   renderTranslationMainPanel();
 }
 
+function createFreshReviewDraft(responseId) {
+  return normalizeTeacherReview({
+    schemaVersion: 1,
+    documentType: DOCUMENT_TYPES.TEACHER_REVIEW,
+    id: makeId(),
+    responseId,
+    createdAt: new Date().toISOString(),
+    reviewer: { type: "human" },
+    itemReviews: [],
+    remediationRecommendations: [],
+  });
+}
+
+function reviewerLabel(reviewer) {
+  if (!reviewer) return "-";
+  return reviewer.displayLabel || reviewer.toolName || reviewer.type || "-";
+}
+
+function renderReviewPicker(response, availableReviews) {
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions">
+        <span class="type-pill">${t("review.workspaceTitle")}</span>
+        <div class="row-actions">
+          <button class="secondary-button small-button" type="button" id="exitCorrectionWorkspace">${t("review.back")}</button>
+        </div>
+      </div>
+      <p class="meta-text">${t("review.availableReviews")}</p>
+      <div class="review-list">
+        ${availableReviews.map((review) => `
+          <div class="review-item">
+            <span class="meta-text">${escapeHtml(reviewerLabel(review.reviewer))} &middot; ${escapeHtml(review.id)}</span>
+            <div class="row-actions">
+              <button class="small-button" type="button" data-open-specific-review="${review.id}">${t("review.openReview")}</button>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+      <button class="primary-button" type="button" id="startNewReview">${t("review.newReview")}</button>
+    </div>
+  `;
+
+  document.getElementById("exitCorrectionWorkspace").addEventListener("click", () => {
+    correctionWorkspaceResponseId = null;
+    correctionReviewDraft = null;
+    translationPracticeActive = false;
+    renderTranslationMainPanel();
+  });
+  document.querySelectorAll("[data-open-specific-review]").forEach((button) => {
+    button.addEventListener("click", () => {
+      correctionReviewDraft = availableReviews.find((review) => review.id === button.dataset.openSpecificReview);
+      renderTranslationMainPanel();
+    });
+  });
+  document.getElementById("startNewReview").addEventListener("click", () => {
+    correctionReviewDraft = createFreshReviewDraft(response.id);
+    renderTranslationMainPanel();
+  });
+}
+
 function renderCorrectionWorkspace(responseId) {
   const response = findLearnerResponse(loadLearnerResponses(), responseId);
   if (!response) {
@@ -2709,20 +2907,25 @@ function renderCorrectionWorkspace(responseId) {
     return;
   }
 
+  const availableReviews = findTeacherReviewsForResponse(loadTeacherReviews(), responseId);
+
   if (!correctionReviewDraft || correctionReviewDraft.responseId !== responseId) {
-    correctionReviewDraft = findTeacherReviewForResponse(loadTeacherReviews(), responseId) || normalizeTeacherReview({
-      schemaVersion: 1,
-      documentType: DOCUMENT_TYPES.TEACHER_REVIEW,
-      id: makeId(),
-      responseId,
-      createdAt: new Date().toISOString(),
-      reviewer: { type: "human" },
-      itemReviews: [],
-      remediationRecommendations: [],
-    });
     correctionItemIndex = 0;
+    if (availableReviews.length === 1) {
+      correctionReviewDraft = availableReviews[0];
+    } else if (availableReviews.length === 0) {
+      correctionReviewDraft = createFreshReviewDraft(responseId);
+    } else {
+      correctionReviewDraft = null;
+    }
   }
 
+  if (!correctionReviewDraft) {
+    renderReviewPicker(response, availableReviews);
+    return;
+  }
+
+  const isPersistedReview = availableReviews.some((review) => review.id === correctionReviewDraft.id);
   const items = response.material.snapshot.items;
   const total = items.length;
   correctionItemIndex = Math.min(Math.max(correctionItemIndex, 0), total - 1);
@@ -2746,6 +2949,15 @@ function renderCorrectionWorkspace(responseId) {
         <h2>${t("review.workspaceTitle")}</h2>
         <p>${escapeHtml(response.material.title || t("library.untitled"))}</p>
       </div>
+      ${availableReviews.length ? `
+        <div class="review-switcher">
+          <span class="meta-text">${t("review.availableReviews")}</span>
+          ${availableReviews.map((review) => `
+            <button class="small-button ${review.id === correctionReviewDraft.id ? "active" : ""}" type="button" data-switch-review="${review.id}">${escapeHtml(reviewerLabel(review.reviewer))}</button>
+          `).join("")}
+          <button class="small-button" type="button" id="startNewReviewInline">${t("review.newReview")}</button>
+        </div>
+      ` : ""}
       <div class="progress-line">
         <span>${t("translationPractice.progress", { current: correctionItemIndex + 1, total })}</span>
       </div>
@@ -2810,12 +3022,16 @@ function renderCorrectionWorkspace(responseId) {
       <div class="quiz-actions">
         <button class="secondary-button" type="button" id="previousCorrectionItem" ${correctionItemIndex === 0 ? "disabled" : ""}>${t("actions.previousQuestion")}</button>
         <button class="secondary-button" type="button" id="nextCorrectionItem" ${correctionItemIndex === total - 1 ? "disabled" : ""}>${t("actions.nextQuestion")}</button>
+        ${isPersistedReview ? `
+          <button class="secondary-button" type="button" id="exportReviewJson">${t("review.exportReviewJson")}</button>
+          <button class="secondary-button" type="button" id="exportRemediationRequest">${t("review.exportRemediationRequest")}</button>
+        ` : ""}
         <button class="primary-button" type="button" id="saveCorrectionReview">${t("review.save")}</button>
       </div>
     </div>
   `;
 
-  bindCorrectionWorkspaceEvents(response, item, answerText);
+  bindCorrectionWorkspaceEvents(response, item, answerText, availableReviews);
 }
 
 function renderProjectionHtml(segments) {
@@ -2849,13 +3065,25 @@ function renderCorrectionRow(correction) {
   `;
 }
 
-function bindCorrectionWorkspaceEvents(response, item, answerText) {
+function bindCorrectionWorkspaceEvents(response, item, answerText, availableReviews) {
   document.getElementById("exitCorrectionWorkspace").addEventListener("click", () => {
     correctionWorkspaceResponseId = null;
     correctionReviewDraft = null;
     translationPracticeActive = false;
     renderTranslationMainPanel();
   });
+  document.querySelectorAll("[data-switch-review]").forEach((button) => {
+    button.addEventListener("click", () => {
+      correctionReviewDraft = availableReviews.find((review) => review.id === button.dataset.switchReview);
+      renderTranslationMainPanel();
+    });
+  });
+  document.getElementById("startNewReviewInline")?.addEventListener("click", () => {
+    correctionReviewDraft = createFreshReviewDraft(response.id);
+    renderTranslationMainPanel();
+  });
+  document.getElementById("exportReviewJson")?.addEventListener("click", () => exportCurrentReviewJson(response));
+  document.getElementById("exportRemediationRequest")?.addEventListener("click", () => exportCurrentRemediationRequest(response));
   document.querySelectorAll("[data-style]").forEach((button) => {
     button.addEventListener("mousedown", (event) => event.preventDefault());
     button.addEventListener("click", () => applyStyleCorrection(item.id, answerText, button.dataset.style));
@@ -3009,6 +3237,137 @@ function saveCorrectionReview(response) {
   }
 }
 
+function exportCurrentReviewJson(response) {
+  try {
+    const portable = toPortableTeacherReview(correctionReviewDraft, { learnerResponse: response });
+    downloadJson(portable, `teacher-review-${portable.id}.json`);
+  } catch {
+    showToast(t("toast.reviewExportFail"));
+  }
+}
+
+function exportCurrentRemediationRequest(response) {
+  try {
+    const pkg = createRemediationRequestPackage({
+      learnerResponse: response,
+      teacherReview: correctionReviewDraft,
+      task: t("review.remediationTaskInstruction"),
+    });
+    downloadJson(pkg, `remediation-request-${response.id}.json`);
+  } catch {
+    showToast(t("toast.remediationRequestExportFail"));
+  }
+}
+
+function exportReviewRequest(responseId) {
+  try {
+    const response = findLearnerResponse(loadLearnerResponses(), responseId);
+    if (!response) throw new Error("Learner Response not found");
+    const pkg = createReviewRequestPackage({ learnerResponse: response, task: t("review.taskInstruction") });
+    downloadJson(pkg, `review-request-${response.id}.json`);
+  } catch {
+    showToast(t("toast.reviewRequestExportFail"));
+  }
+}
+
+function startTeacherReviewImport(responseId, event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const response = findLearnerResponse(loadLearnerResponses(), responseId);
+  const reader = new FileReader();
+  reader.onload = () => {
+    const { review, errors } = parseExternalTeacherReviewText(reader.result, { learnerResponse: response });
+    const classification = review ? classifyTeacherReviewImport(review, loadTeacherReviews()) : null;
+    const combinedErrors = classification?.kind === "reassigned-reject"
+      ? [...errors, t("review.reassignedRejectError")]
+      : errors;
+    reviewImportDraft = { responseId, review, errors: combinedErrors, classification };
+    renderTranslationMainPanel();
+  };
+  reader.onerror = () => showToast(t("toast.reviewImportFail"));
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+function renderReviewImportItemSummary(review) {
+  return `
+    <div class="review-list">
+      ${review.itemReviews.map((item) => `
+        <div class="review-item">
+          <span class="meta-text">${escapeHtml(item.itemId)}</span>
+          <span>${item.judgment ? `<span class="correction-op-pill">${escapeHtml(item.judgment)}</span>` : ""}</span>
+          <span class="annotation-text">${escapeHtml(item.comment || item.suggestedRevision || "")}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderReviewImportPreview() {
+  const draft = reviewImportDraft;
+  const response = findLearnerResponse(loadLearnerResponses(), draft.responseId);
+  const review = draft.review;
+  const classification = draft.classification;
+  const canConfirm = Boolean(review) && classification?.kind !== "reassigned-reject";
+  const itemCount = review?.itemReviews?.length || 0;
+  const correctionCount = review ? review.itemReviews.reduce((sum, item) => sum + (item.corrections?.length || 0), 0) : 0;
+  const remediationCount = review?.remediationRecommendations?.length || 0;
+  const statusKey = !classification ? null : {
+    new: "review.importStatusNew",
+    idempotent: "review.importStatusIdempotent",
+    update: "review.importStatusUpdate",
+    "reassigned-reject": "review.importStatusReassignedReject",
+  }[classification.kind];
+
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions"><span class="type-pill">${t("review.importPreviewTitle")}</span></div>
+      <div class="field-grid">
+        <div class="preview-field"><span class="meta-text">${t("review.targetResponse")}</span><strong>${escapeHtml(response?.material?.title || draft.responseId)}</strong></div>
+        <div class="preview-field"><span class="meta-text">${t("review.reviewId")}</span><strong>${escapeHtml(review?.id || "-")}</strong></div>
+      </div>
+      <div class="field-grid">
+        <div class="preview-field"><span class="meta-text">${t("review.reviewer")}</span><strong>${escapeHtml(review ? reviewerLabel(review.reviewer) : "-")}</strong></div>
+        <div class="preview-field"><span class="meta-text">${t("review.importStatus")}</span><strong>${statusKey ? t(statusKey) : "-"}</strong></div>
+      </div>
+      ${review ? `
+        <p class="meta-text">${t("review.reviewedItemCount", { count: itemCount })} &middot; ${t("review.correctionCount", { count: correctionCount })} &middot; ${t("review.remediationRecommendationCount", { count: remediationCount })}</p>
+        ${renderReviewImportItemSummary(review)}
+      ` : ""}
+      ${draft.errors.length ? `
+        <div class="import-errors">
+          <strong>${t("translation.importErrors")}</strong>
+          <ul>${draft.errors.map((error) => `<li>${escapeHtml(error)}</li>`).join("")}</ul>
+        </div>
+      ` : ""}
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button" id="cancelReviewImport">${t("translation.importCancel")}</button>
+        <button class="primary-button" type="button" id="confirmReviewImport" ${canConfirm ? "" : "disabled"}>${t("translation.importConfirm")}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("cancelReviewImport").addEventListener("click", () => {
+    reviewImportDraft = null;
+    renderTranslationView();
+  });
+  document.getElementById("confirmReviewImport").addEventListener("click", confirmReviewImport);
+}
+
+function confirmReviewImport() {
+  const draft = reviewImportDraft;
+  try {
+    const response = findLearnerResponse(loadLearnerResponses(), draft.responseId);
+    const next = upsertTeacherReview(loadTeacherReviews(), draft.review, { learnerResponse: response });
+    saveJson(TEACHER_REVIEWS_KEY, next);
+    reviewImportDraft = null;
+    showToast(t("toast.reviewImportSuccess"));
+    renderTranslationView();
+  } catch {
+    showToast(t("toast.reviewImportFail"));
+  }
+}
+
 function updateSelectedTranslationDocument(changes) {
   try {
     const next = updateTranslationDocument(translationLibrary, selectedTranslationDocumentId, changes);
@@ -3153,6 +3512,83 @@ function confirmTranslationImport() {
     showToast(t("toast.translationImportSuccess"));
   } catch {
     showToast(t("toast.translationImportFail"));
+  }
+}
+
+function renderRemediationImportPreview() {
+  const draft = remediationImportDraft;
+  const folder = translationLibrary.folders.find((item) => item.id === draft.folderId);
+  const collision = draft.document ? findDocumentIdCollision(translationLibrary, draft.document.id) : false;
+  const provenance = draft.document?.provenance;
+  const sourceResponse = provenance?.sourceResponseId ? findLearnerResponse(loadLearnerResponses(), provenance.sourceResponseId) : null;
+  const sourceReview = provenance?.sourceReviewId
+    ? loadTeacherReviews().find((item) => item.id === provenance.sourceReviewId)
+    : null;
+  const items = draft.document?.items || [];
+  const allErrors = [
+    ...draft.errors,
+    ...(folder ? [] : [t("translation.importNeedFolder")]),
+    ...(collision && !draft.allowCopy ? [t("translation.importCollision")] : []),
+  ];
+  const canConfirm = allErrors.length === 0 && draft.document;
+
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions"><span class="type-pill">${t("review.importRemediationMaterial")}</span></div>
+      <div class="field-grid">
+        <div class="preview-field"><span class="meta-text">${t("translation.documentTitleLabel")}</span><strong>${escapeHtml(draft.document?.title || "-")}</strong></div>
+        <div class="preview-field"><span class="meta-text">${t("translation.importTargetFolder")}</span><strong>${escapeHtml(folder?.name || "-")}</strong></div>
+      </div>
+      <p class="meta-text">${t("translation.itemCount", { count: items.length })}</p>
+      <div class="field-grid">
+        <div class="preview-field"><span class="meta-text">${t("review.sourceResponse")}</span><strong>${escapeHtml(sourceResponse?.material?.title || provenance?.sourceResponseId || "-")}</strong></div>
+        <div class="preview-field"><span class="meta-text">${t("review.sourceReview")}</span><strong>${escapeHtml(sourceReview ? reviewerLabel(sourceReview.reviewer) : (provenance?.sourceReviewId || "-"))}</strong></div>
+      </div>
+      ${collision ? `
+        <label class="inline-check">
+          <span>${t("translation.importAsCopy")}</span>
+          <input type="checkbox" id="remediationAllowCopy" ${draft.allowCopy ? "checked" : ""}>
+        </label>
+      ` : ""}
+      ${allErrors.length ? `
+        <div class="import-errors">
+          <strong>${t("translation.importErrors")}</strong>
+          <ul>${allErrors.map((error) => `<li>${escapeHtml(error)}</li>`).join("")}</ul>
+        </div>
+      ` : ""}
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button" id="cancelRemediationImport">${t("translation.importCancel")}</button>
+        <button class="primary-button" type="button" id="confirmRemediationImport" ${canConfirm ? "" : "disabled"}>${t("translation.importConfirm")}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("cancelRemediationImport").addEventListener("click", () => {
+    remediationImportDraft = null;
+    renderTranslationView();
+  });
+  if (collision) {
+    document.getElementById("remediationAllowCopy").addEventListener("change", (event) => {
+      remediationImportDraft.allowCopy = event.target.checked;
+      renderRemediationImportPreview();
+    });
+  }
+  document.getElementById("confirmRemediationImport").addEventListener("click", confirmRemediationImport);
+}
+
+function confirmRemediationImport() {
+  const draft = remediationImportDraft;
+  try {
+    const collision = findDocumentIdCollision(translationLibrary, draft.document.id);
+    const nextDocument = collision ? remapDocumentForCopy(draft.document) : draft.document;
+    const next = createTranslationDocument(translationLibrary, { ...nextDocument, folderId: draft.folderId });
+    selectedTranslationDocumentId = next.documents[next.documents.length - 1].id;
+    remediationImportDraft = null;
+    saveTranslationLibrary(next);
+    renderTranslationView();
+    showToast(t("toast.remediationImportSuccess"));
+  } catch {
+    showToast(t("toast.remediationImportFail"));
   }
 }
 

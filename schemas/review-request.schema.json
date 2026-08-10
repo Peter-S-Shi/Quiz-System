@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/quiz-studio/schemas/review-request.schema.json",
+  "title": "Quiz Studio Review Request",
+  "description": "A self-contained transport envelope handing a finalized Learner Response to an external human/AI/agent reviewer and asking for a canonical Teacher Review back. This is an export/transport artifact, not a canonical learning record; the canonical record is the embedded learnerResponse.",
+  "type": "object",
+  "required": ["schemaVersion", "documentType", "id", "exportedAt", "task", "learnerResponse", "requestedOutput"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "documentType": { "const": "quiz-studio.review-request" },
+    "id": { "type": "string", "minLength": 1 },
+    "exportedAt": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "learnerResponse": {
+      "type": "object",
+      "description": "A faithful portable copy of the canonical quiz-studio.learner-response contract. Validate it against learner-response.schema.json and the runtime validateLearnerResponse() boundary."
+    },
+    "requestedOutput": {
+      "type": "object",
+      "required": ["documentType", "schemaVersion"],
+      "additionalProperties": false,
+      "properties": {
+        "documentType": { "const": "quiz-studio.teacher-review" },
+        "schemaVersion": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

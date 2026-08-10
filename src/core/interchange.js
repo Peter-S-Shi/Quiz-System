@@ -162,9 +162,7 @@ export function createTranslationLearnerResponse({ id = makeId(), session }) {
     summary: {
       itemCount: items.length,
     },
-    provenance: {
-      purpose: "practice",
-    },
+    provenance: normalizeProvenance(session.materialProvenance) || { purpose: "practice" },
     ...(learnerAnnotations.length ? { learnerAnnotations } : {}),
   };
 }
@@ -478,6 +476,13 @@ export function validateTeacherReview(value, options = {}) {
 export function toPortableLearnerResponse(value) {
   const normalized = normalizeLearnerResponse(value);
   const validation = validateLearnerResponse(normalized);
+  if (!validation.valid) throw new TypeError(validation.errors.join(" "));
+  return cloneValue(normalized);
+}
+
+export function toPortableTeacherReview(value, options = {}) {
+  const normalized = normalizeTeacherReview(value);
+  const validation = validateTeacherReview(normalized, options);
   if (!validation.valid) throw new TypeError(validation.errors.join(" "));
   return cloneValue(normalized);
 }

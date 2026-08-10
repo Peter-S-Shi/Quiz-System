@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.teacher-review",
+  "id": "external-review-sample-1",
+  "responseId": "translation-response-sample-1",
+  "createdAt": "2026-01-16T12:00:00.000Z",
+  "reviewer": {
+    "type": "external-ai",
+    "displayLabel": "Synthetic External Reviewer",
+    "toolName": "Example LLM"
+  },
+  "summary": "Good gist translation; minor tense and phrasing fixes suggested.",
+  "itemReviews": [
+    {
+      "itemId": "translation-item-sample-1",
+      "judgment": "partial",
+      "comment": "Tense is off: the source uses present tense.",
+      "corrections": [
+        {
+          "id": "correction-sample-1",
+          "operation": "replace",
+          "start": 10,
+          "end": 16,
+          "anchoredText": "leaves",
+          "text": "departs",
+          "color": "blue",
+          "createdAt": "2026-01-16T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "itemId": "translation-item-sample-2",
+      "judgment": "correct",
+      "suggestedRevision": "We will arrive before noon.",
+      "corrections": [
+        {
+          "id": "correction-sample-2",
+          "operation": "style",
+          "styleType": "underline",
+          "start": 0,
+          "end": 9,
+          "anchoredText": "We arrive",
+          "createdAt": "2026-01-16T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "remediationRecommendations": [
+    {
+      "materialType": "translation-document",
+      "focus": "Practice future-tense verb phrasing."
+    }
+  ]
+}

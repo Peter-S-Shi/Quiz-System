@@ -28,6 +28,7 @@ export function createTranslationSession({ id = makeId(), document, startedAt = 
     revealed: {},
     annotations: {},
     completed: false,
+    ...(isPlainObject(document.provenance) ? { materialProvenance: structuredClone(document.provenance) } : {}),
   };
 }
 
@@ -83,6 +84,7 @@ export function normalizeTranslationSession(value) {
     completed: value.completed === true,
     ...(nonEmptyString(value.completedAt) ? { completedAt: value.completedAt } : {}),
     ...(nonEmptyString(value.responseId) ? { responseId: value.responseId } : {}),
+    ...(isPlainObject(value.materialProvenance) ? { materialProvenance: structuredClone(value.materialProvenance) } : {}),
   };
 }
 

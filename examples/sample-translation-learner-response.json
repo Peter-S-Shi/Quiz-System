@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.learner-response",
+  "id": "translation-response-sample-1",
+  "status": "finalized",
+  "finalizedAt": "2026-01-16T09:10:00.000Z",
+  "material": {
+    "type": "translation-document",
+    "id": "translation-document-sample-1",
+    "title": "Short Travel Notes",
+    "snapshot": {
+      "items": [
+        {
+          "id": "translation-item-sample-1",
+          "sourceText": "Le train part a huit heures.",
+          "position": 0
+        },
+        {
+          "id": "translation-item-sample-2",
+          "sourceText": "Nous arriverons avant midi.",
+          "referenceTranslation": "We will arrive before noon.",
+          "notes": "The reference is illustrative, not a unique correct answer.",
+          "position": 1
+        }
+      ],
+      "sourceLanguage": "fr",
+      "targetLanguage": "en"
+    }
+  },
+  "session": {
+    "id": "translation-session-sample-1",
+    "startedAt": "2026-01-16T09:00:00.000Z",
+    "completedAt": "2026-01-16T09:10:00.000Z"
+  },
+  "responses": [
+    {
+      "itemId": "translation-item-sample-1",
+      "answer": "The train leaves at eight."
+    },
+    {
+      "itemId": "translation-item-sample-2",
+      "answer": "We arrive before noon"
+    }
+  ],
+  "summary": {
+    "itemCount": 2
+  },
+  "provenance": {
+    "purpose": "practice"
+  },
+  "learnerAnnotations": [
+    {
+      "itemId": "translation-item-sample-2",
+      "id": "annotation-sample-1",
+      "kind": "uncertain",
+      "start": 0,
+      "end": 9,
+      "text": "We arrive",
+      "createdAt": "2026-01-16T09:05:00.000Z"
+    }
+  ]
+}
