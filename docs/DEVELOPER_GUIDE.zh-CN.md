@@ -12,6 +12,7 @@ Quiz Studio 是一个静态 ES module 应用。
 - `src/core/backup.js`：经过校验的试卷库备份组合和向后兼容恢复解析。
 - `src/core/translation-domain.js`：Translation Folder、Document、有序 Item 模型、校验和不可变核心操作。
 - `src/core/translation-import.js`：与 DOM 解耦的解析逻辑，覆盖仅原文/双语批量导入、可移植 JSON 导入校验，以及 Translation Library UI 的 document ID 冲突处理。
+- `src/core/translation-session.js`：与 DOM 解耦的 Translation Practice session 模型——在 session 开始时对文档条目做快照、逐条目答案和可选参考译文显示状态、导航，以及对格式错误的已保存 session 的安全拒绝。
 - `src/core/migrations.js`：schema 版本和数据标准化。
 - `src/storage/local-storage.js`：浏览器本地存储边界。
 - `schemas/`：公开 Quiz Paper、Learner Response 和 Teacher Review JSON Schema。
@@ -32,6 +33,14 @@ Teacher Review 校验只接受追加式 review 字段，并拒绝未知顶层字
 `src/app.js` 中的 Translation Library UI 是与编辑、做题并列的第三个顶层模式。它直接基于 `translation-domain.js` 的操作渲染文件夹和文档管理，不会重复维护一份状态；每次修改都经过与自动化测试相同的不可变核心函数。
 
 批量导入和 JSON 导入都遵循 输入 -> 解析 -> 校验 -> 预览 -> 确认 -> 持久化 流程。解析和校验逻辑位于 `translation-import.js`，因此可以在没有 DOM 的情况下测试。UI 只为预览构建一个草稿对象，只有在确认时才调用 `createTranslationDocument()`，因此被取消或无效的导入不会触碰已存储数据。
+
+## Translation Practice Session
+
+Translation Practice session 会在调用 `createTranslationSession()`（`translation-session.js`）时对目标文档的条目做快照。之后对该翻译文档的实时编辑不会改写正在进行或已经完成的 session，因为 session 携带的是它开始时的独立条目副本。
+
+active session 使用与 Objective Quiz active session 不同的存储 key（`quiz-studio-translation-active-session-v1` 与 `quiz-studio-active-session-v1`），因此即使两者同时存在未完成的 session，也不会互相静默覆盖。`normalizeTranslationSession()` 会把格式错误的已保存数据直接归一化为 `null`，UI 将其视为"没有未完成 session"，而不是让恢复流程崩溃。
+
+完成 session 时会调用 `interchange.js` 中的 `createTranslationLearnerResponse()` 生成一份 finalized 的非客观 Learner Response——不会设置 `result`、`correctCount` 或 `percent`。该 response 会先经过现有的幂等/不可变写入路径 `upsertLearnerResponse()` 持久化，然后才清空 active session 存储 key；因此 finalization 过程中出现的存储失败会保留可恢复的 active session，而不会静默丢失学习者的作答。
 
 ## 验证
 

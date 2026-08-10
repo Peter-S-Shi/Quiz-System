@@ -156,7 +156,9 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: In progress; M6.0 and M6.1 accepted; M6.2 implementation complete and user acceptance pending; Translation Practice sessions not started
+Status: In progress; M6.0 and M6.1 accepted; M6.2 and M6.3 implementation complete with M6-wide acceptance deferred; M6.4 next
+
+Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7 is complete. Implementation review, regression testing, CI, and scope review still apply to every sub-milestone in the meantime. M6.0 and M6.1 were accepted before this policy took effect and remain accepted.
 
 Goal: add a dedicated, local-first workspace for document-oriented written translation practice without assuming that a reference translation is the only correct answer.
 
@@ -194,13 +196,22 @@ M6.1 state:
 
 M6.2 state:
 
-- Implementation complete; user acceptance pending.
+- Implementation complete; M6-wide acceptance deferred (not individually accepted; see the acceptance policy note above).
 - Adds the user-facing Translation Library workspace: folder and document management, ordered item editing with reordering, and document move between folders.
 - Adds source-only batch import, bilingual tab-separated batch import, and portable Translation Document JSON import, each through an Input -> Parse -> Validate -> Preview -> Confirm -> Persist pipeline.
 - External Translation Document JSON can be assigned to a user-selected local folder without requiring the external author to know local folder IDs; duplicate document IDs are rejected unless the user explicitly imports as a new copy with remapped IDs.
 - Adds Translation Document JSON export using the canonical public contract.
-- Translation Practice sessions, learner answer fields, vocabulary marking, and rich correction remain M6.3+ work.
-- M6.3 must not begin without a new prompt after M6.2 user acceptance.
+
+M6.3 state:
+
+- Implementation complete; M6-wide acceptance deferred (not individually accepted; see the acceptance policy note above).
+- Adds the first Translation Practice workflow: start practice from a document, source text visible, learner writes an independent translation, optional reference translation hidden by default with a learner-controlled reveal, navigation between items, and an intentional finish action.
+- Adds a dedicated Translation Session model (`src/core/translation-session.js`) that snapshots the document's items at session start, so later document edits do not rewrite what the learner is practicing or has already practiced.
+- Adds Translation active-session recovery through an isolated storage key, independent from the Objective Quiz active session, so the two cannot corrupt each other; malformed session data is safely rejected rather than crashing recovery.
+- Finalizing a session creates a non-objective Learner Response via `createTranslationLearnerResponse()` (no fabricated `correct`, `correctCount`, or `percent`); the active session is cleared only after the response has been saved successfully.
+- Repeated practice on the same document creates a new session and a new Learner Response ID without overwriting prior evidence.
+- Learner answer span markings, rich annotations, external Teacher Review import, and remediation UI remain M6.4+ work.
+- M6.4 must not begin without a new prompt.
 
 Approved macro scope:
 
@@ -224,9 +235,9 @@ Non-goals for the initial milestone:
 
 Acceptance effect:
 
-- Translation Practice must be implemented and accepted before the reopened current-version scope can pass Feature Complete Review.
-- Each M6.x implementation must receive its own review and acceptance before the next sub-milestone begins.
-- Feature Freeze remains inactive until that review is complete and explicitly accepted.
+- Translation Practice must be implemented and, per the deferred acceptance policy, covered by the comprehensive M6-wide acceptance before the reopened current-version scope can pass Feature Complete Review.
+- Each M6.x implementation must still receive its own implementation review, regression testing, CI, and scope review before the next sub-milestone begins; individual formal user acceptance is deferred to the one comprehensive M6-wide acceptance after M6.7 (this deferral does not apply retroactively to M6.0 and M6.1, which are already accepted).
+- Feature Freeze remains inactive until the M6-wide acceptance is complete.
 
 ## Milestone 7: Product Hardening
 

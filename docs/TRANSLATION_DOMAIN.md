@@ -1,6 +1,6 @@
 # Translation Domain And Persistence
 
-Milestone 6.1 established the data foundation for Translation Practice. Milestone 6.2 adds the first user-facing consumer of that foundation: the Translation Library workspace, with folder/document/item management and material import and export. Translation Practice sessions themselves remain later M6 work.
+Milestone 6.1 established the data foundation for Translation Practice. Milestone 6.2 added the first user-facing consumer of that foundation: the Translation Library workspace, with folder/document/item management and material import and export. Milestone 6.3 adds the first Translation Practice session workflow itself: productive-recall practice, session recovery, and non-objective finalization into a Learner Response.
 
 ## Aggregate Model
 
@@ -70,6 +70,17 @@ All three import paths follow Input -> Parse -> Validate -> Preview -> Confirm -
 
 Export uses `getTranslationDocument()` directly, so the exported file is exactly the same normalized, schema-valid shape used internally and accepted back on re-import.
 
+## Practice And Session Recovery (M6.3)
+
+Milestone 6.3 adds the first Translation Practice workflow in `src/core/translation-session.js`, independent of the Translation Library and Objective Quiz.
+
+- `createTranslationSession()` snapshots a document's items at the moment practice starts. The session never re-reads the live document afterward, so later edits, reordering, moves, or even deletion of the source document cannot rewrite what the learner is practicing or has already practiced.
+- Answers and optional reference-reveal state are keyed by stable Translation Item ID, independent of item position, and survive `JSON.stringify`/`parse` round trips through `normalizeTranslationSession()`, which rejects structurally invalid data by returning `null` rather than throwing.
+- The active session is stored under its own key (`quiz-studio-translation-active-session-v1`), fully isolated from the Objective Quiz active session, so the two cannot silently overwrite each other even when both are unfinished at once.
+- Finishing a session calls `createTranslationLearnerResponse()` in `interchange.js` to build a finalized Learner Response with `material.type: "translation-document"`. It supplies an `answer` (defaulting to an empty string) for every item in the snapshot so the interchange contract's full-coverage requirement is satisfied even when practice was left incomplete, and it never sets `result`, `correctCount`, or `percent`.
+- The active session is only cleared after the Learner Response has been written successfully, so a storage failure during finalization leaves the recoverable session intact instead of silently discarding the learner's work.
+- Repeated practice on the same document creates a new session ID and a new Learner Response ID; the existing idempotent/immutable `upsertLearnerResponse()` write path guarantees earlier finalized evidence is never overwritten.
+
 ## Deferred
 
-Translation Practice sessions, learner answer fields, `unknown / uncertain / should_know` markings, rich correction, Teacher Review round trips, remediation UI, and AI integration remain later M6 work.
+Learner answer span markings, `unknown / uncertain / should_know` classifications, rich correction, Teacher Review round trips, remediation UI, and AI integration remain later M6 work.

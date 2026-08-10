@@ -1,6 +1,6 @@
 # Translation 领域模型与持久化
 
-Milestone 6.1 为 Translation Practice 建立了数据基础。Milestone 6.2 在此基础上加入第一个面向用户的消费者：Translation Library 工作区，包含文件夹/文档/条目管理和材料导入导出。Translation Practice 练习 session 本身仍属于后续 M6 工作。
+Milestone 6.1 为 Translation Practice 建立了数据基础。Milestone 6.2 在此基础上加入了第一个面向用户的消费者：Translation Library 工作区，包含文件夹/文档/条目管理和材料导入导出。Milestone 6.3 加入了 Translation Practice 练习 session 本身：基于主动回忆的练习、session 恢复，以及生成非客观 Learner Response 的 finalization。
 
 ## 聚合模型
 
@@ -70,6 +70,17 @@ Milestone 6.2 的 Translation Library 工作区完全构建在 M6.1 领域函数
 
 导出直接使用 `getTranslationDocument()`，因此导出的文件与系统内部使用、并可在重新导入时被接受的规范化、符合 schema 的形状完全一致。
 
+## 练习与 Session 恢复（M6.3）
+
+Milestone 6.3 在 `src/core/translation-session.js` 中加入第一个 Translation Practice 练习工作流，与 Translation Library 和 Objective Quiz 相互独立。
+
+- `createTranslationSession()` 会在练习开始的那一刻对文档条目做快照。此后 session 不会再读取实时文档，因此后续对源文档的编辑、重排、移动，乃至删除，都不能改写学习者正在或已经练习过的内容。
+- 答案和可选的参考译文显示状态都以稳定的 Translation Item ID 为键，与条目位置无关，并且能在经过 `normalizeTranslationSession()` 的 `JSON.stringify`/`parse` 往返后保持一致；该函数对结构无效的数据会归一化为 `null`，而不是抛出异常。
+- active session 使用独立的存储 key（`quiz-studio-translation-active-session-v1`），与 Objective Quiz 的 active session 完全隔离，因此即使两者同时未完成，也不会互相静默覆盖。
+- 完成 session 时会调用 `interchange.js` 中的 `createTranslationLearnerResponse()`，生成 `material.type` 为 `"translation-document"` 的 finalized Learner Response。它会为快照中的每一条条目提供 `answer`（默认为空字符串），因此即使练习未完成，也满足 interchange contract 对完整覆盖的要求，并且不会设置 `result`、`correctCount` 或 `percent`。
+- 只有在 Learner Response 成功写入后，active session 才会被清空；因此 finalization 过程中的存储失败会保留可恢复的 session，而不会静默丢弃学习者的作答。
+- 对同一文档重复练习会生成新的 session ID 和新的 Learner Response ID；现有的幂等/不可变 `upsertLearnerResponse()` 写入路径保证此前已完成的证据不会被覆盖。
+
 ## 延后范围
 
-Translation Practice 练习 session、学习者作答字段、`unknown / uncertain / should_know` 标记、rich correction、Teacher Review 往返、remediation UI 和 AI 集成都属于后续 M6 工作。
+学习者选段标记、`unknown / uncertain / should_know` 分类、rich correction、Teacher Review 往返、remediation UI 和 AI 集成都属于后续 M6 工作。

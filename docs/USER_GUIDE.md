@@ -32,6 +32,16 @@ On Windows, double-click `start-local.bat` from the project folder to start the 
 - Use **Export document JSON** to download a Translation Document in the same portable format accepted by import.
 - Deleting a folder deletes its Translation Documents; deleting a document is a separate confirmed action. Both only affect local browser data.
 
+## Translation Practice
+
+- Open a Translation Document with at least one item and select **Start practice**.
+- The source text is shown for each item; write your own translation in the answer box. A reference translation, if present, stays hidden until you choose to reveal it — it is illustrative material, not the only correct answer, and is never auto-graded.
+- Move between items with **Previous** / **Next**. Your answers and current position are saved automatically as you go.
+- Use **Exit practice** to step away without losing progress. Reopening the same document later (even after a refresh) offers **Resume practice** or **Discard practice**; discarding requires confirmation and cannot be undone.
+- Starting practice on a different document while another one is unfinished asks for confirmation before discarding the unfinished attempt, since only one Translation Practice session is active at a time.
+- Use **Finish practice** whenever you are ready, even with some items left blank. Finishing saves your original submitted translations as an independent, protected Learner Response — no score is calculated, since translation is evaluated qualitatively rather than judged right or wrong.
+- After finishing, review your submitted translations, export the response, or start a new attempt on the same document. A new attempt creates new evidence and never overwrites an earlier finalized response.
+
 ## Data Safety
 
 Exported response and backup files can contain authored quiz or Translation material, reference translations, private notes, and learner answers. They remain under your control and are not uploaded automatically. Keep real data outside the repository in ignored folders such as `user-data/` or `exports/`, and review each file before sharing it with an external teacher.

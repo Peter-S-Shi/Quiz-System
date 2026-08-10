@@ -4,6 +4,9 @@
 
 ### Added
 
+- Added the M6.3 Translation Practice workflow: start practice from a Translation Document, write independent translations with source text visible and reference translation hidden by default with a learner-controlled reveal, navigate between items, and finish into a protected non-objective Learner Response.
+- Added a dedicated Translation Session model with document-item snapshotting, so later document edits never rewrite an in-progress or finalized session.
+- Added isolated Translation active-session recovery (separate storage key from the Objective Quiz active session) with Resume / Discard choices and safe rejection of malformed session data.
 - Added the M6.2 Translation Library workspace: folder, document, and ordered item management, with document move between folders.
 - Added source-only and bilingual (tab-separated) batch import, and portable Translation Document JSON import with folder reassignment and a deterministic duplicate-ID copy policy, each through an Input -> Parse -> Validate -> Preview -> Confirm -> Persist pipeline.
 - Added Translation Document JSON export using the canonical public contract.
@@ -17,6 +20,8 @@
 
 ### Documentation
 
+- Added bilingual Translation Practice usage, developer architecture notes, and an M6.3 manual-QA delta.
+- Recorded the user's decision to defer individual M6.x acceptance for M6.2-M6.7 to one comprehensive M6-wide acceptance after M6.7.
 - Added bilingual Translation Library usage, developer architecture notes, and an M6.2 manual-QA delta.
 - Renamed milestone documents to Roadmap documents.
 - Added Project Status documents as the current lifecycle-state authority.
