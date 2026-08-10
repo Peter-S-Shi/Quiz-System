@@ -101,14 +101,15 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Next Engineering Objective
 
-M6.6 is implementation complete and pushed for independent review. M6.7 History, Retry, Portability, and Whole-Product Integration is next in the approved sub-milestone sequence, but must not begin without a new, explicit user prompt starting it. Do not begin Product Hardening or Feature Freeze work before the comprehensive M6-wide acceptance (covering M6.0-M6.7) is complete.
+M6.6 is implementation complete and merged into `main` through PR #5. M6.7 History, Retry, Portability, and Whole-Product Integration is next in the approved sub-milestone sequence, but must not begin without a new, explicit user prompt starting it. Do not begin Product Hardening or Feature Freeze work before the comprehensive M6-wide acceptance (covering M6.0-M6.7) is complete.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
 - Verified baseline before M6.6: `27ecff8 Record M6.5 closure merge into main in PROJECT_STATUS.md` (`main`)
+- M6.6 merge commit: `19c8631 M6.6: External Teacher Round Trip (#5)` (`main`)
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
-- Synchronization target: validated M6.6 feature work on `milestone/6.6-external-teacher-round-trip`, open as PR #5 against `main` and not to be merged without explicit instruction
+- Synchronization status: M6.6 is merged into `main`; this status-only follow-up records the completed merge
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #5 is open for independent review; it must not be merged until the user explicitly instructs it
+- Pull request status: PR #5 was squash-merged after explicit user approval; GitHub CI passed on the final feature commit before merge

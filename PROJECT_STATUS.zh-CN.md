@@ -45,7 +45,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 168 项 core/interchange/translation/import/session/annotation/corrections/review/transport 自动测试通过，包含 M6.5 之前已验证的全部内容（Translation 持久化与顺序、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容、批量/JSON 导入处理、Translation session 快照稳定性、全部三种学习者标记类型、每一种 rich correction 样式/操作类型及其冲突策略、Teacher Review 的持久化/刷新/重新打开，以及孤儿/语义/schema 对齐的收尾工作），加上新增的 M6.6 覆盖：评阅请求包的创建会嵌入忠实可移植的 Learner Response 并能通过 JSON 往返；公开的 review-request/remediation-request schema 与运行时校验保持一致，包含对格式错误包的拒绝；外部 Teacher Review 导入能接受合法的 rich review，并拒绝格式错误的 JSON、错误的 documentType、外部导入边界上不受支持的 schema 版本、孤儿 responseId、未知条目、锚定文本不匹配、冲突的批改，以及无效的操作/样式/颜色取值；导入规划分类（新增/幂等/更新/拒绝改指）在规划阶段绝不修改集合；新增 review 会被持久化，相同 ID 内容有变化的 review 需要确认后才会更新，相同 ID 不同 response 的 review 会被拒绝且不会静默改指，同一 response 的多条 review 和多个 response 各自的 review 可以共存，指定的某条 review 能确定性地重新打开，导入的 review 绝不会改动 Learner Response 或其 learnerAnnotations，已存储的 review 可以无损导出/重新导入；补救练习请求包的创建/校验，包含对不匹配的 teacherReview/learnerResponse 组合的拒绝；补救 provenance 校验能接受正确解析的文档，并对不声称补救材料身份的文档判定为空操作、拒绝未知的 sourceResponseId、拒绝未知的 sourceReviewId、拒绝属于另一个 response 的 sourceReviewId，以及拒绝不匹配的 sourceMaterialId；补救导入边界会拒绝不受支持的 Translation Document schema 版本，受支持的版本会保留 provenance；本地文件夹重新绑定会保留补救 provenance；补救翻译文档的 ID 冲突绝不会被静默覆盖（复用既有的 M6.2 拒绝/复制为新 ID 策略）；补救文档能开始一次正常的练习 session 并携带 materialProvenance，完成练习后 Learner Response 的 provenance 即使在实时补救文档被删除后依然保留完整溯源；普通（非补救）session 完全不带 materialProvenance 字段；完整备份/恢复能同时保留多条 review 和一份补救文档/provenance；以及完整的样例 fixture 链（Translation Learner Response → 外部 Teacher Review → 评阅请求 → 补救练习请求 → 补救翻译文档）能同时通过运行时边界和公开 schema 的校验。
+- 178 项 core/interchange/translation/import/session/annotation/corrections/review/transport 自动测试通过。M6.6 收尾覆盖证明：原始外部 Teacher Review 无法借助归一化隐藏不受支持的顶层/item/correction 字段、替换受保护证据、畸形 reviewer 元数据或缺失的规范字段；专用补救导入会拒绝缺失/用途错误的 provenance 和畸形原始 author 元数据，同时接受能在本地完整解析的溯源链；review/remediation request 的运行时校验器和公开 schema 会拒绝不支持的包/输出版本和空 task；中英文应用导出指令均明确要求 provenance 的时间戳和 actor 元数据。此前 M6.0-M6.6 的全部覆盖继续通过。
 - CI workflow 已存在；在 `milestone/6.6-external-teacher-round-trip` 分支上已通过。
 - 本地浏览器 smoke test 完整走过了 M6.6 的真实往返：练习并完成一次 Translation 作答；从完成页导出评阅请求，确认其中嵌入了正确的 learnerResponse/requestedOutput；构造一份指向该 response 的外部 Teacher Review，通过已完成的作答记录行导入，确认预览正确显示目标作答记录、评阅者、review ID、"新增批改"状态，以及条目数/批改数/补救建议数；点击**取消**并确认没有任何 teacherReviews 被持久化；重新导入并点击**确认导入**，确认批改已保存；打开批改工作区（因为恰好只有一条 review 所以自动打开），确认导入的批改正确渲染；在工作区内导出批改 JSON 和补救练习请求，确认其内容正确；构造并导入一份 provenance 指向该 response/review 的补救翻译文档，确认预览正确解析并显示真实的来源作答记录/review 标题，且文档带着完整 provenance 持久化进了所选文件夹；对补救文档开始并完成一次练习，确认 active session 携带 materialProvenance，finalized response 携带完整溯源（sourceResponseId/sourceReviewId/sourceMaterialId/author）；确认原始 response 及其 provenance 保持逐字节不变；为原始 response 再导入第二条 review，确认多 review 选择器正确出现，打开指定 review 会显示它自己的批改/评判，工作区内的切换栏能在不同 review 之间正确切换；尝试导入一条孤儿 responseId 的 review，确认它被清晰地拒绝且确认按钮被禁用；并确认英文界面下同样的流程渲染正确——全程没有出现控制台错误。
 - 浏览器测试工具此前确认了导出下载会正确触发（文件名和事件正确），但未捕获下载文件的实际落盘内容；这次 M6.6 的 smoke test 改为拦截 `Blob` 构造函数直接检查导出的评阅请求/补救练习请求/review JSON 内容，这比只验证文件名更严格，但仍不完全等同于打开一个真实落盘的下载文件。
@@ -101,14 +101,15 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-M6.6 已完成实现并已推送供独立评审。按已批准的子里程碑顺序，下一个是 M6.7 History, Retry, Portability and Whole-Product Integration，但未经新的、明确的用户 prompt 不得开始。在覆盖 M6.0-M6.7 的整体 M6 验收完成前，不开始 Product Hardening 或 Feature Freeze 工作。
+M6.6 已完成实现，并通过 PR #5 合并进 `main`。按已批准的子里程碑顺序，下一个是 M6.7 History, Retry, Portability and Whole-Product Integration，但未经新的、明确的用户 prompt 不得开始。在覆盖 M6.0-M6.7 的整体 M6 验收完成前，不开始 Product Hardening 或 Feature Freeze 工作。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程：`origin`
-- M6.6 开始前已验证的基线：`5421ef4 M6.5: Rich Correction / Revision Workspace (#4)`（squash merge，位于 main）
+- M6.6 开始前已验证的基线：`27ecff8 Record M6.5 closure merge into main in PROJECT_STATUS.md`（`main`）
+- M6.6 合并提交：`19c8631 M6.6: External Teacher Round Trip (#5)`（`main`）
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步目标：经过验证的 M6.6 feature work 位于 `milestone/6.6-external-teacher-round-trip` 分支，将开出 Pull Request 提交到 `main`，未经明确指示不得合并
+- 同步状态：M6.6 已合并进 `main`；本次纯状态文档提交用于记录已完成的合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：正在为 `milestone/6.6-external-teacher-round-trip` 创建 Pull Request 供独立评审；未经用户明确指示不得合并
+- Pull Request 状态：PR #5 已在用户明确批准后 squash merge；最终 feature commit 的 GitHub CI 在合并前已通过
