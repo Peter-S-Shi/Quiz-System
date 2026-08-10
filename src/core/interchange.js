@@ -1,4 +1,5 @@
 import { makeId } from "./utils.js";
+import { correctionsConflict, validateCorrectionShape } from "./corrections.js";
 
 export const INTERCHANGE_SCHEMA_VERSION = 1;
 
@@ -28,7 +29,19 @@ const ITEM_REVIEW_KEYS = new Set([
   "comment",
   "tags",
   "suggestedRevision",
+  "corrections",
   "extensions",
+]);
+const CORRECTION_KEYS = new Set([
+  "id",
+  "operation",
+  "start",
+  "end",
+  "anchoredText",
+  "text",
+  "styleType",
+  "color",
+  "createdAt",
 ]);
 
 export function normalizeActor(value = {}) {
@@ -346,6 +359,21 @@ export function normalizeTeacherReview(value = {}) {
         ...(typeof item?.comment === "string" ? { comment: item.comment } : {}),
         ...(Array.isArray(item?.tags) ? { tags: item.tags.map(String) } : {}),
         ...(typeof item?.suggestedRevision === "string" ? { suggestedRevision: item.suggestedRevision } : {}),
+        ...(Array.isArray(item?.corrections) && item.corrections.length
+          ? {
+            corrections: item.corrections.map((correction) => ({
+              id: String(correction?.id || ""),
+              operation: String(correction?.operation || ""),
+              start: Number(correction?.start),
+              end: Number(correction?.end),
+              anchoredText: String(correction?.anchoredText ?? ""),
+              ...(typeof correction?.text === "string" ? { text: correction.text } : {}),
+              ...(typeof correction?.styleType === "string" ? { styleType: correction.styleType } : {}),
+              ...(typeof correction?.color === "string" ? { color: correction.color } : {}),
+              createdAt: String(correction?.createdAt || ""),
+            })),
+          }
+          : {}),
         ...(isPlainObject(item?.extensions) ? { extensions: cloneValue(item.extensions) } : {}),
       }))
       : [],
@@ -374,7 +402,12 @@ export function validateTeacherReview(value, options = {}) {
   const response = options.learnerResponse;
   if (response && value.responseId !== response.id) errors.push("Teacher Review responseId does not match the protected Learner Response.");
   const knownItemIds = new Set(response?.responses?.map((item) => item.itemId) || []);
+  const answerByItemId = new Map();
+  (response?.responses || []).forEach((item) => {
+    if (nonEmptyString(item?.itemId) && typeof item.answer === "string") answerByItemId.set(item.itemId, item.answer);
+  });
   const reviewedItemIds = new Set();
+  const correctionIds = new Set();
   (Array.isArray(value.itemReviews) ? value.itemReviews : []).forEach((item) => {
     if (!isPlainObject(item)) {
       errors.push("Each Teacher Review item must be an object.");
@@ -388,6 +421,55 @@ export function validateTeacherReview(value, options = {}) {
     reviewedItemIds.add(item.itemId);
     if (response && !knownItemIds.has(item.itemId)) errors.push(`Teacher Review references unknown itemId: ${item.itemId}`);
     if (item.judgment && !REVIEW_JUDGMENTS.has(item.judgment)) errors.push(`Invalid Teacher Review judgment: ${item.judgment}`);
+
+    if (Object.prototype.hasOwnProperty.call(item, "corrections")) {
+      if (!Array.isArray(item.corrections)) {
+        errors.push(`Teacher Review corrections for itemId ${item.itemId || "unknown"} must be an array.`);
+      } else {
+        const anchoredCorrections = [];
+        const answerText = answerByItemId.get(item.itemId);
+
+        item.corrections.forEach((correction, index) => {
+          if (!isPlainObject(correction)) {
+            errors.push(`Correction ${index} for itemId ${item.itemId || "unknown"} must be an object.`);
+            return;
+          }
+          Object.keys(correction).forEach((key) => {
+            if (!CORRECTION_KEYS.has(key)) errors.push(`Unsupported correction field: ${key}`);
+          });
+          if (!nonEmptyString(correction.id)) errors.push(`Correction ${index} requires an id.`);
+          else if (correctionIds.has(correction.id)) errors.push(`Duplicate correction id: ${correction.id}`);
+          else correctionIds.add(correction.id);
+
+          const shape = validateCorrectionShape(correction);
+          if (!shape.valid) {
+            shape.errors.forEach((message) => errors.push(`Correction ${index}: ${message}`));
+            return;
+          }
+
+          if (!response) return;
+          if (typeof answerText !== "string") {
+            errors.push(`Correction ${index} references an item with no learner answer text.`);
+            return;
+          }
+          if (correction.end > answerText.length) {
+            errors.push(`Correction ${index} range is outside the learner answer.`);
+          } else if (answerText.slice(correction.start, correction.end) !== correction.anchoredText) {
+            errors.push(`Correction ${index} anchoredText does not match the learner answer.`);
+          } else {
+            anchoredCorrections.push(correction);
+          }
+        });
+
+        for (let i = 0; i < anchoredCorrections.length; i += 1) {
+          for (let j = i + 1; j < anchoredCorrections.length; j += 1) {
+            if (correctionsConflict(anchoredCorrections[i], anchoredCorrections[j])) {
+              errors.push(`Corrections for itemId ${item.itemId} conflict on overlapping content-changing operations.`);
+            }
+          }
+        }
+      }
+    }
   });
 
   return { valid: errors.length === 0, errors };

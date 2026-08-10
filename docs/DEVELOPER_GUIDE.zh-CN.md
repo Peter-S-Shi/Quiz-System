@@ -14,6 +14,8 @@ Quiz Studio 是一个静态 ES module 应用。
 - `src/core/translation-import.js`：与 DOM 解耦的解析逻辑，覆盖仅原文/双语批量导入、可移植 JSON 导入校验，以及 Translation Library UI 的 document ID 冲突处理。
 - `src/core/translation-session.js`：与 DOM 解耦的 Translation Practice session 模型——在 session 开始时对文档条目做快照、逐条目答案和可选参考译文显示状态、导航，以及对格式错误的已保存 session 的安全拒绝。
 - `src/core/translation-annotations.js`：与 DOM 解耦的学习者元认知标记（`unknown`/`uncertain`/`should_know`），标记只针对学习者自己的作答文本——包括校验、重叠/重复策略、编辑后重新校验，以及对已保存标记的安全归一化。
+- `src/core/corrections.js`：与 DOM 解耦的 rich correction 模型，服务于 M6.5 批改工作区——用单一的 `correction` 概念覆盖表现型样式、内容变更类操作（插入/替换/删除）和批注，每一条都锚定在一个字符范围上；包含校验、样式/颜色校验、内容操作冲突策略，以及一个确定性的渲染投影函数。
+- `src/core/review-records.js`：独立的 Teacher Review 集合操作（按 ID 新增/更新、按 `responseId` 查找），与 `learning-records.js` 对应，同样没有静默的历史条数上限。
 - `src/core/migrations.js`：schema 版本和数据标准化。
 - `src/storage/local-storage.js`：浏览器本地存储边界。
 - `schemas/`：公开 Quiz Paper、Learner Response 和 Teacher Review JSON Schema。
@@ -48,6 +50,14 @@ active session 使用与 Objective Quiz active session 不同的存储 key（`qu
 标记锚定在学习者自己作答文本的字符范围上（`{ id, kind, start, end, text, createdAt }`），绝不会渲染成内联标记语法——作答始终保持纯文本，标记是按条目 ID 存放在 `session.annotations` 中的一个并行结构化层。`translation-session.js` 在每次某条目的作答发生变化时（在 `setTranslationAnswer()` 内部）都会重新校验该条目的标记，丢弃锚点已不匹配的标记，因此失效的标记绝不会继续指向错误的文本。
 
 重叠策略实现在 `addAnnotation()` 中：完全相同的范围再次标记会替换已有标记的分类；与另一个范围部分重叠且不同的标记会抛出异常，UI 会把它转换为一条提示，而不是静默接受错误数据。完成练习时，`createTranslationLearnerResponse()` 会把各条目的标记汇总进顶层的 `learnerAnnotations` 数组，只有在非空时才会包含该字段，因此没有标记的 response 与 M6.4 之前的形状完全一致。
+
+## Rich Correction（M6.5）
+
+批改工作区（`src/app.js` 中的 `renderCorrectionWorkspace()`）针对一份已完成、不可变的 Translation Learner Response 打开。它绝不会编辑 `response.responses[].answer`、`response.learnerAnnotations` 或材料快照——两者都以只读方式渲染（原始作答放在一个 `readonly` 文本框里，这样原生文本选择依然可用，同时不存在 `contenteditable` 可能带来的证据篡改风险）。
+
+`corrections.js` 把一条 rich correction 建模为单一对象：一个 `operation`（`style`、`insert`、`replace`、`delete` 或 `comment`）、一个 `start`/`end` 锚点、对应校验过的 `anchoredText` 片段，以及按操作类型区分的字段（样式用 `styleType`/`color`，插入/替换用 `text`/`color`，批注用 `text`）。表现型样式（加粗、斜体、下划线、删除线、高亮、加括号、文字颜色）彼此正交，可以与另一个样式、也可以与任意内容变更类操作自由重叠——`addCorrection()` 从不会因为样式重叠而拒绝。内容变更类操作（插入、替换、删除）之间绝不允许重叠：`correctionsConflict()` 把零长度的 `insert` 当作一个插入点，只要该点落在另一个编辑类操作的范围内就判定冲突；`addCorrection()` 遇到冲突会抛出异常（UI 转换为一条提示），而不是静默应用一个有冲突的编辑。`renderCorrectionProjection()` 把一段作答文本加上其批改列表转换成一组有序的渲染片段（普通/带样式的文本片段、被删除或被替换的原文用删除线展示、插入/替换文字单独展示），`src/app.js` 统一通过 `escapeHtml()` 渲染这些片段——评阅者或插入的文字绝不会作为原始 HTML 注入。
+
+批改数据以增量方式存放在既有的 M6.0 Teacher Review contract 内部：`itemReviews[].corrections` 是可选字段，因此仅含 judgment/comment/tags/suggestedRevision 的简单 M6.0 review 不受影响。`validateTeacherReview()` 会把每条批改的锚点与对应的 `responses[].answer` 做交叉校验（未知条目、越界、文本不匹配都会导致校验失败），并拒绝在同一条目上发生冲突的内容变更类操作——这项交叉字段校验只能在运行时完成，因为公开 JSON Schema（`schemas/teacher-review.schema.json`）无法表达"必须匹配同级数据"这类约束。Review 独立存储（`quiz-studio-teacher-reviews-v1`，位于 `review-records.js`），以稳定的 review ID 为键，并保持与 `responseId` 的稳定关系；`upsertTeacherReview()` 允许原地更新一条 review 的内容，但如果试图让已有的 review ID 指向另一个 response，会直接抛出异常而不是静默改指。
 
 ## 验证
 

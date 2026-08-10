@@ -41,7 +41,7 @@ Learner Response 与轻量 history 列表独立存储。history 列表可以只�
 
 Teacher Review 是通过 `responseId` 关联 Learner Response 的独立版本化 artifact。它可以包含 reviewer 新增的判断、评论、标签、建议修订、总结、补救建议和版本化扩展。
 
-M6.0 contract 刻意不定义完整的 rich annotation 或 revision 语言；这些语义由 M6.4 和 M6.5 负责。当前校验边界会拒绝未知或试图携带受保护 evidence 的顶层字段。
+M6.0 contract 最初刻意不定义完整的 rich annotation 或 revision 语言。M6.4 增加了学习者主动控制的元认知标记（Learner Response 上的 `learnerAnnotations`），M6.5 增加了 `DEVELOPER_GUIDE.zh-CN.md` 中描述的 rich correction / revision 语言（Teacher Review 上的 `itemReviews[].corrections`）。当前校验边界会拒绝未知或试图携带受保护 evidence 的顶层字段。
 
 Reviewer metadata 可以匿名或使用合成身份。支持的 actor 类型为 `anonymous`、`human`、`external-ai`、`agent` 和 `system`；不要求真实姓名、邮箱或账号标识。
 

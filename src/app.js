@@ -1,8 +1,16 @@
 import { formatAnswer, gradeQuestion } from "./core/grading.js";
 import { createLibraryBackup, parseLibraryBackup } from "./core/backup.js";
 import {
+  CORRECTION_COLORS,
+  addCorrection,
+  removeCorrection,
+  renderCorrectionProjection,
+} from "./core/corrections.js";
+import {
+  DOCUMENT_TYPES,
   createQuizLearnerResponse,
   createTranslationLearnerResponse,
+  normalizeTeacherReview,
   toPortableLearnerResponse,
 } from "./core/interchange.js";
 import {
@@ -11,6 +19,11 @@ import {
   removeLearnerResponsesForMaterial,
   upsertLearnerResponse,
 } from "./core/learning-records.js";
+import {
+  findTeacherReviewForResponse,
+  parseTeacherReviewCollection,
+  upsertTeacherReview,
+} from "./core/review-records.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
 import {
   addTranslationItem,
@@ -67,6 +80,7 @@ const {
   TRANSLATION_ACTIVE_SESSION: TRANSLATION_ACTIVE_SESSION_KEY,
   HISTORY: HISTORY_KEY,
   LEARNER_RESPONSES: LEARNER_RESPONSES_KEY,
+  TEACHER_REVIEWS: TEACHER_REVIEWS_KEY,
   TRANSLATION_LIBRARY: TRANSLATION_LIBRARY_KEY,
   THEME: THEME_KEY,
   LANGUAGE: LANG_KEY,
@@ -245,6 +259,12 @@ const locales = {
       translationAnnotationsInvalidated: "答案已修改，对应位置的标记已自动移除。",
       translationAnnotationSelectionRequired: "请先在译文中选中一段文字，再进行标记。",
       translationAnnotationOverlap: "该范围与已有标记重叠，请先移除或调整已有标记。",
+      correctionSelectionRequired: "请先在原始作答中选中一段文字，再进行批改。",
+      correctionConflict: "该范围与已有的修改类批改（插入/替换/删除）冲突，请先移除或调整已有批改。",
+      correctionReviewSaved: "批改已保存。",
+      correctionReviewSaveFail: "无法保存批改，请检查浏览器存储空间后重试。",
+      correctionResponseNotFound: "未找到对应的原始作答记录，无法打开批改工作区。",
+      correctionColorRequired: "请先在颜色选择器中选择一种颜色。",
     },
     translationPractice: {
       recoverTitle: "发现未完成的翻译练习",
@@ -273,6 +293,66 @@ const locales = {
         unknown: "不认识",
         uncertain: "不确定",
         should_know: "应该会但想不起来",
+      },
+    },
+    review: {
+      openWorkspace: "打开批改工作区",
+      workspaceTitle: "批改 / 修订工作区",
+      back: "返回",
+      responseNotFound: "未找到对应的原始作答记录。",
+      originalAnswer: "学习者原始作答（不可编辑）",
+      learnerMarks: "学习者标记",
+      applyCorrection: "把选中内容",
+      bold: "加粗",
+      italic: "斜体",
+      underline: "下划线",
+      strikethrough: "删除线",
+      highlight: "高亮",
+      bracket: "加括号",
+      textColor: "文字颜色",
+      insert: "插入",
+      replace: "替换",
+      delete: "删除/划掉",
+      addComment: "添加批注",
+      insertPrompt: "输入要插入的文字",
+      replacePrompt: "输入替换后的文字",
+      commentPrompt: "输入批注内容",
+      preview: "批改后预览",
+      noCorrections: "还没有批改",
+      judgment: "评判（可选）",
+      judgmentNone: "不设置",
+      judgmentCorrect: "正确",
+      judgmentIncorrect: "错误",
+      judgmentPartial: "部分正确",
+      judgmentNeedsReview: "待复核",
+      itemComment: "该条目的批注",
+      suggestedRevision: "建议的整体修订译文（可选）",
+      save: "保存批改",
+      finalizedResponses: "已完成的作答记录",
+      colorDefault: "默认颜色（不设置）",
+      color: {
+        red: "红色",
+        blue: "蓝色",
+        green: "绿色",
+        purple: "紫色",
+        orange: "橙色",
+        teal: "青色",
+        brown: "棕色",
+      },
+      styleType: {
+        bold: "加粗",
+        italic: "斜体",
+        underline: "下划线",
+        strikethrough: "删除线",
+        highlight: "高亮",
+        bracket: "加括号",
+        color: "文字颜色",
+      },
+      operation: {
+        insert: "插入",
+        replace: "替换",
+        delete: "删除",
+        comment: "批注",
       },
     },
     translation: {
@@ -512,6 +592,12 @@ const locales = {
       translationAnnotationsInvalidated: "The answer changed, so the mark(s) anchored to that text were removed automatically.",
       translationAnnotationSelectionRequired: "Select some text in your translation first, then mark it.",
       translationAnnotationOverlap: "This range overlaps an existing mark. Remove or adjust the existing mark first.",
+      correctionSelectionRequired: "Select some text in the original answer first, then apply a correction.",
+      correctionConflict: "This range conflicts with an existing content-changing correction (insert/replace/delete). Remove or adjust the existing correction first.",
+      correctionReviewSaved: "Review saved.",
+      correctionReviewSaveFail: "The review could not be saved. Check browser storage space and try again.",
+      correctionResponseNotFound: "The original response could not be found, so the Correction Workspace could not be opened.",
+      correctionColorRequired: "Select a color in the color picker first.",
     },
     translationPractice: {
       recoverTitle: "Unfinished translation practice found",
@@ -540,6 +626,66 @@ const locales = {
         unknown: "Unknown",
         uncertain: "Uncertain",
         should_know: "Should know",
+      },
+    },
+    review: {
+      openWorkspace: "Open Correction Workspace",
+      workspaceTitle: "Correction / Revision Workspace",
+      back: "Back",
+      responseNotFound: "The original response could not be found.",
+      originalAnswer: "Learner's original answer (read-only)",
+      learnerMarks: "Learner marks",
+      applyCorrection: "Apply to the selection:",
+      bold: "Bold",
+      italic: "Italic",
+      underline: "Underline",
+      strikethrough: "Strikethrough",
+      highlight: "Highlight",
+      bracket: "Bracket",
+      textColor: "Text color",
+      insert: "Insert",
+      replace: "Replace",
+      delete: "Delete",
+      addComment: "Add comment",
+      insertPrompt: "Enter the text to insert",
+      replacePrompt: "Enter the replacement text",
+      commentPrompt: "Enter the comment",
+      preview: "Corrected preview",
+      noCorrections: "No corrections yet",
+      judgment: "Judgment (optional)",
+      judgmentNone: "None",
+      judgmentCorrect: "Correct",
+      judgmentIncorrect: "Incorrect",
+      judgmentPartial: "Partial",
+      judgmentNeedsReview: "Needs review",
+      itemComment: "Comment for this item",
+      suggestedRevision: "Suggested whole-answer revision (optional)",
+      save: "Save review",
+      finalizedResponses: "Finalized responses",
+      colorDefault: "Default color (none)",
+      color: {
+        red: "Red",
+        blue: "Blue",
+        green: "Green",
+        purple: "Purple",
+        orange: "Orange",
+        teal: "Teal",
+        brown: "Brown",
+      },
+      styleType: {
+        bold: "Bold",
+        italic: "Italic",
+        underline: "Underline",
+        strikethrough: "Strikethrough",
+        highlight: "Highlight",
+        bracket: "Bracket",
+        color: "Text color",
+      },
+      operation: {
+        insert: "Insert",
+        replace: "Replace",
+        delete: "Delete",
+        comment: "Comment",
       },
     },
     translation: {
@@ -627,6 +773,9 @@ let selectedTranslationDocumentId = translationSession && !translationSession.co
 let translationPracticeActive = false;
 let translationImportDraft = null;
 let translationLastResponseId = null;
+let correctionWorkspaceResponseId = null;
+let correctionReviewDraft = null;
+let correctionItemIndex = 0;
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
@@ -1716,6 +1865,7 @@ function exportLibraryBackup() {
       library,
       history: loadHistory(),
       learnerResponses: loadLearnerResponses(),
+      teacherReviews: loadTeacherReviews(),
       translationLibrary: loadTranslationLibrary(),
     });
     downloadJson(backup, `quiz-studio-backup-${new Date().toISOString().slice(0, 10)}.json`);
@@ -1732,6 +1882,7 @@ function importLibraryBackup(event) {
     if (imported.library?.papers?.length) {
       const restored = parseLibraryBackup(imported, { createDefaultPaper });
       if (restored.hasLearnerResponses) saveJson(LEARNER_RESPONSES_KEY, restored.learnerResponses);
+      if (restored.hasTeacherReviews) saveJson(TEACHER_REVIEWS_KEY, restored.teacherReviews);
       if (restored.hasTranslationLibrary) saveJson(TRANSLATION_LIBRARY_KEY, restored.translationLibrary);
       saveJson(HISTORY_KEY, restored.history);
       library = restored.library;
@@ -1800,6 +1951,11 @@ function finalizeLearnerResponse() {
 function loadLearnerResponses() {
   const saved = localStorage.getItem(LEARNER_RESPONSES_KEY);
   return parseLearnerResponseCollection(saved ? JSON.parse(saved) : []);
+}
+
+function loadTeacherReviews() {
+  const saved = localStorage.getItem(TEACHER_REVIEWS_KEY);
+  return parseTeacherReviewCollection(saved ? JSON.parse(saved) : [], { learnerResponses: loadLearnerResponses() });
 }
 
 function loadTranslationLibrary() {
@@ -2094,6 +2250,10 @@ function validateDraftMetadata({ title, sourceLanguage, targetLanguage }) {
 }
 
 function renderTranslationMainPanel() {
+  if (correctionWorkspaceResponseId) {
+    renderCorrectionWorkspace(correctionWorkspaceResponseId);
+    return;
+  }
   if (translationPracticeActive && translationSession) {
     if (translationSession.completed) {
       renderTranslationPracticeComplete();
@@ -2116,6 +2276,7 @@ function renderTranslationMainPanel() {
 
 function renderTranslationDocumentEditor(doc) {
   const hasRecoverableSession = isTranslationSessionForDocument(translationSession, doc.id);
+  const finalizedResponses = loadLearnerResponses().filter((response) => response.material.id === doc.id);
 
   translationDocumentPanel.innerHTML = `
     <div class="editor-stack">
@@ -2160,6 +2321,22 @@ function renderTranslationDocumentEditor(doc) {
           : `<div class="library-empty">${t("translation.emptyItems")}</div>`}
       </div>
       <button class="secondary-button" type="button" id="addTranslationItem">${t("translation.addItem")}</button>
+      ${finalizedResponses.length ? `
+        <div class="question-list-header">
+          <strong>${t("review.finalizedResponses")}</strong>
+          <span>${finalizedResponses.length}</span>
+        </div>
+        <div class="review-list">
+          ${finalizedResponses.map((response) => `
+            <div class="review-item">
+              <span class="meta-text">${escapeHtml(new Date(response.finalizedAt || response.session.completedAt || Date.now()).toLocaleString())}</span>
+              <div class="row-actions">
+                <button class="small-button" type="button" data-open-review="${response.id}">${t("review.openWorkspace")}</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      ` : ""}
     </div>
   `;
 
@@ -2185,7 +2362,7 @@ function renderTranslationItemRow(item, index, total) {
 }
 
 function bindTranslationDocumentEditorEvents(doc) {
-  document.getElementById("startTranslationPractice")?.addEventListener("click", () => startTranslationPractice(doc));
+  document.getElementById("startTranslationPractice")?.addEventListener("click", () => startTranslationPractice(doc.id));
   document.getElementById("resumeTranslationPractice")?.addEventListener("click", () => {
     translationPracticeActive = true;
     renderTranslationMainPanel();
@@ -2206,6 +2383,9 @@ function bindTranslationDocumentEditorEvents(doc) {
   document.getElementById("exportTranslationDocument").addEventListener("click", () => exportTranslationDocument(doc.id));
   document.getElementById("deleteTranslationDocument").addEventListener("click", () => deleteTranslationDocumentConfirm(doc.id));
   document.getElementById("addTranslationItem").addEventListener("click", () => addTranslationItemToDocument(doc.id));
+  document.querySelectorAll("[data-open-review]").forEach((button) => {
+    button.addEventListener("click", () => openCorrectionWorkspace(button.dataset.openReview));
+  });
 
   document.querySelectorAll("[data-item-source]").forEach((textarea) => {
     textarea.addEventListener("input", (event) => {
@@ -2233,8 +2413,9 @@ function bindTranslationDocumentEditorEvents(doc) {
   });
 }
 
-function startTranslationPractice(doc) {
-  if (!doc.items.length) return;
+function startTranslationPractice(documentId) {
+  const doc = translationLibrary.documents.find((item) => item.id === documentId);
+  if (!doc || !doc.items.length) return;
   if (translationSession && !translationSession.completed && translationSession.documentId !== doc.id) {
     if (!window.confirm(t("translationPractice.overwriteConfirm"))) return;
   }
@@ -2486,6 +2667,7 @@ function renderTranslationPracticeComplete() {
       <div class="quiz-actions">
         <button class="secondary-button" id="backToDocumentAfterPractice" type="button">${t("translationPractice.backToDocument")}</button>
         <button class="secondary-button" id="exportTranslationResponseAfterPractice" type="button">${t("actions.exportResponse")}</button>
+        <button class="secondary-button" id="openCorrectionWorkspaceAfterPractice" type="button">${t("review.openWorkspace")}</button>
         <button class="primary-button" id="retryTranslationPractice" type="button">${t("translationPractice.practiceAgain")}</button>
       </div>
     </div>
@@ -2497,13 +2679,334 @@ function renderTranslationPracticeComplete() {
     renderTranslationView();
   });
   document.getElementById("exportTranslationResponseAfterPractice").addEventListener("click", () => exportLearnerResponse(translationLastResponseId));
+  document.getElementById("openCorrectionWorkspaceAfterPractice").addEventListener("click", () => {
+    translationPracticeActive = false;
+    openCorrectionWorkspace(translationLastResponseId);
+  });
   document.getElementById("retryTranslationPractice").addEventListener("click", () => {
-    const doc = translationLibrary.documents.find((item) => item.id === completedSession.documentId);
+    const docExists = translationLibrary.documents.some((item) => item.id === completedSession.documentId);
     translationSession = null;
     translationPracticeActive = false;
-    if (doc) startTranslationPractice(doc);
+    if (docExists) startTranslationPractice(completedSession.documentId);
     else renderTranslationView();
   });
+}
+
+function openCorrectionWorkspace(responseId) {
+  correctionWorkspaceResponseId = responseId;
+  correctionReviewDraft = null;
+  correctionItemIndex = 0;
+  renderTranslationMainPanel();
+}
+
+function renderCorrectionWorkspace(responseId) {
+  const response = findLearnerResponse(loadLearnerResponses(), responseId);
+  if (!response) {
+    correctionWorkspaceResponseId = null;
+    correctionReviewDraft = null;
+    showToast(t("toast.correctionResponseNotFound"));
+    renderTranslationView();
+    return;
+  }
+
+  if (!correctionReviewDraft || correctionReviewDraft.responseId !== responseId) {
+    correctionReviewDraft = findTeacherReviewForResponse(loadTeacherReviews(), responseId) || normalizeTeacherReview({
+      schemaVersion: 1,
+      documentType: DOCUMENT_TYPES.TEACHER_REVIEW,
+      id: makeId(),
+      responseId,
+      createdAt: new Date().toISOString(),
+      reviewer: { type: "human" },
+      itemReviews: [],
+      remediationRecommendations: [],
+    });
+    correctionItemIndex = 0;
+  }
+
+  const items = response.material.snapshot.items;
+  const total = items.length;
+  correctionItemIndex = Math.min(Math.max(correctionItemIndex, 0), total - 1);
+  const item = items[correctionItemIndex];
+  const answerEntry = response.responses.find((entry) => entry.itemId === item.id);
+  const answerText = typeof answerEntry?.answer === "string" ? answerEntry.answer : "";
+  const itemReview = getWorkspaceItemReview(item.id);
+  const corrections = itemReview.corrections || [];
+  const annotations = (response.learnerAnnotations || []).filter((annotation) => annotation.itemId === item.id);
+  const segments = renderCorrectionProjection(answerText, corrections);
+
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions">
+        <span class="type-pill">${escapeHtml(response.material.snapshot.sourceLanguage || "")} &rarr; ${escapeHtml(response.material.snapshot.targetLanguage || "")}</span>
+        <div class="row-actions">
+          <button class="secondary-button small-button" type="button" id="exitCorrectionWorkspace">${t("review.back")}</button>
+        </div>
+      </div>
+      <div class="quiz-title-block">
+        <h2>${t("review.workspaceTitle")}</h2>
+        <p>${escapeHtml(response.material.title || t("library.untitled"))}</p>
+      </div>
+      <div class="progress-line">
+        <span>${t("translationPractice.progress", { current: correctionItemIndex + 1, total })}</span>
+      </div>
+      <div class="question-prompt">
+        <span class="type-pill">${t("translationPractice.sourceLabel")}</span>
+        <p class="translation-source-text">${escapeHtml(item.sourceText)}</p>
+      </div>
+      ${item.referenceTranslation ? `
+        <div class="reference-block revealed">
+          <span class="meta-text">${t("translationPractice.referenceLabel")}</span>
+          <p>${escapeHtml(item.referenceTranslation)}</p>
+        </div>
+      ` : ""}
+      <label>
+        <span>${t("review.originalAnswer")}</span>
+        <textarea id="correctionAnswerViewer" rows="6" readonly>${escapeHtml(answerText)}</textarea>
+      </label>
+      ${annotations.length ? `
+        <span class="meta-text">${t("review.learnerMarks")}</span>
+        <div class="annotation-list">
+          ${annotations.map(renderAnnotationRowReadOnly).join("")}
+        </div>
+      ` : ""}
+      <div class="correction-toolbar">
+        <span class="meta-text">${t("review.applyCorrection")}</span>
+        <button class="small-button" type="button" data-style="bold">${t("review.bold")}</button>
+        <button class="small-button" type="button" data-style="italic">${t("review.italic")}</button>
+        <button class="small-button" type="button" data-style="underline">${t("review.underline")}</button>
+        <button class="small-button" type="button" data-style="strikethrough">${t("review.strikethrough")}</button>
+        <button class="small-button" type="button" data-style="highlight">${t("review.highlight")}</button>
+        <button class="small-button" type="button" data-style="bracket">${t("review.bracket")}</button>
+        <select id="correctionColorSelect" aria-label="${t("review.textColor")}">
+          <option value="">${t("review.colorDefault")}</option>
+          ${CORRECTION_COLORS.map((color) => `<option value="${color}">${t(`review.color.${color}`)}</option>`).join("")}
+        </select>
+        <button class="small-button" type="button" id="applyColorCorrection">${t("review.textColor")}</button>
+        <button class="small-button" type="button" id="applyInsertCorrection">${t("review.insert")}</button>
+        <button class="small-button" type="button" id="applyReplaceCorrection">${t("review.replace")}</button>
+        <button class="small-button" type="button" id="applyDeleteCorrection">${t("review.delete")}</button>
+        <button class="small-button" type="button" id="applyCommentCorrection">${t("review.addComment")}</button>
+      </div>
+      <div class="correction-preview">
+        <span class="meta-text">${t("review.preview")}</span>
+        <p class="correction-projection">${renderProjectionHtml(segments)}</p>
+      </div>
+      <div class="correction-list" id="correctionList">
+        ${corrections.length ? corrections.map(renderCorrectionRow).join("") : `<p class="meta-text">${t("review.noCorrections")}</p>`}
+      </div>
+      <div class="field-grid">
+        <label><span>${t("review.judgment")}</span>
+          <select id="correctionJudgment">
+            <option value="">${t("review.judgmentNone")}</option>
+            <option value="correct" ${itemReview.judgment === "correct" ? "selected" : ""}>${t("review.judgmentCorrect")}</option>
+            <option value="incorrect" ${itemReview.judgment === "incorrect" ? "selected" : ""}>${t("review.judgmentIncorrect")}</option>
+            <option value="partial" ${itemReview.judgment === "partial" ? "selected" : ""}>${t("review.judgmentPartial")}</option>
+            <option value="needs-review" ${itemReview.judgment === "needs-review" ? "selected" : ""}>${t("review.judgmentNeedsReview")}</option>
+          </select>
+        </label>
+      </div>
+      <label><span>${t("review.itemComment")}</span><textarea id="correctionItemComment" rows="2">${escapeHtml(itemReview.comment || "")}</textarea></label>
+      <label><span>${t("review.suggestedRevision")}</span><textarea id="correctionSuggestedRevision" rows="2">${escapeHtml(itemReview.suggestedRevision || "")}</textarea></label>
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button" id="previousCorrectionItem" ${correctionItemIndex === 0 ? "disabled" : ""}>${t("actions.previousQuestion")}</button>
+        <button class="secondary-button" type="button" id="nextCorrectionItem" ${correctionItemIndex === total - 1 ? "disabled" : ""}>${t("actions.nextQuestion")}</button>
+        <button class="primary-button" type="button" id="saveCorrectionReview">${t("review.save")}</button>
+      </div>
+    </div>
+  `;
+
+  bindCorrectionWorkspaceEvents(response, item, answerText);
+}
+
+function renderProjectionHtml(segments) {
+  return segments.map((segment) => {
+    if (segment.type === "deleted" || segment.type === "replaced-original") {
+      return `<span class="correction-deleted">${escapeHtml(segment.text)}</span>`;
+    }
+    if (segment.type === "inserted") {
+      const colorClass = segment.color ? ` correction-color-${segment.color}` : "";
+      return `<span class="correction-inserted${colorClass}">${escapeHtml(segment.text)}</span>`;
+    }
+    const classes = segment.styles.map((style) => (style.styleType === "color"
+      ? `correction-color-${style.color}`
+      : `correction-style-${style.styleType}`));
+    const title = segment.comments.length ? ` title="${escapeHtml(segment.comments.join(" | "))}"` : "";
+    return `<span class="${classes.join(" ")}"${title}>${escapeHtml(segment.text)}</span>`;
+  }).join("");
+}
+
+function renderCorrectionRow(correction) {
+  const label = correction.operation === "style" ? t(`review.styleType.${correction.styleType}`) : t(`review.operation.${correction.operation}`);
+  const detail = correction.operation === "insert" || correction.operation === "replace" || correction.operation === "comment"
+    ? correction.text
+    : correction.anchoredText;
+  return `
+    <div class="correction-row" data-correction-id="${correction.id}">
+      <span class="correction-op-pill">${label}</span>
+      <span class="annotation-text">&ldquo;${escapeHtml(detail)}&rdquo;</span>
+      <button type="button" class="danger-button small-button" data-remove-correction="${correction.id}">${t("actions.delete")}</button>
+    </div>
+  `;
+}
+
+function bindCorrectionWorkspaceEvents(response, item, answerText) {
+  document.getElementById("exitCorrectionWorkspace").addEventListener("click", () => {
+    correctionWorkspaceResponseId = null;
+    correctionReviewDraft = null;
+    translationPracticeActive = false;
+    renderTranslationMainPanel();
+  });
+  document.querySelectorAll("[data-style]").forEach((button) => {
+    button.addEventListener("mousedown", (event) => event.preventDefault());
+    button.addEventListener("click", () => applyStyleCorrection(item.id, answerText, button.dataset.style));
+  });
+  const colorButton = document.getElementById("applyColorCorrection");
+  colorButton.addEventListener("mousedown", (event) => event.preventDefault());
+  colorButton.addEventListener("click", () => {
+    const color = document.getElementById("correctionColorSelect").value;
+    if (!color) {
+      showToast(t("toast.correctionColorRequired"));
+      return;
+    }
+    applyStyleCorrection(item.id, answerText, "color", color);
+  });
+  ["applyInsertCorrection", "applyReplaceCorrection", "applyDeleteCorrection", "applyCommentCorrection"].forEach((id) => {
+    document.getElementById(id).addEventListener("mousedown", (event) => event.preventDefault());
+  });
+  document.getElementById("applyInsertCorrection").addEventListener("click", () => applyInsertCorrection(item.id, answerText));
+  document.getElementById("applyReplaceCorrection").addEventListener("click", () => applyReplaceCorrection(item.id, answerText));
+  document.getElementById("applyDeleteCorrection").addEventListener("click", () => applyDeleteCorrection(item.id, answerText));
+  document.getElementById("applyCommentCorrection").addEventListener("click", () => applyCommentCorrection(item.id, answerText));
+  document.querySelectorAll("[data-remove-correction]").forEach((button) => {
+    button.addEventListener("click", () => removeWorkspaceCorrection(item.id, button.dataset.removeCorrection));
+  });
+  document.getElementById("correctionJudgment").addEventListener("change", (event) => {
+    updateWorkspaceItemReview(item.id, { judgment: event.target.value || undefined });
+  });
+  document.getElementById("correctionItemComment").addEventListener("input", (event) => {
+    updateWorkspaceItemReview(item.id, { comment: event.target.value });
+  });
+  document.getElementById("correctionSuggestedRevision").addEventListener("input", (event) => {
+    updateWorkspaceItemReview(item.id, { suggestedRevision: event.target.value });
+  });
+  document.getElementById("previousCorrectionItem").addEventListener("click", () => {
+    correctionItemIndex -= 1;
+    renderTranslationMainPanel();
+  });
+  document.getElementById("nextCorrectionItem").addEventListener("click", () => {
+    correctionItemIndex += 1;
+    renderTranslationMainPanel();
+  });
+  document.getElementById("saveCorrectionReview").addEventListener("click", () => saveCorrectionReview(response));
+}
+
+function getWorkspaceItemReview(itemId) {
+  return correctionReviewDraft.itemReviews.find((entry) => entry.itemId === itemId) || { itemId };
+}
+
+function updateWorkspaceItemReview(itemId, changes) {
+  const next = { ...getWorkspaceItemReview(itemId), ...changes };
+  Object.keys(next).forEach((key) => {
+    if (key === "itemId") return;
+    if (next[key] === undefined || next[key] === "") delete next[key];
+  });
+  if (Array.isArray(next.corrections) && !next.corrections.length) delete next.corrections;
+  const others = correctionReviewDraft.itemReviews.filter((entry) => entry.itemId !== itemId);
+  correctionReviewDraft = { ...correctionReviewDraft, itemReviews: [...others, next] };
+}
+
+function applyStyleCorrection(itemId, answerText, styleType, color) {
+  const textarea = document.getElementById("correctionAnswerViewer");
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) {
+    showToast(t("toast.correctionSelectionRequired"));
+    return;
+  }
+  const draft = { operation: "style", styleType, start, end, anchoredText: answerText.slice(start, end) };
+  if (styleType === "color") draft.color = color;
+  applyWorkspaceCorrection(itemId, answerText, draft);
+}
+
+function applyInsertCorrection(itemId, answerText) {
+  const textarea = document.getElementById("correctionAnswerViewer");
+  const start = textarea.selectionStart;
+  const text = window.prompt(t("review.insertPrompt"), "");
+  if (!text) return;
+  const draft = { operation: "insert", start, end: start, anchoredText: "", text };
+  const color = document.getElementById("correctionColorSelect").value;
+  if (color) draft.color = color;
+  applyWorkspaceCorrection(itemId, answerText, draft);
+}
+
+function applyReplaceCorrection(itemId, answerText) {
+  const textarea = document.getElementById("correctionAnswerViewer");
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) {
+    showToast(t("toast.correctionSelectionRequired"));
+    return;
+  }
+  const text = window.prompt(t("review.replacePrompt"), "");
+  if (!text) return;
+  const draft = { operation: "replace", start, end, anchoredText: answerText.slice(start, end), text };
+  const color = document.getElementById("correctionColorSelect").value;
+  if (color) draft.color = color;
+  applyWorkspaceCorrection(itemId, answerText, draft);
+}
+
+function applyDeleteCorrection(itemId, answerText) {
+  const textarea = document.getElementById("correctionAnswerViewer");
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) {
+    showToast(t("toast.correctionSelectionRequired"));
+    return;
+  }
+  applyWorkspaceCorrection(itemId, answerText, { operation: "delete", start, end, anchoredText: answerText.slice(start, end) });
+}
+
+function applyCommentCorrection(itemId, answerText) {
+  const textarea = document.getElementById("correctionAnswerViewer");
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) {
+    showToast(t("toast.correctionSelectionRequired"));
+    return;
+  }
+  const text = window.prompt(t("review.commentPrompt"), "");
+  if (!text) return;
+  applyWorkspaceCorrection(itemId, answerText, { operation: "comment", start, end, anchoredText: answerText.slice(start, end), text });
+}
+
+function applyWorkspaceCorrection(itemId, answerText, draft) {
+  try {
+    const itemReview = getWorkspaceItemReview(itemId);
+    const nextCorrections = addCorrection(itemReview.corrections, draft, answerText);
+    updateWorkspaceItemReview(itemId, { corrections: nextCorrections });
+    renderTranslationMainPanel();
+  } catch {
+    showToast(t("toast.correctionConflict"));
+  }
+}
+
+function removeWorkspaceCorrection(itemId, correctionId) {
+  const itemReview = getWorkspaceItemReview(itemId);
+  const nextCorrections = removeCorrection(itemReview.corrections, correctionId);
+  updateWorkspaceItemReview(itemId, { corrections: nextCorrections });
+  renderTranslationMainPanel();
+}
+
+function saveCorrectionReview(response) {
+  try {
+    const next = upsertTeacherReview(loadTeacherReviews(), correctionReviewDraft, { learnerResponses: loadLearnerResponses() });
+    saveJson(TEACHER_REVIEWS_KEY, next);
+    correctionReviewDraft = findTeacherReviewForResponse(next, response.id);
+    showToast(t("toast.correctionReviewSaved"));
+    renderTranslationMainPanel();
+  } catch {
+    showToast(t("toast.correctionReviewSaveFail"));
+  }
 }
 
 function updateSelectedTranslationDocument(changes) {
