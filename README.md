@@ -19,6 +19,8 @@ The current version is a static ES module web application. It runs in a browser 
 - Saved in-progress practice sessions with refresh recovery.
 - Unanswered-question checks before submitting each answer.
 - Answer history and score records in local browser storage.
+- Independent finalized Learner Response records with original answers and attempted-question snapshots.
+- Portable Learner Response JSON export from results and linked recent history.
 - Wrong-question retry sessions.
 - Random question selection and question-type filters.
 - Result review with user-answer and correct-answer comparison.
@@ -31,6 +33,7 @@ The current version is a static ES module web application. It runs in a browser 
 - JSON import and export for quiz paper files.
 - Modular Quiz Core for question models, validation, grading, and migrations.
 - Public JSON Schema and synthetic sample quiz data.
+- Versioned Learner Response and Teacher Review contracts for file-based external-teacher interoperability.
 - PWA files for offline-capable static hosting.
 - CI workflow files and a manual-only GitHub Pages workflow for future public release.
 
@@ -73,6 +76,7 @@ node --test
 5. Choose optional question type filters or a random question count.
 6. Start the quiz, submit answers, and recover progress after refresh if needed.
 7. Review the final score, per-question answer comparison, history, and wrong-question retry options.
+8. Export the finalized Learner Response when you want to share a portable response package with an external teacher.
 
 ## Project Structure
 
@@ -97,13 +101,15 @@ Quiz System/
   DEVLOG.md         Development log
 ```
 
+The Open Teaching Interchange architecture is documented in `docs/OPEN_TEACHING_INTERCHANGE.md`.
+
 ## Roadmap
 
 Project development is organized by lifecycle stages. See `ROADMAP.md` for the full roadmap and `PROJECT_STATUS.md` for the current release status.
 
 ### Planned Current-Version Capability
 
-Translation Practice is approved as Milestone 6 work but is not implemented yet. The planned capability is a dedicated local-first workspace for organizing translation materials by folder and document, importing source-only or bilingual material, writing translations independently, marking difficult words and phrases, and reviewing or correcting a complete practice session. The design will remain multilingual and will not require AI grading or paid model APIs for its first implementation.
+Translation Practice remains Milestone 6's primary new learning workflow and is not implemented yet. M6.0 Open Teaching Interchange is the cross-cutting foundation that serves existing Objective Quiz and will support Translation Practice as its first complete rich-response consumer. The planned Translation capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
 
 ## Localization
 
@@ -115,13 +121,13 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 Current phase: Feature Development - Scope Reopened.
 
-Quiz Studio is a local-first private pre-release prototype. The Milestone 1-5 feature set has first implementations landed, including the modular Quiz Core, browser-based quiz library, practice history, PWA foundation, public schema, examples, tests, and CI preparation. The project previously reached Feature Complete Candidate review under that boundary, but the current-version scope was reopened when Translation Practice was approved as required Milestone 6 work. It is not yet Release Ready.
+Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange implementation is complete and awaiting user acceptance. Objective Quiz attempts now preserve independent finalized Learner Responses, support portable export, and participate in versioned external-review contracts. Translation Practice has not started, and the project is not Release Ready.
 
-Translation Practice implementation and acceptance, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
+M6.0 user acceptance, the remaining M6.1-M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
 
 ## Data and Privacy
 
-Quiz papers, practice progress, local library metadata, and answer history are saved in the browser's local storage by default. Exported JSON files remain under the user's control.
+Quiz papers, practice progress, local library metadata, answer history, and finalized Learner Responses are saved in the browser's local storage by default. Exported JSON files remain under the user's control and can contain original learner answers.
 
 No data is sent to a server in the current static version.
 

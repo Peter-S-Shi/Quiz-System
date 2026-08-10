@@ -19,3 +19,7 @@ Public examples must be synthetic. Use `examples/` for safe sample quiz files an
 ## Local-Only Data
 
 Use ignored folders such as `user-data/` and `exports/` for real local quiz data or backups.
+
+Learner Response exports contain original submitted answers and material snapshots. Teacher Review files may contain comments or learning diagnoses. Treat both as private learner data unless they contain synthetic examples only.
+
+External-teacher interchange is file based. Quiz Studio does not automatically upload exported files or require reviewer account identifiers. Review every file before sharing it and prefer anonymous or synthetic reviewer labels when real identity is unnecessary.

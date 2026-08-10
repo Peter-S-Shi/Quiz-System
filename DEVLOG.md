@@ -1,5 +1,17 @@
 # Development Log
 
+## 2026-08-10
+
+- Implemented M6.0 Open Teaching Interchange as a cross-cutting foundation serving existing Objective Quiz and future Translation Practice.
+- Added versioned Learner Response and Teacher Review contracts, runtime validation boundaries, synthetic examples, and optional Quiz Paper remediation provenance.
+- Added independent finalized Learner Response persistence containing attempted question snapshots, original submitted answers, grading snapshots, stable linkage, summary, timestamps, and provenance.
+- Kept finalized Learner Responses outside the 100-entry lightweight history cap; explicit per-paper history clearing now confirms and removes linked response evidence.
+- Added minimal bilingual Learner Response export from the result screen and linked recent-history entries.
+- Added Learner Response coverage to full-library backup and validated restore while preserving legacy backups that lack the new collection.
+- Added bilingual Open Teaching Interchange architecture, user/developer/safety documentation, lifecycle alignment, and an M6.0 manual QA delta.
+- Expanded automated coverage from 6 to 15 tests; local browser smoke testing verified completion, evidence messaging, bilingual controls, desktop and 390px layouts, and no console errors.
+- Recorded the M6.0 state as implementation complete / user acceptance pending. Translation Practice, Teacher Review import/rendering, rich correction, AI APIs, and M6.1 remain unimplemented.
+
 ## 2026-08-09
 
 - Approved Translation Practice as a first-class capability required for the current version.

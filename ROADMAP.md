@@ -150,15 +150,41 @@ Feature Freeze can begin only when:
 Freeze rules:
 
 - Allowed: fixes for crashes, incorrect results, data integrity, migration, privacy, security, core workflow defects, and severe UX problems.
-- Not allowed by default: new question types, AI, cloud sync, accounts, collaboration, teacher workflows, desktop packaging, or other non-essential expansion.
+- Not allowed by default: new question types, embedded AI, cloud sync, accounts, collaboration, in-app teacher administration, desktop packaging, or other non-essential expansion.
 - New features should default to the next version.
 - If Freeze must be lifted, the reason must be recorded in `ROADMAP.md` and `PROJECT_STATUS.md`.
 
 ## Milestone 6: Translation Practice
 
-Status: Approved current-version feature; implementation not started
+Status: In progress; M6.0 implementation complete and user acceptance pending; Translation Practice implementation not started
 
 Goal: add a dedicated, local-first workspace for document-oriented written translation practice without assuming that a reference translation is the only correct answer.
+
+Architecture positioning:
+
+- Translation Practice is Milestone 6's primary new learner workflow.
+- M6.0 Open Teaching Interchange is a cross-cutting product/platform foundation, not a separate parallel learning product.
+- The foundation serves existing Objective Quiz workflows and will support Translation Practice as its first complete rich-response consumer.
+- The external-teacher loop is `External Authoring -> External Review -> External Remediation`, using portable structured data without requiring an embedded AI API.
+
+Approved sub-milestone sequence:
+
+1. M6.0 Open Teaching Interchange Foundation.
+2. M6.1 Translation Domain and Persistence Foundation.
+3. M6.2 Translation Library and Material Import / Export.
+4. M6.3 Translation Practice and Session Recovery.
+5. M6.4 Learner Answer Marking and Annotation Foundation.
+6. M6.5 Rich Correction / Revision Workspace.
+7. M6.6 External Teacher Round Trip.
+8. M6.7 History, Retry, Portability, and Whole-Product Integration.
+
+M6.0 state:
+
+- Implementation complete; user acceptance pending.
+- Objective Quiz now produces independent finalized Learner Response records and supports portable response export.
+- Versioned Learner Response and Teacher Review contracts, validation boundaries, synthetic examples, provenance, and backup coverage are implemented.
+- Teacher Review import/rendering, rich correction semantics, and all Translation UI remain later M6 work.
+- M6.1 must not begin without a new prompt after M6.0 user acceptance.
 
 Approved macro scope:
 
@@ -177,12 +203,13 @@ Non-goals for the initial milestone:
 
 - AI grading or an assumption that one reference translation is uniquely correct.
 - A full vocabulary-learning system inside Quiz Studio.
-- Cloud accounts, collaboration, or teacher workflows.
-- A detailed M6 sub-milestone plan before the dedicated implementation prompt is approved.
+- Cloud accounts, collaboration, or in-app teacher account/administration workflows.
+- Collapsing the approved M6.0-M6.7 sequence into one implementation pass.
 
 Acceptance effect:
 
 - Translation Practice must be implemented and accepted before the reopened current-version scope can pass Feature Complete Review.
+- Each M6.x implementation must receive its own review and acceptance before the next sub-milestone begins.
 - Feature Freeze remains inactive until that review is complete and explicitly accepted.
 
 ## Milestone 7: Product Hardening
@@ -283,7 +310,7 @@ These remain outside the current v1 scope:
 - AI-assisted question generation.
 - Desktop application packaging.
 - Cloud sync and user accounts.
-- Sharing, collaboration, and teacher workflows.
+- Sharing, collaboration, and in-app teacher account/administration workflows.
 - Subjective question grading.
 
 ## Roadmap Principle

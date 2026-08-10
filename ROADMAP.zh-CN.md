@@ -150,15 +150,41 @@ Milestone 5 为未来公开发布建立基础，但不代表当前版本已经�
 Freeze 规则：
 
 - 允许：修复崩溃、错误结果、数据完整性、迁移、隐私、安全、核心工作流缺陷和严重 UX 问题。
-- 默认不允许：新增题型、AI、云同步、账号、协作、教师工作流、桌面封装或其他非必要扩展。
+- 默认不允许：新增题型、内置 AI、云同步、账号、协作、应用内教师管理、桌面封装或其他非必要扩展。
 - 新功能默认进入下一版本。
 - 如必须解除 Freeze，需要在 `ROADMAP.md` 和 `PROJECT_STATUS.md` 中显式记录原因。
 
 ## Milestone 6：Translation Practice
 
-状态：已批准纳入当前版本；尚未开始实现
+状态：进行中；M6.0 已完成实现并等待用户验收；Translation Practice 尚未开始实现
 
 目标：在 Quiz Studio 中加入一个本地优先、面向文档型书面翻译训练的专用工作区，同时不假设参考译文是唯一正确答案。
+
+架构定位：
+
+- Translation Practice 是 Milestone 6 的主要新增学习工作流。
+- M6.0 Open Teaching Interchange 是横向 product/platform 基础设施，不是并列的第二个独立学习产品。
+- 该基础设施服务现有 Objective Quiz，并将由 Translation Practice 作为第一个完整 rich-response consumer。
+- 外部教师闭环为 `External Authoring -> External Review -> External Remediation`，通过可移植结构化数据工作，不要求内置 AI API。
+
+已批准的子里程碑顺序：
+
+1. M6.0 Open Teaching Interchange Foundation。
+2. M6.1 Translation Domain and Persistence Foundation。
+3. M6.2 Translation Library and Material Import / Export。
+4. M6.3 Translation Practice and Session Recovery。
+5. M6.4 Learner Answer Marking and Annotation Foundation。
+6. M6.5 Rich Correction / Revision Workspace。
+7. M6.6 External Teacher Round Trip。
+8. M6.7 History, Retry, Portability and Whole-Product Integration。
+
+M6.0 状态：
+
+- 已完成实现；等待用户验收。
+- Objective Quiz 现在会生成独立 finalized Learner Response，并支持可移植 response 导出。
+- 版本化 Learner Response 与 Teacher Review contract、校验边界、合成示例、provenance 和备份覆盖已经实现。
+- Teacher Review 导入/渲染、rich correction 语义和所有 Translation UI 仍属于后续 M6 工作。
+- 未经 M6.0 用户验收和新的 prompt，不得开始 M6.1。
 
 已批准的宏观范围：
 
@@ -177,12 +203,13 @@ Freeze 规则：
 
 - AI 判分，或把某个参考译文视为唯一正确答案。
 - Quiz Studio 内部的完整词汇学习系统。
-- 云账号、协作或教师工作流。
-- 在具体实现 prompt 获批前提前制定详细的 M6 子里程碑。
+- 云账号、协作或应用内教师账号/管理工作流。
+- 把已经批准的 M6.0-M6.7 顺序合并成一次实现。
 
 对验收流程的影响：
 
 - Translation Practice 必须完成实现和验收，重新开放的当前版本范围才能通过 Feature Complete Review。
+- 每个 M6.x 实现都必须先经过独立评审和验收，才能开始下一个子里程碑。
 - 在该评审完成并被明确接受前，Feature Freeze 保持未启用。
 
 ## Milestone 7：Product Hardening
@@ -281,7 +308,7 @@ Current Version Complete / v1.0.0
 - AI 辅助生成题目。
 - 桌面应用封装。
 - 云同步与用户账户。
-- 分享、协作和教师工作流。
+- 分享、协作和应用内教师账号/管理工作流。
 - 主观题批改。
 
 ## 路线原则

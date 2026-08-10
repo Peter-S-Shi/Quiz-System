@@ -20,6 +20,8 @@ This folder contains the retrospective manual QA baseline for Quiz Studio.
 
 This baseline is for manual review only. It does not change product features, business logic, workflows, or release state.
 
+The questionnaire includes an M6.0 delta for finalized Learner Response creation, bilingual export controls, backup coverage, and explicit deletion confirmation. Completing that delta provides user-acceptance evidence; its presence alone does not mean M6.0 is accepted.
+
 ## Privacy
 
 Use tester codes, synthetic notes, and generic screenshot names. Do not enter real personal data, private quiz content, account details, login details, local absolute paths, or sensitive screenshots into exported QA results.

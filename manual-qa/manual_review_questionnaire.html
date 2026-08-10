@@ -527,6 +527,19 @@
         ]
       },
       {
+        id: "m6-0-interchange",
+        title: { en: "M6.0 Open Teaching Interchange Delta", zh: "M6.0 Open Teaching Interchange 增量" },
+        purpose: { en: "Validate the user-visible Learner Response evidence, export, backup, and explicit deletion behavior introduced by M6.0.", zh: "验证 M6.0 新增的可见 Learner Response 证据、导出、备份和显式删除行为。" },
+        prerequisites: { en: "Use a synthetic paper and complete at least one attempt. Keep exported files local and inspect them with a text editor.", zh: "使用合成试卷并至少完成一次练习。导出文件只保存在本地，并用文本编辑器检查。" },
+        items: [
+          qa("m6-response-finalize", "Finalize independent learner evidence", "建立独立学习者证据", ["Complete a synthetic quiz.", "Confirm the result page reports that original evidence was saved.", "Return to the paper's history."], ["完成一次合成 quiz。", "确认结果页提示原始作答已保存。", "返回该试卷的历史记录。"], "The attempt completes only after evidence is saved, and its recent-history entry offers response export.", "练习只在证据保存后完成，并且近期历史记录提供作答导出。"),
+          qa("m6-response-export", "Export a portable Learner Response", "导出可移植 Learner Response", ["Export from the result screen.", "Export the same attempt from recent history.", "Inspect both JSON files."], ["从结果页导出。", "从近期历史导出同一次练习。", "检查两份 JSON 文件。"], "The files identify the same finalized response and contain item snapshots, original answers, results, summary, stable IDs, and no unexpected account data.", "两份文件标识同一个 finalized response，包含 item 快照、原始答案、结果、摘要和稳定 ID，并且不含意外账号数据。"),
+          qa("m6-response-language", "Check bilingual response-export controls", "检查双语作答导出控件", ["View the result and history screens in Chinese.", "Switch to English.", "Compare the evidence and export labels."], ["用中文查看结果页和历史页。", "切换到英文。", "比较证据提示和导出标签。"], "Chinese and English expose the same response-export capability with understandable labels.", "中文和英文以可理解标签提供相同作答导出能力。"),
+          qa("m6-response-backup", "Back up and restore learner evidence", "备份并恢复学习证据", ["Create a backup after completing a synthetic attempt.", "Inspect that the backup contains learnerResponses.", "Import the backup and export the linked response again."], ["完成合成练习后创建备份。", "检查备份包含 learnerResponses。", "导入备份后再次导出已关联 response。"], "Backup round-trip preserves the finalized response and its original answer snapshot.", "备份往返保留 finalized response 和原始答案快照。"),
+          qa("m6-response-delete", "Confirm explicit evidence deletion", "确认显式删除学习证据", ["Choose Clear history for a disposable synthetic paper.", "Cancel once and confirm the history remains.", "Repeat, accept the confirmation, and check history and response export availability."], ["对可丢弃的合成试卷选择清空记录。", "先取消一次并确认历史仍存在。", "再次操作并确认，然后检查历史和 response 导出是否消失。"], "Cancel preserves data; explicit confirmation removes the paper's summaries and corresponding Learner Response records only.", "取消会保留数据；明确确认只删除该试卷的摘要和对应 Learner Response。")
+        ]
+      },
+      {
         id: "11-subjective",
         title: { en: "11 Subjective Feedback And Release Blockers", zh: "11 主观反馈和发布阻塞" },
         purpose: { en: "Capture release readiness judgment, confusing workflows, missing evidence, and must-fix blockers.", zh: "记录发布就绪判断、困惑流程、缺失证据和必须修复的阻塞项。" },

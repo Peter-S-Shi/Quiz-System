@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 
 import {
   DOCUMENT_TYPES,
@@ -147,4 +148,12 @@ test("backup parsing rejects malformed learner evidence before applying data", (
   const library = { schemaVersion: 1, papers: [{ id: "paper-1", title: "Synthetic Quiz", questions: [] }] };
   assert.throws(() => parseLibraryBackup({ library, history: [], learnerResponses: [{ id: "broken" }] }));
   assert.throws(() => parseLearnerResponseCollection({}));
+});
+
+test("public interchange examples pass the runtime validation boundary", async () => {
+  const learnerResponse = JSON.parse(await readFile(new URL("../examples/sample-learner-response.json", import.meta.url), "utf8"));
+  const teacherReview = JSON.parse(await readFile(new URL("../examples/sample-teacher-review.json", import.meta.url), "utf8"));
+
+  assert.deepEqual(validateLearnerResponse(learnerResponse), { valid: true, errors: [] });
+  assert.deepEqual(validateTeacherReview(teacherReview, { learnerResponse }), { valid: true, errors: [] });
 });

@@ -19,6 +19,8 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 - 保存未完成的练习进度，并支持刷新后恢复。
 - 提交答案前检查当前题目是否未答。
 - 在浏览器本地记录答题历史与成绩。
+- 独立保存 finalized Learner Response，包括原始答案和本次题目快照。
+- 可从结果页和已关联近期历史导出 Learner Response JSON。
 - 支持错题单独重练。
 - 支持随机抽题和按题型筛选。
 - 结果页支持用户答案与正确答案对比。
@@ -31,6 +33,7 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 - 支持 JSON 试卷文件的导入和导出。
 - 拆分出模块化 Quiz Core，用于题目模型、校验、判分和迁移。
 - 提供公开 JSON Schema 和合成示例 quiz 数据。
+- 提供版本化 Learner Response 和 Teacher Review contract，用于基于文件的外部教师交换。
 - 提供 PWA 文件，为静态托管和离线能力做准备。
 - 提供 CI workflow 文件，并保留仅手动触发的 GitHub Pages workflow，供未来公开发布时使用。
 
@@ -73,6 +76,7 @@ node --test
 5. 可选择题型筛选或随机抽题数量。
 6. 开始做题、提交答案，并可在刷新后恢复进度。
 7. 查看最终分数、逐题答案对比、历史记录和错题重练选项。
+8. 需要与外部教师共享可移植作答包时，导出 finalized Learner Response。
 
 ## 项目结构
 
@@ -97,13 +101,15 @@ Quiz System/
   DEVLOG.md         开发日志
 ```
 
+Open Teaching Interchange 架构见 `docs/OPEN_TEACHING_INTERCHANGE.zh-CN.md`。
+
 ## 路线图
 
 项目开发按照生命周期阶段组织。完整路线见 `ROADMAP.zh-CN.md`，当前发布状态见 `PROJECT_STATUS.zh-CN.md`。
 
 ### 当前版本已规划能力
 
-Translation Practice 已被批准为 Milestone 6 工作，但目前尚未实现。计划中的能力是一个独立的本地优先工作区，用于按“文件夹 → 文档”组织翻译材料、导入仅含源文或包含参考译文的双语材料、独立书写译文、标记困难词语，并对整次练习进行复盘或订正。设计将保持多语言通用，第一版不依赖 AI 判分或付费模型 API。
+Translation Practice 仍是 Milestone 6 的主要新增学习工作流，目前尚未实现。M6.0 Open Teaching Interchange 是服务现有 Objective Quiz 的横向基础设施，并将由 Translation Practice 作为第一个完整 rich-response consumer。计划中的 Translation 功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
 
 ## 多语言支持
 
@@ -115,13 +121,13 @@ Translation Practice 已被批准为 Milestone 6 工作，但目前尚未实现�
 
 当前阶段：Feature Development - Scope Reopened（功能开发阶段，范围已重新开放）。
 
-Quiz Studio 是一个本地优先的 private pre-release 原型。Milestone 1-5 功能范围的首版实现已经落地，包括模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 基础、公开 schema、示例、测试和 CI 准备。项目曾在该边界下达到 Feature Complete Candidate 评审状态，但 Translation Practice 被批准为必要的 Milestone 6 工作后，当前版本范围已经重新开放。当前版本尚未 Release Ready。
+Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 已完成实现，正在等待用户验收。Objective Quiz 练习现在会保存独立 finalized Learner Response、支持可移植导出，并接入版本化外部 review contract。Translation Practice 尚未开始，当前版本也尚未 Release Ready。
 
-Translation Practice 的实现与验收、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
+M6.0 用户验收、其余 M6.1-M6.7 工作、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
 
 ## 数据和隐私
 
-默认情况下，试卷、练习进度、本地试卷库元数据和答题历史会保存在浏览器本地存储中。导出的 JSON 文件由用户自行管理。
+默认情况下，试卷、练习进度、本地试卷库元数据、答题历史和 finalized Learner Response 会保存在浏览器本地存储中。导出的 JSON 文件由用户自行管理，并可能包含学习者原始答案。
 
 当前静态版本不会把数据发送到服务器。
 
