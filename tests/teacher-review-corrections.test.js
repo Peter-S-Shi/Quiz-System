@@ -24,7 +24,7 @@ import { addTranslationAnnotation, createTranslationSession, setTranslationAnswe
 
 const CREATED_AT = "2026-04-01T09:00:00.000Z";
 
-function makeTranslationResponse({ annotate = false } = {}) {
+function makeTranslationResponse({ annotate = false, responseId = "response-1" } = {}) {
   let library = createTranslationFolder(createTranslationLibrary(), { id: "folder-1", name: "Practice", createdAt: CREATED_AT });
   library = createTranslationDocument(library, {
     id: "document-1",
@@ -48,7 +48,7 @@ function makeTranslationResponse({ annotate = false } = {}) {
     session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
   }
   session = { ...session, completed: true, completedAt: "2026-04-01T09:10:00.000Z" };
-  return createTranslationLearnerResponse({ id: "response-1", session });
+  return createTranslationLearnerResponse({ id: responseId, session });
 }
 
 function buildItem1Corrections() {
@@ -254,6 +254,76 @@ test("upsertTeacherReview never silently reassigns a review id to a different re
 
   const hijacked = { ...review, responseId: "some-other-response" };
   assert.throws(() => upsertTeacherReview(collection, hijacked), /cannot be reassigned to a different response/);
+});
+
+test("upsertTeacherReview with a learnerResponses collection validates each review against its own response, not the target review's response", () => {
+  // Regression test: saving Review B must not revalidate the already-persisted Review A
+  // against Response B. Each existing/new review should resolve its own responseId
+  // against the full learnerResponses collection, independent of which review is being saved.
+  const responseA = makeTranslationResponse({ responseId: "response-A" });
+  const responseB = makeTranslationResponse({ responseId: "response-B" });
+  const reviewA = buildRichReview(responseA, { reviewId: "review-A" });
+  const reviewB = buildRichReview(responseB, { reviewId: "review-B" });
+  const learnerResponses = [responseA, responseB];
+
+  let collection = upsertTeacherReview([], reviewA, { learnerResponses });
+  collection = upsertTeacherReview(collection, reviewB, { learnerResponses });
+
+  assert.equal(collection.length, 2);
+
+  // Both reviews survive and each independently validates against its own response.
+  const reopenedA = findTeacherReviewForResponse(collection, responseA.id);
+  const reopenedB = findTeacherReviewForResponse(collection, responseB.id);
+  assert.ok(reopenedA);
+  assert.ok(reopenedB);
+  assert.equal(reopenedA.id, "review-A");
+  assert.equal(reopenedB.id, "review-B");
+  assert.deepEqual(validateTeacherReview(reopenedA, { learnerResponse: responseA }), { valid: true, errors: [] });
+  assert.deepEqual(validateTeacherReview(reopenedB, { learnerResponse: responseB }), { valid: true, errors: [] });
+
+  // Neither review's responseId can be reassigned during a later save.
+  assert.throws(
+    () => upsertTeacherReview(collection, { ...reviewA, responseId: responseB.id }, { learnerResponses }),
+    /cannot be reassigned to a different response/,
+  );
+  assert.throws(
+    () => upsertTeacherReview(collection, { ...reviewB, responseId: responseA.id }, { learnerResponses }),
+    /cannot be reassigned to a different response/,
+  );
+
+  // Orphan reviews (responseId with no matching Learner Response) are still rejected.
+  assert.throws(
+    () => upsertTeacherReview(collection, { ...reviewB, id: "review-orphan", responseId: "no-such-response" }, { learnerResponses }),
+    /does not match any known Learner Response/,
+  );
+
+  // A round trip through JSON (simulating reload from localStorage) preserves both reviews independently.
+  const reloaded = JSON.parse(JSON.stringify(collection));
+  assert.equal(findTeacherReviewForResponse(reloaded, responseA.id).id, "review-A");
+  assert.equal(findTeacherReviewForResponse(reloaded, responseB.id).id, "review-B");
+});
+
+test("backup and restore preserves independent Teacher Reviews for multiple Learner Responses", () => {
+  const responseA = makeTranslationResponse({ responseId: "response-A" });
+  const responseB = makeTranslationResponse({ responseId: "response-B" });
+  const reviewA = buildRichReview(responseA, { reviewId: "review-A" });
+  const reviewB = buildRichReview(responseB, { reviewId: "review-B" });
+  const quizLibrary = { schemaVersion: 1, papers: [{ id: "paper-1", title: "Synthetic Quiz", questions: [] }] };
+
+  const backup = createLibraryBackup({
+    library: quizLibrary,
+    history: [],
+    learnerResponses: [responseA, responseB],
+    teacherReviews: [reviewA, reviewB],
+    translationLibrary: createTranslationLibrary(),
+    exportedAt: "2026-04-01T09:20:00.000Z",
+  });
+  const restored = parseLibraryBackup(JSON.parse(JSON.stringify(backup)));
+
+  assert.equal(restored.hasTeacherReviews, true);
+  assert.equal(restored.teacherReviews.length, 2);
+  assert.equal(findTeacherReviewForResponse(restored.teacherReviews, responseA.id).id, "review-A");
+  assert.equal(findTeacherReviewForResponse(restored.teacherReviews, responseB.id).id, "review-B");
 });
 
 test("full backup preserves Teacher Reviews and legacy backups without reviews remain valid", () => {

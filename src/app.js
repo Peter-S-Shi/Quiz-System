@@ -2999,7 +2999,7 @@ function removeWorkspaceCorrection(itemId, correctionId) {
 
 function saveCorrectionReview(response) {
   try {
-    const next = upsertTeacherReview(loadTeacherReviews(), correctionReviewDraft, { learnerResponse: response });
+    const next = upsertTeacherReview(loadTeacherReviews(), correctionReviewDraft, { learnerResponses: loadLearnerResponses() });
     saveJson(TEACHER_REVIEWS_KEY, next);
     correctionReviewDraft = findTeacherReviewForResponse(next, response.id);
     showToast(t("toast.correctionReviewSaved"));
