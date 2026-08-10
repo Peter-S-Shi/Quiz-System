@@ -2,6 +2,16 @@
 
 ## 2026-08-10
 
+- Recorded M6.1 Translation Domain and Persistence Foundation as user accepted and began M6.2 Translation Library and Material Import/Export.
+- Added a Translation Library workspace as a third top-level mode: folder and document management, ordered item add/edit/reorder/delete, and document move between folders, built entirely on the existing M6.1 domain operations.
+- Added `src/core/translation-import.js` with DOM-independent source-only and bilingual batch parsing, portable Translation Document JSON validation, and a deterministic duplicate-document-ID copy policy.
+- Added source-only batch import, bilingual (`source<TAB>reference`) batch import, and portable Translation Document JSON import, each following an Input -> Parse -> Validate -> Preview -> Confirm -> Persist pipeline; a failed or cancelled import leaves existing Translation Library data unchanged.
+- Made external Translation Document JSON importable without the author knowing local folder IDs: the document's own `folderId` is replaced by the user's chosen local folder at persist time, independent of structural validation.
+- Added Translation Document JSON export using the existing canonical public contract, so exported files round-trip through import unchanged.
+- Expanded automated coverage from 23 to 31 passing tests with a new `tests/translation-import.test.js`; existing Objective Quiz, Open Teaching Interchange, and M6.1 Translation domain tests continue to pass unchanged.
+- Verified the M6.2 workflow with a local browser smoke test: folder/document/item CRUD, all three import paths including malformed-row rejection and duplicate-ID collision handling, export, reload persistence, folder cascade deletion, full-backup coverage, and bilingual UI parity, with no console errors.
+- Added bilingual Translation Library usage, developer architecture, and an M6.2 manual-QA delta covering the same acceptance journey.
+- Recorded M6.2 as implementation complete / user acceptance pending. Translation Practice sessions, learner answer fields, vocabulary marking, and rich correction remain M6.3+ work.
 - Aligned the public Learner Response schema with generic material snapshots: only `id` is universally required, while Objective Quiz snapshots conditionally retain the `type` requirement. Added executable Draft 2020-12 schema regression coverage for both Translation and Objective Quiz responses.
 - Recorded M6.0 as user accepted and implemented M6.1 Translation Domain and Persistence Foundation without starting M6.2 UI work.
 - Added a separate Translation Library aggregate with stable Folder, Document, and ordered Item identities; generic language metadata; optional reference translations; immutable core operations; and explicit cascade deletion.

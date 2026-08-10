@@ -4,6 +4,9 @@
 
 ### Added
 
+- Added the M6.2 Translation Library workspace: folder, document, and ordered item management, with document move between folders.
+- Added source-only and bilingual (tab-separated) batch import, and portable Translation Document JSON import with folder reassignment and a deterministic duplicate-ID copy policy, each through an Input -> Parse -> Validate -> Preview -> Confirm -> Persist pipeline.
+- Added Translation Document JSON export using the canonical public contract.
 - Added the M6.1 Translation Folder, Document, and ordered Item domain foundation with local persistence and explicit relationship-safe core operations.
 - Added a versioned Translation Document JSON Schema, synthetic example, and full-library backup coverage.
 - Generalized Learner Response additively so future Translation responses can preserve written answers without fabricated objective grading.
@@ -14,6 +17,7 @@
 
 ### Documentation
 
+- Added bilingual Translation Library usage, developer architecture notes, and an M6.2 manual-QA delta.
 - Renamed milestone documents to Roadmap documents.
 - Added Project Status documents as the current lifecycle-state authority.
 - Defined Feature Complete Review, Feature Freeze Gate, Product Hardening, and Release Candidate phases without changing product functionality.

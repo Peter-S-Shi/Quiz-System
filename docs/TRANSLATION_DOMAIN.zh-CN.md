@@ -1,6 +1,6 @@
 # Translation 领域模型与持久化
 
-Milestone 6.1 为 Translation Practice 建立数据基础，但不加入 Translation Library 或练习 UI。
+Milestone 6.1 为 Translation Practice 建立了数据基础。Milestone 6.2 在此基础上加入第一个面向用户的消费者：Translation Library 工作区，包含文件夹/文档/条目管理和材料导入导出。Translation Practice 练习 session 本身仍属于后续 M6 工作。
 
 ## 聚合模型
 
@@ -55,6 +55,21 @@ Item 包含稳定 ID、源文本和确定性的零起始 position。`referenceTr
 
 该 contract 具有版本、使用稳定 ID、支持通用语言、不含 raw HTML，并且不依赖特定 AI provider。
 
+## Library、导入与导出（M6.2）
+
+Milestone 6.2 的 Translation Library 工作区完全构建在 M6.1 领域函数之上，不引入并行存储表示，也不新增 schema 版本。
+
+`src/core/translation-import.js` 提供与 DOM 解耦、可单独测试的解析与安全性辅助函数：
+
+- 仅原文批量导入：每个非空行对应一个 Translation Item。
+- 双语批量导入：`原文<Tab>参考译文` 格式的行；任何格式不完整的行都会被记录为校验错误，而不是被静默丢弃或静默导入。
+- 可移植 Translation Document JSON 导入：独立于任何本地文件夹进行校验，因此外部作者撰写的文档可以在不知道本地文件夹 ID 的情况下，被分配给用户选择的本地文件夹。文档自带的 `folderId` 仅用于结构校验，在持久化时会被用户选择的文件夹覆盖。
+- 重复的 document ID 默认会被拒绝。用户明确选择以副本方式导入时，会在调用同一个具备关系安全保护的 `createTranslationDocument` 之前，重新分配 document ID 和全部 item ID，因此冲突策略由与其他写操作相同的领域层强制执行。
+
+三种导入路径都遵循 输入 -> 解析 -> 校验 -> 预览 -> 确认 -> 持久化 流程。预览和校验不会修改已存储的 library；只有明确的确认操作才会调用 M6.1 领域函数。导入失败或取消都不会改变现有 Translation Library 数据。
+
+导出直接使用 `getTranslationDocument()`，因此导出的文件与系统内部使用、并可在重新导入时被接受的规范化、符合 schema 的形状完全一致。
+
 ## 延后范围
 
-Translation Library UI、材料导入/导出 UI、练习 session、学习者标记、rich correction、Teacher Review 往返、remediation UI 和 AI 集成都属于后续 M6 工作。
+Translation Practice 练习 session、学习者作答字段、`unknown / uncertain / should_know` 标记、rich correction、Teacher Review 往返、remediation UI 和 AI 集成都属于后续 M6 工作。

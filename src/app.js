@@ -8,7 +8,28 @@ import {
   upsertLearnerResponse,
 } from "./core/learning-records.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
-import { parseTranslationLibrary } from "./core/translation-domain.js";
+import {
+  addTranslationItem,
+  createTranslationDocument,
+  createTranslationFolder,
+  deleteTranslationDocument,
+  deleteTranslationFolder,
+  getTranslationDocument,
+  getTranslationFolder,
+  parseTranslationLibrary,
+  removeTranslationItem,
+  reorderTranslationItems,
+  updateTranslationDocument,
+  updateTranslationFolder,
+  updateTranslationItem,
+} from "./core/translation-domain.js";
+import {
+  findDocumentIdCollision,
+  parseBilingualText,
+  parseSourceOnlyText,
+  parseTranslationDocumentJsonText,
+  remapDocumentForCopy,
+} from "./core/translation-import.js";
 import {
   QUESTION_TYPES,
   clonePaperForLibrary,
@@ -49,6 +70,7 @@ const locales = {
     modes: {
       edit: "编辑",
       quiz: "做题",
+      translation: "翻译练习",
     },
     library: {
       title: "本地试卷库",
@@ -192,6 +214,64 @@ const locales = {
       responseSaveFail: "无法保存原始作答记录。请检查浏览器存储空间后重试。",
       responseExportFail: "无法导出作答记录。",
       historySaveFail: "原始作答已保存，但成绩摘要无法写入本地历史。",
+      translationFolderCreated: "已新建文件夹",
+      translationFolderRenamed: "已重命名文件夹",
+      translationFolderDeleted: "已删除文件夹",
+      translationDocumentCreated: "已新建翻译文档",
+      translationDocumentDeleted: "已删除翻译文档",
+      translationDocumentFieldsRequired: "请填写标题、原文语言和译文语言。",
+      translationItemDeleted: "已删除条目",
+      translationImportSuccess: "已导入翻译文档",
+      translationImportFail: "导入失败，请检查文件内容或所选文件夹。",
+    },
+    translation: {
+      title: "翻译练习库",
+      newFolder: "新建文件夹",
+      newFolderPrompt: "输入文件夹名称",
+      renameFolder: "重命名",
+      renameFolderPrompt: "输入新的文件夹名称",
+      deleteFolder: "删除",
+      deleteFolderConfirm: "确定删除这个文件夹吗？其中的翻译文档也会一并删除。此操作只影响浏览器本地数据。",
+      emptyFolders: "还没有文件夹，请先新建一个。",
+      documentsIn: "{count} 份文档",
+      newDocument: "新建文档",
+      selectDocument: "请选择或导入一份翻译文档",
+      sourceLanguage: "原文语言",
+      targetLanguage: "译文语言",
+      itemCount: "{count} 条",
+      items: "条目",
+      emptyItems: "还没有条目",
+      addItem: "添加条目",
+      newItemPlaceholder: "新条目内容",
+      sourceText: "原文",
+      referenceTranslation: "参考译文（可选）",
+      notes: "备注（可选）",
+      moveDocument: "所属文件夹",
+      exportDocument: "导出文档 JSON",
+      deleteDocument: "删除文档",
+      deleteDocumentConfirm: "确定删除这份翻译文档吗？此操作只影响浏览器本地数据。",
+      importSection: "导入材料",
+      importSourceOnly: "仅原文批量导入",
+      importSourceOnlyHint: "每行一条，仅原文，不含参考译文。",
+      importBilingual: "双语批量导入",
+      importBilingualHint: "每行一条，格式为「原文<Tab>参考译文」。",
+      importJson: "导入翻译文档 JSON",
+      documentTitleLabel: "文档标题",
+      importTargetFolder: "目标文件夹",
+      importTextLabel: "粘贴内容",
+      importPreviewButton: "预览",
+      importAsCopy: "作为新副本导入（重新分配 ID）",
+      importPreviewTitle: "导入预览",
+      importConfirm: "确认导入",
+      importCancel: "取消",
+      importErrors: "校验错误",
+      importNeedFolder: "请先新建并选择一个文件夹。",
+      importCollision: "该文档 ID 已存在，请勾选“作为新副本导入”，或更换文件。",
+      importTitleRequired: "请输入文档标题。",
+      importSourceLanguageRequired: "请输入原文语言。",
+      importTargetLanguageRequired: "请输入译文语言。",
+      hasReference: "含参考译文",
+      noReference: "不含参考译文",
     },
     samplePaper: {
       title: "第一份 Quiz 试卷",
@@ -222,6 +302,7 @@ const locales = {
     modes: {
       edit: "Edit",
       quiz: "Quiz",
+      translation: "Translation",
     },
     library: {
       title: "Local quiz library",
@@ -365,6 +446,64 @@ const locales = {
       responseSaveFail: "The original response could not be saved. Check browser storage space and try again.",
       responseExportFail: "The learner response could not be exported.",
       historySaveFail: "The original response was saved, but the score summary could not be added to local history.",
+      translationFolderCreated: "Folder created",
+      translationFolderRenamed: "Folder renamed",
+      translationFolderDeleted: "Folder deleted",
+      translationDocumentCreated: "Translation document created",
+      translationDocumentDeleted: "Translation document deleted",
+      translationDocumentFieldsRequired: "Enter a title, source language, and target language.",
+      translationItemDeleted: "Item deleted",
+      translationImportSuccess: "Translation document imported",
+      translationImportFail: "Import failed. Check the file content or the selected folder.",
+    },
+    translation: {
+      title: "Translation Library",
+      newFolder: "New folder",
+      newFolderPrompt: "Enter a folder name",
+      renameFolder: "Rename",
+      renameFolderPrompt: "Enter a new folder name",
+      deleteFolder: "Delete",
+      deleteFolderConfirm: "Delete this folder? Its Translation Documents will also be deleted. This only affects local browser data.",
+      emptyFolders: "No folders yet. Create one first.",
+      documentsIn: "{count} documents",
+      newDocument: "New document",
+      selectDocument: "Select or import a Translation Document",
+      sourceLanguage: "Source language",
+      targetLanguage: "Target language",
+      itemCount: "{count} items",
+      items: "Items",
+      emptyItems: "No items yet",
+      addItem: "Add item",
+      newItemPlaceholder: "New item text",
+      sourceText: "Source text",
+      referenceTranslation: "Reference translation (optional)",
+      notes: "Notes (optional)",
+      moveDocument: "Folder",
+      exportDocument: "Export document JSON",
+      deleteDocument: "Delete document",
+      deleteDocumentConfirm: "Delete this Translation Document? This only affects local browser data.",
+      importSection: "Import material",
+      importSourceOnly: "Source-only batch import",
+      importSourceOnlyHint: "One line = one item, source text only.",
+      importBilingual: "Bilingual batch import",
+      importBilingualHint: "One line = one item, format: source<TAB>reference.",
+      importJson: "Import Translation Document JSON",
+      documentTitleLabel: "Document title",
+      importTargetFolder: "Target folder",
+      importTextLabel: "Paste content",
+      importPreviewButton: "Preview",
+      importAsCopy: "Import as a new copy (reassign IDs)",
+      importPreviewTitle: "Import preview",
+      importConfirm: "Confirm import",
+      importCancel: "Cancel",
+      importErrors: "Validation errors",
+      importNeedFolder: "Create and choose a folder first.",
+      importCollision: "This document ID already exists. Check \"import as a new copy\" or choose another file.",
+      importTitleRequired: "Enter a document title.",
+      importSourceLanguageRequired: "Enter a source language.",
+      importTargetLanguageRequired: "Enter a target language.",
+      hasReference: "Has reference translations",
+      noReference: "No reference translations",
     },
     samplePaper: {
       title: "First Quiz Paper",
@@ -393,9 +532,16 @@ let currentMode = "edit";
 let session = loadActiveSession();
 let toastTimer = null;
 let librarySearch = "";
+let translationLibrary = loadTranslationLibrary();
+let selectedTranslationDocumentId = null;
+let translationImportDraft = null;
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
+const translationView = document.getElementById("translationView");
+const translationModeButton = document.getElementById("translationModeButton");
+const translationLibraryPanel = document.getElementById("translationLibraryPanel");
+const translationDocumentPanel = document.getElementById("translationDocumentPanel");
 const skipLink = document.getElementById("skipLink");
 const editModeButton = document.getElementById("editModeButton");
 const quizModeButton = document.getElementById("quizModeButton");
@@ -429,6 +575,7 @@ function init() {
 function bindGlobalEvents() {
   editModeButton.addEventListener("click", () => setMode("edit"));
   quizModeButton.addEventListener("click", () => setMode("quiz"));
+  translationModeButton.addEventListener("click", () => setMode("translation"));
   themeToggle.addEventListener("click", toggleTheme);
 
   languageSelect.addEventListener("change", (event) => setLanguage(event.target.value));
@@ -475,6 +622,7 @@ function renderAll() {
   renderQuestionList();
   renderQuestionEditor();
   renderQuizStart();
+  renderTranslationView();
 }
 
 function renderChrome() {
@@ -484,6 +632,7 @@ function renderChrome() {
   document.querySelector(".mode-tabs").setAttribute("aria-label", t("aria.mainMode"));
   editModeButton.textContent = t("modes.edit");
   quizModeButton.textContent = t("modes.quiz");
+  translationModeButton.textContent = t("modes.translation");
   themeToggle.title = t("aria.theme");
   themeToggle.setAttribute("aria-label", t("aria.theme"));
   languageSelect.setAttribute("aria-label", t("aria.language"));
@@ -506,9 +655,12 @@ function setMode(mode) {
   currentMode = mode;
   editorView.classList.toggle("hidden", mode !== "edit");
   quizView.classList.toggle("hidden", mode !== "quiz");
+  translationView.classList.toggle("hidden", mode !== "translation");
   editModeButton.classList.toggle("active", mode === "edit");
   quizModeButton.classList.toggle("active", mode === "quiz");
+  translationModeButton.classList.toggle("active", mode === "translation");
   if (mode === "quiz") renderQuizStart();
+  if (mode === "translation") renderTranslationView();
 }
 
 function setLanguage(nextLanguage) {
@@ -1561,6 +1713,531 @@ function loadLearnerResponses() {
 function loadTranslationLibrary() {
   const saved = localStorage.getItem(TRANSLATION_LIBRARY_KEY);
   return parseTranslationLibrary(saved ? JSON.parse(saved) : null);
+}
+
+function saveTranslationLibrary(next) {
+  translationLibrary = next;
+  saveJson(TRANSLATION_LIBRARY_KEY, translationLibrary);
+}
+
+function renderTranslationView() {
+  if (currentMode !== "translation") return;
+  renderTranslationLibraryPanel();
+  renderTranslationMainPanel();
+}
+
+function renderTranslationLibraryPanel() {
+  translationLibraryPanel.innerHTML = `
+    <div class="library-heading">
+      <strong>${t("translation.title")}</strong>
+      <span>${translationLibrary.documents.length}</span>
+    </div>
+    <div class="library-actions single-action">
+      <button class="small-button" type="button" id="newTranslationFolder">${t("translation.newFolder")}</button>
+    </div>
+    <div class="library-list">
+      ${translationLibrary.folders.length
+        ? translationLibrary.folders.map(renderTranslationFolderBlock).join("")
+        : `<div class="library-empty">${t("translation.emptyFolders")}</div>`}
+    </div>
+    <div class="translation-import">
+      <div class="library-heading"><strong>${t("translation.importSection")}</strong></div>
+      ${renderImportForms()}
+    </div>
+  `;
+
+  document.getElementById("newTranslationFolder").addEventListener("click", createTranslationFolderPrompt);
+  bindTranslationFolderEvents();
+  bindImportFormEvents();
+}
+
+function renderTranslationFolderBlock(folder) {
+  const docs = translationLibrary.documents.filter((doc) => doc.folderId === folder.id);
+  return `
+    <div class="folder-block" data-folder-id="${folder.id}">
+      <div class="library-heading">
+        <strong>${escapeHtml(folder.name)}</strong>
+        <span>${t("translation.documentsIn", { count: docs.length })}</span>
+      </div>
+      <div class="row-actions">
+        <button class="small-button" type="button" data-rename-folder="${folder.id}">${t("translation.renameFolder")}</button>
+        <button class="danger-button small-button" type="button" data-delete-folder="${folder.id}">${t("translation.deleteFolder")}</button>
+      </div>
+      <div class="library-list">
+        ${docs.map(renderTranslationDocumentItem).join("")}
+      </div>
+      <details class="translation-create-document">
+        <summary class="small-button">${t("translation.newDocument")}</summary>
+        <div class="translation-form" data-new-document-form="${folder.id}">
+          <label><span>${t("translation.documentTitleLabel")}</span><input type="text" data-new-document-title maxlength="120"></label>
+          <label><span>${t("translation.sourceLanguage")}</span><input type="text" data-new-document-source maxlength="40"></label>
+          <label><span>${t("translation.targetLanguage")}</span><input type="text" data-new-document-target maxlength="40"></label>
+          <button class="primary-button small-button" type="button" data-create-document="${folder.id}">${t("translation.newDocument")}</button>
+        </div>
+      </details>
+    </div>
+  `;
+}
+
+function renderTranslationDocumentItem(doc) {
+  const isActive = doc.id === selectedTranslationDocumentId;
+  return `
+    <button class="library-item ${isActive ? "active" : ""}" type="button" data-select-document="${doc.id}">
+      <span>
+        <strong>${escapeHtml(doc.title || t("library.untitled"))}</strong>
+        <small>${escapeHtml(doc.sourceLanguage)} &rarr; ${escapeHtml(doc.targetLanguage)} &middot; ${t("translation.itemCount", { count: doc.items.length })}</small>
+      </span>
+    </button>
+  `;
+}
+
+function bindTranslationFolderEvents() {
+  document.querySelectorAll("[data-rename-folder]").forEach((button) => {
+    button.addEventListener("click", () => renameTranslationFolderPrompt(button.dataset.renameFolder));
+  });
+  document.querySelectorAll("[data-delete-folder]").forEach((button) => {
+    button.addEventListener("click", () => deleteTranslationFolderConfirm(button.dataset.deleteFolder));
+  });
+  document.querySelectorAll("[data-select-document]").forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedTranslationDocumentId = button.dataset.selectDocument;
+      translationImportDraft = null;
+      renderTranslationView();
+    });
+  });
+  document.querySelectorAll("[data-create-document]").forEach((button) => {
+    button.addEventListener("click", () => createTranslationDocumentFromForm(button.dataset.createDocument));
+  });
+}
+
+function createTranslationFolderPrompt() {
+  const name = window.prompt(t("translation.newFolderPrompt"), "");
+  if (!name || !name.trim()) return;
+  saveTranslationLibrary(createTranslationFolder(translationLibrary, { name: name.trim() }));
+  renderTranslationView();
+  showToast(t("toast.translationFolderCreated"));
+}
+
+function renameTranslationFolderPrompt(folderId) {
+  const folder = getTranslationFolder(translationLibrary, folderId);
+  const name = window.prompt(t("translation.renameFolderPrompt"), folder?.name || "");
+  if (!name || !name.trim()) return;
+  saveTranslationLibrary(updateTranslationFolder(translationLibrary, folderId, { name: name.trim() }));
+  renderTranslationView();
+  showToast(t("toast.translationFolderRenamed"));
+}
+
+function deleteTranslationFolderConfirm(folderId) {
+  if (!window.confirm(t("translation.deleteFolderConfirm"))) return;
+  const next = deleteTranslationFolder(translationLibrary, folderId, { cascade: true });
+  if (selectedTranslationDocumentId && !next.documents.some((doc) => doc.id === selectedTranslationDocumentId)) {
+    selectedTranslationDocumentId = null;
+  }
+  saveTranslationLibrary(next);
+  renderTranslationView();
+  showToast(t("toast.translationFolderDeleted"));
+}
+
+function createTranslationDocumentFromForm(folderId) {
+  const form = document.querySelector(`[data-new-document-form="${folderId}"]`);
+  const title = form.querySelector("[data-new-document-title]").value.trim();
+  const sourceLanguage = form.querySelector("[data-new-document-source]").value.trim();
+  const targetLanguage = form.querySelector("[data-new-document-target]").value.trim();
+  if (!title || !sourceLanguage || !targetLanguage) {
+    showToast(t("toast.translationDocumentFieldsRequired"));
+    return;
+  }
+  const next = createTranslationDocument(translationLibrary, { title, folderId, sourceLanguage, targetLanguage, items: [] });
+  selectedTranslationDocumentId = next.documents[next.documents.length - 1].id;
+  translationImportDraft = null;
+  saveTranslationLibrary(next);
+  renderTranslationView();
+  showToast(t("toast.translationDocumentCreated"));
+}
+
+function renderImportForms() {
+  const folderOptions = translationLibrary.folders
+    .map((folder) => `<option value="${folder.id}">${escapeHtml(folder.name)}</option>`)
+    .join("");
+  const disabled = translationLibrary.folders.length ? "" : "disabled";
+  const hint = translationLibrary.folders.length ? "" : `<p class="meta-text">${t("translation.importNeedFolder")}</p>`;
+
+  return `
+    ${hint}
+    <details class="translation-import-form">
+      <summary class="small-button">${t("translation.importSourceOnly")}</summary>
+      <div class="translation-form">
+        <p class="meta-text">${t("translation.importSourceOnlyHint")}</p>
+        <label><span>${t("translation.documentTitleLabel")}</span><input type="text" id="sourceOnlyTitle" maxlength="120" ${disabled}></label>
+        <label><span>${t("translation.importTargetFolder")}</span><select id="sourceOnlyFolder" ${disabled}>${folderOptions}</select></label>
+        <label><span>${t("translation.sourceLanguage")}</span><input type="text" id="sourceOnlySourceLang" maxlength="40" ${disabled}></label>
+        <label><span>${t("translation.targetLanguage")}</span><input type="text" id="sourceOnlyTargetLang" maxlength="40" ${disabled}></label>
+        <label><span>${t("translation.importTextLabel")}</span><textarea id="sourceOnlyText" rows="6" ${disabled}></textarea></label>
+        <button class="secondary-button" type="button" id="previewSourceOnlyImport" ${disabled}>${t("translation.importPreviewButton")}</button>
+      </div>
+    </details>
+    <details class="translation-import-form">
+      <summary class="small-button">${t("translation.importBilingual")}</summary>
+      <div class="translation-form">
+        <p class="meta-text">${t("translation.importBilingualHint")}</p>
+        <label><span>${t("translation.documentTitleLabel")}</span><input type="text" id="bilingualTitle" maxlength="120" ${disabled}></label>
+        <label><span>${t("translation.importTargetFolder")}</span><select id="bilingualFolder" ${disabled}>${folderOptions}</select></label>
+        <label><span>${t("translation.sourceLanguage")}</span><input type="text" id="bilingualSourceLang" maxlength="40" ${disabled}></label>
+        <label><span>${t("translation.targetLanguage")}</span><input type="text" id="bilingualTargetLang" maxlength="40" ${disabled}></label>
+        <label><span>${t("translation.importTextLabel")}</span><textarea id="bilingualText" rows="6" ${disabled}></textarea></label>
+        <button class="secondary-button" type="button" id="previewBilingualImport" ${disabled}>${t("translation.importPreviewButton")}</button>
+      </div>
+    </details>
+    <details class="translation-import-form">
+      <summary class="small-button">${t("translation.importJson")}</summary>
+      <div class="translation-form">
+        <label><span>${t("translation.importTargetFolder")}</span><select id="jsonImportFolder" ${disabled}>${folderOptions}</select></label>
+        <label class="secondary-button file-label">
+          <span>${t("actions.import")}</span>
+          <input type="file" id="jsonImportFile" accept="application/json,.json" ${disabled}>
+        </label>
+      </div>
+    </details>
+  `;
+}
+
+function bindImportFormEvents() {
+  const previewSourceOnly = document.getElementById("previewSourceOnlyImport");
+  if (previewSourceOnly) {
+    previewSourceOnly.addEventListener("click", () => {
+      const title = document.getElementById("sourceOnlyTitle").value.trim();
+      const folderId = document.getElementById("sourceOnlyFolder").value;
+      const sourceLanguage = document.getElementById("sourceOnlySourceLang").value.trim();
+      const targetLanguage = document.getElementById("sourceOnlyTargetLang").value.trim();
+      const { items, errors } = parseSourceOnlyText(document.getElementById("sourceOnlyText").value);
+      translationImportDraft = {
+        kind: "source-only",
+        title,
+        folderId,
+        sourceLanguage,
+        targetLanguage,
+        items,
+        errors: [...errors, ...validateDraftMetadata({ title, sourceLanguage, targetLanguage })],
+        allowCopy: false,
+      };
+      selectedTranslationDocumentId = null;
+      renderTranslationMainPanel();
+    });
+  }
+
+  const previewBilingual = document.getElementById("previewBilingualImport");
+  if (previewBilingual) {
+    previewBilingual.addEventListener("click", () => {
+      const title = document.getElementById("bilingualTitle").value.trim();
+      const folderId = document.getElementById("bilingualFolder").value;
+      const sourceLanguage = document.getElementById("bilingualSourceLang").value.trim();
+      const targetLanguage = document.getElementById("bilingualTargetLang").value.trim();
+      const { items, errors } = parseBilingualText(document.getElementById("bilingualText").value);
+      translationImportDraft = {
+        kind: "bilingual",
+        title,
+        folderId,
+        sourceLanguage,
+        targetLanguage,
+        items,
+        errors: [...errors, ...validateDraftMetadata({ title, sourceLanguage, targetLanguage })],
+        allowCopy: false,
+      };
+      selectedTranslationDocumentId = null;
+      renderTranslationMainPanel();
+    });
+  }
+
+  const jsonFileInput = document.getElementById("jsonImportFile");
+  if (jsonFileInput) {
+    jsonFileInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const folderId = document.getElementById("jsonImportFolder").value;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const { document: parsedDocument, errors } = parseTranslationDocumentJsonText(reader.result);
+        translationImportDraft = {
+          kind: "json",
+          folderId,
+          document: parsedDocument,
+          errors,
+          allowCopy: false,
+        };
+        selectedTranslationDocumentId = null;
+        renderTranslationMainPanel();
+      };
+      reader.onerror = () => showToast(t("toast.translationImportFail"));
+      reader.readAsText(file);
+      event.target.value = "";
+    });
+  }
+}
+
+function validateDraftMetadata({ title, sourceLanguage, targetLanguage }) {
+  const errors = [];
+  if (!title) errors.push(t("translation.importTitleRequired"));
+  if (!sourceLanguage) errors.push(t("translation.importSourceLanguageRequired"));
+  if (!targetLanguage) errors.push(t("translation.importTargetLanguageRequired"));
+  return errors;
+}
+
+function renderTranslationMainPanel() {
+  if (translationImportDraft) {
+    renderImportPreviewPanel();
+    return;
+  }
+  const doc = translationLibrary.documents.find((item) => item.id === selectedTranslationDocumentId);
+  if (!doc) {
+    translationDocumentPanel.innerHTML = `<div class="empty-state"><div>${t("translation.selectDocument")}</div></div>`;
+    return;
+  }
+  renderTranslationDocumentEditor(doc);
+}
+
+function renderTranslationDocumentEditor(doc) {
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions">
+        <span class="type-pill">${escapeHtml(doc.sourceLanguage)} &rarr; ${escapeHtml(doc.targetLanguage)}</span>
+        <div class="row-actions">
+          <button class="small-button" type="button" id="exportTranslationDocument">${t("translation.exportDocument")}</button>
+          <button class="danger-button small-button" type="button" id="deleteTranslationDocument">${t("translation.deleteDocument")}</button>
+        </div>
+      </div>
+      <div class="field-grid">
+        <label><span>${t("translation.documentTitleLabel")}</span><input id="translationDocTitle" type="text" maxlength="120" value="${escapeHtml(doc.title)}"></label>
+        <label><span>${t("translation.moveDocument")}</span>
+          <select id="translationDocFolder">
+            ${translationLibrary.folders.map((folder) => `<option value="${folder.id}" ${folder.id === doc.folderId ? "selected" : ""}>${escapeHtml(folder.name)}</option>`).join("")}
+          </select>
+        </label>
+      </div>
+      <div class="field-grid">
+        <label><span>${t("translation.sourceLanguage")}</span><input id="translationDocSourceLang" type="text" maxlength="40" value="${escapeHtml(doc.sourceLanguage)}"></label>
+        <label><span>${t("translation.targetLanguage")}</span><input id="translationDocTargetLang" type="text" maxlength="40" value="${escapeHtml(doc.targetLanguage)}"></label>
+      </div>
+      <div class="question-list-header">
+        <strong>${t("translation.items")}</strong>
+        <span>${doc.items.length}</span>
+      </div>
+      <div class="translation-item-list" id="translationItemList">
+        ${doc.items.length
+          ? doc.items.map((item, index) => renderTranslationItemRow(item, index, doc.items.length)).join("")
+          : `<div class="library-empty">${t("translation.emptyItems")}</div>`}
+      </div>
+      <button class="secondary-button" type="button" id="addTranslationItem">${t("translation.addItem")}</button>
+    </div>
+  `;
+
+  bindTranslationDocumentEditorEvents(doc);
+}
+
+function renderTranslationItemRow(item, index, total) {
+  return `
+    <div class="translation-item-row" data-item-id="${item.id}">
+      <div class="item-index">${index + 1}</div>
+      <div class="item-fields">
+        <label><span>${t("translation.sourceText")}</span><textarea rows="2" data-item-source="${item.id}">${escapeHtml(item.sourceText)}</textarea></label>
+        <label><span>${t("translation.referenceTranslation")}</span><input type="text" data-item-reference="${item.id}" value="${escapeHtml(item.referenceTranslation || "")}"></label>
+        <label><span>${t("translation.notes")}</span><input type="text" data-item-notes="${item.id}" value="${escapeHtml(item.notes || "")}"></label>
+      </div>
+      <div class="item-actions">
+        <button class="small-button" type="button" data-item-up="${item.id}" ${index === 0 ? "disabled" : ""}>&uarr;</button>
+        <button class="small-button" type="button" data-item-down="${item.id}" ${index === total - 1 ? "disabled" : ""}>&darr;</button>
+        <button class="danger-button small-button" type="button" data-item-delete="${item.id}">${t("actions.delete")}</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindTranslationDocumentEditorEvents(doc) {
+  document.getElementById("translationDocTitle").addEventListener("input", (event) => {
+    updateSelectedTranslationDocument({ title: event.target.value });
+  });
+  document.getElementById("translationDocFolder").addEventListener("change", (event) => {
+    updateSelectedTranslationDocument({ folderId: event.target.value });
+  });
+  document.getElementById("translationDocSourceLang").addEventListener("input", (event) => {
+    updateSelectedTranslationDocument({ sourceLanguage: event.target.value });
+  });
+  document.getElementById("translationDocTargetLang").addEventListener("input", (event) => {
+    updateSelectedTranslationDocument({ targetLanguage: event.target.value });
+  });
+  document.getElementById("exportTranslationDocument").addEventListener("click", () => exportTranslationDocument(doc.id));
+  document.getElementById("deleteTranslationDocument").addEventListener("click", () => deleteTranslationDocumentConfirm(doc.id));
+  document.getElementById("addTranslationItem").addEventListener("click", () => addTranslationItemToDocument(doc.id));
+
+  document.querySelectorAll("[data-item-source]").forEach((textarea) => {
+    textarea.addEventListener("input", (event) => {
+      updateTranslationItemField(doc.id, textarea.dataset.itemSource, { sourceText: event.target.value });
+    });
+  });
+  document.querySelectorAll("[data-item-reference]").forEach((input) => {
+    input.addEventListener("input", (event) => {
+      updateTranslationItemField(doc.id, input.dataset.itemReference, { referenceTranslation: event.target.value });
+    });
+  });
+  document.querySelectorAll("[data-item-notes]").forEach((input) => {
+    input.addEventListener("input", (event) => {
+      updateTranslationItemField(doc.id, input.dataset.itemNotes, { notes: event.target.value });
+    });
+  });
+  document.querySelectorAll("[data-item-up]").forEach((button) => {
+    button.addEventListener("click", () => moveTranslationItem(doc.id, button.dataset.itemUp, -1));
+  });
+  document.querySelectorAll("[data-item-down]").forEach((button) => {
+    button.addEventListener("click", () => moveTranslationItem(doc.id, button.dataset.itemDown, 1));
+  });
+  document.querySelectorAll("[data-item-delete]").forEach((button) => {
+    button.addEventListener("click", () => deleteTranslationItem(doc.id, button.dataset.itemDelete));
+  });
+}
+
+function updateSelectedTranslationDocument(changes) {
+  try {
+    const next = updateTranslationDocument(translationLibrary, selectedTranslationDocumentId, changes);
+    saveTranslationLibrary(next);
+    renderTranslationLibraryPanel();
+  } catch {
+    // Leave the field editable; the change is dropped until the document is valid again.
+  }
+}
+
+function updateTranslationItemField(documentId, itemId, changes) {
+  try {
+    saveTranslationLibrary(updateTranslationItem(translationLibrary, documentId, itemId, changes));
+  } catch {
+    // Leave the field editable; the change is dropped until the item is valid again.
+  }
+}
+
+function moveTranslationItem(documentId, itemId, direction) {
+  const doc = translationLibrary.documents.find((item) => item.id === documentId);
+  const ids = doc.items.map((item) => item.id);
+  const index = ids.indexOf(itemId);
+  const swapIndex = index + direction;
+  if (swapIndex < 0 || swapIndex >= ids.length) return;
+  [ids[index], ids[swapIndex]] = [ids[swapIndex], ids[index]];
+  saveTranslationLibrary(reorderTranslationItems(translationLibrary, documentId, ids));
+  renderTranslationMainPanel();
+}
+
+function deleteTranslationItem(documentId, itemId) {
+  saveTranslationLibrary(removeTranslationItem(translationLibrary, documentId, itemId));
+  renderTranslationMainPanel();
+  showToast(t("toast.translationItemDeleted"));
+}
+
+function addTranslationItemToDocument(documentId) {
+  const next = addTranslationItem(translationLibrary, documentId, { sourceText: t("translation.newItemPlaceholder") });
+  saveTranslationLibrary(next);
+  renderTranslationMainPanel();
+}
+
+function deleteTranslationDocumentConfirm(documentId) {
+  if (!window.confirm(t("translation.deleteDocumentConfirm"))) return;
+  const next = deleteTranslationDocument(translationLibrary, documentId);
+  if (selectedTranslationDocumentId === documentId) selectedTranslationDocumentId = null;
+  saveTranslationLibrary(next);
+  renderTranslationView();
+  showToast(t("toast.translationDocumentDeleted"));
+}
+
+function exportTranslationDocument(documentId) {
+  const doc = getTranslationDocument(translationLibrary, documentId);
+  if (!doc) return;
+  downloadJson(doc, `${safeFileName(doc.title || "translation-document")}.json`);
+}
+
+function renderImportPreviewPanel() {
+  const draft = translationImportDraft;
+  const folder = translationLibrary.folders.find((item) => item.id === draft.folderId);
+  const collision = draft.kind === "json" && draft.document ? findDocumentIdCollision(translationLibrary, draft.document.id) : false;
+  const title = draft.kind === "json" ? (draft.document?.title || "") : draft.title;
+  const sourceLanguage = draft.kind === "json" ? (draft.document?.sourceLanguage || "") : draft.sourceLanguage;
+  const targetLanguage = draft.kind === "json" ? (draft.document?.targetLanguage || "") : draft.targetLanguage;
+  const items = (draft.kind === "json" ? draft.document?.items : draft.items) || [];
+  const hasReference = items.some((item) => item.referenceTranslation);
+  const allErrors = [
+    ...draft.errors,
+    ...(folder ? [] : [t("translation.importNeedFolder")]),
+    ...(collision && !draft.allowCopy ? [t("translation.importCollision")] : []),
+  ];
+  const canConfirm = allErrors.length === 0 && items.length > 0;
+
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions">
+        <span class="type-pill">${t("translation.importPreviewTitle")}</span>
+      </div>
+      <div class="field-grid">
+        <div class="preview-field"><span class="meta-text">${t("translation.documentTitleLabel")}</span><strong>${escapeHtml(title || "-")}</strong></div>
+        <div class="preview-field"><span class="meta-text">${t("translation.importTargetFolder")}</span><strong>${escapeHtml(folder?.name || "-")}</strong></div>
+      </div>
+      <div class="field-grid">
+        <div class="preview-field"><span class="meta-text">${t("translation.sourceLanguage")}</span><strong>${escapeHtml(sourceLanguage || "-")}</strong></div>
+        <div class="preview-field"><span class="meta-text">${t("translation.targetLanguage")}</span><strong>${escapeHtml(targetLanguage || "-")}</strong></div>
+      </div>
+      <p class="meta-text">${t("translation.itemCount", { count: items.length })} &middot; ${hasReference ? t("translation.hasReference") : t("translation.noReference")}</p>
+      ${collision ? `
+        <label class="inline-check">
+          <span>${t("translation.importAsCopy")}</span>
+          <input type="checkbox" id="importAllowCopy" ${draft.allowCopy ? "checked" : ""}>
+        </label>
+      ` : ""}
+      ${allErrors.length ? `
+        <div class="import-errors">
+          <strong>${t("translation.importErrors")}</strong>
+          <ul>${allErrors.map((error) => `<li>${escapeHtml(error)}</li>`).join("")}</ul>
+        </div>
+      ` : ""}
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button" id="cancelImportPreview">${t("translation.importCancel")}</button>
+        <button class="primary-button" type="button" id="confirmImportPreview" ${canConfirm ? "" : "disabled"}>${t("translation.importConfirm")}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("cancelImportPreview").addEventListener("click", () => {
+    translationImportDraft = null;
+    renderTranslationView();
+  });
+  if (collision) {
+    document.getElementById("importAllowCopy").addEventListener("change", (event) => {
+      translationImportDraft.allowCopy = event.target.checked;
+      renderImportPreviewPanel();
+    });
+  }
+  document.getElementById("confirmImportPreview").addEventListener("click", confirmTranslationImport);
+}
+
+function confirmTranslationImport() {
+  const draft = translationImportDraft;
+  try {
+    let payload;
+    if (draft.kind === "json") {
+      const collision = findDocumentIdCollision(translationLibrary, draft.document.id);
+      const nextDocument = collision ? remapDocumentForCopy(draft.document) : draft.document;
+      payload = { ...nextDocument, folderId: draft.folderId };
+    } else {
+      payload = {
+        title: draft.title,
+        folderId: draft.folderId,
+        sourceLanguage: draft.sourceLanguage,
+        targetLanguage: draft.targetLanguage,
+        items: draft.items,
+      };
+    }
+    const next = createTranslationDocument(translationLibrary, payload);
+    selectedTranslationDocumentId = next.documents[next.documents.length - 1].id;
+    translationImportDraft = null;
+    saveTranslationLibrary(next);
+    renderTranslationView();
+    showToast(t("toast.translationImportSuccess"));
+  } catch {
+    showToast(t("toast.translationImportFail"));
+  }
 }
 
 function exportLearnerResponse(responseId) {

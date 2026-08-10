@@ -156,7 +156,7 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: In progress; M6.0 accepted; M6.1 implementation complete and user acceptance pending; Translation UI not started
+Status: In progress; M6.0 and M6.1 accepted; M6.2 implementation complete and user acceptance pending; Translation Practice sessions not started
 
 Goal: add a dedicated, local-first workspace for document-oriented written translation practice without assuming that a reference translation is the only correct answer.
 
@@ -187,12 +187,20 @@ M6.0 state:
 
 M6.1 state:
 
-- Implementation complete; user acceptance pending.
+- Accepted.
 - Translation Folder, Document, and ordered Item domain models and core operations are implemented independently from the Question Type Registry and DOM.
 - Versioned Translation Document schema, synthetic example, local persistence boundary, and complete-backup coverage are implemented.
 - Generic Learner Response supports future written Translation answers without fabricated objective grading while retaining Objective Quiz requirements.
-- Translation Library UI, import/export UI, and practice sessions remain M6.2/M6.3 work.
-- M6.2 must not begin without a new prompt after M6.1 user acceptance.
+
+M6.2 state:
+
+- Implementation complete; user acceptance pending.
+- Adds the user-facing Translation Library workspace: folder and document management, ordered item editing with reordering, and document move between folders.
+- Adds source-only batch import, bilingual tab-separated batch import, and portable Translation Document JSON import, each through an Input -> Parse -> Validate -> Preview -> Confirm -> Persist pipeline.
+- External Translation Document JSON can be assigned to a user-selected local folder without requiring the external author to know local folder IDs; duplicate document IDs are rejected unless the user explicitly imports as a new copy with remapped IDs.
+- Adds Translation Document JSON export using the canonical public contract.
+- Translation Practice sessions, learner answer fields, vocabulary marking, and rich correction remain M6.3+ work.
+- M6.3 must not begin without a new prompt after M6.2 user acceptance.
 
 Approved macro scope:
 

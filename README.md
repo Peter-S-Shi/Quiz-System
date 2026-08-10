@@ -34,6 +34,8 @@ The current version is a static ES module web application. It runs in a browser 
 - Modular Quiz Core for question models, validation, grading, and migrations.
 - Public JSON Schema and synthetic sample quiz data.
 - Versioned Learner Response and Teacher Review contracts for file-based external-teacher interoperability.
+- Translation Library workspace with folder, document, and item management.
+- Source-only and bilingual batch import, and portable Translation Document JSON import and export.
 - PWA files for offline-capable static hosting.
 - CI workflow files and a manual-only GitHub Pages workflow for future public release.
 
@@ -77,6 +79,7 @@ node --test
 6. Start the quiz, submit answers, and recover progress after refresh if needed.
 7. Review the final score, per-question answer comparison, history, and wrong-question retry options.
 8. Export the finalized Learner Response when you want to share a portable response package with an external teacher.
+9. Switch to the **Translation** view to organize Translation Documents into folders, add items, import material in bulk, and export a document as portable JSON. See `docs/USER_GUIDE.md` for details.
 
 ## Project Structure
 
@@ -110,7 +113,7 @@ Project development is organized by lifecycle stages. See `ROADMAP.md` for the f
 
 ### Planned Current-Version Capability
 
-Translation Practice remains Milestone 6's primary new learning workflow. M6.0 Open Teaching Interchange is accepted, and M6.1 now provides the separate Translation domain, persistence, public document contract, and future non-objective Learner Response boundary. Translation Library and practice UI are not implemented yet. The planned capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
+Translation Practice remains Milestone 6's primary new learning workflow. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 now provides the Translation Library workspace and material import/export. Translation Practice sessions are not implemented yet. The planned capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
 
 ## Localization
 
@@ -122,9 +125,9 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 Current phase: Feature Development - Scope Reopened.
 
-Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange is accepted. M6.1 Translation Domain and Persistence Foundation is implementation complete and awaiting user acceptance. Translation Library and practice UI have not started, and the project is not Release Ready.
+Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 Translation Library and Material Import/Export is implementation complete and awaiting user acceptance. Translation Practice sessions have not started, and the project is not Release Ready.
 
-M6.1 user acceptance, the remaining M6.2-M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
+M6.2 user acceptance, the remaining M6.3-M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
 
 ## Data and Privacy
 

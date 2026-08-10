@@ -11,6 +11,7 @@ Quiz Studio is a static ES module app.
 - `src/core/learning-records.js`: independent Learner Response collection operations without history truncation.
 - `src/core/backup.js`: validated library backup composition and backward-compatible restore parsing.
 - `src/core/translation-domain.js`: Translation Folder, Document, and ordered Item models, validation, and immutable core operations.
+- `src/core/translation-import.js`: DOM-independent parsing for source-only and bilingual batch import, portable JSON import validation, and document-ID collision handling for the Translation Library UI.
 - `src/core/migrations.js`: schema versioning and data normalization.
 - `src/storage/local-storage.js`: local browser storage boundary.
 - `schemas/`: public Quiz Paper, Learner Response, and Teacher Review JSON Schemas.
@@ -25,6 +26,12 @@ A completed Objective Quiz creates a finalized Learner Response before the activ
 The lightweight history array remains capped for display and wrong-question workflows. Learner Response records use a separate storage key and are not silently removed by that cap. Full backups include both collections.
 
 Teacher Review validation accepts only additive review fields and rejects unknown top-level fields, mismatched response IDs, and unknown item IDs. Rich correction semantics and review-import UI remain later M6 work.
+
+## Translation Library
+
+The Translation Library UI in `src/app.js` is a third top-level mode alongside Edit and Quiz. It renders folder and document management directly from `translation-domain.js` operations and never duplicates that state; every mutation goes through the same immutable core functions used by the automated tests.
+
+Batch and JSON import follow Input -> Parse -> Validate -> Preview -> Confirm -> Persist. Parsing and validation live in `translation-import.js` so they can be tested without a DOM. The UI only builds a draft object for preview and calls `createTranslationDocument()` on confirm, so a cancelled or invalid import never touches stored data.
 
 ## Validation
 

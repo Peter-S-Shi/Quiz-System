@@ -156,7 +156,7 @@ Freeze 规则：
 
 ## Milestone 6：Translation Practice
 
-状态：进行中；M6.0 已验收；M6.1 已完成实现并等待用户验收；Translation UI 尚未开始
+状态：进行中；M6.0、M6.1 已验收；M6.2 已完成实现并等待用户验收；Translation Practice 练习 session 尚未开始
 
 目标：在 Quiz Studio 中加入一个本地优先、面向文档型书面翻译训练的专用工作区，同时不假设参考译文是唯一正确答案。
 
@@ -187,12 +187,20 @@ M6.0 状态：
 
 M6.1 状态：
 
-- 已完成实现；等待用户验收。
+- 已验收。
 - Translation Folder、Document、有序 Item 领域模型和核心操作已经实现，并与 Question Type Registry 和 DOM 解耦。
 - 版本化 Translation Document schema、合成示例、本地持久化边界和完整备份覆盖已经实现。
 - 通用 Learner Response 支持未来书面 Translation 答案且不制造客观判分，同时保留 Objective Quiz 要求。
-- Translation Library UI、导入/导出 UI 和练习 session 仍属于 M6.2/M6.3 工作。
-- 未经 M6.1 用户验收和新的 prompt，不得开始 M6.2。
+
+M6.2 状态：
+
+- 已完成实现；等待用户验收。
+- 新增面向用户的 Translation Library 工作区：文件夹与文档管理、有序 Item 编辑与重排、文档在文件夹间移动。
+- 新增仅原文批量导入、双语制表符分隔批量导入，以及可移植 Translation Document JSON 导入，均遵循 输入 -> 解析 -> 校验 -> 预览 -> 确认 -> 持久化 流程。
+- 外部 Translation Document JSON 可在不要求外部作者知道本地文件夹 ID 的情况下，分配给用户选择的本地文件夹；重复的 document ID 会被拒绝，除非用户明确选择以新副本方式导入并重新分配 ID。
+- 新增使用公开标准合约的 Translation Document JSON 导出。
+- Translation Practice 练习 session、学习者作答字段、词汇标记和富文本批改仍属于 M6.3 及之后的工作。
+- 未经 M6.2 用户验收和新的 prompt，不得开始 M6.3。
 
 已批准的宏观范围：
 
