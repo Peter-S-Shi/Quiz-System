@@ -78,6 +78,8 @@ export function normalizeAnnotationList(value, answerText) {
     };
     if (!validateAnnotation(candidate, answerText).valid) return;
     seenIds.add(candidate.id);
+    // First-in-list wins on overlap (including exact-span duplicates), so recovery is deterministic.
+    if (result.some((kept) => rangesOverlap(kept, candidate))) return;
     result.push(candidate);
   });
   return result;

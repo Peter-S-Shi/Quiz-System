@@ -381,6 +381,22 @@ test("malformed persisted annotations are dropped without corrupting session rec
   assert.equal(Object.hasOwn(reloaded.annotations, "item-2"), false);
 });
 
+test("normalizeTranslationSession resolves overlapping persisted annotations deterministically", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+
+  const corrupted = JSON.parse(JSON.stringify(session));
+  corrupted.annotations["item-1"] = [
+    { id: "a1", kind: "unknown", start: 0, end: 5, text: "Hello", createdAt: "2026-01-01T00:00:00.000Z" },
+    { id: "a2", kind: "should_know", start: 2, end: 8, text: "llo th", createdAt: "2026-01-01T00:00:01.000Z" },
+    { id: "a3", kind: "uncertain", start: 6, end: 11, text: "there", createdAt: "2026-01-01T00:00:02.000Z" },
+  ];
+
+  const reloaded = normalizeTranslationSession(corrupted);
+  assert.deepEqual(reloaded.annotations["item-1"].map((item) => item.id), ["a1", "a3"]);
+});
+
 test("finalization preserves annotations as learnerAnnotations without modifying the learner answer", async () => {
   const { document } = createSyntheticDocument();
   let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
@@ -434,6 +450,59 @@ test("older Translation and Objective Quiz Learner Responses without annotations
   const validateSchema = new Ajv2020({ strict: false }).compile(schema);
   assert.equal(validateSchema(unannotatedResponse), true, JSON.stringify(validateSchema.errors));
   assert.equal(validateSchema(quizResponse), true, JSON.stringify(validateSchema.errors));
+});
+
+test("validateLearnerResponse rejects a finalized annotation whose text no longer matches the learner answer", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  const tampered = structuredClone(response);
+  tampered.learnerAnnotations[0].text = "Howdy";
+  const result = validateLearnerResponse(tampered);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /does not match the anchored answer span/);
+});
+
+test("validateLearnerResponse rejects a finalized annotation range outside the learner answer", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  const tampered = structuredClone(response);
+  tampered.learnerAnnotations[0].end = 500;
+  const result = validateLearnerResponse(tampered);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /range is outside the learner answer/);
+});
+
+test("validateLearnerResponse rejects overlapping finalized annotations for the same item", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = addTranslationAnnotation(session, "item-1", { kind: "unknown", start: 0, end: 5, text: "Hello" });
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  const tampered = structuredClone(response);
+  tampered.learnerAnnotations.push({
+    itemId: "item-1",
+    id: "injected",
+    kind: "should_know",
+    start: 2,
+    end: 8,
+    text: "llo th",
+    createdAt: "2026-03-01T09:11:00.000Z",
+  });
+  const result = validateLearnerResponse(tampered);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /overlap/);
 });
 
 test("finalized annotated evidence remains immutable and full backup/restore stays compatible", () => {

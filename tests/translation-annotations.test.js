@@ -111,6 +111,17 @@ test("normalizeAnnotationList safely drops malformed entries without throwing", 
   assert.equal(result[0].kind, "unknown");
 });
 
+test("normalizeAnnotationList resolves overlapping persisted annotations by keeping the first non-conflicting entry", () => {
+  const raw = [
+    { id: "a1", kind: "unknown", start: 4, end: 9, text: "quick", createdAt: "2026-04-01T00:00:00.000Z" },
+    { id: "a2", kind: "should_know", start: 6, end: 12, text: "ick br", createdAt: "2026-04-01T00:00:01.000Z" },
+    { id: "a3", kind: "uncertain", start: 4, end: 9, text: "quick", createdAt: "2026-04-01T00:00:02.000Z" },
+    { id: "a4", kind: "should_know", start: 20, end: 25, text: "jumps", createdAt: "2026-04-01T00:00:03.000Z" },
+  ];
+  const result = normalizeAnnotationList(raw, ANSWER);
+  assert.deepEqual(result.map((item) => item.id), ["a1", "a4"]);
+});
+
 test("normalizeAnnotationList returns an empty array for non-array input", () => {
   assert.deepEqual(normalizeAnnotationList(null, ANSWER), []);
   assert.deepEqual(normalizeAnnotationList("garbage", ANSWER), []);

@@ -45,7 +45,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 68 项 core/interchange/translation/import/session/annotation 自动测试通过，覆盖稳定 Translation 持久化、顺序、source-only 与 reference 材料、孤儿防护、显式 cascade 删除、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容、公开示例校验、批量导入解析、格式错误行拒绝、JSON 导入文件夹重新分配、重复 ID 冲突处理、导出/导入往返对公开 schema 的校验、Translation session 快照在后续文档编辑下保持稳定、按条目 ID 持久化答案与导航、格式错误 session 被安全拒绝、非客观 finalization、隔离的 active-session 存储 key、全部三种标记类型、多词片段、零长度/无效范围/未知类型拒绝、锚定文本匹配、完全相同片段的替换与重叠拒绝、编辑作答后的失效处理、标记在 session 序列化/恢复中的存续，以及个别格式错误标记的安全丢弃与 `learnerAnnotations` 的 schema/向后兼容性。
+- 73 项 core/interchange/translation/import/session/annotation 自动测试通过，覆盖稳定 Translation 持久化、顺序、source-only 与 reference 材料、孤儿防护、显式 cascade 删除、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容、公开示例校验、批量导入解析、格式错误行拒绝、JSON 导入文件夹重新分配、重复 ID 冲突处理、导出/导入往返对公开 schema 的校验、Translation session 快照在后续文档编辑下保持稳定、按条目 ID 持久化答案与导航、格式错误 session 被安全拒绝、非客观 finalization、隔离的 active-session 存储 key、全部三种标记类型、多词片段、零长度/无效范围/未知类型拒绝、锚定文本匹配、完全相同片段的替换与重叠拒绝、编辑作答后的失效处理、标记在 session 序列化/恢复中的存续、个别格式错误标记的安全丢弃与 `learnerAnnotations` 的 schema/向后兼容性、从存储恢复的持久化标记的确定性重叠消解，以及对 finalized `learnerAnnotations` 锚点相对于对应作答文本的运行时交叉校验（文本匹配、范围内、同条目不重叠）。
 - CI workflow 已存在。
 - 本地浏览器 smoke test 完整走过 M6.4 标记旅程：用三种类型分别标记单词和多词短语、标记重叠片段被拒绝并弹出提示、对完全相同片段再次标记会替换分类、通过 UI 移除和修改标记、编辑作答后确认受影响标记被自动移除并有提示同时文本框保持焦点、刷新后恢复且标记完整保留、完成练习后检查 finalized evidence（无分数、无词汇记录，`learnerAnnotations` 存在且 `itemId`/`kind`/`text` 正确），并确认 Objective Quiz 不受影响——控制台无错误。此前的 smoke test 已覆盖完整的 M6.3 练习/恢复旅程（含发现并修复的一个 bug）和 M6.2 Translation Library 旅程。
 - 浏览器测试工具确认了导出下载会正确触发（文件名和事件正确），但未捕获下载文件的实际落盘内容，因此人工检查下载文件内容仍属于推迟的 M6 整体验收范围。
@@ -101,6 +101,6 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 远程：`origin`
 - M6.4 开始前已验证的基线：`cc90254 Build M6.3 Translation Practice and session recovery`（squash merge，位于 main）
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步目标：经过验证的 M6.4 feature work 位于 `milestone/6.4-learner-annotations` 分支，将开出 Pull Request 提交到 `main`，未经明确指示不得合并
+- 同步目标：一次 M6.4 标记完整性收尾补丁（持久化 session 恢复时的确定性重叠消解；对 finalized `learnerAnnotations` 锚点相对于对应作答文本的运行时交叉校验）已推送到既有的 `milestone/6.4-learner-annotations` 分支及其已开出的 Pull Request 上，未经明确指示不得合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：正在为 `milestone/6.4-learner-annotations` 创建 Pull Request 供独立评审；未经用户明确指示不得合并
+- Pull Request 状态：`milestone/6.4-learner-annotations` 的既有 Pull Request 已更新为包含本次完整性收尾补丁；未经用户明确指示不得合并
