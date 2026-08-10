@@ -34,6 +34,8 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 - 拆分出模块化 Quiz Core，用于题目模型、校验、判分和迁移。
 - 提供公开 JSON Schema 和合成示例 quiz 数据。
 - 提供版本化 Learner Response 和 Teacher Review contract，用于基于文件的外部教师交换。
+- 提供 Translation Library 工作区，支持文件夹、文档和条目管理。
+- 支持仅原文和双语批量导入，以及可移植 Translation Document JSON 的导入导出。
 - 提供 PWA 文件，为静态托管和离线能力做准备。
 - 提供 CI workflow 文件，并保留仅手动触发的 GitHub Pages workflow，供未来公开发布时使用。
 
@@ -77,6 +79,7 @@ node --test
 6. 开始做题、提交答案，并可在刷新后恢复进度。
 7. 查看最终分数、逐题答案对比、历史记录和错题重练选项。
 8. 需要与外部教师共享可移植作答包时，导出 finalized Learner Response。
+9. 切换到 **翻译练习** 页面，把 Translation Document 组织到文件夹中、添加条目、批量导入材料，并把文档导出为可移植 JSON。详见 `docs/USER_GUIDE.zh-CN.md`。
 
 ## 项目结构
 
@@ -110,7 +113,7 @@ Translation 领域与持久化基础见 `docs/TRANSLATION_DOMAIN.zh-CN.md`。
 
 ### 当前版本已规划能力
 
-Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Open Teaching Interchange 已验收，M6.1 现在提供独立 Translation 领域、持久化、公开 document contract 和未来非客观 Learner Response 边界。Translation Library 与练习 UI 尚未实现。计划中的功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
+Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 现在提供 Translation Library 工作区和材料导入导出。Translation Practice 练习 session 尚未实现。计划中的功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
 
 ## 多语言支持
 
@@ -122,9 +125,9 @@ Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Op
 
 当前阶段：Feature Development - Scope Reopened（功能开发阶段，范围已重新开放）。
 
-Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 已验收。M6.1 Translation Domain and Persistence Foundation 已完成实现并等待用户验收。Translation Library 与练习 UI 尚未开始，当前版本也尚未 Release Ready。
+Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 Translation Library and Material Import/Export 已完成实现并等待用户验收。Translation Practice 练习 session 尚未开始，当前版本也尚未 Release Ready。
 
-M6.1 用户验收、其余 M6.2-M6.7 工作、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
+M6.2 用户验收、其余 M6.3-M6.7 工作、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
 
 ## 数据和隐私
 

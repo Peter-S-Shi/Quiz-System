@@ -1,6 +1,6 @@
 # Translation Domain And Persistence
 
-Milestone 6.1 establishes the data foundation for Translation Practice without adding the Translation Library or practice UI.
+Milestone 6.1 established the data foundation for Translation Practice. Milestone 6.2 adds the first user-facing consumer of that foundation: the Translation Library workspace, with folder/document/item management and material import and export. Translation Practice sessions themselves remain later M6 work.
 
 ## Aggregate Model
 
@@ -55,6 +55,21 @@ This is an additive relaxation. Existing Objective Quiz response files remain va
 
 The contract is versioned, stable-ID based, multilingual, raw-HTML free, and independent of any AI provider.
 
+## Library, Import, And Export (M6.2)
+
+Milestone 6.2 adds a Translation Library workspace built entirely on the M6.1 domain functions; it introduces no parallel storage representation and no new schema version.
+
+`src/core/translation-import.js` provides DOM-independent, unit-tested parsing and safety helpers used by the UI:
+
+- Source-only batch import: one non-empty line becomes one Translation Item.
+- Bilingual batch import: `source<TAB>reference` lines; any row missing a well-formed pair is reported as a validation error rather than silently dropped or silently imported.
+- Portable Translation Document JSON import: validated independently of any local folder, so an externally authored document can be assigned to a user-chosen local folder without the author knowing local folder IDs. The document's own `folderId` is only used for structural validation and is replaced by the user's chosen folder at persist time.
+- Duplicate document IDs are rejected by default. Explicitly choosing to import as a copy remaps the document ID and all item IDs before the existing `createTranslationDocument` call runs, so the collision policy is enforced by the same relationship-safe domain layer as every other write.
+
+All three import paths follow Input -> Parse -> Validate -> Preview -> Confirm -> Persist. Preview and validation never mutate the stored library; only an explicit confirm calls into the M6.1 domain functions. A failed or cancelled import leaves existing Translation Library data unchanged.
+
+Export uses `getTranslationDocument()` directly, so the exported file is exactly the same normalized, schema-valid shape used internally and accepted back on re-import.
+
 ## Deferred
 
-Translation Library UI, material import/export UI, practice sessions, learner markings, rich correction, Teacher Review round trips, remediation UI, and AI integration remain later M6 work.
+Translation Practice sessions, learner answer fields, `unknown / uncertain / should_know` markings, rich correction, Teacher Review round trips, remediation UI, and AI integration remain later M6 work.
