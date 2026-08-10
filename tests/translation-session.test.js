@@ -144,6 +144,41 @@ test("a malformed active Translation session is safely rejected rather than cras
   assert.equal(normalizeTranslationSession("not an object"), null);
 });
 
+test("normalizeTranslationSession rejects a session with a missing or empty startedAt", () => {
+  const { document } = createSyntheticDocument();
+  const session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+
+  const missingStartedAt = { ...session };
+  delete missingStartedAt.startedAt;
+  assert.equal(normalizeTranslationSession(missingStartedAt), null);
+
+  assert.equal(normalizeTranslationSession({ ...session, startedAt: "" }), null);
+  assert.equal(normalizeTranslationSession({ ...session, startedAt: "   " }), null);
+
+  // A valid, otherwise-identical session is still accepted (backward compatibility).
+  assert.notEqual(normalizeTranslationSession(session), null);
+});
+
+test("normalizeTranslationSession rejects item snapshots missing the minimum recovery evidence", () => {
+  const { document } = createSyntheticDocument();
+  const session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+
+  const missingSourceText = { ...session, items: [{ id: "item-1" }, session.items[1]] };
+  assert.equal(normalizeTranslationSession(missingSourceText), null);
+
+  const emptySourceText = {
+    ...session,
+    items: [{ ...session.items[0], sourceText: "   " }, session.items[1]],
+  };
+  assert.equal(normalizeTranslationSession(emptySourceText), null);
+
+  const missingId = { ...session, items: [{ sourceText: "Bonjour" }, session.items[1]] };
+  assert.equal(normalizeTranslationSession(missingId), null);
+
+  // A valid, otherwise-identical session is still accepted (backward compatibility).
+  assert.notEqual(normalizeTranslationSession(session), null);
+});
+
 test("finalization creates a valid non-objective Learner Response with full item coverage", async () => {
   const { document } = createSyntheticDocument();
   let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
@@ -164,6 +199,25 @@ test("finalization creates a valid non-objective Learner Response with full item
   assert.equal(Object.hasOwn(response.summary, "correctCount"), false);
   assert.equal(Object.hasOwn(response.summary, "percent"), false);
   assert.equal(response.summary.itemCount, 2);
+
+  const schema = JSON.parse(await readFile(new URL("../schemas/learner-response.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  assert.equal(validateSchema(response), true, JSON.stringify(validateSchema.errors));
+});
+
+test("finalized Translation Learner Response retains source and target language context", async () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello");
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+
+  // The language context lives in the response's own snapshot, so the evidence
+  // stays self-contained even if the original Translation Document is later deleted.
+  assert.equal(response.material.snapshot.sourceLanguage, "fr");
+  assert.equal(response.material.snapshot.targetLanguage, "en");
+  assert.deepEqual(validateLearnerResponse(response), { valid: true, errors: [] });
 
   const schema = JSON.parse(await readFile(new URL("../schemas/learner-response.schema.json", import.meta.url), "utf8"));
   const validateSchema = new Ajv2020({ strict: false }).compile(schema);

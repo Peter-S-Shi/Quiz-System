@@ -26,9 +26,9 @@ export function createTranslationSession({ id = makeId(), document, startedAt = 
 export function normalizeTranslationSession(value) {
   if (!isPlainObject(value)) return null;
   if (!Number.isInteger(value.schemaVersion) || value.schemaVersion < 1) return null;
-  if (!nonEmptyString(value.id) || !nonEmptyString(value.documentId)) return null;
+  if (!nonEmptyString(value.id) || !nonEmptyString(value.documentId) || !nonEmptyString(value.startedAt)) return null;
   if (!Array.isArray(value.items) || !value.items.length) return null;
-  if (value.items.some((item) => !isPlainObject(item) || !nonEmptyString(item.id))) return null;
+  if (value.items.some((item) => !isPlainObject(item) || !nonEmptyString(item.id) || !nonEmptyString(item.sourceText))) return null;
 
   const items = value.items.map((item) => ({ ...item }));
   const itemIds = new Set(items.map((item) => item.id));
@@ -57,7 +57,7 @@ export function normalizeTranslationSession(value) {
     documentTitle: typeof value.documentTitle === "string" ? value.documentTitle : "",
     sourceLanguage: typeof value.sourceLanguage === "string" ? value.sourceLanguage : "",
     targetLanguage: typeof value.targetLanguage === "string" ? value.targetLanguage : "",
-    startedAt: nonEmptyString(value.startedAt) ? value.startedAt : "",
+    startedAt: value.startedAt,
     index,
     items,
     answers,

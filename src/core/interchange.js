@@ -124,6 +124,8 @@ export function createTranslationLearnerResponse({ id = makeId(), session }) {
       title: session.documentTitle || "",
       snapshot: {
         items,
+        sourceLanguage: session.sourceLanguage || "",
+        targetLanguage: session.targetLanguage || "",
       },
     },
     session: {
