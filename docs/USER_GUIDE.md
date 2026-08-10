@@ -8,7 +8,7 @@ On Windows, double-click `start-local.bat` from the project folder to start the 
 
 - Use the local quiz library to create, duplicate, rename, delete, search, categorize, and tag papers.
 - Use export for one paper.
-- Use backup for the full local library, answer history, and finalized Learner Response records.
+- Use backup for the full local quiz and Translation data, answer history, and finalized Learner Response records.
 
 ## Practice
 
@@ -22,6 +22,6 @@ On Windows, double-click `start-local.bat` from the project folder to start the 
 
 ## Data Safety
 
-Exported response and backup files can contain authored material and learner answers. They remain under your control and are not uploaded automatically. Keep real data outside the repository in ignored folders such as `user-data/` or `exports/`, and review each file before sharing it with an external teacher.
+Exported response and backup files can contain authored quiz or Translation material, reference translations, private notes, and learner answers. They remain under your control and are not uploaded automatically. Keep real data outside the repository in ignored folders such as `user-data/` or `exports/`, and review each file before sharing it with an external teacher.
 
 Legacy backups without Learner Response data remain readable and do not silently delete existing response records.

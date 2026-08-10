@@ -21,7 +21,7 @@ External Authoring
 
 ### Learning Material
 
-分配给学习者练习的材料，例如 Quiz Paper 或未来的 Translation Document。
+分配给学习者练习的材料，例如 Quiz Paper 或 Translation Document。
 
 ### Learner Response
 
@@ -72,7 +72,8 @@ M6.0 提供 Teacher Review 的 schema、标准化和校验函数，但不提供 
 
 ## 后续 M6 工作
 
-- Translation 文件夹、文档、持久化与练习 UI。
+- M6.1 已加入 `TRANSLATION_DOMAIN.zh-CN.md` 中描述的 Translation 领域、持久化和非客观 response 边界。
+- Translation Library、材料导入/导出和练习 UI。
 - 学习者 `unknown`、`uncertain`、`should_know` span 标记。
 - Rich annotation/revision 语义和 UI。
 - 完整 Teacher Review 上传、预览、确认、存储与渲染。

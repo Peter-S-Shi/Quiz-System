@@ -22,4 +22,6 @@ Use ignored folders such as `user-data/` and `exports/` for real local quiz data
 
 Learner Response exports contain original submitted answers and material snapshots. Teacher Review files may contain comments or learning diagnoses. Treat both as private learner data unless they contain synthetic examples only.
 
+Translation Library backups may contain authored source material, optional reference translations, and private notes. Treat them as local-only user data unless every entry is synthetic.
+
 External-teacher interchange is file based. Quiz Studio does not automatically upload exported files or require reviewer account identifiers. Review every file before sharing it and prefer anonymous or synthetic reviewer labels when real identity is unnecessary.

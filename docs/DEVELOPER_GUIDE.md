@@ -10,11 +10,13 @@ Quiz Studio is a static ES module app.
 - `src/core/interchange.js`: versioned Learner Response, Teacher Review, actor, provenance, and validation contracts.
 - `src/core/learning-records.js`: independent Learner Response collection operations without history truncation.
 - `src/core/backup.js`: validated library backup composition and backward-compatible restore parsing.
+- `src/core/translation-domain.js`: Translation Folder, Document, and ordered Item models, validation, and immutable core operations.
 - `src/core/migrations.js`: schema versioning and data normalization.
 - `src/storage/local-storage.js`: local browser storage boundary.
 - `schemas/`: public Quiz Paper, Learner Response, and Teacher Review JSON Schemas.
 - `examples/`: synthetic Quiz Paper and teaching-interchange examples.
 - `docs/OPEN_TEACHING_INTERCHANGE.md`: M6.0 architecture and scope boundary.
+- `docs/TRANSLATION_DOMAIN.md`: M6.1 Translation domain, persistence, and compatibility boundaries.
 
 ## Learner Evidence
 

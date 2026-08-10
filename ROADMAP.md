@@ -156,7 +156,7 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: In progress; M6.0 implementation complete and user acceptance pending; Translation Practice implementation not started
+Status: In progress; M6.0 accepted; M6.1 implementation complete and user acceptance pending; Translation UI not started
 
 Goal: add a dedicated, local-first workspace for document-oriented written translation practice without assuming that a reference translation is the only correct answer.
 
@@ -180,11 +180,19 @@ Approved sub-milestone sequence:
 
 M6.0 state:
 
-- Implementation complete; user acceptance pending.
+- Accepted.
 - Objective Quiz now produces independent finalized Learner Response records and supports portable response export.
 - Versioned Learner Response and Teacher Review contracts, validation boundaries, synthetic examples, provenance, and backup coverage are implemented.
 - Teacher Review import/rendering, rich correction semantics, and all Translation UI remain later M6 work.
-- M6.1 must not begin without a new prompt after M6.0 user acceptance.
+
+M6.1 state:
+
+- Implementation complete; user acceptance pending.
+- Translation Folder, Document, and ordered Item domain models and core operations are implemented independently from the Question Type Registry and DOM.
+- Versioned Translation Document schema, synthetic example, local persistence boundary, and complete-backup coverage are implemented.
+- Generic Learner Response supports future written Translation answers without fabricated objective grading while retaining Objective Quiz requirements.
+- Translation Library UI, import/export UI, and practice sessions remain M6.2/M6.3 work.
+- M6.2 must not begin without a new prompt after M6.1 user acceptance.
 
 Approved macro scope:
 

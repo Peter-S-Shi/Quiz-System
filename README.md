@@ -102,6 +102,7 @@ Quiz System/
 ```
 
 The Open Teaching Interchange architecture is documented in `docs/OPEN_TEACHING_INTERCHANGE.md`.
+The Translation domain and persistence foundation is documented in `docs/TRANSLATION_DOMAIN.md`.
 
 ## Roadmap
 
@@ -109,7 +110,7 @@ Project development is organized by lifecycle stages. See `ROADMAP.md` for the f
 
 ### Planned Current-Version Capability
 
-Translation Practice remains Milestone 6's primary new learning workflow and is not implemented yet. M6.0 Open Teaching Interchange is the cross-cutting foundation that serves existing Objective Quiz and will support Translation Practice as its first complete rich-response consumer. The planned Translation capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
+Translation Practice remains Milestone 6's primary new learning workflow. M6.0 Open Teaching Interchange is accepted, and M6.1 now provides the separate Translation domain, persistence, public document contract, and future non-objective Learner Response boundary. Translation Library and practice UI are not implemented yet. The planned capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
 
 ## Localization
 
@@ -121,9 +122,9 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 Current phase: Feature Development - Scope Reopened.
 
-Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange implementation is complete and awaiting user acceptance. Objective Quiz attempts now preserve independent finalized Learner Responses, support portable export, and participate in versioned external-review contracts. Translation Practice has not started, and the project is not Release Ready.
+Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange is accepted. M6.1 Translation Domain and Persistence Foundation is implementation complete and awaiting user acceptance. Translation Library and practice UI have not started, and the project is not Release Ready.
 
-M6.0 user acceptance, the remaining M6.1-M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
+M6.1 user acceptance, the remaining M6.2-M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
 
 ## Data and Privacy
 

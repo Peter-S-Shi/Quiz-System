@@ -2,6 +2,13 @@
 
 ## 2026-08-10
 
+- Recorded M6.0 as user accepted and implemented M6.1 Translation Domain and Persistence Foundation without starting M6.2 UI work.
+- Added a separate Translation Library aggregate with stable Folder, Document, and ordered Item identities; generic language metadata; optional reference translations; immutable core operations; and explicit cascade deletion.
+- Added the `quiz-studio-translation-library-v1` local storage boundary and included validated Translation data in complete backups while preserving legacy-backup behavior.
+- Added a versioned Translation Document schema and synthetic example without raw HTML, provider dependencies, or objective-answer semantics.
+- Generalized Learner Response additively: Objective Quiz retains required grading results, while future Translation responses can preserve written answers without `correctCount`, `percent`, or per-item `result`.
+- Added bilingual Translation architecture and lifecycle documentation. Automated coverage expanded from 17 to 23 passing tests.
+- Recorded M6.1 as implementation complete / user acceptance pending. Translation Library UI, practice sessions, rich correction, external Translation review, and M6.2 remain unimplemented.
 - Closed the M6.0 integrity review by making finalized Learner Response writes idempotent for identical content and rejecting same-ID replacement attempts.
 - Strengthened Learner Response validation so material snapshots and response entries have the same complete item-ID set, with required non-empty session timestamps aligned across runtime validation and JSON Schema.
 - Expanded automated coverage from 15 to 17 tests; M6.0 remains implementation complete / user acceptance pending, and M6.1 has not started.

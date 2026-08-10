@@ -4,6 +4,9 @@
 
 ### Added
 
+- Added the M6.1 Translation Folder, Document, and ordered Item domain foundation with local persistence and explicit relationship-safe core operations.
+- Added a versioned Translation Document JSON Schema, synthetic example, and full-library backup coverage.
+- Generalized Learner Response additively so future Translation responses can preserve written answers without fabricated objective grading.
 - Added the M6.0 Open Teaching Interchange foundation for external authoring, review, and remediation workflows.
 - Added independent finalized Learner Response persistence with question snapshots, original answers, grading results, provenance, and portable JSON export.
 - Added versioned Learner Response and Teacher Review schemas, validation boundaries, and synthetic interoperability examples.
@@ -15,6 +18,7 @@
 - Added Project Status documents as the current lifecycle-state authority.
 - Defined Feature Complete Review, Feature Freeze Gate, Product Hardening, and Release Candidate phases without changing product functionality.
 - Added bilingual Open Teaching Interchange architecture, safety, usage, and M6.0 manual-QA documentation.
+- Added bilingual Translation domain, persistence, compatibility, and lifecycle documentation.
 
 ## 0.1.0
 

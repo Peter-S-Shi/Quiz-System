@@ -6,17 +6,17 @@ Feature Development - Scope Reopened（功能开发阶段，范围已重新开�
 
 ## 当前里程碑
 
-Milestone 6.0：Open Teaching Interchange Foundation - implementation complete / user acceptance pending
+Milestone 6.1：Translation Domain and Persistence Foundation - implementation complete / user acceptance pending
 
 ## 当前发布范围
 
-当前版本范围包括 Milestone 1-5 基线和已批准的 Milestone 6 工作线。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange 是横向基础设施：它服务现有 Objective Quiz，并将由 Translation Practice 作为第一个完整 rich-response consumer。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
+当前版本范围包括 Milestone 1-5 基线和已批准的 Milestone 6 工作线。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange 是已经验收的横向基础设施。M6.1 现在提供后续 Translation 工作流所需的独立 Translation Folder、Document、Item、持久化、schema 和非客观 Learner Response 边界。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
 
 ## Feature Complete 状态
 
 旧范围下曾达到候选评审；当前范围已重新开放，因此不再属于功能完整状态。
 
-Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6.0 已完成实现但尚未获得用户验收；M6.1-M6.7 和 Translation Practice 仍未实现。所有 Milestone 6 工作实现并验收后，必须重新执行全产品 Feature Complete Review。
+Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6.0 已通过用户验收。M6.1 已完成实现并等待用户验收；M6.2-M6.7 和全部 Translation UI 仍未实现。所有 Milestone 6 工作实现并验收后，必须重新执行全产品 Feature Complete Review。
 
 ## Feature Freeze 状态
 
@@ -27,8 +27,8 @@ Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地
 ## 当前发布阻断项
 
 - 尚未完成项目级完整人工验收。
-- M6.0 需要依据新增 manual QA delta 完成用户验收。
-- Translation Practice 是当前版本必要工作，但 M6.1-M6.7 尚未开始。
+- M6.1 的领域、持久化、interchange 和备份边界需要用户验收。
+- Translation Practice 是当前版本必要工作，但 M6.2-M6.7 尚未开始。
 - 数据迁移、备份往返、答题进度恢复和破坏性工作流尚未获得正式端到端验证。
 - 仓库保持 private 时，公开 Pages 部署继续暂缓。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
@@ -41,14 +41,14 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 17 项 core/interchange 自动测试通过，覆盖 finalized response 替换拒绝、完整 item-ID 对应、必需 session 时间戳、受保护 learner evidence、Teacher Review 拒绝边界、不受 history 上限影响的 response 集合、provenance、备份兼容和公开示例校验。
+- 23 项 core/interchange/translation 自动测试通过，覆盖稳定 Translation 持久化、顺序、source-only 与 reference 材料、孤儿防护、显式 cascade 删除、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容和公开示例校验。
 - CI workflow 已存在。
 - 本地浏览器 smoke test 完成了一次合成 Objective Quiz，并验证 finalized evidence 提示、双语结果/历史导出控件、桌面布局和 390px 响应式布局；控制台无错误。
 - 浏览器测试工具未捕获程序化下载事件，因此导出文件实际落盘和人工内容检查仍属于用户验收。
 - 完整 v1 用户旅程的人工验收尚未完成。
 - 尚未执行干净 clone 验证。
 - GitHub Pages 部署为仅手动触发，并继续暂缓。
-- M6.0 已有实现；Translation Practice 尚不存在实现或行为验证。
+- M6.0 已验收。M6.1 领域与持久化实现已经存在；Translation Library 和练习 UI 尚不存在行为验证。
 
 ## 已知风险
 
@@ -56,6 +56,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - ES module 应用不支持通过浏览器 `file://` 直接打开；用户必须使用本地静态服务器或 `start-local.bat`。
 - 当前功能面已经较大，但人工 QA 证据还不足。
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。
+- Translation Library 数据现在具有浏览器存储和备份边界，但 M6.2 之前不存在用户管理 UI。
 - Translation Practice 将引入新的文档组织、导入导出、持久化、复盘和多语言 UX 边界，仍需详细设计与验收标准。
 
 ## 未知或未验证事项
@@ -68,7 +69,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 代表性设备上的可访问性和响应式行为。
 - 干净环境重新 clone 并运行项目。
 - 人工检查下载的 Learner Response JSON，并在真实浏览器中完成包含 learner evidence 的备份/恢复往返。
-- M6.1 Translation domain model 和持久化设计；这些内容等待 M6.0 验收后的新 prompt。
+- 在真实浏览器中完成包含 Translation Folder、Document 和 Item 数据的备份/恢复往返。
 
 ## Deferred Features
 
@@ -81,14 +82,14 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-使用双语 manual QA delta 完成 M6.0 用户验收。验收后也必须等待新的 prompt 才能开始 M6.1；全部 Milestone 6 验收 gate 完成前，不开始 Product Hardening 或 Feature Freeze 工作。
+完成 M6.1 用户验收。验收后也必须等待新的 prompt 才能开始 M6.2；全部 Milestone 6 验收 gate 完成前，不开始 Product Hardening 或 Feature Freeze 工作。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程：`origin`
-- M6.0 开始前已验证的基线：`9949dfb Reopen lifecycle scope for translation practice`
+- M6.1 开始前已验证的基线：`97a90a5 Close M6.0 learner response integrity gaps`
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步目标：经过验证的 M6.0 feature work 合并到 `main`，并确保 `main` 与 `origin/main` 一致
+- 同步目标：经过验证的 M6.1 feature work 合并到 `main`，并确保 `main` 与 `origin/main` 一致
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
 - Pull Request 状态：本次本地 feature branch 流程不要求 PR

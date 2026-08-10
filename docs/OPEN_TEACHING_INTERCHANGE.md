@@ -21,7 +21,7 @@ The system is AI-native and API-optional. These workflows use local JSON files a
 
 ### Learning Material
 
-The material assigned for practice, such as a Quiz Paper or a future Translation Document.
+The material assigned for practice, such as a Quiz Paper or a Translation Document.
 
 ### Learner Response
 
@@ -72,7 +72,8 @@ M6.0 supplies schemas, normalization, and validation functions for Teacher Revie
 
 ## Deferred To Later M6 Work
 
-- Translation folders, documents, persistence, and practice UI.
+- M6.1 adds the Translation domain, persistence, and non-objective response boundary described in `TRANSLATION_DOMAIN.md`.
+- Translation Library, material import/export, and practice UI.
 - Learner `unknown`, `uncertain`, and `should_know` span marking.
 - Rich annotation and revision semantics and UI.
 - Full Teacher Review upload, preview, confirmation, storage, and rendering.

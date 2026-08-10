@@ -10,11 +10,13 @@ Quiz Studio 是一个静态 ES module 应用。
 - `src/core/interchange.js`：版本化 Learner Response、Teacher Review、actor、provenance 和校验 contract。
 - `src/core/learning-records.js`：独立 Learner Response 集合操作，不受 history 截断影响。
 - `src/core/backup.js`：经过校验的试卷库备份组合和向后兼容恢复解析。
+- `src/core/translation-domain.js`：Translation Folder、Document、有序 Item 模型、校验和不可变核心操作。
 - `src/core/migrations.js`：schema 版本和数据标准化。
 - `src/storage/local-storage.js`：浏览器本地存储边界。
 - `schemas/`：公开 Quiz Paper、Learner Response 和 Teacher Review JSON Schema。
 - `examples/`：合成 Quiz Paper 和教学交换示例。
 - `docs/OPEN_TEACHING_INTERCHANGE.zh-CN.md`：M6.0 架构与范围边界。
+- `docs/TRANSLATION_DOMAIN.zh-CN.md`：M6.1 Translation 领域、持久化与兼容边界。
 
 ## 学习证据
 

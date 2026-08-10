@@ -156,7 +156,7 @@ Freeze 规则：
 
 ## Milestone 6：Translation Practice
 
-状态：进行中；M6.0 已完成实现并等待用户验收；Translation Practice 尚未开始实现
+状态：进行中；M6.0 已验收；M6.1 已完成实现并等待用户验收；Translation UI 尚未开始
 
 目标：在 Quiz Studio 中加入一个本地优先、面向文档型书面翻译训练的专用工作区，同时不假设参考译文是唯一正确答案。
 
@@ -180,11 +180,19 @@ Freeze 规则：
 
 M6.0 状态：
 
-- 已完成实现；等待用户验收。
+- 已验收。
 - Objective Quiz 现在会生成独立 finalized Learner Response，并支持可移植 response 导出。
 - 版本化 Learner Response 与 Teacher Review contract、校验边界、合成示例、provenance 和备份覆盖已经实现。
 - Teacher Review 导入/渲染、rich correction 语义和所有 Translation UI 仍属于后续 M6 工作。
-- 未经 M6.0 用户验收和新的 prompt，不得开始 M6.1。
+
+M6.1 状态：
+
+- 已完成实现；等待用户验收。
+- Translation Folder、Document、有序 Item 领域模型和核心操作已经实现，并与 Question Type Registry 和 DOM 解耦。
+- 版本化 Translation Document schema、合成示例、本地持久化边界和完整备份覆盖已经实现。
+- 通用 Learner Response 支持未来书面 Translation 答案且不制造客观判分，同时保留 Objective Quiz 要求。
+- Translation Library UI、导入/导出 UI 和练习 session 仍属于 M6.2/M6.3 工作。
+- 未经 M6.1 用户验收和新的 prompt，不得开始 M6.2。
 
 已批准的宏观范围：
 

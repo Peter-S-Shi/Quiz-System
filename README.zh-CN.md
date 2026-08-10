@@ -102,6 +102,7 @@ Quiz System/
 ```
 
 Open Teaching Interchange 架构见 `docs/OPEN_TEACHING_INTERCHANGE.zh-CN.md`。
+Translation 领域与持久化基础见 `docs/TRANSLATION_DOMAIN.zh-CN.md`。
 
 ## 路线图
 
@@ -109,7 +110,7 @@ Open Teaching Interchange 架构见 `docs/OPEN_TEACHING_INTERCHANGE.zh-CN.md`。
 
 ### 当前版本已规划能力
 
-Translation Practice 仍是 Milestone 6 的主要新增学习工作流，目前尚未实现。M6.0 Open Teaching Interchange 是服务现有 Objective Quiz 的横向基础设施，并将由 Translation Practice 作为第一个完整 rich-response consumer。计划中的 Translation 功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
+Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Open Teaching Interchange 已验收，M6.1 现在提供独立 Translation 领域、持久化、公开 document contract 和未来非客观 Learner Response 边界。Translation Library 与练习 UI 尚未实现。计划中的功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
 
 ## 多语言支持
 
@@ -121,9 +122,9 @@ Translation Practice 仍是 Milestone 6 的主要新增学习工作流，目前�
 
 当前阶段：Feature Development - Scope Reopened（功能开发阶段，范围已重新开放）。
 
-Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 已完成实现，正在等待用户验收。Objective Quiz 练习现在会保存独立 finalized Learner Response、支持可移植导出，并接入版本化外部 review contract。Translation Practice 尚未开始，当前版本也尚未 Release Ready。
+Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 已验收。M6.1 Translation Domain and Persistence Foundation 已完成实现并等待用户验收。Translation Library 与练习 UI 尚未开始，当前版本也尚未 Release Ready。
 
-M6.0 用户验收、其余 M6.1-M6.7 工作、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
+M6.1 用户验收、其余 M6.2-M6.7 工作、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
 
 ## 数据和隐私
 
