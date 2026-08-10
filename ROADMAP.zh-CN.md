@@ -156,7 +156,7 @@ Freeze 规则：
 
 ## Milestone 6：Translation Practice
 
-状态：进行中；M6.0、M6.1 已验收；M6.2 和 M6.3 已完成实现，验收统一推迟到 M6 整体验收；下一个是 M6.4
+状态：进行中；M6.0、M6.1 已验收；M6.2、M6.3、M6.4 已完成实现，验收统一推迟到 M6 整体验收；下一个是 M6.5
 
 验收政策说明：M6.2 到 M6.7 不再逐个进行正式用户验收，而是推迟到 M6.7 完成后进行一次覆盖整个 M6 的综合验收。在此期间，每个子里程碑仍然需要实现评审、回归测试、CI 和范围审查。M6.0 和 M6.1 在这一政策生效前已经验收，继续保持已验收状态。
 
@@ -210,8 +210,17 @@ M6.3 状态：
 - 新增基于隔离存储 key 的 Translation active-session 恢复机制，与 Objective Quiz 的 active session 完全独立，两者不会互相破坏；格式错误的 session 数据会被安全拒绝，而不是导致崩溃。
 - 完成 session 时通过 `createTranslationLearnerResponse()` 生成非客观 Learner Response（不制造虚假的 `correct`、`correctCount` 或 `percent`）；只有在 response 成功保存后才会清空 active session。
 - 对同一文档重复练习会创建新的 session 和新的 Learner Response ID，不会覆盖此前的证据。
-- 学习者选段标记、rich annotation、外部 Teacher Review 导入和 remediation UI 仍属于 M6.4 及之后的工作。
-- 未经新的 prompt，不得开始 M6.4。
+
+M6.4 状态：
+
+- 已完成实现；验收推迟到 M6 整体验收（未单独验收，见上方验收政策说明）。
+- 在新的 `src/core/translation-annotations.js` 模块中，新增学习者对自己作答文本片段的、由学习者主动控制的元认知标记：`unknown`、`uncertain` 或 `should_know`——这些是学习者信号，绝不是自动判分结果、词汇记录或 remediation 任务。
+- 标记锚定在针对实时作答文本校验过的字符范围上；对完全相同的范围再次标记会替换其分类，与另一个已有标记重叠的范围会被拒绝，直到冲突的标记被移除或调整。
+- 编辑作答会自动丢弃该条目中锚定文字已不匹配的标记，因此标记绝不会静默指向错误的文本。
+- 标记按稳定的 Translation Item ID 保存在 M6.3 的 Translation Session 中（`session.annotations`），能在导航、刷新和正常恢复中保持不变；格式错误的标记会被单独安全丢弃，不会导致 session 恢复失败。
+- 完成练习时，标记会被复制进 Learner Response 上一个可选的追加字段 `learnerAnnotations` 数组；公开 schema 做了最小化、向后兼容的扩展，没有标记的 response 与 M6.3 时的形状保持一致。
+- Rich correction、建议/插入式修改文本、外部 Teacher Review 导入、remediation 生成和 Vocabulary App 集成仍属于 M6.5 及之后的工作。
+- 未经新的 prompt，不得开始 M6.5。
 
 已批准的宏观范围：
 

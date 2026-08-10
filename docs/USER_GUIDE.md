@@ -41,6 +41,9 @@ On Windows, double-click `start-local.bat` from the project folder to start the 
 - Starting practice on a different document while another one is unfinished asks for confirmation before discarding the unfinished attempt, since only one Translation Practice session is active at a time.
 - Use **Finish practice** whenever you are ready, even with some items left blank. Finishing saves your original submitted translations as an independent, protected Learner Response — no score is calculated, since translation is evaluated qualitatively rather than judged right or wrong.
 - After finishing, review your submitted translations, export the response, or start a new attempt on the same document. A new attempt creates new evidence and never overwrites an earlier finalized response.
+- While writing a translation, select a word or phrase in your own answer and mark it **Unknown**, **Uncertain**, or **Should know** to record your own confidence in that part of your translation. These marks are your personal metacognitive signal — they are never turned into a wrong answer, a score, or a vocabulary entry.
+- Change a mark's category or remove it at any time from the list below the answer box. Marking the exact same span again replaces its category; a range that overlaps a different existing mark is rejected until you remove or adjust that mark first.
+- If you edit text that a mark covers, the mark is removed automatically once its anchored text no longer matches — a brief notice tells you when this happens. Marks persist through navigation, refresh, and Resume, and are preserved unchanged as part of the finalized evidence when you finish.
 
 ## Data Safety
 

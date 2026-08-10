@@ -1,4 +1,11 @@
 import { makeId } from "./utils.js";
+import {
+  addAnnotation,
+  changeAnnotationKind,
+  normalizeAnnotationList,
+  removeAnnotation,
+  revalidateAnnotations,
+} from "./translation-annotations.js";
 
 export const TRANSLATION_SESSION_SCHEMA_VERSION = 1;
 
@@ -19,6 +26,7 @@ export function createTranslationSession({ id = makeId(), document, startedAt = 
     items: structuredClone(document.items),
     answers: {},
     revealed: {},
+    annotations: {},
     completed: false,
   };
 }
@@ -50,6 +58,15 @@ export function normalizeTranslationSession(value) {
 
   const index = Number.isInteger(value.index) && value.index >= 0 && value.index < items.length ? value.index : 0;
 
+  const annotations = {};
+  if (isPlainObject(value.annotations)) {
+    Object.entries(value.annotations).forEach(([itemId, list]) => {
+      if (!itemIds.has(itemId)) return;
+      const normalizedList = normalizeAnnotationList(list, answers[itemId] || "");
+      if (normalizedList.length) annotations[itemId] = normalizedList;
+    });
+  }
+
   return {
     schemaVersion: value.schemaVersion,
     id: value.id,
@@ -62,6 +79,7 @@ export function normalizeTranslationSession(value) {
     items,
     answers,
     revealed,
+    annotations,
     completed: value.completed === true,
     ...(nonEmptyString(value.completedAt) ? { completedAt: value.completedAt } : {}),
     ...(nonEmptyString(value.responseId) ? { responseId: value.responseId } : {}),
@@ -72,7 +90,38 @@ export function setTranslationAnswer(session, itemId, answer) {
   if (!session.items.some((item) => item.id === itemId)) {
     throw new TypeError(`Translation Item not found in session: ${itemId}`);
   }
-  return { ...session, answers: { ...session.answers, [itemId]: String(answer ?? "") } };
+  const nextAnswer = String(answer ?? "");
+  const existingAnnotations = session.annotations[itemId];
+  const next = { ...session, answers: { ...session.answers, [itemId]: nextAnswer } };
+  if (existingAnnotations?.length) {
+    const revalidated = revalidateAnnotations(existingAnnotations, nextAnswer);
+    next.annotations = { ...session.annotations };
+    if (revalidated.length) next.annotations[itemId] = revalidated;
+    else delete next.annotations[itemId];
+  }
+  return next;
+}
+
+export function addTranslationAnnotation(session, itemId, draft) {
+  if (!session.items.some((item) => item.id === itemId)) {
+    throw new TypeError(`Translation Item not found in session: ${itemId}`);
+  }
+  const answerText = session.answers[itemId] || "";
+  const nextList = addAnnotation(session.annotations[itemId], draft, answerText);
+  return { ...session, annotations: { ...session.annotations, [itemId]: nextList } };
+}
+
+export function removeTranslationAnnotation(session, itemId, annotationId) {
+  const nextList = removeAnnotation(session.annotations[itemId], annotationId);
+  const nextAnnotations = { ...session.annotations };
+  if (nextList.length) nextAnnotations[itemId] = nextList;
+  else delete nextAnnotations[itemId];
+  return { ...session, annotations: nextAnnotations };
+}
+
+export function changeTranslationAnnotationKind(session, itemId, annotationId, kind) {
+  const nextList = changeAnnotationKind(session.annotations[itemId], annotationId, kind);
+  return { ...session, annotations: { ...session.annotations, [itemId]: nextList } };
 }
 
 export function setTranslationRevealed(session, itemId, revealed) {

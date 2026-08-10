@@ -1,6 +1,6 @@
 # Translation Domain And Persistence
 
-Milestone 6.1 established the data foundation for Translation Practice. Milestone 6.2 added the first user-facing consumer of that foundation: the Translation Library workspace, with folder/document/item management and material import and export. Milestone 6.3 adds the first Translation Practice session workflow itself: productive-recall practice, session recovery, and non-objective finalization into a Learner Response.
+Milestone 6.1 established the data foundation for Translation Practice. Milestone 6.2 added the first user-facing consumer of that foundation: the Translation Library workspace, with folder/document/item management and material import and export. Milestone 6.3 added the first Translation Practice session workflow itself: productive-recall practice, session recovery, and non-objective finalization into a Learner Response. Milestone 6.4 adds learner-controlled metacognitive marking of the learner's own answer text.
 
 ## Aggregate Model
 
@@ -81,6 +81,19 @@ Milestone 6.3 adds the first Translation Practice workflow in `src/core/translat
 - The active session is only cleared after the Learner Response has been written successfully, so a storage failure during finalization leaves the recoverable session intact instead of silently discarding the learner's work.
 - Repeated practice on the same document creates a new session ID and a new Learner Response ID; the existing idempotent/immutable `upsertLearnerResponse()` write path guarantees earlier finalized evidence is never overwritten.
 
+## Learner Answer Marking (M6.4)
+
+Milestone 6.4 adds learner-controlled metacognitive marking of the learner's own answer text, in `src/core/translation-annotations.js`.
+
+- A mark (annotation) is `{ id, kind, start, end, text, createdAt }`, where `kind` is one of `unknown`, `uncertain`, or `should_know` — a learner metacognitive signal, never an automatic grading judgment. `start`/`end` are character offsets into the learner's own answer text; `text` is the captured span, kept in sync with the anchor.
+- Annotations only ever target the learner's own answer for a Translation Item. They are stored in the session as `annotations: { [itemId]: Annotation[] }`, additive alongside the existing `answers` and `revealed` maps, keyed the same way.
+- `validateAnnotation()` rejects zero-length or inverted ranges, unknown kinds, and any span whose captured `text` no longer matches `answerText.slice(start, end)` — the anchor must always agree with the text it points to.
+- `addAnnotation()` enforces the overlap policy deterministically: marking the exact same span again replaces its category instead of accumulating a duplicate; a span that partially overlaps a different existing mark is rejected until the learner removes or adjusts the conflicting mark first.
+- Editing the answer never leaves a stale anchor: `setTranslationAnswer()` re-validates that item's annotations against the new text and silently drops any whose anchored span no longer matches, so a mark can never point at the wrong text after an edit.
+- `normalizeAnnotationList()` (used by `normalizeTranslationSession()`) drops individually malformed or stale annotation entries during recovery rather than rejecting the whole session — a corrupt mark degrades gracefully instead of blocking recovery of the learner's answers.
+- The learner's answer text itself is never rewritten with markers or HTML; annotations remain a separate structured metadata layer over the plain canonical answer, which is required for later M6.5 correction/revision and M6.6 external review to layer on top independently.
+- On finalization, `createTranslationLearnerResponse()` copies each item's annotations into a top-level `learnerAnnotations` array (each entry tagged with its `itemId`), added as an additive, optional property of the Learner Response contract (`schemas/learner-response.schema.json`). Responses with no annotations omit the key entirely, so existing M6.0-M6.3 Translation and Objective Quiz Learner Responses are unaffected and remain valid against the updated schema.
+
 ## Deferred
 
-Learner answer span markings, `unknown / uncertain / should_know` classifications, rich correction, Teacher Review round trips, remediation UI, and AI integration remain later M6 work.
+Rich correction, suggested/inserted correction text, Teacher Review round trips, remediation generation, and AI integration remain later M6 work.

@@ -13,6 +13,7 @@ Quiz Studio 是一个静态 ES module 应用。
 - `src/core/translation-domain.js`：Translation Folder、Document、有序 Item 模型、校验和不可变核心操作。
 - `src/core/translation-import.js`：与 DOM 解耦的解析逻辑，覆盖仅原文/双语批量导入、可移植 JSON 导入校验，以及 Translation Library UI 的 document ID 冲突处理。
 - `src/core/translation-session.js`：与 DOM 解耦的 Translation Practice session 模型——在 session 开始时对文档条目做快照、逐条目答案和可选参考译文显示状态、导航，以及对格式错误的已保存 session 的安全拒绝。
+- `src/core/translation-annotations.js`：与 DOM 解耦的学习者元认知标记（`unknown`/`uncertain`/`should_know`），标记只针对学习者自己的作答文本——包括校验、重叠/重复策略、编辑后重新校验，以及对已保存标记的安全归一化。
 - `src/core/migrations.js`：schema 版本和数据标准化。
 - `src/storage/local-storage.js`：浏览器本地存储边界。
 - `schemas/`：公开 Quiz Paper、Learner Response 和 Teacher Review JSON Schema。
@@ -41,6 +42,12 @@ Translation Practice session 会在调用 `createTranslationSession()`（`transl
 active session 使用与 Objective Quiz active session 不同的存储 key（`quiz-studio-translation-active-session-v1` 与 `quiz-studio-active-session-v1`），因此即使两者同时存在未完成的 session，也不会互相静默覆盖。`normalizeTranslationSession()` 会把格式错误的已保存数据直接归一化为 `null`，UI 将其视为"没有未完成 session"，而不是让恢复流程崩溃。
 
 完成 session 时会调用 `interchange.js` 中的 `createTranslationLearnerResponse()` 生成一份 finalized 的非客观 Learner Response——不会设置 `result`、`correctCount` 或 `percent`。该 response 会先经过现有的幂等/不可变写入路径 `upsertLearnerResponse()` 持久化，然后才清空 active session 存储 key；因此 finalization 过程中出现的存储失败会保留可恢复的 active session，而不会静默丢失学习者的作答。
+
+## 学习者标记
+
+标记锚定在学习者自己作答文本的字符范围上（`{ id, kind, start, end, text, createdAt }`），绝不会渲染成内联标记语法——作答始终保持纯文本，标记是按条目 ID 存放在 `session.annotations` 中的一个并行结构化层。`translation-session.js` 在每次某条目的作答发生变化时（在 `setTranslationAnswer()` 内部）都会重新校验该条目的标记，丢弃锚点已不匹配的标记，因此失效的标记绝不会继续指向错误的文本。
+
+重叠策略实现在 `addAnnotation()` 中：完全相同的范围再次标记会替换已有标记的分类；与另一个范围部分重叠且不同的标记会抛出异常，UI 会把它转换为一条提示，而不是静默接受错误数据。完成练习时，`createTranslationLearnerResponse()` 会把各条目的标记汇总进顶层的 `learnerAnnotations` 数组，只有在非空时才会包含该字段，因此没有标记的 response 与 M6.4 之前的形状完全一致。
 
 ## 验证
 

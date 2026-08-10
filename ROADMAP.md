@@ -156,7 +156,7 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: In progress; M6.0 and M6.1 accepted; M6.2 and M6.3 implementation complete with M6-wide acceptance deferred; M6.4 next
+Status: In progress; M6.0 and M6.1 accepted; M6.2, M6.3, and M6.4 implementation complete with M6-wide acceptance deferred; M6.5 next
 
 Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7 is complete. Implementation review, regression testing, CI, and scope review still apply to every sub-milestone in the meantime. M6.0 and M6.1 were accepted before this policy took effect and remain accepted.
 
@@ -210,8 +210,17 @@ M6.3 state:
 - Adds Translation active-session recovery through an isolated storage key, independent from the Objective Quiz active session, so the two cannot corrupt each other; malformed session data is safely rejected rather than crashing recovery.
 - Finalizing a session creates a non-objective Learner Response via `createTranslationLearnerResponse()` (no fabricated `correct`, `correctCount`, or `percent`); the active session is cleared only after the response has been saved successfully.
 - Repeated practice on the same document creates a new session and a new Learner Response ID without overwriting prior evidence.
-- Learner answer span markings, rich annotations, external Teacher Review import, and remediation UI remain M6.4+ work.
-- M6.4 must not begin without a new prompt.
+
+M6.4 state:
+
+- Implementation complete; M6-wide acceptance deferred (not individually accepted; see the acceptance policy note above).
+- Adds learner-controlled metacognitive marking of spans of the learner's own answer text as `unknown`, `uncertain`, or `should_know`, in a new `src/core/translation-annotations.js` module — these are learner signals, never automatic grading judgments, vocabulary records, or remediation tasks.
+- Annotations anchor to character ranges validated against the live answer text; marking the exact same span again replaces its category, and a span overlapping a different existing mark is rejected until the conflicting mark is removed or adjusted.
+- Editing an answer automatically drops any of that item's annotations whose anchored text no longer matches, so a mark can never silently point at the wrong text.
+- Annotations persist by stable Translation Item ID inside the M6.3 Translation Session (`session.annotations`), survive navigation, refresh, and normal recovery, and are safely dropped individually (without failing session recovery) if malformed.
+- Finalization copies annotations into an additive, optional `learnerAnnotations` array on the Learner Response; the public schema was extended minimally and backward-compatibly, and responses without annotations are unchanged from their M6.3 shape.
+- Rich correction, suggested/inserted correction text, external Teacher Review import, remediation generation, and Vocabulary App integration remain M6.5+ work.
+- M6.5 must not begin without a new prompt.
 
 Approved macro scope:
 

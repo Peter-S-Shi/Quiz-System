@@ -20,7 +20,7 @@
 
 这份基线只用于手工验收，不改变产品功能、业务逻辑、工作流或发布状态。
 
-问卷包含 M6.0 增量检查，覆盖 finalized Learner Response 建立、双语导出控件、备份覆盖和显式删除确认；M6.2 增量检查，覆盖 Translation Library 工作区、批量与 JSON 导入安全、导出、持久化和备份覆盖；以及 M6.3 增量检查，覆盖 Translation Practice 工作流、session 恢复、非客观 finalization，以及与 Objective Quiz 的隔离。完成对应增量检查可以积累验收证据；仅仅存在这些检查并不代表对应里程碑已通过验收。M6.2 和 M6.3 的正式验收被有意推迟到 M6.7 之后的一次整体 M6 验收——这两份增量检查会被保留，供那次整体验收复用。
+问卷包含 M6.0 增量检查，覆盖 finalized Learner Response 建立、双语导出控件、备份覆盖和显式删除确认；M6.2 增量检查，覆盖 Translation Library 工作区、批量与 JSON 导入安全、导出、持久化和备份覆盖；M6.3 增量检查，覆盖 Translation Practice 工作流、session 恢复、非客观 finalization，以及与 Objective Quiz 的隔离；以及 M6.4 增量检查，覆盖学习者主动控制的作答标记、重叠/重复处理、编辑失效处理，以及 finalized 标记证据。完成对应增量检查可以积累验收证据；仅仅存在这些检查并不代表对应里程碑已通过验收。M6.2 到 M6.7 的正式验收被有意推迟到 M6.7 之后的一次整体 M6 验收——M6.2、M6.3 和 M6.4 这三份增量检查会被保留，供那次整体验收复用。
 
 ## 隐私
 
