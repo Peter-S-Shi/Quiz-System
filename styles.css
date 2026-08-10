@@ -1044,6 +1044,19 @@ label small {
   gap: 8px;
 }
 
+.review-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-switcher .small-button.active {
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+  border-color: var(--accent);
+}
+
 .correction-preview {
   border: 1px solid var(--line);
   border-radius: 8px;

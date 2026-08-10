@@ -2,7 +2,7 @@
 
 Open Teaching Interchange 是 Quiz Studio 的横向、本地优先基础设施，使应用可以通过可移植的结构化数据与外部人类教师、语言模型和 agent 协作。
 
-它不是与 Translation Practice 并列的第二个独立学习产品。Translation Practice 仍是 Milestone 6 的主要新增学习工作流，并将成为这套基础设施的第一个完整 rich-response consumer。Open Teaching Interchange 同时服务现有 Objective Quiz 流程。
+它不是与 Translation Practice 并列的第二个独立学习产品。Translation Practice 仍是 Milestone 6 的主要新增学习工作流，从 M6.6 起已成为这套基础设施第一个完整的 rich-response consumer，包含完整的外部评阅和补救练习往返。Open Teaching Interchange 同时服务现有 Objective Quiz 流程。
 
 ## 产品原则
 
@@ -49,12 +49,20 @@ Reviewer metadata 可以匿名或使用合成身份。支持的 actor 类型为 
 
 根据既有学习证据生成的后续材料。适用时应复用现有学习材料格式。补救 Quiz Paper 可以通过 `purpose`、`sourceResponseId` 和 `sourceReviewId` 等 provenance 字段保留来源，无需建立独立练习引擎。
 
+M6.6 针对 Translation 具体落地了这一点：补救翻译文档就是一份普通的 `quiz-studio.translation-document`，额外带有一个增量的 `provenance` 字段块（`purpose: "remediation"`、`sourceResponseId`、`sourceReviewId`、`sourceMaterialId`、`createdAt`、`author`）。专用导入边界要求这些用途声明和元数据，并在持久化前针对本地 Learner Response/Teacher Review 记录交叉校验引用；普通 M6.2 翻译文档导入保持不变。练习补救材料时会把同一份 provenance 带入产生的 Learner Response，因此即使之后删除了补救文档，溯源链路依然完好。
+
+### 传输信封（M6.6）
+
+两种小巧的、带版本号的信封负责把规范 evidence 传给外部一方、再接收回来，同时不会成为第二个真源：`quiz-studio.review-request`（一份 finalized Learner Response，加上对预期 Teacher Review 输出契约的说明）和 `quiz-studio.remediation-request`（一份 Learner Response 和一条 Teacher Review，加上对预期补救翻译文档输出契约的说明）。两者都嵌入规范对象的忠实可移植副本，只作为导出/导入用的临时产物存在——绝不会作为规范学习记录被持久化。具体实现（`src/core/review-transport.js`）见 `DEVELOPER_GUIDE.zh-CN.md`。
+
 ## 可移植 Contract
 
 - `schemas/quiz-paper.schema.json` 支持可选、追加式 provenance。
 - `schemas/learner-response.schema.json` 定义 finalized learner evidence。
-- `schemas/teacher-review.schema.json` 定义追加式教师反馈。
-- `examples/` 提供供外部工具和教师使用的合成示例。
+- `schemas/teacher-review.schema.json` 定义追加式教师反馈，包含 M6.5 的 rich correction 扩展。
+- `schemas/translation-document.schema.json` 定义 Translation 材料，包含追加式的补救 `provenance` 字段块。
+- `schemas/review-request.schema.json` 和 `schemas/remediation-request.schema.json`（M6.6）定义外部传输信封。
+- `examples/` 提供供外部工具和教师使用的合成示例，包含一条完整的 M6.6 往返 fixture 链。
 
 所有 contract 使用 `schemaVersion`、适用时的 `documentType`、稳定 ID 和追加式扩展边界。原始 HTML 不是 canonical review data。
 
@@ -68,15 +76,16 @@ Objective Quiz 完成时，会先生成独立 Learner Response，再最终确认
 
 ## M6.0 中的 Teacher Review 边界
 
-M6.0 提供 Teacher Review 的 schema、标准化和校验函数，但不提供 Teacher Review 导入界面，也不渲染外部批改。后续里程碑将沿用受保护 response 边界，实现带预览和确认的 review 导入。
+M6.0 提供了 Teacher Review 的 schema、标准化和校验函数，但没有提供 Teacher Review 导入界面，也不渲染外部批改。M6.6 补齐了这一点：新增了 `DEVELOPER_GUIDE.zh-CN.md` 中描述的 Teacher Review 上传/预览/确认/存储/渲染流程，并复用同一套受保护 response 校验边界来处理带预览和确认的 review 导入。
 
 ## 后续 M6 工作
 
-- M6.1 已加入 `TRANSLATION_DOMAIN.zh-CN.md` 中描述的 Translation 领域、持久化和非客观 response 边界。
-- Translation Library、材料导入/导出和练习 UI。
-- 学习者 `unknown`、`uncertain`、`should_know` span 标记。
-- Rich annotation/revision 语义和 UI。
-- 完整 Teacher Review 上传、预览、确认、存储与渲染。
-- 外部 remediation 往返 UI 和 Translation history 整合。
+M6.1 到 M6.6 已经交付了上面描述的完整往返：`TRANSLATION_DOMAIN.zh-CN.md` 中的 Translation 领域和非客观 response 边界、Translation Library 与练习 UI、学习者 `unknown`/`uncertain`/`should_know` span 标记、M6.5 的 rich correction/revision 语言与工作区，以及 `DEVELOPER_GUIDE.zh-CN.md` 中描述的 M6.6 外部 Teacher Review 往返与补救材料往返。
 
-M6.0 不包含内置 AI API、provider 配置或自动 AI 判分。
+仍然推迟到 M6.7 的工作：
+
+- 覆盖全部 finalized response、review 和补救溯源的完整 Translation 历史/重练浏览器。
+- 历史分析、更高级的 review 搜索/筛选，以及待处理队列。
+- 全产品层面的可移植性与整合工作。
+
+M6.0-M6.6 均不包含内置 AI API、provider 配置或自动 AI 判分。

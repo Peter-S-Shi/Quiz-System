@@ -117,7 +117,7 @@ Project development is organized by lifecycle stages. See `ROADMAP.md` for the f
 
 ### Planned Current-Version Capability
 
-Translation Practice remains Milestone 6's primary new learning workflow. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 (Translation Library and material import/export), M6.3 (Translation Practice and session recovery), M6.4 (learner answer marking and annotation foundation), and M6.5 (rich correction / revision workspace) are implementation complete; individual formal acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7. The planned capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
+Translation Practice remains Milestone 6's primary new learning workflow. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 (Translation Library and material import/export), M6.3 (Translation Practice and session recovery), M6.4 (learner answer marking and annotation foundation), M6.5 (rich correction / revision workspace), and M6.6 (external Teacher round trip) are implementation complete; individual formal acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7. The planned capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
 
 ## Localization
 
@@ -129,9 +129,9 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 Current phase: Feature Development - Scope Reopened.
 
-Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 Translation Library and Material Import/Export, M6.3 Translation Practice and Session Recovery, M6.4 Learner Answer Marking and Annotation Foundation, and M6.5 Rich Correction / Revision Workspace are implementation complete. Individual formal acceptance for M6.2 through M6.7 has been intentionally deferred: the user has decided to run one comprehensive M6-wide acceptance after M6.7 instead of accepting each sub-milestone separately. The project is not Release Ready.
+Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 Translation Library and Material Import/Export, M6.3 Translation Practice and Session Recovery, M6.4 Learner Answer Marking and Annotation Foundation, M6.5 Rich Correction / Revision Workspace, and M6.6 External Teacher Round Trip are implementation complete. Individual formal acceptance for M6.2 through M6.7 has been intentionally deferred: the user has decided to run one comprehensive M6-wide acceptance after M6.7 instead of accepting each sub-milestone separately. The project is not Release Ready.
 
-The comprehensive M6-wide acceptance, the remaining M6.6-M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
+The comprehensive M6-wide acceptance, the remaining M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
 
 ## Data and Privacy
 

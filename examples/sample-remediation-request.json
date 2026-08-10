@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.remediation-request",
+  "id": "remediation-request-sample-1",
+  "exportedAt": "2026-01-16T12:05:00.000Z",
+  "task": "Read this Quiz Studio remediation-request JSON. Using the learner's answers, marks, and the teacher review, return exactly one JSON object conforming to the Quiz Studio Translation Document contract (documentType \"quiz-studio.translation-document\") for targeted follow-up practice. Include a provenance object with purpose \"remediation\", sourceResponseId, and sourceReviewId set to the values from this request, plus createdAt and author metadata.",
+  "learnerResponse": {
+    "schemaVersion": 1,
+    "documentType": "quiz-studio.learner-response",
+    "id": "translation-response-sample-1",
+    "status": "finalized",
+    "finalizedAt": "2026-01-16T09:10:00.000Z",
+    "material": {
+      "type": "translation-document",
+      "id": "translation-document-sample-1",
+      "title": "Short Travel Notes",
+      "snapshot": {
+        "items": [
+          {
+            "id": "translation-item-sample-1",
+            "sourceText": "Le train part a huit heures.",
+            "position": 0
+          },
+          {
+            "id": "translation-item-sample-2",
+            "sourceText": "Nous arriverons avant midi.",
+            "referenceTranslation": "We will arrive before noon.",
+            "notes": "The reference is illustrative, not a unique correct answer.",
+            "position": 1
+          }
+        ],
+        "sourceLanguage": "fr",
+        "targetLanguage": "en"
+      }
+    },
+    "session": {
+      "id": "translation-session-sample-1",
+      "startedAt": "2026-01-16T09:00:00.000Z",
+      "completedAt": "2026-01-16T09:10:00.000Z"
+    },
+    "responses": [
+      { "itemId": "translation-item-sample-1", "answer": "The train leaves at eight." },
+      { "itemId": "translation-item-sample-2", "answer": "We arrive before noon" }
+    ],
+    "summary": { "itemCount": 2 },
+    "provenance": { "purpose": "practice" },
+    "learnerAnnotations": [
+      {
+        "itemId": "translation-item-sample-2",
+        "id": "annotation-sample-1",
+        "kind": "uncertain",
+        "start": 0,
+        "end": 9,
+        "text": "We arrive",
+        "createdAt": "2026-01-16T09:05:00.000Z"
+      }
+    ]
+  },
+  "teacherReview": {
+    "schemaVersion": 1,
+    "documentType": "quiz-studio.teacher-review",
+    "id": "external-review-sample-1",
+    "responseId": "translation-response-sample-1",
+    "createdAt": "2026-01-16T12:00:00.000Z",
+    "reviewer": {
+      "type": "external-ai",
+      "displayLabel": "Synthetic External Reviewer",
+      "toolName": "Example LLM"
+    },
+    "summary": "Good gist translation; minor tense and phrasing fixes suggested.",
+    "itemReviews": [
+      {
+        "itemId": "translation-item-sample-1",
+        "judgment": "partial",
+        "comment": "Tense is off: the source uses present tense.",
+        "corrections": [
+          {
+            "id": "correction-sample-1",
+            "operation": "replace",
+            "start": 10,
+            "end": 16,
+            "anchoredText": "leaves",
+            "text": "departs",
+            "color": "blue",
+            "createdAt": "2026-01-16T12:00:00.000Z"
+          }
+        ]
+      },
+      {
+        "itemId": "translation-item-sample-2",
+        "judgment": "correct",
+        "suggestedRevision": "We will arrive before noon.",
+        "corrections": [
+          {
+            "id": "correction-sample-2",
+            "operation": "style",
+            "styleType": "underline",
+            "start": 0,
+            "end": 9,
+            "anchoredText": "We arrive",
+            "createdAt": "2026-01-16T12:00:00.000Z"
+          }
+        ]
+      }
+    ],
+    "remediationRecommendations": [
+      { "materialType": "translation-document", "focus": "Practice future-tense verb phrasing." }
+    ]
+  },
+  "requestedOutput": {
+    "documentType": "quiz-studio.translation-document",
+    "schemaVersion": 1
+  }
+}

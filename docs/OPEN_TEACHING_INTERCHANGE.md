@@ -2,7 +2,7 @@
 
 Open Teaching Interchange is Quiz Studio's cross-cutting, local-first foundation for working with external human teachers, language models, and agents through portable structured data.
 
-It is not a second standalone learning product beside Translation Practice. Translation Practice remains Milestone 6's primary new learner workflow and will be the first complete rich-response consumer of this foundation. Open Teaching Interchange also serves the existing Objective Quiz workflow.
+It is not a second standalone learning product beside Translation Practice. Translation Practice remains Milestone 6's primary new learner workflow, and as of M6.6 is the first complete rich-response consumer of this foundation, including the full external review and remediation round trip. Open Teaching Interchange also serves the existing Objective Quiz workflow.
 
 ## Product Principle
 
@@ -49,12 +49,20 @@ Reviewer metadata may be anonymous or synthetic. Supported actor categories are 
 
 Follow-up material created from prior learning evidence. Existing material formats should be reused when suitable. A remediation Quiz Paper can carry provenance such as `purpose`, `sourceResponseId`, and `sourceReviewId` without requiring a separate exercise engine.
 
+M6.6 implements this concretely for Translation: a remediation Translation Document is an ordinary `quiz-studio.translation-document` carrying an additive `provenance` block (`purpose: "remediation"`, `sourceResponseId`, `sourceReviewId`, `sourceMaterialId`, `createdAt`, `author`). Its dedicated import boundary requires that claim and metadata and cross-validates the references against local Learner Response/Teacher Review records before persistence; ordinary M6.2 Translation Document import remains unchanged. Practicing the remediation material carries the same provenance forward into the resulting Learner Response, so lineage survives even if the remediation document is later deleted.
+
+### Transport Envelopes (M6.6)
+
+Two small, versioned envelopes carry canonical evidence to and from an external party without becoming a second source of truth: `quiz-studio.review-request` (a finalized Learner Response plus the expected Teacher Review output contract) and `quiz-studio.remediation-request` (a Learner Response and a Teacher Review plus the expected remediation Translation Document output contract). Both embed faithful portable copies of the canonical objects and exist only as export/import artifacts — never persisted as canonical learning records. See `DEVELOPER_GUIDE.md` for the implementation (`src/core/review-transport.js`).
+
 ## Portable Contracts
 
 - `schemas/quiz-paper.schema.json` supports optional additive provenance.
 - `schemas/learner-response.schema.json` defines finalized learner evidence.
-- `schemas/teacher-review.schema.json` defines additive teacher feedback.
-- `examples/` contains synthetic examples for external tools and teachers.
+- `schemas/teacher-review.schema.json` defines additive teacher feedback, including the M6.5 rich-correction extension.
+- `schemas/translation-document.schema.json` defines Translation material, including the additive remediation `provenance` block.
+- `schemas/review-request.schema.json` and `schemas/remediation-request.schema.json` (M6.6) define the external transport envelopes.
+- `examples/` contains synthetic examples for external tools and teachers, including a full M6.6 round-trip fixture chain.
 
 All contracts use `schemaVersion`, `documentType` where applicable, stable IDs, and additive extension points. Raw HTML is not canonical review data.
 
@@ -68,15 +76,16 @@ Clearing a paper's history requires confirmation and explicitly removes both sum
 
 ## Teacher Review Boundary In M6.0
 
-M6.0 supplies schemas, normalization, and validation functions for Teacher Review data. It does not add a Teacher Review import screen or render external corrections. Later milestones will use the same protected-response boundary for previewed and confirmed review imports.
+M6.0 supplied schemas, normalization, and validation functions for Teacher Review data, without a Teacher Review import screen or external-correction rendering. M6.6 completed this: it added the Teacher Review upload/preview/confirmation/storage/rendering pipeline described in `DEVELOPER_GUIDE.md`, reusing this same protected-response validation boundary for previewed and confirmed review imports.
 
 ## Deferred To Later M6 Work
 
-- M6.1 adds the Translation domain, persistence, and non-objective response boundary described in `TRANSLATION_DOMAIN.md`.
-- Translation Library, material import/export, and practice UI.
-- Learner `unknown`, `uncertain`, and `should_know` span marking.
-- Rich annotation and revision semantics and UI.
-- Full Teacher Review upload, preview, confirmation, storage, and rendering.
-- External remediation round-trip UI and Translation history integration.
+M6.1 through M6.6 delivered the full round trip described above: the Translation domain and non-objective response boundary (`TRANSLATION_DOMAIN.md`), the Translation Library and practice UI, learner `unknown`/`uncertain`/`should_know` span marking, the M6.5 rich correction/revision language and workspace, and the M6.6 external Teacher Review round trip and remediation material round trip described in `DEVELOPER_GUIDE.md`.
 
-No embedded AI API, provider configuration, or automatic AI grading is part of M6.0.
+Still deferred to M6.7:
+
+- A full Translation history/retry browser across all finalized responses, reviews, and remediation lineage.
+- History analytics, advanced review search/filtering, and needs-work queues.
+- Whole-product portability and integration work.
+
+No embedded AI API, provider configuration, or automatic AI grading is part of M6.0-M6.6.

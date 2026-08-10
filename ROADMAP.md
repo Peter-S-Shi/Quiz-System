@@ -156,7 +156,7 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: In progress; M6.0 and M6.1 accepted; M6.2, M6.3, M6.4, and M6.5 implementation complete with M6-wide acceptance deferred; M6.6 next
+Status: In progress; M6.0 and M6.1 accepted; M6.2, M6.3, M6.4, M6.5, and M6.6 implementation complete with M6-wide acceptance deferred; M6.7 next
 
 Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7 is complete. Implementation review, regression testing, CI, and scope review still apply to every sub-milestone in the meantime. M6.0 and M6.1 were accepted before this policy took effect and remain accepted.
 
@@ -234,7 +234,21 @@ M6.5 state:
 - All reviewer/inserted text is rendered as escaped plain data (never raw HTML), and text color is restricted to a small validated palette to prevent CSS injection.
 - Rich correction never mutates the original learner answer, M6.4 annotations, material snapshots, or session metadata; creating, editing, or saving a review has no effect on the underlying finalized Learner Response.
 - External Teacher Review import/export round-trip, automatic/AI correction, semantic grading, and remediation generation remain M6.6+ work.
-- M6.6 must not begin without a new prompt.
+
+M6.6 state:
+
+- Implementation complete; M6-wide acceptance deferred (not individually accepted; see the acceptance policy note above).
+- Completes the first real end-to-end Open Teaching Interchange round trip using Translation Practice, entirely without an in-app AI API: author material -> practice -> finalized Learner Response -> export a self-contained review request -> an external human/AI/agent reviews it -> import the returned canonical Teacher Review -> validate -> preview -> confirm -> persist -> inspect the imported rich corrections -> export a remediation request -> an external human/AI/agent produces a remediation Translation Document -> import it -> practice it normally.
+- The canonical records (Learner Response, Teacher Review, Translation Document) remain the single source of truth. Adds `src/core/review-transport.js`: two versioned, provider-independent transport/request envelopes (`quiz-studio.review-request`, `quiz-studio.remediation-request`) that embed faithful portable copies of the canonical objects rather than a competing evidence format; these are export/transport artifacts and are never persisted as canonical learning records.
+- Adds an explicit external-interchange version gate (independent from and stricter than the generic, forward-tolerant runtime validators) for Teacher Review import, both request envelopes, and remediation Translation Document import, so an unsupported future schema version is rejected rather than silently accepted.
+- The Teacher Review import pipeline (parse -> structural validation -> public-schema-equivalent checks -> resolve target Learner Response -> runtime cross-validation against the protected evidence -> preview -> confirm -> persist) reuses the existing M6.5 validators; nothing is persisted before the user confirms, and a cancelled or malformed import leaves all existing Teacher Reviews and Learner Responses unchanged. Rejects malformed JSON, wrong `documentType`, unsupported schema version, missing/empty review ID, orphan `responseId`, unknown item IDs, anchored-text mismatches, conflicting corrections, invalid operation/style/color values, and an attempt to silently reassign an existing review ID to a different response.
+- A response may legitimately receive more than one Teacher Review. Re-importing identical content is treated as a safe no-op; re-importing the same review ID with changed content for the same response is classified as an explicit update requiring confirmation; the same review ID targeting a different response is rejected outright. A minimal review picker lets the user see every review available for a response (reviewer, review ID) and open a specific one deterministically, without building the M6.7 history browser.
+- Adds a straightforward Teacher Review JSON export (preserving stable IDs and rich correction structure) and a remediation-request export that bundles the Learner Response and a selected Teacher Review for an external remediation author.
+- A remediation Translation Document reuses the existing M6.2 Translation Document contract and persistence/collision pipeline; it is distinguished by an additive `provenance` block (`purpose: "remediation"`, `sourceResponseId`, `sourceReviewId`, `sourceMaterialId`, `createdAt`, `author`) that M6.0 already generically supported. The dedicated remediation-import boundary requires that canonical claim and metadata, then cross-validates that `sourceResponseId`/`sourceReviewId` resolve to real local records and that the review belongs to that response before persistence. Ordinary M6.2 Translation Document import remains tolerant of non-remediation material; local-folder rebinding and the existing collision/copy-as-new-ID policy are unaffected and never discard provenance.
+- A Translation Practice session started from remediation material captures that provenance, and finalizing carries it into the new Learner Response's `provenance` field, so the resulting evidence remains traceable to the source response, source review, and remediation material even if the live remediation document is later deleted.
+- All externally supplied JSON is treated as untrusted: rendered through the existing escaped-text correction renderer, never as raw HTML, with no embedded script/markup execution.
+- Deliberately does not add any in-app AI API, model selector, API key field, or automatic review/remediation generation; the user manually hands exported JSON to an external human/AI/agent and manually imports the result. Also does not build the M6.7 full history browser, analytics, retry system, or lineage dashboard.
+- M6.7 must not begin without a new prompt.
 
 Approved macro scope:
 

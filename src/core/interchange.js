@@ -1,5 +1,10 @@
 import { makeId } from "./utils.js";
-import { correctionsConflict, validateCorrectionShape } from "./corrections.js";
+import {
+  CORRECTION_COLORS,
+  STYLE_TYPES,
+  correctionsConflict,
+  validateCorrectionShape,
+} from "./corrections.js";
 
 export const INTERCHANGE_SCHEMA_VERSION = 1;
 
@@ -162,9 +167,7 @@ export function createTranslationLearnerResponse({ id = makeId(), session }) {
     summary: {
       itemCount: items.length,
     },
-    provenance: {
-      purpose: "practice",
-    },
+    provenance: normalizeProvenance(session.materialProvenance) || { purpose: "practice" },
     ...(learnerAnnotations.length ? { learnerAnnotations } : {}),
   };
 }
@@ -475,9 +478,98 @@ export function validateTeacherReview(value, options = {}) {
   return { valid: errors.length === 0, errors };
 }
 
+// External imports must already conform to the canonical public contract. Local persistence paths
+// remain backward-compatible and may continue to normalize older records before validation.
+export function validateCanonicalTeacherReview(value, options = {}) {
+  const validation = validateTeacherReview(value, options);
+  const errors = [...validation.errors];
+  if (!isPlainObject(value)) return { valid: false, errors };
+
+  [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "responseId",
+    "createdAt",
+    "reviewer",
+    "itemReviews",
+    "remediationRecommendations",
+  ].forEach((key) => {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) errors.push(`Teacher Review requires canonical field: ${key}`);
+  });
+
+  validateCanonicalActor(value.reviewer, "Teacher Review reviewer", errors);
+  if (Object.prototype.hasOwnProperty.call(value, "summary") && typeof value.summary !== "string") {
+    errors.push("Teacher Review summary must be a string.");
+  }
+  if (Object.prototype.hasOwnProperty.call(value, "extensions") && !isPlainObject(value.extensions)) {
+    errors.push("Teacher Review extensions must be an object.");
+  }
+  if (!Array.isArray(value.remediationRecommendations)) {
+    errors.push("Teacher Review remediationRecommendations must be an array.");
+  } else {
+    value.remediationRecommendations.forEach((item) => {
+      if (!isPlainObject(item)) errors.push("Each Teacher Review remediation recommendation must be an object.");
+    });
+  }
+
+  (Array.isArray(value.itemReviews) ? value.itemReviews : []).forEach((item) => {
+    if (!isPlainObject(item)) return;
+    if (Object.prototype.hasOwnProperty.call(item, "judgment") && !REVIEW_JUDGMENTS.has(item.judgment)) {
+      errors.push(`Invalid Teacher Review judgment: ${item.judgment}`);
+    }
+    ["comment", "suggestedRevision"].forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(item, key) && typeof item[key] !== "string") {
+        errors.push(`Teacher Review item ${key} must be a string.`);
+      }
+    });
+    if (Object.prototype.hasOwnProperty.call(item, "tags")
+      && (!Array.isArray(item.tags) || item.tags.some((tag) => typeof tag !== "string"))) {
+      errors.push("Teacher Review item tags must be an array of strings.");
+    }
+    if (Object.prototype.hasOwnProperty.call(item, "extensions") && !isPlainObject(item.extensions)) {
+      errors.push("Teacher Review item extensions must be an object.");
+    }
+    (Array.isArray(item.corrections) ? item.corrections : []).forEach((correction) => {
+      if (!isPlainObject(correction)) return;
+      if (Object.prototype.hasOwnProperty.call(correction, "text") && typeof correction.text !== "string") {
+        errors.push("Teacher Review correction text must be a string.");
+      }
+      if (Object.prototype.hasOwnProperty.call(correction, "styleType") && !STYLE_TYPES.includes(correction.styleType)) {
+        errors.push(`Invalid correction styleType: ${correction.styleType}`);
+      }
+      if (Object.prototype.hasOwnProperty.call(correction, "color") && !CORRECTION_COLORS.includes(correction.color)) {
+        errors.push(`Invalid correction color: ${correction.color}`);
+      }
+    });
+  });
+
+  return { valid: errors.length === 0, errors: [...new Set(errors)] };
+}
+
+function validateCanonicalActor(value, label, errors) {
+  if (!isPlainObject(value)) return;
+  Object.keys(value).forEach((key) => {
+    if (!["type", "displayLabel", "toolName"].includes(key)) errors.push(`Unsupported ${label} field: ${key}`);
+  });
+  if (!Object.prototype.hasOwnProperty.call(value, "type")) errors.push(`${label} type is required.`);
+  ["displayLabel", "toolName"].forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(value, key) && typeof value[key] !== "string") {
+      errors.push(`${label} ${key} must be a string.`);
+    }
+  });
+}
+
 export function toPortableLearnerResponse(value) {
   const normalized = normalizeLearnerResponse(value);
   const validation = validateLearnerResponse(normalized);
+  if (!validation.valid) throw new TypeError(validation.errors.join(" "));
+  return cloneValue(normalized);
+}
+
+export function toPortableTeacherReview(value, options = {}) {
+  const normalized = normalizeTeacherReview(value);
+  const validation = validateTeacherReview(normalized, options);
   if (!validation.valid) throw new TypeError(validation.errors.join(" "));
   return cloneValue(normalized);
 }

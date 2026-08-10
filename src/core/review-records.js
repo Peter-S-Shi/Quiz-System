@@ -27,7 +27,12 @@ export function upsertTeacherReview(collection, review, options = {}) {
   const validation = validateTeacherReview(normalized, { learnerResponse });
   if (!validation.valid) throw new TypeError(validation.errors.join(" "));
 
-  const existing = parseTeacherReviewCollection(collection, options);
+  // Re-parse the existing collection structurally only (not against `options`'s response context):
+  // that context describes the review being upserted, and the collection may legitimately hold
+  // reviews for other responses too. Entries already went through full validation when they were
+  // first persisted, so a structural re-check here is sufficient and avoids rejecting valid
+  // unrelated reviews just because they don't match this call's single response context.
+  const existing = parseTeacherReviewCollection(collection);
   const previous = existing.find((item) => item.id === normalized.id);
   if (previous && previous.responseId !== normalized.responseId) {
     throw new TypeError(`Teacher Review ${normalized.id} cannot be reassigned to a different response.`);
@@ -38,6 +43,13 @@ export function upsertTeacherReview(collection, review, options = {}) {
 
 export function findTeacherReviewForResponse(collection, responseId) {
   return parseTeacherReviewCollection(collection).find((item) => item.responseId === responseId) || null;
+}
+
+// A response may legitimately receive more than one Teacher Review (e.g. from different
+// reviewers/tools). This returns every review for a response, newest first, so the UI can offer a
+// deterministic picker instead of silently hiding all but one.
+export function findTeacherReviewsForResponse(collection, responseId) {
+  return parseTeacherReviewCollection(collection).filter((item) => item.responseId === responseId);
 }
 
 // A Learner Response "context" can be supplied either as one known-correct response

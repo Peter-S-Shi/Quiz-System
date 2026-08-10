@@ -56,6 +56,20 @@ On Windows, double-click `start-local.bat` from the project folder to start the 
 - Optionally set a judgment (**Correct** / **Incorrect** / **Partial** / **Needs review**), an item-level comment, and a suggested whole-answer revision for each item — these can coexist with your span-level corrections.
 - Select **Save review** to persist your work. Reopening the same response later (even after a refresh) restores the exact same review; saving again updates it in place rather than creating a duplicate.
 - Reviewing and correcting a response never changes the original Learner Response — the learner's submitted answer and marks remain exactly as finalized, no matter how the review is edited or re-saved.
+- If a response has more than one review, opening its workspace shows a picker listing each one (reviewer and review ID) so you can choose which to open; once inside, a switcher lets you jump between them or start a new one without leaving.
+
+## External Teacher Round Trip
+
+Quiz Studio can involve an outside human teacher, an AI assistant, or another tool in reviewing and remediating practice — entirely by exporting and importing plain JSON files by hand. Nothing in the app calls an external AI service or requires an API key.
+
+- After finishing a Translation Practice attempt (or from the same document's **Finalized responses** list), select **Export for external review** to download a self-contained review-request file. It contains everything an outside reviewer needs — the source text, your translation, your marks, and language context — without requiring access to this browser's local storage.
+- Hand that file to whoever is reviewing (a teacher, an AI assistant, another tool). Ask them to return a single JSON file that follows the Quiz Studio Teacher Review format; the review-request file itself states this expectation.
+- Back in Quiz Studio, use **Import Teacher Review** on the same response row and choose the returned JSON file. A preview shows the target response, the reviewer, the review ID, whether this is a new review, an identical re-import, or an update to an existing review, plus how many items and corrections it contains. Review it, then **Confirm** to save it — or **Cancel** to discard it with no effect on anything already stored.
+- A response can receive more than one review over time; importing a new one never deletes or hides an earlier one.
+- Once a review is saved, open it in the Correction Workspace and select **Export review JSON** to save a portable copy, or **Export remediation request** to bundle that review together with the original response into a file an outside party can use to write targeted follow-up practice material.
+- Hand the remediation-request file to whoever is producing new material. Ask them to return a Translation Document JSON file for **Import remediation material**, found in the Translation Library's import section alongside the other import options. Its `provenance` must contain `purpose: "remediation"`, the request's `sourceResponseId` and `sourceReviewId`, `createdAt` as an ISO 8601 timestamp, and `author` using a supported actor shape such as `{ "type": "external-ai", "displayLabel": "Synthetic Reviewer" }`. `sourceMaterialId` is optional; when included, it must match the source response's material ID.
+- When you import remediation material, Quiz Studio checks that it genuinely traces back to the response and review you exported — it will refuse a file that claims to be remediation material but points at evidence that doesn't exist or doesn't match. Choose a destination folder as with any other Translation Document import.
+- Practicing imported remediation material works exactly like practicing anything else, and the resulting evidence keeps a record of which original response and review it followed from, even if the remediation document is later deleted.
 
 ## Data Safety
 

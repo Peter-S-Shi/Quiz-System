@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.translation-document",
+  "id": "remediation-document-sample-1",
+  "title": "Remediation: Tense and Phrasing Practice",
+  "folderId": "translation-folder-sample-1",
+  "sourceLanguage": "fr",
+  "targetLanguage": "en",
+  "createdAt": "2026-01-16T13:00:00.000Z",
+  "updatedAt": "2026-01-16T13:00:00.000Z",
+  "items": [
+    {
+      "id": "remediation-item-sample-1",
+      "sourceText": "Le magasin ferme a dix-huit heures.",
+      "position": 0
+    },
+    {
+      "id": "remediation-item-sample-2",
+      "sourceText": "Ils partiront demain matin.",
+      "referenceTranslation": "They will leave tomorrow morning.",
+      "position": 1
+    }
+  ],
+  "provenance": {
+    "purpose": "remediation",
+    "sourceResponseId": "translation-response-sample-1",
+    "sourceReviewId": "external-review-sample-1",
+    "sourceMaterialId": "translation-document-sample-1",
+    "createdAt": "2026-01-16T13:00:00.000Z",
+    "author": {
+      "type": "external-ai",
+      "displayLabel": "Synthetic External Reviewer",
+      "toolName": "Example LLM"
+    }
+  }
+}

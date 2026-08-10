@@ -156,7 +156,7 @@ Freeze 规则：
 
 ## Milestone 6：Translation Practice
 
-状态：进行中；M6.0、M6.1 已验收；M6.2、M6.3、M6.4、M6.5 已完成实现，验收统一推迟到 M6 整体验收；下一个是 M6.6
+状态：进行中；M6.0、M6.1 已验收；M6.2、M6.3、M6.4、M6.5、M6.6 已完成实现，验收统一推迟到 M6 整体验收；下一个是 M6.7
 
 验收政策说明：M6.2 到 M6.7 不再逐个进行正式用户验收，而是推迟到 M6.7 完成后进行一次覆盖整个 M6 的综合验收。在此期间，每个子里程碑仍然需要实现评审、回归测试、CI 和范围审查。M6.0 和 M6.1 在这一政策生效前已经验收，继续保持已验收状态。
 
@@ -234,7 +234,21 @@ M6.5 状态：
 - 所有评阅者/插入的文字都以转义后的纯文本方式渲染（绝不注入原始 HTML），文字颜色被限制在一个经过校验的小型调色板内，以防止 CSS 注入。
 - Rich correction 绝不会修改原始学习者作答、M6.4 标记、材料快照或 session 元数据；创建、编辑或保存一条 review 不会对底层已完成的 Learner Response 产生任何影响。
 - 外部 Teacher Review 导入/导出往返、自动/AI 批改、语义判分和 remediation 生成仍属于 M6.6 及之后的工作。
-- 未经新的 prompt，不得开始 M6.6。
+
+M6.6 状态：
+
+- 已完成实现；验收推迟到 M6 整体验收（未单独验收，见上方验收政策说明）。
+- 完成了以 Translation Practice 为载体的第一次真正端到端 Open Teaching Interchange 往返，全程不依赖任何应用内 AI API：撰写材料 → 练习 → finalized Learner Response → 导出一份自包含的评阅请求 → 外部人类/AI/agent 进行评阅 → 导入返回的规范 Teacher Review → 校验 → 预览 → 确认 → 持久化 → 查看导入的 rich correction → 导出补救练习请求 → 外部人类/AI/agent 生成一份补救翻译文档 → 导入 → 正常练习。
+- 规范记录（Learner Response、Teacher Review、Translation Document）继续保持为唯一真源。新增 `src/core/review-transport.js`：两种带版本号、与厂商无关的传输/请求信封（`quiz-studio.review-request`、`quiz-studio.remediation-request`），内部嵌入的是规范对象的忠实可移植副本，而不是另一套竞争性的 evidence 格式；这些信封只是导出/传输用的临时产物，绝不会作为规范学习记录被持久化。
+- 为 Teacher Review 导入、两种请求信封，以及补救翻译文档导入新增了明确的外部互通版本门槛（独立于、且比通用的、向前兼容的运行时校验器更严格），因此一个不被支持的未来 schema 版本会被拒绝，而不是因为版本号「看起来够新」就被默默接受。
+- Teacher Review 导入流程（解析 → 结构校验 → 相当于公开 schema 的检查 → 定位目标 Learner Response → 针对受保护证据的运行时交叉校验 → 预览 → 确认 → 持久化）复用既有的 M6.5 校验器；确认之前不会持久化任何内容，取消或格式错误的导入不会改变任何既有的 Teacher Review 或 Learner Response。会拒绝格式错误的 JSON、错误的 documentType、不受支持的 schema 版本、缺失/空的 review ID、孤儿 responseId、未知的 item ID、锚定文本不匹配、冲突的批改、无效的操作/样式/颜色取值，以及试图把已有 review ID 静默改指到另一个 response 的行为。
+- 一份 response 完全可以合理地收到不止一条 Teacher Review。重复导入完全相同的内容会被当作安全的空操作；对同一个 response 用相同 review ID 导入内容有变化的版本，会被归类为需要用户确认的显式更新；相同 review ID 却指向不同 response 会被直接拒绝。新增一个极简的 review 选择器，让用户能看到某个 response 现有的全部 review（评阅者、review ID）并确定性地打开指定的一条，而不去构建 M6.7 的历史浏览器。
+- 新增了直接的 Teacher Review JSON 导出（保留稳定 ID 和 rich correction 结构），以及一个把 Learner Response 和某条选定 Teacher Review 打包给外部补救练习作者的补救练习请求导出。
+- 补救翻译文档直接复用既有的 M6.2 Translation Document contract 和 JSON 导入流程，未作改动；它仅通过一个增量的 `provenance` 字段块（`purpose: "remediation"`、`sourceResponseId`、`sourceReviewId`、`sourceMaterialId`、`createdAt`、`author`）来标识自己——这个字段块 M6.0 早已通用地支持。导入时会交叉校验 `sourceResponseId`/`sourceReviewId` 必须能解析到真实的本地记录、且该 review 确实属于那个 response，之后才允许持久化；既有的本地文件夹重新绑定与冲突/复制为新 ID 的策略不受影响，也绝不会丢弃 provenance。
+- 从补救材料开始的 Translation Practice session 会捕获这份 provenance，完成练习时会把它带入新的 Learner Response 的 `provenance` 字段，因此即使之后删除了实时的补救文档，产生的 evidence 依然可以追溯回来源 response、来源 review 和补救材料。
+- 所有外部提供的 JSON 都被当作不可信数据处理：统一通过既有的、会转义的批改渲染器展示，绝不作为原始 HTML 渲染，不会执行任何内嵌脚本或标记。
+- 刻意不添加任何应用内 AI API、模型选择器、API key 字段，也不做自动评阅/补救生成；由用户手动把导出的 JSON 交给外部人类/AI/agent，再手动导入结果。同样不构建 M6.7 的完整历史浏览器、分析、重练系统或溯源仪表盘。
+- 未经新的 prompt，不得开始 M6.7。
 
 已批准的宏观范围：
 
