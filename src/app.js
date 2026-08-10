@@ -2358,7 +2358,7 @@ function renderTranslationItemRow(item, index, total) {
 }
 
 function bindTranslationDocumentEditorEvents(doc) {
-  document.getElementById("startTranslationPractice")?.addEventListener("click", () => startTranslationPractice(doc));
+  document.getElementById("startTranslationPractice")?.addEventListener("click", () => startTranslationPractice(doc.id));
   document.getElementById("resumeTranslationPractice")?.addEventListener("click", () => {
     translationPracticeActive = true;
     renderTranslationMainPanel();
@@ -2409,8 +2409,9 @@ function bindTranslationDocumentEditorEvents(doc) {
   });
 }
 
-function startTranslationPractice(doc) {
-  if (!doc.items.length) return;
+function startTranslationPractice(documentId) {
+  const doc = translationLibrary.documents.find((item) => item.id === documentId);
+  if (!doc || !doc.items.length) return;
   if (translationSession && !translationSession.completed && translationSession.documentId !== doc.id) {
     if (!window.confirm(t("translationPractice.overwriteConfirm"))) return;
   }
@@ -2679,10 +2680,10 @@ function renderTranslationPracticeComplete() {
     openCorrectionWorkspace(translationLastResponseId);
   });
   document.getElementById("retryTranslationPractice").addEventListener("click", () => {
-    const doc = translationLibrary.documents.find((item) => item.id === completedSession.documentId);
+    const docExists = translationLibrary.documents.some((item) => item.id === completedSession.documentId);
     translationSession = null;
     translationPracticeActive = false;
-    if (doc) startTranslationPractice(doc);
+    if (docExists) startTranslationPractice(completedSession.documentId);
     else renderTranslationView();
   });
 }

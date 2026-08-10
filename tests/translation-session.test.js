@@ -72,6 +72,28 @@ test("creating a session snapshots the document items independently", () => {
   assert.equal(session.items[0].sourceText, "Bonjour");
 });
 
+test("starting practice from a document id looked up live reflects an edit made after the last render, unlike a stale captured reference", () => {
+  // Regression test for a bug where the UI's "Start practice" button closed over
+  // the `doc` object captured at the last full re-render. Item-text edits update
+  // translationLibrary without re-rendering (to preserve textarea focus), so a
+  // stale `doc` reference would silently snapshot pre-edit text into the session.
+  // The fix re-looks-up the document by id from the live library at click time.
+  const { library, document } = createSyntheticDocument();
+  const staleDocRef = document;
+
+  const editedLibrary = updateTranslationItem(library, "document-1", "item-1", {
+    sourceText: "Edited before starting practice",
+    updatedAt: CREATED_AT,
+  });
+
+  const staleSession = createTranslationSession({ id: "stale-session", document: staleDocRef, startedAt: CREATED_AT });
+  assert.equal(staleSession.items[0].sourceText, "Bonjour");
+
+  const liveDoc = getTranslationDocument(editedLibrary, staleDocRef.id);
+  const liveSession = createTranslationSession({ id: "live-session", document: liveDoc, startedAt: CREATED_AT });
+  assert.equal(liveSession.items[0].sourceText, "Edited before starting practice");
+});
+
 test("later document edits do not mutate an already-created session snapshot", () => {
   const { library, document } = createSyntheticDocument();
   const session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
