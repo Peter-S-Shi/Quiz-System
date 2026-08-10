@@ -52,7 +52,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["itemId", "answer", "result"],
+        "required": ["itemId", "answer"],
         "additionalProperties": false,
         "properties": {
           "itemId": { "type": "string", "minLength": 1 },
@@ -63,7 +63,7 @@
     },
     "summary": {
       "type": "object",
-      "required": ["itemCount", "correctCount", "percent"],
+      "required": ["itemCount"],
       "additionalProperties": false,
       "properties": {
         "itemCount": { "type": "integer", "minimum": 0 },
@@ -74,6 +74,24 @@
     "provenance": { "$ref": "#/$defs/provenance" },
     "extensions": { "type": "object" }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "material": {
+            "properties": { "type": { "const": "quiz-paper" } },
+            "required": ["type"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "responses": { "items": { "required": ["result"] } },
+          "summary": { "required": ["correctCount", "percent"] }
+        }
+      }
+    }
+  ],
   "$defs": {
     "actor": {
       "type": "object",

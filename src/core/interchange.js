@@ -124,13 +124,19 @@ export function normalizeLearnerResponse(value = {}) {
       ? value.responses.map((item) => ({
         itemId: String(item?.itemId || ""),
         answer: cloneValue(item?.answer ?? null),
-        result: cloneValue(item?.result ?? null),
+        ...(Object.prototype.hasOwnProperty.call(item || {}, "result")
+          ? { result: cloneValue(item.result) }
+          : {}),
       }))
       : [],
     summary: {
       itemCount: Number(value.summary?.itemCount || 0),
-      correctCount: Number(value.summary?.correctCount || 0),
-      percent: Number(value.summary?.percent || 0),
+      ...(Object.prototype.hasOwnProperty.call(value.summary || {}, "correctCount")
+        ? { correctCount: Number(value.summary.correctCount) }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(value.summary || {}, "percent")
+        ? { percent: Number(value.summary.percent) }
+        : {}),
     },
     ...(provenance ? { provenance } : {}),
     ...(isPlainObject(value.extensions) ? { extensions: cloneValue(value.extensions) } : {}),
@@ -176,6 +182,20 @@ export function validateLearnerResponse(value) {
   });
   if (value.summary?.itemCount !== value.responses?.length) {
     errors.push("Learner Response summary itemCount must match the response count.");
+  }
+  if (value.material?.type === "quiz-paper") {
+    (Array.isArray(value.responses) ? value.responses : []).forEach((response) => {
+      if (!Object.prototype.hasOwnProperty.call(response, "result")) {
+        errors.push(`Objective Quiz response ${response.itemId || "item"} requires a grading result.`);
+      }
+    });
+    if (!Number.isInteger(value.summary?.correctCount) || value.summary.correctCount < 0) {
+      errors.push("Objective Quiz Learner Response summary correctCount is required.");
+    }
+    if (typeof value.summary?.percent !== "number" || !Number.isFinite(value.summary.percent)
+      || value.summary.percent < 0 || value.summary.percent > 100) {
+      errors.push("Objective Quiz Learner Response summary percent is required.");
+    }
   }
 
   return { valid: errors.length === 0, errors };

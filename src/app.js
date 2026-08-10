@@ -8,6 +8,7 @@ import {
   upsertLearnerResponse,
 } from "./core/learning-records.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
+import { parseTranslationLibrary } from "./core/translation-domain.js";
 import {
   QUESTION_TYPES,
   clonePaperForLibrary,
@@ -29,6 +30,7 @@ const {
   ACTIVE_SESSION: ACTIVE_SESSION_KEY,
   HISTORY: HISTORY_KEY,
   LEARNER_RESPONSES: LEARNER_RESPONSES_KEY,
+  TRANSLATION_LIBRARY: TRANSLATION_LIBRARY_KEY,
   THEME: THEME_KEY,
   LANGUAGE: LANG_KEY,
 } = STORAGE_KEYS;
@@ -1470,6 +1472,7 @@ function exportLibraryBackup() {
       library,
       history: loadHistory(),
       learnerResponses: loadLearnerResponses(),
+      translationLibrary: loadTranslationLibrary(),
     });
     downloadJson(backup, `quiz-studio-backup-${new Date().toISOString().slice(0, 10)}.json`);
   } catch {
@@ -1485,6 +1488,7 @@ function importLibraryBackup(event) {
     if (imported.library?.papers?.length) {
       const restored = parseLibraryBackup(imported, { createDefaultPaper });
       if (restored.hasLearnerResponses) saveJson(LEARNER_RESPONSES_KEY, restored.learnerResponses);
+      if (restored.hasTranslationLibrary) saveJson(TRANSLATION_LIBRARY_KEY, restored.translationLibrary);
       saveJson(HISTORY_KEY, restored.history);
       library = restored.library;
       activePaperId = library.papers[0].id;
@@ -1552,6 +1556,11 @@ function finalizeLearnerResponse() {
 function loadLearnerResponses() {
   const saved = localStorage.getItem(LEARNER_RESPONSES_KEY);
   return parseLearnerResponseCollection(saved ? JSON.parse(saved) : []);
+}
+
+function loadTranslationLibrary() {
+  const saved = localStorage.getItem(TRANSLATION_LIBRARY_KEY);
+  return parseTranslationLibrary(saved ? JSON.parse(saved) : null);
 }
 
 function exportLearnerResponse(responseId) {

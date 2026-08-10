@@ -1,7 +1,14 @@
 import { parseLearnerResponseCollection } from "./learning-records.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary } from "./migrations.js";
+import { parseTranslationLibrary } from "./translation-domain.js";
 
-export function createLibraryBackup({ library, history, learnerResponses, exportedAt = new Date().toISOString() }) {
+export function createLibraryBackup({
+  library,
+  history,
+  learnerResponses,
+  translationLibrary,
+  exportedAt = new Date().toISOString(),
+}) {
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     documentType: "quiz-studio.library-backup",
@@ -9,6 +16,7 @@ export function createLibraryBackup({ library, history, learnerResponses, export
     library: structuredClone(library),
     history: Array.isArray(history) ? structuredClone(history) : [],
     learnerResponses: parseLearnerResponseCollection(learnerResponses),
+    translationLibrary: parseTranslationLibrary(translationLibrary),
   };
 }
 
@@ -21,10 +29,13 @@ export function parseLibraryBackup(value, options = {}) {
   }
 
   const hasLearnerResponses = Object.prototype.hasOwnProperty.call(value, "learnerResponses");
+  const hasTranslationLibrary = Object.prototype.hasOwnProperty.call(value, "translationLibrary");
   return {
     library: normalizeLibrary(value.library, options),
     history: Array.isArray(value.history) ? structuredClone(value.history) : [],
     hasLearnerResponses,
     learnerResponses: hasLearnerResponses ? parseLearnerResponseCollection(value.learnerResponses) : [],
+    hasTranslationLibrary,
+    translationLibrary: hasTranslationLibrary ? parseTranslationLibrary(value.translationLibrary) : parseTranslationLibrary(null),
   };
 }

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.translation-document",
+  "id": "translation-document-sample-1",
+  "title": "Short Travel Notes",
+  "folderId": "translation-folder-sample-1",
+  "sourceLanguage": "fr",
+  "targetLanguage": "en",
+  "createdAt": "2026-01-15T10:00:00.000Z",
+  "updatedAt": "2026-01-15T10:00:00.000Z",
+  "items": [
+    {
+      "id": "translation-item-sample-1",
+      "sourceText": "Le train part a huit heures.",
+      "position": 0
+    },
+    {
+      "id": "translation-item-sample-2",
+      "sourceText": "Nous arriverons avant midi.",
+      "referenceTranslation": "We will arrive before noon.",
+      "notes": "The reference is illustrative, not a unique correct answer.",
+      "position": 1
+    }
+  ],
+  "provenance": {
+    "purpose": "practice",
+    "author": {
+      "type": "anonymous",
+      "displayLabel": "Synthetic Example"
+    }
+  }
+}
