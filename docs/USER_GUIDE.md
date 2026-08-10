@@ -45,6 +45,18 @@ On Windows, double-click `start-local.bat` from the project folder to start the 
 - Change a mark's category or remove it at any time from the list below the answer box. Marking the exact same span again replaces its category; a range that overlaps a different existing mark is rejected until you remove or adjust that mark first.
 - If you edit text that a mark covers, the mark is removed automatically once its anchored text no longer matches — a brief notice tells you when this happens. Marks persist through navigation, refresh, and Resume, and are preserved unchanged as part of the finalized evidence when you finish.
 
+## Correction / Revision Workspace
+
+- After finishing a Translation Practice attempt, select **Open Correction Workspace** to review that response — or open it later from the same Translation Document's **Finalized responses** list.
+- Your original submitted translation is always shown read-only and cannot be edited from this screen; any metacognitive marks you made during practice are shown alongside it, also read-only.
+- Select a span of the original answer and apply **Bold**, **Italic**, **Underline**, **Strikethrough**, **Highlight**, or **Bracket** to visually annotate it — these can be combined and may overlap freely, since they only affect presentation.
+- Select a span and choose **Insert**, **Replace**, or **Delete** to record a content-changing correction, or **Add comment** to attach a note to that span. A content-changing correction that overlaps another one is rejected — remove or adjust the existing one first.
+- Pick a color for inserted or replacement text from the color selector before applying it, so your additions stay visually distinct from the learner's original text.
+- A live preview below the toolbar shows the corrected rendering: original text stays in the default color, struck-through where deleted or replaced, with your inserted or replacement text shown in your chosen color.
+- Optionally set a judgment (**Correct** / **Incorrect** / **Partial** / **Needs review**), an item-level comment, and a suggested whole-answer revision for each item — these can coexist with your span-level corrections.
+- Select **Save review** to persist your work. Reopening the same response later (even after a refresh) restores the exact same review; saving again updates it in place rather than creating a duplicate.
+- Reviewing and correcting a response never changes the original Learner Response — the learner's submitted answer and marks remain exactly as finalized, no matter how the review is edited or re-saved.
+
 ## Data Safety
 
 Exported response and backup files can contain authored quiz or Translation material, reference translations, private notes, and learner answers. They remain under your control and are not uploaded automatically. Keep real data outside the repository in ignored folders such as `user-data/` or `exports/`, and review each file before sharing it with an external teacher.

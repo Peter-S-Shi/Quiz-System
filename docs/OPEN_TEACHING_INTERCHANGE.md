@@ -41,7 +41,7 @@ Application code treats finalized evidence as protected: a later review cannot r
 
 A separate versioned artifact linked to a Learner Response by `responseId`. It may contain reviewer-added judgments, comments, tags, suggested revisions, summaries, remediation recommendations, and versioned extensions.
 
-The M6.0 contract deliberately does not define the full rich annotation or revision language. M6.4 and M6.5 will own those semantics. Unknown or protected top-level fields are rejected by the current validation boundary.
+The M6.0 contract deliberately did not define the full rich annotation or revision language up front. M6.4 added learner-controlled metacognitive marking (`learnerAnnotations` on the Learner Response), and M6.5 added the rich correction/revision language (`itemReviews[].corrections` on the Teacher Review) described in `DEVELOPER_GUIDE.md`. Unknown or protected top-level fields are rejected by the current validation boundary.
 
 Reviewer metadata may be anonymous or synthetic. Supported actor categories are `anonymous`, `human`, `external-ai`, `agent`, and `system`; real names, email addresses, and account identifiers are not required.
 

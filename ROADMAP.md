@@ -156,7 +156,7 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: In progress; M6.0 and M6.1 accepted; M6.2, M6.3, and M6.4 implementation complete with M6-wide acceptance deferred; M6.5 next
+Status: In progress; M6.0 and M6.1 accepted; M6.2, M6.3, M6.4, and M6.5 implementation complete with M6-wide acceptance deferred; M6.6 next
 
 Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7 is complete. Implementation review, regression testing, CI, and scope review still apply to every sub-milestone in the meantime. M6.0 and M6.1 were accepted before this policy took effect and remain accepted.
 
@@ -220,7 +220,21 @@ M6.4 state:
 - Annotations persist by stable Translation Item ID inside the M6.3 Translation Session (`session.annotations`), survive navigation, refresh, and normal recovery, and are safely dropped individually (without failing session recovery) if malformed.
 - Finalization copies annotations into an additive, optional `learnerAnnotations` array on the Learner Response; the public schema was extended minimally and backward-compatibly, and responses without annotations are unchanged from their M6.3 shape.
 - Rich correction, suggested/inserted correction text, external Teacher Review import, remediation generation, and Vocabulary App integration remain M6.5+ work.
-- M6.5 must not begin without a new prompt.
+
+M6.5 state:
+
+- Implementation complete; M6-wide acceptance deferred (not individually accepted; see the acceptance policy note above).
+- Adds a Correction / Revision Workspace opened from a finalized Translation Learner Response, so a reviewer (the learner or a human teacher) can inspect the immutable original answer and M6.4 learner marks (both read-only) and add structured rich correction evidence.
+- Adds `src/core/corrections.js`: a DOM-independent rich correction model with a single `correction` concept covering presentation styles (bold, italic, underline, strikethrough, highlight, bracket, text color), content-changing operations (insert, replace, delete), and span/whole-item comments, each anchored to a character range validated against the original answer text.
+- Presentation styles may legitimately overlap each other and any content-changing operation (for example, a replaced span may also be bold); content-changing operations may never overlap each other, and an overlapping add is rejected with a clear error rather than silently applied.
+- Extends the existing M6.0 Teacher Review contract additively: `itemReviews[].corrections` is a new optional array; existing simple Teacher Reviews (judgment/comment/tags/suggestedRevision only) remain valid and unchanged. `suggestedRevision` is preserved and can coexist with rich correction on the same item.
+- Extends `schemas/teacher-review.schema.json` additively with an optional `corrections` array and a `correction` definition; cross-field anchor and conflict validation (anchored text must match the learner's answer, ranges must be in bounds, content-changing operations must not conflict) remains a runtime responsibility in `validateTeacherReview()`, since static JSON Schema cannot express it.
+- Adds a new, independent Teacher Review storage collection (`quiz-studio-teacher-reviews-v1`, via `src/core/review-records.js`) keyed by stable review ID with a stable `responseId` relationship; a review's `responseId` can never be silently reassigned to a different response, and reviews are not nested inside Learner Response evidence.
+- Full-library backup/restore now includes Teacher Reviews; legacy backups without them remain valid, and malformed review data fails safely before any state is applied.
+- All reviewer/inserted text is rendered as escaped plain data (never raw HTML), and text color is restricted to a small validated palette to prevent CSS injection.
+- Rich correction never mutates the original learner answer, M6.4 annotations, material snapshots, or session metadata; creating, editing, or saving a review has no effect on the underlying finalized Learner Response.
+- External Teacher Review import/export round-trip, automatic/AI correction, semantic grading, and remediation generation remain M6.6+ work.
+- M6.6 must not begin without a new prompt.
 
 Approved macro scope:
 

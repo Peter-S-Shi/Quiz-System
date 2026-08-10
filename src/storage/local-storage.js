@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   TRANSLATION_ACTIVE_SESSION: "quiz-studio-translation-active-session-v1",
   HISTORY: "quiz-studio-history-v1",
   LEARNER_RESPONSES: "quiz-studio-learner-responses-v1",
+  TEACHER_REVIEWS: "quiz-studio-teacher-reviews-v1",
   TRANSLATION_LIBRARY: "quiz-studio-translation-library-v1",
   THEME: "quiz-studio-theme",
   LANGUAGE: "quiz-studio-language",

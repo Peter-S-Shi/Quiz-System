@@ -4,6 +4,11 @@
 
 ### Added
 
+- Added M6.5 Rich Correction / Revision Workspace: opened from a finalized Translation Learner Response, it shows the immutable original answer and M6.4 learner marks read-only, and lets a reviewer add structured rich correction evidence — bold, italic, underline, strikethrough, highlight, bracket, and reviewer-colored text on top, plus insert/replace/delete content changes and span or whole-item comments.
+- Added `src/core/corrections.js`: a DOM-independent rich correction model where presentation styles may freely overlap each other and any content-changing operation, while content-changing operations (insert/replace/delete) may never overlap each other and a conflicting add is rejected; includes anchor/color validation and a deterministic render-projection helper.
+- Extended the M6.0 Teacher Review contract additively with an optional `itemReviews[].corrections` array (and a matching `schemas/teacher-review.schema.json` addition); existing simple Teacher Reviews are unaffected, and `suggestedRevision` can coexist with rich correction on the same item.
+- Added runtime cross-validation for Teacher Review corrections: anchored text must match the corresponding Learner Response answer, ranges must be in bounds, and content-changing operations must not conflict — a tampered or externally supplied review cannot pass on field shape alone.
+- Added an independent Teacher Review storage collection (`src/core/review-records.js`, `quiz-studio-teacher-reviews-v1`) keyed by stable review ID with a stable `responseId` relationship that can never be silently reassigned; full-library backup/restore now includes Teacher Reviews, with legacy backups and malformed review data both handled safely.
 - Hardened M6.4 annotation integrity: persisted-session recovery now enforces the same overlap policy as live marking (deterministically dropping later-conflicting or exact-duplicate-span entries instead of letting both survive), and finalized `learnerAnnotations` are now cross-validated at runtime against the corresponding learner answer text (anchor range, exact text match, and per-item overlap), so a tampered or externally supplied Learner Response cannot pass validation on field shape alone.
 - Added M6.4 learner-controlled metacognitive marking (`unknown` / `uncertain` / `should_know`) on spans of the learner's own Translation Practice answer text, with deterministic overlap/duplicate handling and automatic invalidation of marks whose anchored text no longer matches after an edit.
 - Extended the Learner Response public contract additively with an optional `learnerAnnotations` array, preserved through finalization, backup, and restore; responses without annotations are unchanged from their prior shape.
@@ -23,6 +28,7 @@
 
 ### Documentation
 
+- Added bilingual Correction Workspace usage, developer architecture notes, and an M6.5 manual-QA delta.
 - Added bilingual learner-marking usage, developer architecture notes, and an M6.4 manual-QA delta.
 - Added bilingual Translation Practice usage, developer architecture notes, and an M6.3 manual-QA delta.
 - Recorded the user's decision to defer individual M6.x acceptance for M6.2-M6.7 to one comprehensive M6-wide acceptance after M6.7.

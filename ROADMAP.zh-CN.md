@@ -156,7 +156,7 @@ Freeze 规则：
 
 ## Milestone 6：Translation Practice
 
-状态：进行中；M6.0、M6.1 已验收；M6.2、M6.3、M6.4 已完成实现，验收统一推迟到 M6 整体验收；下一个是 M6.5
+状态：进行中；M6.0、M6.1 已验收；M6.2、M6.3、M6.4、M6.5 已完成实现，验收统一推迟到 M6 整体验收；下一个是 M6.6
 
 验收政策说明：M6.2 到 M6.7 不再逐个进行正式用户验收，而是推迟到 M6.7 完成后进行一次覆盖整个 M6 的综合验收。在此期间，每个子里程碑仍然需要实现评审、回归测试、CI 和范围审查。M6.0 和 M6.1 在这一政策生效前已经验收，继续保持已验收状态。
 
@@ -220,7 +220,21 @@ M6.4 状态：
 - 标记按稳定的 Translation Item ID 保存在 M6.3 的 Translation Session 中（`session.annotations`），能在导航、刷新和正常恢复中保持不变；格式错误的标记会被单独安全丢弃，不会导致 session 恢复失败。
 - 完成练习时，标记会被复制进 Learner Response 上一个可选的追加字段 `learnerAnnotations` 数组；公开 schema 做了最小化、向后兼容的扩展，没有标记的 response 与 M6.3 时的形状保持一致。
 - Rich correction、建议/插入式修改文本、外部 Teacher Review 导入、remediation 生成和 Vocabulary App 集成仍属于 M6.5 及之后的工作。
-- 未经新的 prompt，不得开始 M6.5。
+
+M6.5 状态：
+
+- 已完成实现；验收推迟到 M6 整体验收（未单独验收，见上方验收政策说明）。
+- 新增从已完成的 Translation Learner Response 打开的批改 / 修订工作区，供评阅者（学习者本人或人类教师）查看不可编辑的原始作答和 M6.4 学习者标记（均为只读），并添加结构化的 rich correction 证据。
+- 新增 `src/core/corrections.js`：一个与 DOM 无关的 rich correction 模型，用单一的 `correction` 概念覆盖表现型样式（加粗、斜体、下划线、删除线、高亮、加括号、文字颜色）、内容变更类操作（插入、替换、删除）以及片段/整条批注，每一条都锚定在针对原始作答文本校验过的字符范围上。
+- 表现型样式之间、以及表现型样式与任意内容变更类操作之间，可以合理地重叠（例如一段被替换的文字也可以同时是加粗的）；内容变更类操作之间绝不允许重叠，新增会产生冲突的操作会被明确拒绝，而不是被静默应用。
+- 对既有的 M6.0 Teacher Review 契约做了增量扩展：`itemReviews[].corrections` 是新增的可选数组；既有的简单 Teacher Review（仅含 judgment/comment/tags/suggestedRevision）保持不变、依然合法。`suggestedRevision` 被保留，并可以和同一条目上的 rich correction 共存。
+- 对 `schemas/teacher-review.schema.json` 做了增量扩展，新增可选的 `corrections` 数组和 `correction` 定义；跨字段的锚点与冲突校验（锚定文本必须匹配学习者作答、范围必须在界内、内容变更类操作不得冲突）仍然是 `validateTeacherReview()` 的运行时职责，因为静态 JSON Schema 无法表达这些约束。
+- 新增一个独立的 Teacher Review 存储集合（`quiz-studio-teacher-reviews-v1`，位于 `src/core/review-records.js`），以稳定的 review ID 为键、与 `responseId` 保持稳定关系；一条 review 的 `responseId` 绝不会被静默改指向另一个 response，review 也不会嵌套保存在 Learner Response 证据内部。
+- 完整的库备份/恢复现在包含 Teacher Review；没有 Teacher Review 的旧版备份依然合法，格式错误的 review 数据会在应用任何状态之前安全失败。
+- 所有评阅者/插入的文字都以转义后的纯文本方式渲染（绝不注入原始 HTML），文字颜色被限制在一个经过校验的小型调色板内，以防止 CSS 注入。
+- Rich correction 绝不会修改原始学习者作答、M6.4 标记、材料快照或 session 元数据；创建、编辑或保存一条 review 不会对底层已完成的 Learner Response 产生任何影响。
+- 外部 Teacher Review 导入/导出往返、自动/AI 批改、语义判分和 remediation 生成仍属于 M6.6 及之后的工作。
+- 未经新的 prompt，不得开始 M6.6。
 
 已批准的宏观范围：
 
