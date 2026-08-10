@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.learner-response",
+  "id": "response-sample-001",
+  "status": "finalized",
+  "finalizedAt": "2026-01-15T15:05:00.000Z",
+  "material": {
+    "type": "quiz-paper",
+    "id": "paper-sample-001",
+    "title": "Synthetic Web Basics Review",
+    "snapshot": {
+      "items": [
+        {
+          "id": "question-sample-001",
+          "type": "single",
+          "prompt": "Which element represents the main content of a page?",
+          "options": [
+            { "id": "option-main", "text": "main", "correct": true },
+            { "id": "option-meta", "text": "meta", "correct": false }
+          ]
+        }
+      ]
+    }
+  },
+  "session": {
+    "id": "session-sample-001",
+    "startedAt": "2026-01-15T15:00:00.000Z",
+    "completedAt": "2026-01-15T15:05:00.000Z"
+  },
+  "responses": [
+    {
+      "itemId": "question-sample-001",
+      "answer": "option-main",
+      "result": {
+        "questionId": "question-sample-001",
+        "correct": true,
+        "correctLabel": "Correct answer",
+        "correctAnswer": "main"
+      }
+    }
+  ],
+  "summary": {
+    "itemCount": 1,
+    "correctCount": 1,
+    "percent": 100
+  },
+  "provenance": {
+    "purpose": "practice"
+  }
+}

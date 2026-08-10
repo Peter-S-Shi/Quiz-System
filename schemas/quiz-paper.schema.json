@@ -38,6 +38,9 @@
     "lastOpenedAt": {
       "type": "string"
     },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
     "questions": {
       "type": "array",
       "items": {
@@ -46,6 +49,31 @@
     }
   },
   "$defs": {
+    "actor": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": ["anonymous", "human", "external-ai", "agent", "system"]
+        },
+        "displayLabel": { "type": "string" },
+        "toolName": { "type": "string" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "purpose": { "type": "string" },
+        "sourceResponseId": { "type": "string" },
+        "sourceReviewId": { "type": "string" },
+        "sourceMaterialId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "author": { "$ref": "#/$defs/actor" },
+        "extensions": { "type": "object" }
+      }
+    },
     "question": {
       "type": "object",
       "required": ["id", "type", "prompt"],

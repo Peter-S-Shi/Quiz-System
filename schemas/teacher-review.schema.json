@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/quiz-studio/schemas/teacher-review.schema.json",
+  "title": "Quiz Studio Teacher Review",
+  "type": "object",
+  "required": ["schemaVersion", "documentType", "id", "responseId", "createdAt", "reviewer", "itemReviews", "remediationRecommendations"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "documentType": { "const": "quiz-studio.teacher-review" },
+    "id": { "type": "string", "minLength": 1 },
+    "responseId": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "minLength": 1 },
+    "reviewer": { "$ref": "#/$defs/actor" },
+    "summary": { "type": "string" },
+    "itemReviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["itemId"],
+        "additionalProperties": false,
+        "properties": {
+          "itemId": { "type": "string", "minLength": 1 },
+          "judgment": { "enum": ["correct", "incorrect", "partial", "needs-review"] },
+          "comment": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "suggestedRevision": { "type": "string" },
+          "extensions": { "type": "object" }
+        }
+      }
+    },
+    "remediationRecommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "extensions": { "type": "object" }
+  },
+  "$defs": {
+    "actor": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["anonymous", "human", "external-ai", "agent", "system"] },
+        "displayLabel": { "type": "string" },
+        "toolName": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { normalizeQuestion } from "./question-registry.js";
+import { normalizeProvenance } from "./interchange.js";
 import { makeId, parseTags } from "./utils.js";
 
 export const CURRENT_SCHEMA_VERSION = 1;
@@ -15,6 +16,7 @@ export function normalizeLibrary(value = {}, options = {}) {
 
 export function normalizePaper(value = {}) {
   const now = new Date().toISOString();
+  const provenance = normalizeProvenance(value.provenance);
   return {
     schemaVersion: value.schemaVersion || CURRENT_SCHEMA_VERSION,
     id: value.id || makeId(),
@@ -26,6 +28,7 @@ export function normalizePaper(value = {}) {
     updatedAt: value.updatedAt || now,
     lastOpenedAt: value.lastOpenedAt || now,
     questions: Array.isArray(value.questions) ? value.questions.map(normalizeQuestion) : [],
+    ...(provenance ? { provenance } : {}),
   };
 }
 

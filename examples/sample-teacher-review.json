@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.teacher-review",
+  "id": "review-sample-001",
+  "responseId": "response-sample-001",
+  "createdAt": "2026-01-15T16:00:00.000Z",
+  "reviewer": {
+    "type": "external-ai",
+    "displayLabel": "Synthetic Review Assistant"
+  },
+  "summary": "The learner identified the semantic element correctly.",
+  "itemReviews": [
+    {
+      "itemId": "question-sample-001",
+      "judgment": "correct",
+      "comment": "The selected answer matches the material snapshot.",
+      "tags": ["semantic-html"]
+    }
+  ],
+  "remediationRecommendations": [
+    {
+      "materialType": "quiz-paper",
+      "focus": "Practice distinguishing structural and metadata elements."
+    }
+  ]
+}
