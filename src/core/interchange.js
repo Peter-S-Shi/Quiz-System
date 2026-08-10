@@ -101,6 +101,46 @@ export function createQuizLearnerResponse({ id = makeId(), session }) {
   };
 }
 
+export function createTranslationLearnerResponse({ id = makeId(), session }) {
+  if (!isPlainObject(session) || !Array.isArray(session.items) || !session.items.length) {
+    throw new TypeError("A Translation session with item snapshots is required.");
+  }
+
+  const items = cloneValue(session.items);
+  const responses = items.map((item) => ({
+    itemId: item.id,
+    answer: String(session.answers?.[item.id] ?? ""),
+  }));
+
+  return {
+    schemaVersion: INTERCHANGE_SCHEMA_VERSION,
+    documentType: DOCUMENT_TYPES.LEARNER_RESPONSE,
+    id,
+    status: "finalized",
+    finalizedAt: session.completedAt || new Date().toISOString(),
+    material: {
+      type: "translation-document",
+      id: session.documentId,
+      title: session.documentTitle || "",
+      snapshot: {
+        items,
+      },
+    },
+    session: {
+      id: session.id,
+      startedAt: session.startedAt,
+      completedAt: session.completedAt,
+    },
+    responses,
+    summary: {
+      itemCount: items.length,
+    },
+    provenance: {
+      purpose: "practice",
+    },
+  };
+}
+
 export function normalizeLearnerResponse(value = {}) {
   const provenance = normalizeProvenance(value.provenance);
   return {

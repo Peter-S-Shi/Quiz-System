@@ -946,6 +946,31 @@ label small {
   padding-left: 18px;
 }
 
+.translation-source-text {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.reference-block {
+  display: grid;
+  gap: 8px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.reference-block.revealed {
+  border-style: solid;
+  background: var(--surface-2);
+}
+
+.reference-block p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 900px) {
   .translation-item-row {
     grid-template-columns: 1fr;

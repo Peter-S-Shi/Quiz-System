@@ -1,6 +1,10 @@
 import { formatAnswer, gradeQuestion } from "./core/grading.js";
 import { createLibraryBackup, parseLibraryBackup } from "./core/backup.js";
-import { createQuizLearnerResponse, toPortableLearnerResponse } from "./core/interchange.js";
+import {
+  createQuizLearnerResponse,
+  createTranslationLearnerResponse,
+  toPortableLearnerResponse,
+} from "./core/interchange.js";
 import {
   findLearnerResponse,
   parseLearnerResponseCollection,
@@ -31,6 +35,14 @@ import {
   remapDocumentForCopy,
 } from "./core/translation-import.js";
 import {
+  createTranslationSession,
+  goToTranslationIndex,
+  isTranslationSessionForDocument,
+  normalizeTranslationSession,
+  setTranslationAnswer,
+  setTranslationRevealed,
+} from "./core/translation-session.js";
+import {
   QUESTION_TYPES,
   clonePaperForLibrary,
   cloneQuestion,
@@ -49,6 +61,7 @@ const {
   LIBRARY: LIBRARY_KEY,
   ACTIVE_PAPER: ACTIVE_PAPER_KEY,
   ACTIVE_SESSION: ACTIVE_SESSION_KEY,
+  TRANSLATION_ACTIVE_SESSION: TRANSLATION_ACTIVE_SESSION_KEY,
   HISTORY: HISTORY_KEY,
   LEARNER_RESPONSES: LEARNER_RESPONSES_KEY,
   TRANSLATION_LIBRARY: TRANSLATION_LIBRARY_KEY,
@@ -223,6 +236,31 @@ const locales = {
       translationItemDeleted: "已删除条目",
       translationImportSuccess: "已导入翻译文档",
       translationImportFail: "导入失败，请检查文件内容或所选文件夹。",
+      translationPracticeDiscarded: "已放弃本次翻译练习",
+      translationResponseSaveFail: "无法保存翻译作答记录，请检查浏览器存储空间后重试。",
+      translationPracticeSaved: "翻译练习已完成，原始作答已保存。",
+    },
+    translationPractice: {
+      recoverTitle: "发现未完成的翻译练习",
+      recoverBody: "可以继续上次的翻译进度，或放弃后重新开始。",
+      resume: "继续练习",
+      discard: "放弃练习",
+      discardConfirm: "确定放弃这次未完成的翻译练习吗？已填写的内容将被清除，且无法恢复。",
+      overwriteConfirm: "已有另一份文档的未完成翻译练习。开始新的练习会放弃它，是否继续？",
+      start: "开始练习",
+      exit: "退出练习",
+      progress: "第 {current} / {total} 条",
+      answered: "已填写 {count} / {total}",
+      sourceLabel: "原文",
+      yourTranslation: "你的译文",
+      revealReference: "显示参考译文",
+      hideReference: "隐藏参考译文",
+      referenceLabel: "参考译文",
+      finish: "完成练习",
+      completeTitle: "练习完成",
+      completeSummary: "共 {count} 条翻译",
+      backToDocument: "返回文档",
+      practiceAgain: "再练一次",
     },
     translation: {
       title: "翻译练习库",
@@ -455,6 +493,31 @@ const locales = {
       translationItemDeleted: "Item deleted",
       translationImportSuccess: "Translation document imported",
       translationImportFail: "Import failed. Check the file content or the selected folder.",
+      translationPracticeDiscarded: "Translation practice discarded",
+      translationResponseSaveFail: "The translation response could not be saved. Check browser storage space and try again.",
+      translationPracticeSaved: "Translation practice complete. The original response has been saved.",
+    },
+    translationPractice: {
+      recoverTitle: "Unfinished translation practice found",
+      recoverBody: "You can continue the saved translation progress, or discard it and start over.",
+      resume: "Resume practice",
+      discard: "Discard practice",
+      discardConfirm: "Discard this unfinished translation practice? Entered text will be cleared and cannot be recovered.",
+      overwriteConfirm: "Another document has unfinished translation practice. Starting new practice will discard it. Continue?",
+      start: "Start practice",
+      exit: "Exit practice",
+      progress: "Item {current} / {total}",
+      answered: "{count} / {total} entered",
+      sourceLabel: "Source",
+      yourTranslation: "Your translation",
+      revealReference: "Show reference translation",
+      hideReference: "Hide reference translation",
+      referenceLabel: "Reference translation",
+      finish: "Finish practice",
+      completeTitle: "Practice complete",
+      completeSummary: "{count} translation items",
+      backToDocument: "Back to document",
+      practiceAgain: "Practice again",
     },
     translation: {
       title: "Translation Library",
@@ -533,8 +596,14 @@ let session = loadActiveSession();
 let toastTimer = null;
 let librarySearch = "";
 let translationLibrary = loadTranslationLibrary();
-let selectedTranslationDocumentId = null;
+let translationSession = loadActiveTranslationSession();
+let selectedTranslationDocumentId = translationSession && !translationSession.completed
+  && translationLibrary.documents.some((doc) => doc.id === translationSession.documentId)
+  ? translationSession.documentId
+  : null;
+let translationPracticeActive = false;
 let translationImportDraft = null;
+let translationLastResponseId = null;
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
@@ -1720,6 +1789,19 @@ function saveTranslationLibrary(next) {
   saveJson(TRANSLATION_LIBRARY_KEY, translationLibrary);
 }
 
+function loadActiveTranslationSession() {
+  return normalizeTranslationSession(loadJson(TRANSLATION_ACTIVE_SESSION_KEY));
+}
+
+function persistTranslationSession() {
+  if (!translationSession || translationSession.completed) return;
+  saveJson(TRANSLATION_ACTIVE_SESSION_KEY, translationSession);
+}
+
+function clearActiveTranslationSession() {
+  removeStoredValue(TRANSLATION_ACTIVE_SESSION_KEY);
+}
+
 function renderTranslationView() {
   if (currentMode !== "translation") return;
   renderTranslationLibraryPanel();
@@ -1802,6 +1884,7 @@ function bindTranslationFolderEvents() {
     button.addEventListener("click", () => {
       selectedTranslationDocumentId = button.dataset.selectDocument;
       translationImportDraft = null;
+      translationPracticeActive = false;
       renderTranslationView();
     });
   });
@@ -1832,6 +1915,7 @@ function deleteTranslationFolderConfirm(folderId) {
   const next = deleteTranslationFolder(translationLibrary, folderId, { cascade: true });
   if (selectedTranslationDocumentId && !next.documents.some((doc) => doc.id === selectedTranslationDocumentId)) {
     selectedTranslationDocumentId = null;
+    translationPracticeActive = false;
   }
   saveTranslationLibrary(next);
   renderTranslationView();
@@ -1850,6 +1934,7 @@ function createTranslationDocumentFromForm(folderId) {
   const next = createTranslationDocument(translationLibrary, { title, folderId, sourceLanguage, targetLanguage, items: [] });
   selectedTranslationDocumentId = next.documents[next.documents.length - 1].id;
   translationImportDraft = null;
+  translationPracticeActive = false;
   saveTranslationLibrary(next);
   renderTranslationView();
   showToast(t("toast.translationDocumentCreated"));
@@ -1921,6 +2006,7 @@ function bindImportFormEvents() {
         allowCopy: false,
       };
       selectedTranslationDocumentId = null;
+      translationPracticeActive = false;
       renderTranslationMainPanel();
     });
   }
@@ -1944,6 +2030,7 @@ function bindImportFormEvents() {
         allowCopy: false,
       };
       selectedTranslationDocumentId = null;
+      translationPracticeActive = false;
       renderTranslationMainPanel();
     });
   }
@@ -1965,6 +2052,7 @@ function bindImportFormEvents() {
           allowCopy: false,
         };
         selectedTranslationDocumentId = null;
+        translationPracticeActive = false;
         renderTranslationMainPanel();
       };
       reader.onerror = () => showToast(t("toast.translationImportFail"));
@@ -1983,6 +2071,14 @@ function validateDraftMetadata({ title, sourceLanguage, targetLanguage }) {
 }
 
 function renderTranslationMainPanel() {
+  if (translationPracticeActive && translationSession) {
+    if (translationSession.completed) {
+      renderTranslationPracticeComplete();
+    } else {
+      renderTranslationPracticeScreen();
+    }
+    return;
+  }
   if (translationImportDraft) {
     renderImportPreviewPanel();
     return;
@@ -1996,6 +2092,8 @@ function renderTranslationMainPanel() {
 }
 
 function renderTranslationDocumentEditor(doc) {
+  const hasRecoverableSession = isTranslationSessionForDocument(translationSession, doc.id);
+
   translationDocumentPanel.innerHTML = `
     <div class="editor-stack">
       <div class="editor-actions">
@@ -2005,6 +2103,18 @@ function renderTranslationDocumentEditor(doc) {
           <button class="danger-button small-button" type="button" id="deleteTranslationDocument">${t("translation.deleteDocument")}</button>
         </div>
       </div>
+      ${hasRecoverableSession ? `
+        <div class="recover-box">
+          <strong>${t("translationPractice.recoverTitle")}</strong>
+          <p>${t("translationPractice.recoverBody")}</p>
+          <div class="quiz-actions">
+            <button class="primary-button" type="button" id="resumeTranslationPractice">${t("translationPractice.resume")}</button>
+            <button class="danger-button secondary-button" type="button" id="discardTranslationPractice">${t("translationPractice.discard")}</button>
+          </div>
+        </div>
+      ` : `
+        <button class="primary-button" type="button" id="startTranslationPractice" ${doc.items.length ? "" : "disabled"}>${t("translationPractice.start")}</button>
+      `}
       <div class="field-grid">
         <label><span>${t("translation.documentTitleLabel")}</span><input id="translationDocTitle" type="text" maxlength="120" value="${escapeHtml(doc.title)}"></label>
         <label><span>${t("translation.moveDocument")}</span>
@@ -2052,6 +2162,12 @@ function renderTranslationItemRow(item, index, total) {
 }
 
 function bindTranslationDocumentEditorEvents(doc) {
+  document.getElementById("startTranslationPractice")?.addEventListener("click", () => startTranslationPractice(doc));
+  document.getElementById("resumeTranslationPractice")?.addEventListener("click", () => {
+    translationPracticeActive = true;
+    renderTranslationMainPanel();
+  });
+  document.getElementById("discardTranslationPractice")?.addEventListener("click", discardTranslationPractice);
   document.getElementById("translationDocTitle").addEventListener("input", (event) => {
     updateSelectedTranslationDocument({ title: event.target.value });
   });
@@ -2091,6 +2207,178 @@ function bindTranslationDocumentEditorEvents(doc) {
   });
   document.querySelectorAll("[data-item-delete]").forEach((button) => {
     button.addEventListener("click", () => deleteTranslationItem(doc.id, button.dataset.itemDelete));
+  });
+}
+
+function startTranslationPractice(doc) {
+  if (!doc.items.length) return;
+  if (translationSession && !translationSession.completed && translationSession.documentId !== doc.id) {
+    if (!window.confirm(t("translationPractice.overwriteConfirm"))) return;
+  }
+  translationSession = createTranslationSession({ document: doc });
+  translationPracticeActive = true;
+  persistTranslationSession();
+  renderTranslationMainPanel();
+}
+
+function discardTranslationPractice() {
+  if (!window.confirm(t("translationPractice.discardConfirm"))) return;
+  translationSession = null;
+  translationPracticeActive = false;
+  clearActiveTranslationSession();
+  renderTranslationMainPanel();
+  showToast(t("toast.translationPracticeDiscarded"));
+}
+
+function exitTranslationPractice() {
+  persistTranslationSession();
+  translationPracticeActive = false;
+  renderTranslationMainPanel();
+}
+
+function renderTranslationPracticeScreen() {
+  const activeSession = translationSession;
+  const item = activeSession.items[activeSession.index];
+  const total = activeSession.items.length;
+  const answeredCount = activeSession.items.filter((entry) => (activeSession.answers[entry.id] || "").trim()).length;
+  const revealed = Boolean(activeSession.revealed[item.id]);
+  const progress = Math.round((activeSession.index / Math.max(total - 1, 1)) * 100);
+
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions">
+        <span class="type-pill">${escapeHtml(activeSession.sourceLanguage)} &rarr; ${escapeHtml(activeSession.targetLanguage)}</span>
+        <div class="row-actions">
+          <button class="secondary-button small-button" type="button" id="exitTranslationPractice">${t("translationPractice.exit")}</button>
+        </div>
+      </div>
+      <div class="quiz-title-block">
+        <h2>${escapeHtml(activeSession.documentTitle || t("library.untitled"))}</h2>
+      </div>
+      <div class="progress-line">
+        <span>${t("translationPractice.progress", { current: activeSession.index + 1, total })}</span>
+        <span>${t("translationPractice.answered", { count: answeredCount, total })}</span>
+      </div>
+      <div class="progress-track"><div class="progress-bar" style="width: ${progress}%"></div></div>
+      <div class="question-prompt">
+        <span class="type-pill">${t("translationPractice.sourceLabel")}</span>
+        <p class="translation-source-text">${escapeHtml(item.sourceText)}</p>
+      </div>
+      ${item.referenceTranslation ? renderReferenceBlock(item, revealed) : ""}
+      <label>
+        <span>${t("translationPractice.yourTranslation")}</span>
+        <textarea id="translationAnswerEditor" rows="6">${escapeHtml(activeSession.answers[item.id] || "")}</textarea>
+      </label>
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button" id="previousTranslationItem" ${activeSession.index === 0 ? "disabled" : ""}>${t("actions.previousQuestion")}</button>
+        <button class="secondary-button" type="button" id="nextTranslationItem" ${activeSession.index === total - 1 ? "disabled" : ""}>${t("actions.nextQuestion")}</button>
+        <button class="primary-button" type="button" id="finishTranslationPractice">${t("translationPractice.finish")}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("exitTranslationPractice").addEventListener("click", exitTranslationPractice);
+  document.getElementById("translationAnswerEditor").addEventListener("input", (event) => {
+    translationSession = setTranslationAnswer(translationSession, item.id, event.target.value);
+    persistTranslationSession();
+  });
+  document.getElementById("previousTranslationItem").addEventListener("click", () => {
+    translationSession = goToTranslationIndex(translationSession, translationSession.index - 1);
+    persistTranslationSession();
+    renderTranslationMainPanel();
+  });
+  document.getElementById("nextTranslationItem").addEventListener("click", () => {
+    translationSession = goToTranslationIndex(translationSession, translationSession.index + 1);
+    persistTranslationSession();
+    renderTranslationMainPanel();
+  });
+  document.getElementById("finishTranslationPractice").addEventListener("click", finishTranslationPractice);
+
+  document.getElementById("revealTranslationReference")?.addEventListener("click", () => {
+    translationSession = setTranslationRevealed(translationSession, item.id, !revealed);
+    persistTranslationSession();
+    renderTranslationMainPanel();
+  });
+}
+
+function renderReferenceBlock(item, revealed) {
+  if (!revealed) {
+    return `
+      <div class="reference-block">
+        <button class="small-button" type="button" id="revealTranslationReference">${t("translationPractice.revealReference")}</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="reference-block revealed">
+      <span class="meta-text">${t("translationPractice.referenceLabel")}</span>
+      <p>${escapeHtml(item.referenceTranslation)}</p>
+      <button class="small-button" type="button" id="revealTranslationReference">${t("translationPractice.hideReference")}</button>
+    </div>
+  `;
+}
+
+function finishTranslationPractice() {
+  const completedAt = new Date().toISOString();
+  const finalized = { ...translationSession, completed: true, completedAt };
+  let response;
+  try {
+    response = createTranslationLearnerResponse({ id: translationSession.responseId || makeId(), session: finalized });
+    const nextResponses = upsertLearnerResponse(loadLearnerResponses(), response);
+    saveJson(LEARNER_RESPONSES_KEY, nextResponses);
+  } catch {
+    showToast(t("toast.translationResponseSaveFail"));
+    return;
+  }
+
+  clearActiveTranslationSession();
+  translationLastResponseId = response.id;
+  translationSession = { ...finalized, responseId: response.id };
+  renderTranslationMainPanel();
+  showToast(t("toast.translationPracticeSaved"));
+}
+
+function renderTranslationPracticeComplete() {
+  const completedSession = translationSession;
+  translationDocumentPanel.innerHTML = `
+    <div class="quiz-start">
+      <div class="quiz-title-block">
+        <h2>${t("translationPractice.completeTitle")}</h2>
+        <p>${escapeHtml(completedSession.documentTitle || t("library.untitled"))}</p>
+      </div>
+      <p class="meta-text">${t("translationPractice.completeSummary", { count: completedSession.items.length })}</p>
+      <p class="meta-text">${t("practice.evidenceSaved")}</p>
+      <div class="review-list">
+        ${completedSession.items.map((item) => `
+          <div class="review-item">
+            <strong>${escapeHtml(item.sourceText)}</strong>
+            <div class="answer-compare">
+              <p><strong>${t("translationPractice.yourTranslation")}:</strong> ${escapeHtml(completedSession.answers[item.id] || t("result.noAnswer"))}</p>
+              ${item.referenceTranslation ? `<p><strong>${t("translationPractice.referenceLabel")}:</strong> ${escapeHtml(item.referenceTranslation)}</p>` : ""}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+      <div class="quiz-actions">
+        <button class="secondary-button" id="backToDocumentAfterPractice" type="button">${t("translationPractice.backToDocument")}</button>
+        <button class="secondary-button" id="exportTranslationResponseAfterPractice" type="button">${t("actions.exportResponse")}</button>
+        <button class="primary-button" id="retryTranslationPractice" type="button">${t("translationPractice.practiceAgain")}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("backToDocumentAfterPractice").addEventListener("click", () => {
+    translationPracticeActive = false;
+    translationSession = null;
+    renderTranslationView();
+  });
+  document.getElementById("exportTranslationResponseAfterPractice").addEventListener("click", () => exportLearnerResponse(translationLastResponseId));
+  document.getElementById("retryTranslationPractice").addEventListener("click", () => {
+    const doc = translationLibrary.documents.find((item) => item.id === completedSession.documentId);
+    translationSession = null;
+    translationPracticeActive = false;
+    if (doc) startTranslationPractice(doc);
+    else renderTranslationView();
   });
 }
 
@@ -2139,6 +2427,7 @@ function deleteTranslationDocumentConfirm(documentId) {
   if (!window.confirm(t("translation.deleteDocumentConfirm"))) return;
   const next = deleteTranslationDocument(translationLibrary, documentId);
   if (selectedTranslationDocumentId === documentId) selectedTranslationDocumentId = null;
+  if (translationSession?.documentId === documentId) translationPracticeActive = false;
   saveTranslationLibrary(next);
   renderTranslationView();
   showToast(t("toast.translationDocumentDeleted"));

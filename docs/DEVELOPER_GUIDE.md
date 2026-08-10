@@ -12,6 +12,7 @@ Quiz Studio is a static ES module app.
 - `src/core/backup.js`: validated library backup composition and backward-compatible restore parsing.
 - `src/core/translation-domain.js`: Translation Folder, Document, and ordered Item models, validation, and immutable core operations.
 - `src/core/translation-import.js`: DOM-independent parsing for source-only and bilingual batch import, portable JSON import validation, and document-ID collision handling for the Translation Library UI.
+- `src/core/translation-session.js`: DOM-independent Translation Practice session model — snapshotting a document's items at session start, per-item answers and optional reference-reveal state, navigation, and safe rejection of malformed persisted sessions.
 - `src/core/migrations.js`: schema versioning and data normalization.
 - `src/storage/local-storage.js`: local browser storage boundary.
 - `schemas/`: public Quiz Paper, Learner Response, and Teacher Review JSON Schemas.
@@ -32,6 +33,14 @@ Teacher Review validation accepts only additive review fields and rejects unknow
 The Translation Library UI in `src/app.js` is a third top-level mode alongside Edit and Quiz. It renders folder and document management directly from `translation-domain.js` operations and never duplicates that state; every mutation goes through the same immutable core functions used by the automated tests.
 
 Batch and JSON import follow Input -> Parse -> Validate -> Preview -> Confirm -> Persist. Parsing and validation live in `translation-import.js` so they can be tested without a DOM. The UI only builds a draft object for preview and calls `createTranslationDocument()` on confirm, so a cancelled or invalid import never touches stored data.
+
+## Translation Practice Sessions
+
+A Translation Practice session snapshots the target document's items at `createTranslationSession()` time (`translation-session.js`). Later edits to the live Translation Document never rewrite an in-progress or finalized session, because the session carries its own independent copy of the items it was started against.
+
+The active session is stored under a key separate from the Objective Quiz active session (`quiz-studio-translation-active-session-v1` vs `quiz-studio-active-session-v1`), so the two features cannot silently overwrite each other even when both have unfinished sessions at the same time. `normalizeTranslationSession()` rejects malformed persisted data by returning `null`, which the UI treats the same as "no unfinished session" rather than crashing recovery.
+
+Finishing a session calls `createTranslationLearnerResponse()` (in `interchange.js`) to build a finalized, non-objective Learner Response — it never sets `result`, `correctCount`, or `percent`. The response is persisted through the existing `upsertLearnerResponse()` idempotent/immutable-write path before the active session key is cleared, so a storage failure during finalization leaves the recoverable active session intact instead of silently losing the learner's work.
 
 ## Validation
 

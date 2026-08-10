@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   LIBRARY: "quiz-studio-library-v1",
   ACTIVE_PAPER: "quiz-studio-active-paper",
   ACTIVE_SESSION: "quiz-studio-active-session-v1",
+  TRANSLATION_ACTIVE_SESSION: "quiz-studio-translation-active-session-v1",
   HISTORY: "quiz-studio-history-v1",
   LEARNER_RESPONSES: "quiz-studio-learner-responses-v1",
   TRANSLATION_LIBRARY: "quiz-studio-translation-library-v1",
