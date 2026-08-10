@@ -4,6 +4,7 @@ import {
   INTERCHANGE_SCHEMA_VERSION,
   normalizeTeacherReview,
   toPortableLearnerResponse,
+  validateCanonicalTeacherReview,
   validateLearnerResponse,
   validateTeacherReview,
 } from "./interchange.js";
@@ -24,7 +25,7 @@ export const SUPPORTED_REMEDIATION_REQUEST_VERSIONS = [1];
 export const SUPPORTED_REMEDIATION_DOCUMENT_VERSIONS = [1];
 
 const DEFAULT_REVIEW_TASK = "Read this Quiz Studio review-request JSON. Return exactly one JSON object conforming to the Quiz Studio Teacher Review contract (documentType \"quiz-studio.teacher-review\"). Preserve responseId and itemId values exactly. Do not rewrite the learnerResponse.";
-const DEFAULT_REMEDIATION_TASK = "Read this Quiz Studio remediation-request JSON. Using the learner's answers, marks, and the teacher review, return exactly one JSON object conforming to the Quiz Studio Translation Document contract (documentType \"quiz-studio.translation-document\") for targeted follow-up practice. Include a provenance object with purpose \"remediation\", sourceResponseId, and sourceReviewId set to the values from this request.";
+const DEFAULT_REMEDIATION_TASK = "Read this Quiz Studio remediation-request JSON. Using the learner's answers, marks, and the teacher review, return exactly one JSON object conforming to the Quiz Studio Translation Document contract (documentType \"quiz-studio.translation-document\") for targeted follow-up practice. Include a provenance object with purpose \"remediation\", sourceResponseId, and sourceReviewId set to the values from this request, plus createdAt and author metadata.";
 
 // --- Review request (Learner Response -> external reviewer) -------------------------------------
 
@@ -48,11 +49,14 @@ export function validateReviewRequestPackage(value) {
   const errors = [];
   if (!isPlainObject(value)) return invalid("Review request package must be an object.");
   if (value.documentType !== REVIEW_REQUEST_DOCUMENT_TYPE) errors.push("Invalid review request documentType.");
-  if (!Number.isInteger(value.schemaVersion) || value.schemaVersion < 1) errors.push("Invalid review request schemaVersion.");
+  if (!SUPPORTED_REVIEW_REQUEST_VERSIONS.includes(value.schemaVersion)) errors.push("Unsupported review request schemaVersion.");
   if (!nonEmptyString(value.id)) errors.push("Review request id is required.");
   if (!nonEmptyString(value.exportedAt)) errors.push("Review request exportedAt is required.");
+  if (!nonEmptyString(value.task)) errors.push("Review request task is required.");
   if (!isPlainObject(value.requestedOutput) || value.requestedOutput.documentType !== DOCUMENT_TYPES.TEACHER_REVIEW) {
     errors.push("Review request requestedOutput must target a Teacher Review.");
+  } else if (!SUPPORTED_TEACHER_REVIEW_IMPORT_VERSIONS.includes(value.requestedOutput.schemaVersion)) {
+    errors.push("Review request requestedOutput schemaVersion is unsupported.");
   }
   const responseValidation = validateLearnerResponse(value.learnerResponse);
   if (!responseValidation.valid) {
@@ -81,8 +85,9 @@ export function parseExternalTeacherReview(raw, { learnerResponse } = {}) {
     return { review: null, errors: [`Unsupported Teacher Review schema version: ${raw.schemaVersion ?? "missing"}`] };
   }
 
+  const validation = validateCanonicalTeacherReview(raw, { learnerResponse });
+  if (!validation.valid) return { review: null, errors: validation.errors };
   const normalized = normalizeTeacherReview(raw);
-  const validation = validateTeacherReview(normalized, { learnerResponse });
   return { review: validation.valid ? normalized : null, errors: validation.valid ? [] : validation.errors };
 }
 
@@ -130,11 +135,14 @@ export function validateRemediationRequestPackage(value) {
   const errors = [];
   if (!isPlainObject(value)) return invalid("Remediation request package must be an object.");
   if (value.documentType !== REMEDIATION_REQUEST_DOCUMENT_TYPE) errors.push("Invalid remediation request documentType.");
-  if (!Number.isInteger(value.schemaVersion) || value.schemaVersion < 1) errors.push("Invalid remediation request schemaVersion.");
+  if (!SUPPORTED_REMEDIATION_REQUEST_VERSIONS.includes(value.schemaVersion)) errors.push("Unsupported remediation request schemaVersion.");
   if (!nonEmptyString(value.id)) errors.push("Remediation request id is required.");
   if (!nonEmptyString(value.exportedAt)) errors.push("Remediation request exportedAt is required.");
+  if (!nonEmptyString(value.task)) errors.push("Remediation request task is required.");
   if (!isPlainObject(value.requestedOutput) || value.requestedOutput.documentType !== TRANSLATION_DOCUMENT_TYPE) {
     errors.push("Remediation request requestedOutput must target a Translation Document.");
+  } else if (!SUPPORTED_REMEDIATION_DOCUMENT_VERSIONS.includes(value.requestedOutput.schemaVersion)) {
+    errors.push("Remediation request requestedOutput schemaVersion is unsupported.");
   }
 
   const responseValidation = validateLearnerResponse(value.learnerResponse);
@@ -194,15 +202,41 @@ export function validateRemediationProvenance(document, { learnerResponses = [],
   return { valid: errors.length === 0, errors };
 }
 
+export function validateRemediationImportProvenance(document, context = {}) {
+  const provenance = document?.provenance;
+  if (!isPlainObject(provenance)) return invalid("Remediation import requires provenance.");
+  if (provenance.purpose !== "remediation") return invalid('Remediation import provenance purpose must be "remediation".');
+
+  const errors = validateRemediationMetadata(provenance);
+  const lineage = validateRemediationProvenance(document, context);
+  return { valid: errors.length === 0 && lineage.valid, errors: [...errors, ...lineage.errors] };
+}
+
 // Reuses the existing M6.2 Translation Document JSON parser/validator (kept forward-tolerant for
 // ordinary local import/export), adding the stricter version gate that the external interchange
 // boundary requires. Ordinary (non-remediation) Translation Document import is unaffected.
 export function parseRemediationTranslationDocumentText(text) {
+  let raw;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { document: null, errors: ["The file is not valid JSON."] };
+  }
+  if (raw?.documentType !== TRANSLATION_DOCUMENT_TYPE) {
+    return { document: null, errors: ["Invalid Translation Document documentType."] };
+  }
+  if (!SUPPORTED_REMEDIATION_DOCUMENT_VERSIONS.includes(raw.schemaVersion)) {
+    return { document: null, errors: [`Unsupported Translation Document schema version: ${raw.schemaVersion ?? "missing"}`] };
+  }
+  if (!isPlainObject(raw.provenance)) return { document: null, errors: ["Remediation import requires provenance."] };
+  if (raw.provenance.purpose !== "remediation") {
+    return { document: null, errors: ['Remediation import provenance purpose must be "remediation".'] };
+  }
+  const metadataErrors = validateRemediationMetadata(raw.provenance);
+  if (metadataErrors.length) return { document: null, errors: metadataErrors };
+
   const { document, errors } = parseTranslationDocumentJsonText(text);
   if (!document) return { document: null, errors };
-  if (!SUPPORTED_REMEDIATION_DOCUMENT_VERSIONS.includes(document.schemaVersion)) {
-    return { document: null, errors: [`Unsupported Translation Document schema version: ${document.schemaVersion}`] };
-  }
   return { document, errors: [] };
 }
 
@@ -216,6 +250,41 @@ function isPlainObject(value) {
 
 function nonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function validateActor(value, label, errors) {
+  if (!isPlainObject(value)) {
+    errors.push(`${label} is required.`);
+    return;
+  }
+  const allowedKeys = new Set(["type", "displayLabel", "toolName"]);
+  const actorTypes = new Set(["anonymous", "human", "external-ai", "agent", "system"]);
+  Object.keys(value).forEach((key) => {
+    if (!allowedKeys.has(key)) errors.push(`Unsupported ${label} field: ${key}`);
+  });
+  if (!actorTypes.has(value.type)) errors.push(`${label} type is invalid.`);
+  ["displayLabel", "toolName"].forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(value, key) && typeof value[key] !== "string") {
+      errors.push(`${label} ${key} must be a string.`);
+    }
+  });
+}
+
+function validateRemediationMetadata(provenance) {
+  const errors = [];
+  const allowedKeys = new Set(["purpose", "sourceResponseId", "sourceReviewId", "sourceMaterialId", "createdAt", "author", "extensions"]);
+  Object.keys(provenance).forEach((key) => {
+    if (!allowedKeys.has(key)) errors.push(`Unsupported remediation provenance field: ${key}`);
+  });
+  if (!nonEmptyString(provenance.createdAt)) errors.push("Remediation provenance requires createdAt.");
+  validateActor(provenance.author, "Remediation provenance author", errors);
+  if (Object.prototype.hasOwnProperty.call(provenance, "sourceMaterialId") && !nonEmptyString(provenance.sourceMaterialId)) {
+    errors.push("Remediation provenance sourceMaterialId must be a non-empty string when provided.");
+  }
+  if (Object.prototype.hasOwnProperty.call(provenance, "extensions") && !isPlainObject(provenance.extensions)) {
+    errors.push("Remediation provenance extensions must be an object.");
+  }
+  return errors;
 }
 
 function isDeepEqual(left, right) {

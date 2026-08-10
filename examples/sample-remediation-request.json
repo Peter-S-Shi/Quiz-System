@@ -3,7 +3,7 @@
   "documentType": "quiz-studio.remediation-request",
   "id": "remediation-request-sample-1",
   "exportedAt": "2026-01-16T12:05:00.000Z",
-  "task": "Read this Quiz Studio remediation-request JSON. Using the learner's answers, marks, and the teacher review, return exactly one JSON object conforming to the Quiz Studio Translation Document contract (documentType \"quiz-studio.translation-document\") for targeted follow-up practice. Include a provenance object with purpose \"remediation\", sourceResponseId, and sourceReviewId set to the values from this request.",
+  "task": "Read this Quiz Studio remediation-request JSON. Using the learner's answers, marks, and the teacher review, return exactly one JSON object conforming to the Quiz Studio Translation Document contract (documentType \"quiz-studio.translation-document\") for targeted follow-up practice. Include a provenance object with purpose \"remediation\", sourceResponseId, and sourceReviewId set to the values from this request, plus createdAt and author metadata.",
   "learnerResponse": {
     "schemaVersion": 1,
     "documentType": "quiz-studio.learner-response",

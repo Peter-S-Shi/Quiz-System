@@ -32,7 +32,7 @@ import {
   createReviewRequestPackage,
   parseExternalTeacherReviewText,
   parseRemediationTranslationDocumentText,
-  validateRemediationProvenance,
+  validateRemediationImportProvenance,
 } from "./core/review-transport.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
 import {
@@ -2339,7 +2339,7 @@ function bindImportFormEvents() {
       reader.onload = () => {
         const { document: parsedDocument, errors } = parseRemediationTranslationDocumentText(reader.result);
         const provenanceValidation = parsedDocument
-          ? validateRemediationProvenance(parsedDocument, { learnerResponses: loadLearnerResponses(), teacherReviews: loadTeacherReviews() })
+          ? validateRemediationImportProvenance(parsedDocument, { learnerResponses: loadLearnerResponses(), teacherReviews: loadTeacherReviews() })
           : { valid: true, errors: [] };
         remediationImportDraft = {
           folderId,

@@ -7,11 +7,11 @@
   "required": ["schemaVersion", "documentType", "id", "exportedAt", "task", "learnerResponse", "requestedOutput"],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "schemaVersion": { "const": 1 },
     "documentType": { "const": "quiz-studio.review-request" },
     "id": { "type": "string", "minLength": 1 },
     "exportedAt": { "type": "string", "minLength": 1 },
-    "task": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1, "pattern": "\\S" },
     "learnerResponse": {
       "type": "object",
       "description": "A faithful portable copy of the canonical quiz-studio.learner-response contract. Validate it against learner-response.schema.json and the runtime validateLearnerResponse() boundary."
@@ -22,7 +22,7 @@
       "additionalProperties": false,
       "properties": {
         "documentType": { "const": "quiz-studio.teacher-review" },
-        "schemaVersion": { "type": "integer", "minimum": 1 }
+        "schemaVersion": { "const": 1 }
       }
     }
   }

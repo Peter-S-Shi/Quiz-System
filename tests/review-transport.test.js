@@ -29,6 +29,7 @@ import {
   parseExternalTeacherReview,
   parseExternalTeacherReviewText,
   parseRemediationTranslationDocumentText,
+  validateRemediationImportProvenance,
   validateRemediationProvenance,
   validateRemediationRequestPackage,
   validateReviewRequestPackage,
@@ -116,6 +117,23 @@ test("validateReviewRequestPackage rejects a malformed package", () => {
   assert.equal(validateReviewRequestPackage({ ...pkg, documentType: "quiz-studio.something-else" }).valid, false);
   assert.equal(validateReviewRequestPackage({ ...pkg, learnerResponse: { schemaVersion: 1 } }).valid, false);
   assert.equal(validateReviewRequestPackage({ ...pkg, requestedOutput: { documentType: "quiz-studio.learner-response", schemaVersion: 1 } }).valid, false);
+});
+
+test("review-request runtime and public schema reject unsupported transport/output versions and an empty task", async () => {
+  const response = makeTranslationResponse();
+  const pkg = createReviewRequestPackage({ id: "request-1", learnerResponse: response, exportedAt: CREATED_AT });
+  const invalidPackages = [
+    { ...pkg, schemaVersion: 2 },
+    { ...pkg, task: "   " },
+    { ...pkg, requestedOutput: { ...pkg.requestedOutput, schemaVersion: 2 } },
+  ];
+  invalidPackages.forEach((candidate) => assert.equal(validateReviewRequestPackage(candidate).valid, false));
+
+  const schema = JSON.parse(await readFile(new URL("../schemas/review-request.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  assert.equal(validateSchema(invalidPackages[0]), false);
+  assert.equal(validateSchema(invalidPackages[1]), false);
+  assert.equal(validateSchema(invalidPackages[2]), false);
 });
 
 // --- Teacher Review external import ------------------------------------------------------------
@@ -207,6 +225,43 @@ test("parseExternalTeacherReview rejects an invalid operation/style/color", () =
   const result = parseExternalTeacherReview(badStyle, { learnerResponse: response });
   assert.equal(result.review, null);
   assert.match(result.errors.join(" "), /Invalid correction styleType/);
+});
+
+test("parseExternalTeacherReview rejects unsupported fields before normalization can discard them", () => {
+  const response = makeTranslationResponse();
+  const topLevel = { ...makeExternalReview(response), learnerResponse: response };
+  assert.match(parseExternalTeacherReview(topLevel, { learnerResponse: response }).errors.join(" "), /Unsupported Teacher Review field/);
+
+  const itemField = makeExternalReview(response);
+  itemField.itemReviews[0].confidence = 0.9;
+  assert.match(parseExternalTeacherReview(itemField, { learnerResponse: response }).errors.join(" "), /Unsupported Teacher Review item field/);
+
+  const correctionField = makeExternalReview(response, {
+    itemReviews: [{
+      itemId: "item-1",
+      corrections: [{ id: "c1", operation: "style", styleType: "bold", start: 0, end: 5, anchoredText: "Hello", createdAt: CREATED_AT }],
+    }],
+  });
+  correctionField.itemReviews[0].corrections[0].replacementResponse = "protected";
+  assert.match(parseExternalTeacherReview(correctionField, { learnerResponse: response }).errors.join(" "), /Unsupported correction field/);
+});
+
+test("parseExternalTeacherReview rejects malformed reviewer metadata before normalization", () => {
+  const response = makeTranslationResponse();
+  const external = makeExternalReview(response);
+  external.reviewer = { type: "unknown-tool", displayLabel: 42, accountId: "private" };
+  const result = parseExternalTeacherReview(external, { learnerResponse: response });
+  assert.equal(result.review, null);
+  assert.match(result.errors.join(" "), /reviewer type is invalid|Unsupported Teacher Review reviewer field|displayLabel must be a string/);
+});
+
+test("parseExternalTeacherReview rejects a missing required canonical field instead of filling a default", () => {
+  const response = makeTranslationResponse();
+  const external = makeExternalReview(response);
+  delete external.remediationRecommendations;
+  const result = parseExternalTeacherReview(external, { learnerResponse: response });
+  assert.equal(result.review, null);
+  assert.match(result.errors.join(" "), /requires canonical field: remediationRecommendations/);
 });
 
 // --- Import planning / collision classification ------------------------------------------------
@@ -351,6 +406,24 @@ test("validateRemediationRequestPackage rejects a mismatched teacherReview/learn
   assert.equal(result.valid, false);
 });
 
+test("remediation-request runtime and public schema reject unsupported transport/output versions and an empty task", async () => {
+  const response = makeTranslationResponse();
+  const review = makeExternalReview(response);
+  const pkg = createRemediationRequestPackage({ id: "remediation-request-1", learnerResponse: response, teacherReview: review, exportedAt: CREATED_AT });
+  const invalidPackages = [
+    { ...pkg, schemaVersion: 2 },
+    { ...pkg, task: "" },
+    { ...pkg, requestedOutput: { ...pkg.requestedOutput, schemaVersion: 2 } },
+  ];
+  invalidPackages.forEach((candidate) => assert.equal(validateRemediationRequestPackage(candidate).valid, false));
+
+  const schema = JSON.parse(await readFile(new URL("../schemas/remediation-request.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  assert.equal(validateSchema(invalidPackages[0]), false);
+  assert.equal(validateSchema(invalidPackages[1]), false);
+  assert.equal(validateSchema(invalidPackages[2]), false);
+});
+
 // --- Remediation provenance ------------------------------------------------------------------
 
 test("validateRemediationProvenance accepts a document whose provenance correctly resolves", () => {
@@ -372,6 +445,51 @@ test("validateRemediationProvenance ignores documents that do not claim to be re
   const result = validateRemediationProvenance({ provenance: { purpose: "practice" } }, { learnerResponses: [], teacherReviews: [] });
   assert.deepEqual(result, { valid: true, errors: [] });
   assert.deepEqual(validateRemediationProvenance({}, {}), { valid: true, errors: [] });
+});
+
+test("dedicated remediation import rejects missing provenance and a non-remediation purpose", () => {
+  assert.equal(validateRemediationImportProvenance({}, {}).valid, false);
+  assert.match(validateRemediationImportProvenance({}, {}).errors.join(" "), /requires provenance/);
+  const wrongPurpose = validateRemediationImportProvenance({ provenance: { purpose: "practice" } }, {});
+  assert.equal(wrongPurpose.valid, false);
+  assert.match(wrongPurpose.errors.join(" "), /purpose must be "remediation"/);
+});
+
+test("dedicated remediation import accepts complete canonical provenance that resolves locally", () => {
+  const response = makeTranslationResponse();
+  const review = makeExternalReview(response);
+  const document = {
+    provenance: {
+      purpose: "remediation",
+      sourceResponseId: response.id,
+      sourceReviewId: review.id,
+      sourceMaterialId: response.material.id,
+      createdAt: CREATED_AT,
+      author: { type: "external-ai", displayLabel: "Synthetic Author" },
+    },
+  };
+  assert.deepEqual(
+    validateRemediationImportProvenance(document, { learnerResponses: [response], teacherReviews: [review] }),
+    { valid: true, errors: [] },
+  );
+});
+
+test("dedicated remediation import validates required timestamp and author metadata", () => {
+  const response = makeTranslationResponse();
+  const review = makeExternalReview(response);
+  const document = {
+    provenance: {
+      purpose: "remediation",
+      sourceResponseId: response.id,
+      sourceReviewId: review.id,
+      createdAt: "",
+      author: { type: "external-ai", displayLabel: 7 },
+    },
+  };
+  const result = validateRemediationImportProvenance(document, { learnerResponses: [response], teacherReviews: [review] });
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /requires createdAt/);
+  assert.match(result.errors.join(" "), /displayLabel must be a string/);
 });
 
 test("validateRemediationProvenance rejects an unknown sourceResponseId", () => {
@@ -441,6 +559,19 @@ test("parseRemediationTranslationDocumentText accepts a supported version and pr
   assert.equal(result.errors.length, 0);
   assert.ok(result.document);
   assert.equal(result.document.provenance.purpose, "remediation");
+});
+
+test("dedicated remediation parser rejects ordinary documents and malformed raw author metadata", async () => {
+  const ordinary = JSON.parse(await readFile(new URL("../examples/sample-translation-document.json", import.meta.url), "utf8"));
+  const ordinaryResult = parseRemediationTranslationDocumentText(JSON.stringify(ordinary));
+  assert.equal(ordinaryResult.document, null);
+  assert.match(ordinaryResult.errors.join(" "), /purpose must be "remediation"/);
+
+  const remediation = JSON.parse(await readFile(new URL("../examples/sample-remediation-translation-document.json", import.meta.url), "utf8"));
+  remediation.provenance.author = { type: "unsupported", displayLabel: 42 };
+  const malformedResult = parseRemediationTranslationDocumentText(JSON.stringify(remediation));
+  assert.equal(malformedResult.document, null);
+  assert.match(malformedResult.errors.join(" "), /author type is invalid|displayLabel must be a string/);
 });
 
 // --- End-to-end fixture set: public schema + runtime boundary agreement -------------------------

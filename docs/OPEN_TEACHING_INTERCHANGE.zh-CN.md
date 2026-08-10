@@ -49,7 +49,7 @@ Reviewer metadata 可以匿名或使用合成身份。支持的 actor 类型为 
 
 根据既有学习证据生成的后续材料。适用时应复用现有学习材料格式。补救 Quiz Paper 可以通过 `purpose`、`sourceResponseId` 和 `sourceReviewId` 等 provenance 字段保留来源，无需建立独立练习引擎。
 
-M6.6 针对 Translation 具体落地了这一点：补救翻译文档就是一份普通的 `quiz-studio.translation-document`（同一份 schema，同一套 M6.2 导入流程），只是额外带有一个增量的 `provenance` 字段块（`purpose: "remediation"`、`sourceResponseId`、`sourceReviewId`、`sourceMaterialId`、`createdAt`、`author`）。导入时会先针对本地的 Learner Response/Teacher Review 记录交叉校验这些引用，通过后才允许持久化；练习它时会把同一份 provenance 带入产生的 Learner Response，因此即使之后删除了这份补救文档，溯源链路依然完好。
+M6.6 针对 Translation 具体落地了这一点：补救翻译文档就是一份普通的 `quiz-studio.translation-document`，额外带有一个增量的 `provenance` 字段块（`purpose: "remediation"`、`sourceResponseId`、`sourceReviewId`、`sourceMaterialId`、`createdAt`、`author`）。专用导入边界要求这些用途声明和元数据，并在持久化前针对本地 Learner Response/Teacher Review 记录交叉校验引用；普通 M6.2 翻译文档导入保持不变。练习补救材料时会把同一份 provenance 带入产生的 Learner Response，因此即使之后删除了补救文档，溯源链路依然完好。
 
 ### 传输信封（M6.6）
 

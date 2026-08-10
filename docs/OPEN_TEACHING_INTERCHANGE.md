@@ -49,7 +49,7 @@ Reviewer metadata may be anonymous or synthetic. Supported actor categories are 
 
 Follow-up material created from prior learning evidence. Existing material formats should be reused when suitable. A remediation Quiz Paper can carry provenance such as `purpose`, `sourceResponseId`, and `sourceReviewId` without requiring a separate exercise engine.
 
-M6.6 implements this concretely for Translation: a remediation Translation Document is an ordinary `quiz-studio.translation-document` (same schema, same M6.2 import pipeline) carrying an additive `provenance` block (`purpose: "remediation"`, `sourceResponseId`, `sourceReviewId`, `sourceMaterialId`, `createdAt`, `author`). Import cross-validates those references against local Learner Response/Teacher Review records before the document can be persisted, and practicing it carries the same provenance forward into the resulting Learner Response, so lineage survives even if the remediation document is later deleted.
+M6.6 implements this concretely for Translation: a remediation Translation Document is an ordinary `quiz-studio.translation-document` carrying an additive `provenance` block (`purpose: "remediation"`, `sourceResponseId`, `sourceReviewId`, `sourceMaterialId`, `createdAt`, `author`). Its dedicated import boundary requires that claim and metadata and cross-validates the references against local Learner Response/Teacher Review records before persistence; ordinary M6.2 Translation Document import remains unchanged. Practicing the remediation material carries the same provenance forward into the resulting Learner Response, so lineage survives even if the remediation document is later deleted.
 
 ### Transport Envelopes (M6.6)
 
