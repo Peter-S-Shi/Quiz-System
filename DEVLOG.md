@@ -1,5 +1,14 @@
 # Development Log
 
+## 2026-08-09
+
+- Approved Translation Practice as a first-class capability required for the current version.
+- Preserved the earlier Feature Complete Candidate review as a valid historical assessment of the previous Milestone 1-5 scope, while reopening the current release scope before Feature Freeze.
+- Defined Milestone 6 at the product-lifecycle level as a local-first, multilingual Translation Practice workspace; detailed implementation planning remains pending the dedicated Milestone 6 prompt.
+- Renumbered Product Hardening to Milestone 7 and Release Candidate / Public Delivery to Milestone 8.
+- Confirmed that Feature Freeze remains inactive until Translation Practice is implemented, accepted, and included in a new Feature Complete Review.
+- Updated macro lifecycle documentation only; no application behavior, schema, tests, examples, release notes, or manual QA materials changed.
+
 ## 2026-07-18
 
 - Renamed milestone roadmap files to `ROADMAP.md` and `ROADMAP.zh-CN.md`.

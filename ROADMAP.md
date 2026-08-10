@@ -108,9 +108,9 @@ Acceptance status:
 
 ## Feature Complete Review
 
-Status: Current phase
+Status: Historical candidate review reached under the previous scope; release scope subsequently reopened
 
-The current v1 candidate scope includes:
+The previously reviewed Milestone 1-5 candidate scope included:
 
 - Existing five objective question types.
 - Local multi-paper quiz library.
@@ -129,9 +129,11 @@ The current v1 candidate scope includes:
 
 Current interpretation:
 
-- This is a Feature Complete Candidate.
+- The project reached a Feature Complete Candidate review under the previous Milestone 1-5 boundary.
+- That historical review remains valid for the scope assessed at the time, but it no longer closes the current-version feature scope.
+- Translation Practice has since been approved as required current-version work, so feature development is active again.
 - It is not yet Release Ready.
-- The project still needs confirmation that no core loop is missing from the v1 boundary.
+- Translation Practice is planned and has not yet been implemented or accepted.
 - System-level manual acceptance has not been completed.
 - The project has not entered Feature Freeze.
 
@@ -139,7 +141,8 @@ Current interpretation:
 
 Feature Freeze can begin only when:
 
-- The v1 core scope review is complete.
+- Milestone 6 Translation Practice is implemented and accepted against its approved scope.
+- The reopened current-version scope receives a new Feature Complete Review.
 - No required core feature remains missing.
 - Deferred Features are clearly separated from the v1 release scope.
 - The user explicitly accepts the current v1 product boundary.
@@ -151,7 +154,38 @@ Freeze rules:
 - New features should default to the next version.
 - If Freeze must be lifted, the reason must be recorded in `ROADMAP.md` and `PROJECT_STATUS.md`.
 
-## Milestone 6: Product Hardening
+## Milestone 6: Translation Practice
+
+Status: Approved current-version feature; implementation not started
+
+Goal: add a dedicated, local-first workspace for document-oriented written translation practice without assuming that a reference translation is the only correct answer.
+
+Approved macro scope:
+
+- Provide a dedicated Translation Practice workspace inside Quiz Studio.
+- Organize translation materials by folder and document.
+- Import source-language material alone or bilingual source and reference-translation material in batches.
+- Export translation-practice material and data.
+- Let learners view source text and independently write translations.
+- Let learners mark difficult words or phrases as unknown, uncertain, or known-but-not-retrieved.
+- Provide a lightweight vocabulary inbox or handoff boundary without duplicating a full vocabulary application.
+- Support post-practice review and correction, including whole-session or batch review.
+- Keep source and target languages general rather than hard-coding one language direction.
+- Keep the first implementation independent of AI grading and paid model APIs.
+
+Non-goals for the initial milestone:
+
+- AI grading or an assumption that one reference translation is uniquely correct.
+- A full vocabulary-learning system inside Quiz Studio.
+- Cloud accounts, collaboration, or teacher workflows.
+- A detailed M6 sub-milestone plan before the dedicated implementation prompt is approved.
+
+Acceptance effect:
+
+- Translation Practice must be implemented and accepted before the reopened current-version scope can pass Feature Complete Review.
+- Feature Freeze remains inactive until that review is complete and explicitly accepted.
+
+## Milestone 7: Product Hardening
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 
@@ -180,6 +214,10 @@ First launch
 -> Export and import
 -> Full library backup and restore
 -> Legacy data migration
+-> Organize translation folders and documents
+-> Import translation material and complete written practice
+-> Mark difficult vocabulary and review a full session
+-> Export translation-practice data
 ```
 
 Exit conditions:
@@ -195,7 +233,7 @@ Exit conditions:
 - Privacy and secret-safety checks pass.
 - Verified local commits match the target remote branch.
 
-## Milestone 7: Release Candidate and Public Delivery
+## Milestone 8: Release Candidate and Public Delivery
 
 Goal: validate a release candidate from a clean environment and prepare public delivery.
 
@@ -218,7 +256,7 @@ Required work:
 RC rules:
 
 - The RC phase must not expand functional scope.
-- If a blocking issue is found, return to Milestone 6, fix it, and rerun regression checks.
+- If a blocking issue is found, return to Milestone 7, fix it, and rerun regression checks.
 
 ## Current Version Complete
 
@@ -228,7 +266,7 @@ The current version can be marked as:
 Current Version Complete / v1.0.0
 ```
 
-only after Milestone 7 acceptance is complete.
+only after Milestone 8 acceptance is complete.
 
 ## Maintenance / Next Version
 
@@ -252,8 +290,9 @@ These remain outside the current v1 scope:
 
 The current lifecycle route is:
 
-1. Confirm Feature Complete Candidate scope.
-2. Enter Feature Freeze only after the v1 boundary is accepted.
-3. Harden the current feature set.
-4. Produce and validate a Release Candidate.
-5. Mark Current Version Complete only after RC acceptance.
+1. Preserve the Feature Complete Candidate review reached under the previous Milestone 1-5 scope as historical evidence.
+2. Complete Milestone 6 Translation Practice under the reopened current-version scope.
+3. Perform a new Feature Complete Review and enter Feature Freeze only after the expanded boundary is accepted.
+4. Complete Milestone 7 Product Hardening.
+5. Produce and validate the Milestone 8 Release Candidate and public delivery.
+6. Mark Current Version Complete only after RC acceptance.

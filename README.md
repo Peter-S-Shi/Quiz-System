@@ -101,6 +101,10 @@ Quiz System/
 
 Project development is organized by lifecycle stages. See `ROADMAP.md` for the full roadmap and `PROJECT_STATUS.md` for the current release status.
 
+### Planned Current-Version Capability
+
+Translation Practice is approved as Milestone 6 work but is not implemented yet. The planned capability is a dedicated local-first workspace for organizing translation materials by folder and document, importing source-only or bilingual material, writing translations independently, marking difficult words and phrases, and reviewing or correcting a complete practice session. The design will remain multilingual and will not require AI grading or paid model APIs for its first implementation.
+
 ## Localization
 
 The interface is designed for future multilingual expansion. UI text is centralized in the `locales` dictionary in `app.js`.
@@ -109,11 +113,11 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-Current phase: Feature Complete Review.
+Current phase: Feature Development - Scope Reopened.
 
-Quiz Studio is a local-first private pre-release prototype. The v1 candidate feature set has first implementations landed, including the modular Quiz Core, browser-based quiz library, practice history, PWA foundation, public schema, examples, tests, and CI preparation. It is not yet Release Ready.
+Quiz Studio is a local-first private pre-release prototype. The Milestone 1-5 feature set has first implementations landed, including the modular Quiz Core, browser-based quiz library, practice history, PWA foundation, public schema, examples, tests, and CI preparation. The project previously reached Feature Complete Candidate review under that boundary, but the current-version scope was reopened when Translation Practice was approved as required Milestone 6 work. It is not yet Release Ready.
 
-Full manual QA, Product Hardening, Feature Freeze, Release Candidate validation, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
+Translation Practice implementation and acceptance, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
 
 ## Data and Privacy
 

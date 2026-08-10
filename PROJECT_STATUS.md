@@ -2,31 +2,32 @@
 
 ## Current Phase
 
-Feature Complete Review
+Feature Development - Scope Reopened
 
 ## Current Milestone
 
-Post-Milestone 5 acceptance review
+Milestone 6: Translation Practice (planned; implementation prompt pending)
 
 ## Current Release Scope
 
-The current v1 candidate scope includes the local-first quiz library, five objective question types, practice recovery, history, wrong-question retry, random selection, type filters, JSON import/export, full-library backup, schema versioning, legacy data migration, bilingual UI, Windows local launch, PWA foundation, CI, and documentation.
+The current-version scope includes the implemented Milestone 1-5 baseline plus the approved but not yet implemented Milestone 6 Translation Practice workspace. Translation Practice covers folder-and-document organization, batch source or bilingual material import, export, independent written translation, difficulty marking, a lightweight vocabulary handoff boundary, and post-practice batch review. It remains multilingual and local-first, and its first implementation will not depend on AI grading or paid model APIs.
 
 ## Feature Complete Status
 
-Candidate; not yet verified.
+Previous candidate review reached; current scope reopened and no longer feature complete.
 
-Milestone 1 is complete as the foundation baseline. Milestones 2-5 have first implementations landed, but full acceptance is pending.
+Milestone 1 is complete as the foundation baseline. Milestones 2-5 have first implementations landed, but full acceptance is pending. The Feature Complete Candidate review reached under that earlier boundary remains historical evidence. Translation Practice was subsequently approved as required current-version work, so a new Feature Complete Review is required after Milestone 6 is implemented and accepted.
 
 ## Feature Freeze Status
 
 Not entered.
 
-Feature Freeze should begin only after the v1 release scope is confirmed, Deferred Features are separated from the current version, and the user accepts the current v1 product boundary.
+Feature Freeze can begin only after Milestone 6 is implemented and accepted, the reopened scope passes a new Feature Complete Review, Deferred Features are separated from the current version, and the user explicitly accepts the expanded product boundary.
 
 ## Open Release Blockers
 
 - Full project-wide manual acceptance has not been completed.
+- Translation Practice is required current-version work but has not yet been designed in implementation detail, implemented, or accepted.
 - Data migration, backup round-trip, active-session recovery, and destructive workflows have not yet received formal end-to-end verification.
 - Public Pages deployment remains deferred while the repository is private.
 - A release candidate and final clean-environment verification do not yet exist.
@@ -35,7 +36,7 @@ Feature Freeze should begin only after the v1 release scope is confirmed, Deferr
 
 Not started.
 
-Milestone 6 Product Hardening still needs system audit, defect inventory, manual user-journey acceptance, regression evidence, and release-blocker triage.
+Product Hardening is now Milestone 7 and will begin only after Milestone 6 Translation Practice passes Feature Complete Review and Feature Freeze is explicitly entered.
 
 ## Verification Status
 
@@ -44,12 +45,14 @@ Milestone 6 Product Hardening still needs system audit, defect inventory, manual
 - Manual acceptance for the full v1 journey is not complete.
 - Clean clone verification has not been performed.
 - GitHub Pages deployment is manual-only and deferred.
+- No implementation or behavioral verification exists yet for Translation Practice.
 
 ## Known Risks
 
 - GitHub Pages cannot currently be treated as available because the repository remains private and Pages deployment is deferred.
 - Browser `file://` opening is not supported for the ES module app; users must use a local static server or `start-local.bat`.
 - The project has a larger feature surface than its current manual QA evidence.
+- Translation Practice introduces new document organization, import/export, persistence, review, and multilingual UX boundaries that still require design and acceptance criteria.
 
 ## Unknown Or Unverified
 
@@ -60,6 +63,7 @@ Milestone 6 Product Hardening still needs system audit, defect inventory, manual
 - PWA install, offline behavior, and cache upgrade behavior across major browsers.
 - Accessibility and responsive behavior across representative devices.
 - Clean-environment clone and run process.
+- The detailed Milestone 6 data model, migration strategy, interaction design, and acceptance checks, pending the dedicated implementation prompt.
 
 ## Deferred Features
 
@@ -72,12 +76,14 @@ Milestone 6 Product Hardening still needs system audit, defect inventory, manual
 
 ## Next Engineering Objective
 
-Confirm the v1 release scope, complete the Feature Complete Review, and decide whether the project can enter Feature Freeze.
+Wait for and evaluate the dedicated Milestone 6 prompt, then design and implement Translation Practice within the approved macro scope. Do not begin Product Hardening or Feature Freeze work before Milestone 6 acceptance.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
-- Latest commit read during this revision: `a9e91d8 Ignore local prompt drafts`
-- Remote synchronization at start of this revision: `main...origin/main`
+- Verified baseline before this documentation revision: `05cd288 Add manual QA baseline`
+- Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
+- Synchronization target: validated documentation work merged to `main`, with `main` matching `origin/main`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
+- Pull request status: none required for this documentation-only branch workflow

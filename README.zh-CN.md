@@ -101,6 +101,10 @@ Quiz System/
 
 项目开发按照生命周期阶段组织。完整路线见 `ROADMAP.zh-CN.md`，当前发布状态见 `PROJECT_STATUS.zh-CN.md`。
 
+### 当前版本已规划能力
+
+Translation Practice 已被批准为 Milestone 6 工作，但目前尚未实现。计划中的能力是一个独立的本地优先工作区，用于按“文件夹 → 文档”组织翻译材料、导入仅含源文或包含参考译文的双语材料、独立书写译文、标记困难词语，并对整次练习进行复盘或订正。设计将保持多语言通用，第一版不依赖 AI 判分或付费模型 API。
+
 ## 多语言支持
 
 界面已经按照未来扩展更多语言的方向设计。UI 文案集中放在 `app.js` 的 `locales` 字典中。
@@ -109,11 +113,11 @@ Quiz System/
 
 ## 当前状态
 
-当前阶段：Feature Complete Review。
+当前阶段：Feature Development - Scope Reopened（功能开发阶段，范围已重新开放）。
 
-Quiz Studio 是一个本地优先的 private pre-release 原型。v1 候选功能范围的首版实现已经落地，包括模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 基础、公开 schema、示例、测试和 CI 准备。但当前版本尚未 Release Ready。
+Quiz Studio 是一个本地优先的 private pre-release 原型。Milestone 1-5 功能范围的首版实现已经落地，包括模块化 Quiz Core、浏览器本地试卷库、练习历史、PWA 基础、公开 schema、示例、测试和 CI 准备。项目曾在该边界下达到 Feature Complete Candidate 评审状态，但 Translation Practice 被批准为必要的 Milestone 6 工作后，当前版本范围已经重新开放。当前版本尚未 Release Ready。
 
-完整人工 QA、Product Hardening、Feature Freeze、Release Candidate 验证和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
+Translation Practice 的实现与验收、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
 
 ## 数据和隐私
 
