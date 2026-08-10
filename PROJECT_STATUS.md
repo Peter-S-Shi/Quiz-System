@@ -41,7 +41,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Verification Status
 
-- Fifteen automated core/interchange tests pass, including protected learner evidence, Teacher Review rejection boundaries, unbounded response collection behavior, provenance, backup compatibility, and public example validation.
+- Seventeen automated core/interchange tests pass, including finalized-response replacement rejection, complete item-ID coverage, required session timestamps, protected learner evidence, Teacher Review rejection boundaries, unbounded response collection behavior, provenance, backup compatibility, and public example validation.
 - CI workflow exists.
 - A local browser smoke test completed a synthetic Objective Quiz and verified finalized-evidence messaging, bilingual result/history export controls, desktop layout, and a 390px responsive layout without console errors.
 - The browser harness did not capture the programmatic download event, so exported-file landing and manual content inspection remain part of user acceptance.

@@ -2,6 +2,9 @@
 
 ## 2026-08-10
 
+- Closed the M6.0 integrity review by making finalized Learner Response writes idempotent for identical content and rejecting same-ID replacement attempts.
+- Strengthened Learner Response validation so material snapshots and response entries have the same complete item-ID set, with required non-empty session timestamps aligned across runtime validation and JSON Schema.
+- Expanded automated coverage from 15 to 17 tests; M6.0 remains implementation complete / user acceptance pending, and M6.1 has not started.
 - Implemented M6.0 Open Teaching Interchange as a cross-cutting foundation serving existing Objective Quiz and future Translation Practice.
 - Added versioned Learner Response and Teacher Review contracts, runtime validation boundaries, synthetic examples, and optional Quiz Paper remediation provenance.
 - Added independent finalized Learner Response persistence containing attempted question snapshots, original submitted answers, grading snapshots, stable linkage, summary, timestamps, and provenance.

@@ -151,6 +151,8 @@ export function validateLearnerResponse(value) {
   const items = value.material?.snapshot?.items;
   if (!Array.isArray(items) || !items.length) errors.push("Learner Response material item snapshots are required.");
   if (!isPlainObject(value.session) || !nonEmptyString(value.session.id)) errors.push("Learner Response session identity is required.");
+  if (!nonEmptyString(value.session?.startedAt)) errors.push("Learner Response session startedAt is required.");
+  if (!nonEmptyString(value.session?.completedAt)) errors.push("Learner Response session completedAt is required.");
   if (!Array.isArray(value.responses) || !value.responses.length) errors.push("Learner Response responses are required.");
 
   const itemIds = new Set();
@@ -168,6 +170,9 @@ export function validateLearnerResponse(value) {
     if (responseIds.has(response.itemId)) errors.push(`Duplicate learner response itemId: ${response.itemId}`);
     responseIds.add(response.itemId);
     if (!itemIds.has(response.itemId)) errors.push(`Learner response references unknown itemId: ${response.itemId}`);
+  });
+  itemIds.forEach((itemId) => {
+    if (!responseIds.has(itemId)) errors.push(`Learner Response is missing response for itemId: ${itemId}`);
   });
   if (value.summary?.itemCount !== value.responses?.length) {
     errors.push("Learner Response summary itemCount must match the response count.");

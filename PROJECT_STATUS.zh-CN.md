@@ -41,7 +41,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 15 项 core/interchange 自动测试通过，覆盖受保护 learner evidence、Teacher Review 拒绝边界、不受 history 上限影响的 response 集合、provenance、备份兼容和公开示例校验。
+- 17 项 core/interchange 自动测试通过，覆盖 finalized response 替换拒绝、完整 item-ID 对应、必需 session 时间戳、受保护 learner evidence、Teacher Review 拒绝边界、不受 history 上限影响的 response 集合、provenance、备份兼容和公开示例校验。
 - CI workflow 已存在。
 - 本地浏览器 smoke test 完成了一次合成 Objective Quiz，并验证 finalized evidence 提示、双语结果/历史导出控件、桌面布局和 390px 响应式布局；控制台无错误。
 - 浏览器测试工具未捕获程序化下载事件，因此导出文件实际落盘和人工内容检查仍属于用户验收。

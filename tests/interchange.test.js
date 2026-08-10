@@ -125,6 +125,42 @@ test("learner response storage is independent and has no silent history cap", ()
   assert.equal(removeLearnerResponsesForMaterial(records, "paper-1").length, 0);
 });
 
+test("finalized learner response upsert is idempotent and rejects replacement", () => {
+  const original = createQuizLearnerResponse({ id: "response-1", session: makeCompletedSession() });
+  const collection = [original];
+  const reorderedClone = JSON.parse(JSON.stringify(original));
+  reorderedClone.material.snapshot.items[0] = {
+    prompt: reorderedClone.material.snapshot.items[0].prompt,
+    id: reorderedClone.material.snapshot.items[0].id,
+    options: reorderedClone.material.snapshot.items[0].options,
+    type: reorderedClone.material.snapshot.items[0].type,
+  };
+
+  assert.deepEqual(upsertLearnerResponse(collection, reorderedClone), collection);
+
+  const replacement = structuredClone(original);
+  replacement.responses[0].answer = "option-b";
+  assert.throws(
+    () => upsertLearnerResponse(collection, replacement),
+    /Finalized Learner Response response-1 cannot be replaced/,
+  );
+});
+
+test("learner response validation requires complete item coverage and session timestamps", () => {
+  const response = createQuizLearnerResponse({ id: "response-1", session: makeCompletedSession() });
+  response.material.snapshot.items.push({ id: "question-2", type: "blank", prompt: "Complete me" });
+  assert.equal(validateLearnerResponse(response).valid, false);
+  assert.match(validateLearnerResponse(response).errors.join(" "), /missing response for itemId: question-2/);
+
+  const missingStart = createQuizLearnerResponse({ id: "response-2", session: makeCompletedSession() });
+  missingStart.session.startedAt = "";
+  assert.match(validateLearnerResponse(missingStart).errors.join(" "), /session startedAt is required/);
+
+  const missingCompletion = createQuizLearnerResponse({ id: "response-3", session: makeCompletedSession() });
+  missingCompletion.session.completedAt = "";
+  assert.match(validateLearnerResponse(missingCompletion).errors.join(" "), /session completedAt is required/);
+});
+
 test("library backups include learner responses and accept legacy backups", () => {
   const response = createQuizLearnerResponse({ id: "response-1", session: makeCompletedSession() });
   const library = { schemaVersion: 1, papers: [{ id: "paper-1", title: "Synthetic Quiz", questions: [] }] };
