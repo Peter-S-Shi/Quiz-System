@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import Ajv2020 from "ajv/dist/2020.js";
 
 import { createLibraryBackup, parseLibraryBackup } from "../src/core/backup.js";
-import { addCorrection } from "../src/core/corrections.js";
+import { addCorrection, validateCorrection } from "../src/core/corrections.js";
 import {
   DOCUMENT_TYPES,
   createQuizLearnerResponse,
@@ -344,4 +344,179 @@ test("Teacher Review validation and Objective Quiz Learner Responses show no reg
     remediationRecommendations: [],
   });
   assert.deepEqual(validateTeacherReview(review, { learnerResponse: quizResponse }), { valid: true, errors: [] });
+});
+
+test("parseTeacherReviewCollection rejects an orphan Teacher Review when learnerResponses context is supplied", () => {
+  const response = makeTranslationResponse();
+  const review = buildRichReview(response);
+  const orphan = { ...review, id: "orphan-review", responseId: "no-such-response" };
+  assert.throws(
+    () => parseTeacherReviewCollection([review, orphan], { learnerResponses: [response] }),
+    /does not match any known Learner Response/,
+  );
+});
+
+test("parseTeacherReviewCollection performs structural-only validation when no learnerResponses context is supplied", () => {
+  const orphan = normalizeTeacherReview({
+    schemaVersion: 1,
+    documentType: DOCUMENT_TYPES.TEACHER_REVIEW,
+    id: "orphan-review",
+    responseId: "no-such-response",
+    createdAt: CREATED_AT,
+    reviewer: { type: "human" },
+    itemReviews: [],
+    remediationRecommendations: [],
+  });
+  const parsed = parseTeacherReviewCollection([orphan]);
+  assert.equal(parsed.length, 1);
+  assert.equal(parsed[0].responseId, "no-such-response");
+});
+
+test("upsertTeacherReview rejects an orphan responseId when learnerResponses context is supplied", () => {
+  const response = makeTranslationResponse();
+  const review = buildRichReview(response);
+  assert.throws(
+    () => upsertTeacherReview([], { ...review, responseId: "no-such-response" }, { learnerResponses: [response] }),
+    /does not match any known Learner Response/,
+  );
+});
+
+test("full backup restore rejects an orphan Teacher Review", () => {
+  const response = makeTranslationResponse();
+  const quizLibrary = { schemaVersion: 1, papers: [{ id: "paper-1", title: "Synthetic Quiz", questions: [] }] };
+  const orphanReview = normalizeTeacherReview({
+    schemaVersion: 1,
+    documentType: DOCUMENT_TYPES.TEACHER_REVIEW,
+    id: "orphan-review",
+    responseId: "no-such-response",
+    createdAt: CREATED_AT,
+    reviewer: { type: "human" },
+    itemReviews: [],
+    remediationRecommendations: [],
+  });
+  assert.throws(
+    () => parseLibraryBackup({
+      library: quizLibrary,
+      history: [],
+      learnerResponses: [response],
+      teacherReviews: [orphanReview],
+    }),
+    /does not match any known Learner Response/,
+  );
+});
+
+test("validateTeacherReview rejects an insert correction with non-empty anchoredText, matching validateCorrection()", () => {
+  const response = makeTranslationResponse();
+  const review = buildRichReview(response);
+  const item1 = review.itemReviews.find((item) => item.itemId === "item-1");
+  const badInsert = { id: "bad-insert", operation: "insert", start: 0, end: 0, anchoredText: "Hello", text: "!", createdAt: CREATED_AT };
+  item1.corrections.push(badInsert);
+
+  assert.equal(validateCorrection(badInsert, "Hello there").valid, false);
+  const result = validateTeacherReview(review, { learnerResponse: response });
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /empty anchoredText/);
+});
+
+test("validateTeacherReview rejects a zero-length replace correction, matching validateCorrection()", () => {
+  const response = makeTranslationResponse();
+  const review = buildRichReview(response);
+  const item1 = review.itemReviews.find((item) => item.itemId === "item-1");
+  const zeroLengthReplace = { id: "bad-replace", operation: "replace", start: 2, end: 2, anchoredText: "", text: "x", createdAt: CREATED_AT };
+  item1.corrections.push(zeroLengthReplace);
+
+  assert.equal(validateCorrection(zeroLengthReplace, "Hello there").valid, false);
+  const result = validateTeacherReview(review, { learnerResponse: response });
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /zero-length position/);
+});
+
+test("validateTeacherReview rejects a style correction missing styleType, matching validateCorrection()", () => {
+  const response = makeTranslationResponse();
+  const review = buildRichReview(response);
+  const item1 = review.itemReviews.find((item) => item.itemId === "item-1");
+  const badStyle = { id: "bad-style", operation: "style", start: 0, end: 5, anchoredText: "Hello", createdAt: CREATED_AT };
+  item1.corrections.push(badStyle);
+
+  assert.equal(validateCorrection(badStyle, "Hello there").valid, false);
+  const result = validateTeacherReview(review, { learnerResponse: response });
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /Invalid correction styleType/);
+});
+
+test("public Teacher Review schema rejects an insert correction with non-empty anchoredText or missing text", async () => {
+  const schema = JSON.parse(await readFile(new URL("../schemas/teacher-review.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  const response = makeTranslationResponse();
+  const baseReview = buildRichReview(response);
+
+  const nonEmptyAnchor = structuredClone(baseReview);
+  nonEmptyAnchor.itemReviews[0].corrections.push({
+    id: "bad-insert", operation: "insert", start: 0, end: 0, anchoredText: "Hello", text: "!", createdAt: CREATED_AT,
+  });
+  assert.equal(validateSchema(nonEmptyAnchor), false);
+
+  const missingText = structuredClone(baseReview);
+  missingText.itemReviews[0].corrections.push({
+    id: "bad-insert-2", operation: "insert", start: 0, end: 0, anchoredText: "", createdAt: CREATED_AT,
+  });
+  assert.equal(validateSchema(missingText), false);
+});
+
+test("public Teacher Review schema rejects a style=color correction missing color, and a replace/comment missing text", async () => {
+  const schema = JSON.parse(await readFile(new URL("../schemas/teacher-review.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  const response = makeTranslationResponse();
+
+  const missingColor = structuredClone(buildRichReview(response));
+  missingColor.itemReviews[0].corrections.push({
+    id: "bad-color", operation: "style", styleType: "color", start: 0, end: 5, anchoredText: "Hello", createdAt: CREATED_AT,
+  });
+  assert.equal(validateSchema(missingColor), false);
+
+  const missingReplaceText = structuredClone(buildRichReview(response));
+  missingReplaceText.itemReviews[1].corrections.push({
+    id: "bad-replace", operation: "replace", start: 0, end: 6, anchoredText: "Thanks", createdAt: CREATED_AT,
+  });
+  assert.equal(validateSchema(missingReplaceText), false);
+
+  const missingCommentText = structuredClone(buildRichReview(response));
+  missingCommentText.itemReviews[2].corrections.push({
+    id: "bad-comment", operation: "comment", start: 0, end: 3, anchoredText: "Bye", createdAt: CREATED_AT,
+  });
+  assert.equal(validateSchema(missingCommentText), false);
+});
+
+test("public Teacher Review schema still accepts the valid rich review with the new operation-specific rules", async () => {
+  const schema = JSON.parse(await readFile(new URL("../schemas/teacher-review.schema.json", import.meta.url), "utf8"));
+  const validateSchema = new Ajv2020({ strict: false }).compile(schema);
+  const response = makeTranslationResponse();
+  const review = buildRichReview(response);
+  assert.equal(validateSchema(review), true, JSON.stringify(validateSchema.errors));
+});
+
+test("applying an insert or replace correction with a reviewer color persists it through save/reload", () => {
+  const answer = "Hello there";
+  let corrections = addCorrection([], { operation: "insert", start: 0, end: 0, anchoredText: "", text: "Well, ", color: "blue" }, answer);
+  corrections = addCorrection(corrections, { operation: "replace", start: 6, end: 11, anchoredText: "there", text: "friend", color: "purple" }, answer);
+
+  const response = makeTranslationResponse();
+  const review = normalizeTeacherReview({
+    schemaVersion: 1,
+    documentType: DOCUMENT_TYPES.TEACHER_REVIEW,
+    id: "review-color",
+    responseId: response.id,
+    createdAt: CREATED_AT,
+    reviewer: { type: "human" },
+    itemReviews: [{ itemId: "item-1", corrections }],
+    remediationRecommendations: [],
+  });
+
+  assert.deepEqual(validateTeacherReview(review, { learnerResponse: response }), { valid: true, errors: [] });
+  const collection = upsertTeacherReview([], review, { learnerResponse: response });
+  const reloaded = JSON.parse(JSON.stringify(collection));
+  const reopened = findTeacherReviewForResponse(reloaded, response.id);
+  const savedCorrections = reopened.itemReviews[0].corrections;
+  assert.equal(savedCorrections.find((c) => c.operation === "insert").color, "blue");
+  assert.equal(savedCorrections.find((c) => c.operation === "replace").color, "purple");
 });

@@ -45,7 +45,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 110 项 core/interchange/translation/import/session/annotation/corrections/review 自动测试通过，覆盖稳定 Translation 持久化、顺序、source-only 与 reference 材料、孤儿防护、显式 cascade 删除、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容、公开示例校验、批量导入解析、格式错误行拒绝、JSON 导入文件夹重新分配、重复 ID 冲突处理、导出/导入往返对公开 schema 的校验、Translation session 快照在后续文档编辑下保持稳定、按条目 ID 持久化答案与导航、格式错误 session 被安全拒绝、非客观 finalization、隔离的 active-session 存储 key、全部三种标记类型、多词片段、零长度/无效范围/未知类型拒绝、锚定文本匹配、完全相同片段的替换与重叠拒绝、编辑作答后的失效处理、标记在 session 序列化/恢复中的存续、个别格式错误标记的安全丢弃与 `learnerAnnotations` 的 schema/向后兼容性、从存储恢复的持久化标记的确定性重叠消解、对 finalized `learnerAnnotations` 锚点相对于对应作答文本的运行时交叉校验（文本匹配、范围内、同条目不重叠）、每一种 rich correction 样式/操作类型、表现型样式的正交重叠、内容变更类操作的冲突拒绝、批改锚点不匹配/越界/重复 ID 的拒绝、HTML 风格的评阅者文本保持为安全的纯文本数据、Teacher Review 的持久化/刷新/重新打开、review ID 绝不被静默改指，以及 Teacher Review 的备份/恢复往返与旧版/格式错误数据处理。
+- 122 项 core/interchange/translation/import/session/annotation/corrections/review 自动测试通过，覆盖稳定 Translation 持久化、顺序、source-only 与 reference 材料、孤儿防护、显式 cascade 删除、非客观 Learner Response 兼容、finalized evidence 保护、备份兼容、公开示例校验、批量导入解析、格式错误行拒绝、JSON 导入文件夹重新分配、重复 ID 冲突处理、导出/导入往返对公开 schema 的校验、Translation session 快照在后续文档编辑下保持稳定、按条目 ID 持久化答案与导航、格式错误 session 被安全拒绝、非客观 finalization、隔离的 active-session 存储 key、全部三种标记类型、多词片段、零长度/无效范围/未知类型拒绝、锚定文本匹配、完全相同片段的替换与重叠拒绝、编辑作答后的失效处理、标记在 session 序列化/恢复中的存续、个别格式错误标记的安全丢弃与 `learnerAnnotations` 的 schema/向后兼容性、从存储恢复的持久化标记的确定性重叠消解、对 finalized `learnerAnnotations` 锚点相对于对应作答文本的运行时交叉校验（文本匹配、范围内、同条目不重叠）、每一种 rich correction 样式/操作类型、表现型样式的正交重叠、内容变更类操作的冲突拒绝、批改锚点不匹配/越界/重复 ID 的拒绝、HTML 风格的评阅者文本保持为安全的纯文本数据、Teacher Review 的持久化/刷新/重新打开、review ID 绝不被静默改指、Teacher Review 的备份/恢复往返与旧版/格式错误数据处理、在提供 Learner Response 上下文时拒绝孤儿 Teacher Review（未提供上下文时保持仅结构性校验）、`validateCorrection()`/`validateTeacherReview()`/公开 schema 三者在各操作类型批改语义（插入/替换/删除/样式/批注的字段与范围要求）上保持一致，以及评阅者选定的颜色能在插入/替换批改上经过保存/刷新后继续保留。
 - CI workflow 已存在。
 - 本地浏览器 smoke test 走过了 M6.5 批改工作区旅程：分别从练习完成页和翻译文档的"已完成的作答记录"列表打开工作区，确认原始作答和源条目正确渲染（期间绕过了一个脚本化测试自身的时序问题——刚编辑完条目文字后如果没有经过一次重新渲染就点击"开始练习"，可能会把编辑前的旧文字快照进新 session；这是一个 M6.2 时代就存在的 UI 问题，不是 M6.5 引入的回归，已单独记录为后续工作）、对同一片段应用重叠的加粗和下划线、应用一条带有评阅者选定颜色的插入文字的替换批改并确认预览正确渲染、尝试在重叠范围上添加冲突的删除批改并确认被拒绝且弹出提示、移除一条批改、添加条目批注/建议修订/评判、保存、刷新页面、从"已完成的作答记录"列表重新打开同一条 review，确认全部批改/批注/修订/评判以及未被改动的原始作答都完整保留，确认 HTML 风格的评阅者文本被安全转义渲染（没有注入 `<img>`/script 标签），并确认英文界面正确渲染——没有出现新的控制台错误。此前的 smoke test 已覆盖完整的 M6.4 标记旅程、M6.3 练习/恢复旅程和 M6.2 Translation Library 旅程。
 - 浏览器测试工具确认了导出下载会正确触发（文件名和事件正确），但未捕获下载文件的实际落盘内容，因此人工检查下载文件内容仍属于推迟的 M6 整体验收范围。
@@ -63,7 +63,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。
 - 学习者作答标记和 rich correction 现已存在，但外部 Teacher Review 往返（导出/导入、外部 AI/人工评阅）仍是 M6.6 尚未设计的 UX 边界。
 - 目前界面除了刚完成练习后的即时复盘页、以及为 M6.5 批改入口新增的文档编辑器"已完成的作答记录"极简列表外，没有更完整的入口可以浏览某份翻译文档历史上的 Learner Response；详细的历史/重练视图明确属于 M6.7 范围。
-- 一个自 M6.2 起就存在、并非 M6.5 引入的 UI 行为：编辑某个 Translation Item 的文字后，如果没有任何中间的重新渲染就直接点击"开始练习"，可能会把该条目编辑前的旧文字快照进新 session——因为该按钮的点击处理函数闭包捕获的是上一次完整渲染时的 `doc` 对象，而不是实时的 `translationLibrary` 状态。这个问题在 M6.5 之前没有被发现或报告，是在为 M6.5 做浏览器 smoke test（脚本化地快速"编辑后立即开始练习"）时才被发现的；需要作为独立的后续工作单独调查和修复，不并入本次 M6.5 范围。
+- 一个自 M6.2 起就存在的 UI 行为（在 M6.5 smoke test 中发现，作为独立的后续工作修复，不属于 M6.5 自身范围）：`startTranslationPractice()` 之前的点击处理函数闭包捕获的是上一次完整渲染时的 `doc` 对象，因此编辑某个 Translation Item 的文字后如果没有任何中间的重新渲染就直接点击"开始练习"，可能会把该条目编辑前的旧文字快照进新 session。修复方式是让它改为接收 `documentId`，在点击时从实时的 `translationLibrary` 重新查找该文档。
 - 如果某份翻译文档在其 Learner Response evidence（包括其中的学习者标记）存在期间被删除，该 evidence 依然有效（它自带 material 快照），但不再能通过文档编辑器直接找到；这与现有 Objective Quiz 的行为一致（删除试卷不会删除其 Learner Response）。
 - 把验收推迟到 M6 结束意味着 M6.2-M6.7 之间的集成问题可能比逐里程碑验收更晚才被发现；在此期间更依赖回归测试和 CI。
 - 学习者是否显示过隐藏的参考译文只记录在 active session 中，不会带入 finalized evidence；如果后续某个 M6.x 需要这个信号用于批改/复核，需要专门做一次追加式设计决策，而不是天然可用。
@@ -106,6 +106,6 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 远程：`origin`
 - M6.5 开始前已验证的基线：`90adb8c M6.4: Learner Answer Marking and Annotation Foundation (#3)`（squash merge，位于 main）
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步目标：经过验证的 M6.5 feature work 位于 `milestone/6.5-rich-correction` 分支，将开出 Pull Request 提交到 `main`，未经明确指示不得合并
+- 同步目标：一次 M6.5 收尾补丁（Teacher Review 与 Learner Response 之间的引用完整性；`validateCorrection()`/`validateTeacherReview()`/公开 schema 三者批改语义对齐；评阅者选定颜色接入插入/替换批改）已推送到既有的 `milestone/6.5-rich-correction` 分支及其已开出的 Pull Request 上，未经明确指示不得合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：正在为 `milestone/6.5-rich-correction` 创建 Pull Request 供独立评审；未经用户明确指示不得合并
+- Pull Request 状态：`milestone/6.5-rich-correction` 的既有 Pull Request 已更新为包含本次收尾补丁；未经用户明确指示不得合并

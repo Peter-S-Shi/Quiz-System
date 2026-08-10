@@ -264,6 +264,7 @@ const locales = {
       correctionReviewSaved: "批改已保存。",
       correctionReviewSaveFail: "无法保存批改，请检查浏览器存储空间后重试。",
       correctionResponseNotFound: "未找到对应的原始作答记录，无法打开批改工作区。",
+      correctionColorRequired: "请先在颜色选择器中选择一种颜色。",
     },
     translationPractice: {
       recoverTitle: "发现未完成的翻译练习",
@@ -328,6 +329,7 @@ const locales = {
       suggestedRevision: "建议的整体修订译文（可选）",
       save: "保存批改",
       finalizedResponses: "已完成的作答记录",
+      colorDefault: "默认颜色（不设置）",
       color: {
         red: "红色",
         blue: "蓝色",
@@ -595,6 +597,7 @@ const locales = {
       correctionReviewSaved: "Review saved.",
       correctionReviewSaveFail: "The review could not be saved. Check browser storage space and try again.",
       correctionResponseNotFound: "The original response could not be found, so the Correction Workspace could not be opened.",
+      correctionColorRequired: "Select a color in the color picker first.",
     },
     translationPractice: {
       recoverTitle: "Unfinished translation practice found",
@@ -659,6 +662,7 @@ const locales = {
       suggestedRevision: "Suggested whole-answer revision (optional)",
       save: "Save review",
       finalizedResponses: "Finalized responses",
+      colorDefault: "Default color (none)",
       color: {
         red: "Red",
         blue: "Blue",
@@ -1951,7 +1955,7 @@ function loadLearnerResponses() {
 
 function loadTeacherReviews() {
   const saved = localStorage.getItem(TEACHER_REVIEWS_KEY);
-  return parseTeacherReviewCollection(saved ? JSON.parse(saved) : []);
+  return parseTeacherReviewCollection(saved ? JSON.parse(saved) : [], { learnerResponses: loadLearnerResponses() });
 }
 
 function loadTranslationLibrary() {
@@ -2774,6 +2778,7 @@ function renderCorrectionWorkspace(responseId) {
         <button class="small-button" type="button" data-style="highlight">${t("review.highlight")}</button>
         <button class="small-button" type="button" data-style="bracket">${t("review.bracket")}</button>
         <select id="correctionColorSelect" aria-label="${t("review.textColor")}">
+          <option value="">${t("review.colorDefault")}</option>
           ${CORRECTION_COLORS.map((color) => `<option value="${color}">${t(`review.color.${color}`)}</option>`).join("")}
         </select>
         <button class="small-button" type="button" id="applyColorCorrection">${t("review.textColor")}</button>
@@ -2858,7 +2863,12 @@ function bindCorrectionWorkspaceEvents(response, item, answerText) {
   const colorButton = document.getElementById("applyColorCorrection");
   colorButton.addEventListener("mousedown", (event) => event.preventDefault());
   colorButton.addEventListener("click", () => {
-    applyStyleCorrection(item.id, answerText, "color", document.getElementById("correctionColorSelect").value);
+    const color = document.getElementById("correctionColorSelect").value;
+    if (!color) {
+      showToast(t("toast.correctionColorRequired"));
+      return;
+    }
+    applyStyleCorrection(item.id, answerText, "color", color);
   });
   ["applyInsertCorrection", "applyReplaceCorrection", "applyDeleteCorrection", "applyCommentCorrection"].forEach((id) => {
     document.getElementById(id).addEventListener("mousedown", (event) => event.preventDefault());
@@ -2923,7 +2933,10 @@ function applyInsertCorrection(itemId, answerText) {
   const start = textarea.selectionStart;
   const text = window.prompt(t("review.insertPrompt"), "");
   if (!text) return;
-  applyWorkspaceCorrection(itemId, answerText, { operation: "insert", start, end: start, anchoredText: "", text });
+  const draft = { operation: "insert", start, end: start, anchoredText: "", text };
+  const color = document.getElementById("correctionColorSelect").value;
+  if (color) draft.color = color;
+  applyWorkspaceCorrection(itemId, answerText, draft);
 }
 
 function applyReplaceCorrection(itemId, answerText) {
@@ -2936,7 +2949,10 @@ function applyReplaceCorrection(itemId, answerText) {
   }
   const text = window.prompt(t("review.replacePrompt"), "");
   if (!text) return;
-  applyWorkspaceCorrection(itemId, answerText, { operation: "replace", start, end, anchoredText: answerText.slice(start, end), text });
+  const draft = { operation: "replace", start, end, anchoredText: answerText.slice(start, end), text };
+  const color = document.getElementById("correctionColorSelect").value;
+  if (color) draft.color = color;
+  applyWorkspaceCorrection(itemId, answerText, draft);
 }
 
 function applyDeleteCorrection(itemId, answerText) {

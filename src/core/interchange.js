@@ -1,5 +1,5 @@
 import { makeId } from "./utils.js";
-import { CORRECTION_OPERATIONS, STYLE_TYPES, correctionsConflict, validateColor } from "./corrections.js";
+import { correctionsConflict, validateCorrectionShape } from "./corrections.js";
 
 export const INTERCHANGE_SCHEMA_VERSION = 1;
 
@@ -440,30 +440,16 @@ export function validateTeacherReview(value, options = {}) {
           if (!nonEmptyString(correction.id)) errors.push(`Correction ${index} requires an id.`);
           else if (correctionIds.has(correction.id)) errors.push(`Duplicate correction id: ${correction.id}`);
           else correctionIds.add(correction.id);
-          if (!CORRECTION_OPERATIONS.includes(correction.operation)) errors.push(`Invalid correction operation: ${correction.operation}`);
-          if (!Number.isInteger(correction.start) || correction.start < 0) errors.push(`Correction ${index} has an invalid start.`);
-          if (!Number.isInteger(correction.end) || correction.end < correction.start) errors.push(`Correction ${index} has an invalid end.`);
-          if (typeof correction.anchoredText !== "string") errors.push(`Correction ${index} requires anchoredText.`);
-          if (!nonEmptyString(correction.createdAt)) errors.push(`Correction ${index} requires createdAt.`);
 
-          if (correction.operation === "style") {
-            if (!STYLE_TYPES.includes(correction.styleType)) errors.push(`Invalid correction styleType: ${correction.styleType}`);
-            if (correction.styleType === "color" && !validateColor(correction.color)) errors.push(`Invalid correction color: ${correction.color}`);
-          } else if (correction.operation === "insert" || correction.operation === "replace") {
-            if (typeof correction.text !== "string" || !correction.text.length) errors.push(`Correction ${index} requires replacement/inserted text.`);
-            if (correction.color !== undefined && !validateColor(correction.color)) errors.push(`Invalid correction color: ${correction.color}`);
-          } else if (correction.operation === "comment") {
-            if (typeof correction.text !== "string" || !correction.text.length) errors.push(`Correction ${index} requires comment text.`);
+          const shape = validateCorrectionShape(correction);
+          if (!shape.valid) {
+            shape.errors.forEach((message) => errors.push(`Correction ${index}: ${message}`));
+            return;
           }
 
           if (!response) return;
           if (typeof answerText !== "string") {
             errors.push(`Correction ${index} references an item with no learner answer text.`);
-            return;
-          }
-          if (!Number.isInteger(correction.start) || !Number.isInteger(correction.end)
-            || correction.start < 0 || correction.end < correction.start
-            || typeof correction.anchoredText !== "string") {
             return;
           }
           if (correction.end > answerText.length) {

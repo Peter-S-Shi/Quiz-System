@@ -67,7 +67,35 @@
         "styleType": { "enum": ["bold", "italic", "underline", "strikethrough", "highlight", "bracket", "color"] },
         "color": { "enum": ["red", "blue", "green", "purple", "orange", "teal", "brown"] },
         "createdAt": { "type": "string", "minLength": 1 }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["operation"], "properties": { "operation": { "const": "insert" } } },
+          "then": {
+            "required": ["text"],
+            "properties": { "anchoredText": { "const": "" }, "text": { "minLength": 1 } }
+          }
+        },
+        {
+          "if": { "required": ["operation"], "properties": { "operation": { "const": "replace" } } },
+          "then": { "required": ["text"], "properties": { "text": { "minLength": 1 } } }
+        },
+        {
+          "if": { "required": ["operation"], "properties": { "operation": { "const": "comment" } } },
+          "then": { "required": ["text"], "properties": { "text": { "minLength": 1 } } }
+        },
+        {
+          "if": { "required": ["operation"], "properties": { "operation": { "const": "style" } } },
+          "then": { "required": ["styleType"] }
+        },
+        {
+          "if": {
+            "required": ["operation", "styleType"],
+            "properties": { "operation": { "const": "style" }, "styleType": { "const": "color" } }
+          },
+          "then": { "required": ["color"] }
+        }
+      ]
     }
   }
 }

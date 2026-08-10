@@ -27,7 +27,11 @@ export function createCorrection({
   return correction;
 }
 
-export function validateCorrection(correction, answerText) {
+// The single source of truth for per-correction structural rules (id/operation/range/anchoredText
+// shape and operation-specific field requirements), independent of any particular answer text.
+// Both validateCorrection() (used for live UI additions, given the current answer text) and
+// interchange.js's Teacher Review runtime validation call this, so the two can never drift apart.
+export function validateCorrectionShape(correction) {
   const errors = [];
   if (!isPlainObject(correction)) return invalid("Correction must be an object.");
   if (!nonEmptyString(correction.id)) errors.push("Correction id is required.");
@@ -37,23 +41,19 @@ export function validateCorrection(correction, answerText) {
   if (!nonEmptyString(correction.createdAt)) errors.push("Correction createdAt is required.");
 
   const isInsert = correction.operation === "insert";
-  if (isInsert && correction.start !== correction.end) errors.push("Insert corrections must anchor to a single caret position (start === end).");
-  if (!isInsert && correction.operation !== undefined && correction.end === correction.start
-    && CORRECTION_OPERATIONS.includes(correction.operation)) {
-    errors.push("Only insert corrections may anchor to a zero-length position.");
+  const hasValidRange = Number.isInteger(correction.start) && Number.isInteger(correction.end) && correction.end >= correction.start;
+  if (hasValidRange) {
+    if (isInsert && correction.start !== correction.end) {
+      errors.push("Insert corrections must anchor to a single caret position (start === end).");
+    } else if (!isInsert && correction.end === correction.start && CORRECTION_OPERATIONS.includes(correction.operation)) {
+      errors.push("Only insert corrections may anchor to a zero-length position.");
+    }
   }
 
-  if (typeof correction.anchoredText !== "string") errors.push("Correction anchoredText is required.");
-  if (
-    typeof answerText === "string"
-    && Number.isInteger(correction.start)
-    && Number.isInteger(correction.end)
-    && typeof correction.anchoredText === "string"
-  ) {
-    if (correction.end > answerText.length) errors.push("Correction end exceeds the answer length.");
-    else if (answerText.slice(correction.start, correction.end) !== correction.anchoredText) {
-      errors.push("Correction anchoredText does not match the anchored answer span.");
-    }
+  if (typeof correction.anchoredText !== "string") {
+    errors.push("Correction anchoredText is required.");
+  } else if (isInsert && correction.anchoredText !== "") {
+    errors.push("Insert corrections must anchor to an empty anchoredText.");
   }
 
   if (correction.operation === "style") {
@@ -64,6 +64,26 @@ export function validateCorrection(correction, answerText) {
     if (correction.color !== undefined && !validateColor(correction.color)) errors.push(`Invalid correction color: ${correction.color}`);
   } else if (correction.operation === "comment") {
     if (typeof correction.text !== "string" || !correction.text.length) errors.push("Correction text (comment body) is required for a comment operation.");
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+export function validateCorrection(correction, answerText) {
+  const shape = validateCorrectionShape(correction);
+  if (!shape.valid) return shape;
+
+  const errors = [];
+  if (
+    typeof answerText === "string"
+    && Number.isInteger(correction.start)
+    && Number.isInteger(correction.end)
+    && typeof correction.anchoredText === "string"
+  ) {
+    if (correction.end > answerText.length) errors.push("Correction end exceeds the answer length.");
+    else if (answerText.slice(correction.start, correction.end) !== correction.anchoredText) {
+      errors.push("Correction anchoredText does not match the anchored answer span.");
+    }
   }
 
   return { valid: errors.length === 0, errors };
