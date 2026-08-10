@@ -591,6 +591,21 @@ label small {
   font-size: 12px;
 }
 
+.history-summary {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.history-item .small-button {
+  flex: 0 0 auto;
+}
+
+.quiz-actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
 .quiz-title-block h2 {
   margin: 0 0 8px;
   font-size: clamp(24px, 4vw, 38px);
@@ -768,6 +783,10 @@ label small {
 .result-score strong {
   font-size: clamp(42px, 9vw, 82px);
   line-height: 1;
+}
+
+.result-score p {
+  margin: 8px 0 0;
 }
 
 .review-list {

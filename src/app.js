@@ -1,4 +1,12 @@
 import { formatAnswer, gradeQuestion } from "./core/grading.js";
+import { createLibraryBackup, parseLibraryBackup } from "./core/backup.js";
+import { createQuizLearnerResponse, toPortableLearnerResponse } from "./core/interchange.js";
+import {
+  findLearnerResponse,
+  parseLearnerResponseCollection,
+  removeLearnerResponsesForMaterial,
+  upsertLearnerResponse,
+} from "./core/learning-records.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
 import {
   QUESTION_TYPES,
@@ -20,6 +28,7 @@ const {
   ACTIVE_PAPER: ACTIVE_PAPER_KEY,
   ACTIVE_SESSION: ACTIVE_SESSION_KEY,
   HISTORY: HISTORY_KEY,
+  LEARNER_RESPONSES: LEARNER_RESPONSES_KEY,
   THEME: THEME_KEY,
   LANGUAGE: LANG_KEY,
 } = STORAGE_KEYS;
@@ -62,6 +71,7 @@ const locales = {
       backupImported: "已导入备份",
       paperImported: "已导入试卷",
       backupImportFail: "导入失败，请选择有效的试卷或备份 JSON 文件。",
+      backupExportFail: "备份失败，请检查本地作答记录是否完整。",
       copySuffix: "副本",
     },
     paper: {
@@ -90,6 +100,7 @@ const locales = {
       previousQuestion: "上一题",
       retry: "再做一次",
       clearHistory: "清空记录",
+      exportResponse: "导出作答记录",
     },
     practice: {
       setupTitle: "练习设置",
@@ -106,6 +117,8 @@ const locales = {
       answered: "已答 {count} / {total}",
       noWrongQuestions: "最近没有可重练的错题",
       allTypes: "全部题型",
+      evidenceSaved: "原始作答已作为独立学习记录保存在本机。",
+      clearHistoryConfirm: "确定清空这套试卷的答题历史和对应原始作答记录吗？此操作无法撤销。",
     },
     question: {
       listTitle: "题目",
@@ -173,7 +186,10 @@ const locales = {
       importSuccess: "导入成功",
       importFail: "导入失败，请选择正确的 JSON 试卷文件。",
       unsupportedLanguage: "暂不支持该语言。",
-      historyCleared: "答题历史已清空",
+      historyCleared: "答题历史和作答记录已清空",
+      responseSaveFail: "无法保存原始作答记录。请检查浏览器存储空间后重试。",
+      responseExportFail: "无法导出作答记录。",
+      historySaveFail: "原始作答已保存，但成绩摘要无法写入本地历史。",
     },
     samplePaper: {
       title: "第一份 Quiz 试卷",
@@ -228,6 +244,7 @@ const locales = {
       backupImported: "Backup imported",
       paperImported: "Paper imported",
       backupImportFail: "Import failed. Choose a valid paper or backup JSON file.",
+      backupExportFail: "Backup failed. Check that local learner-response records are valid.",
       copySuffix: "Copy",
     },
     paper: {
@@ -256,6 +273,7 @@ const locales = {
       previousQuestion: "Previous",
       retry: "Try again",
       clearHistory: "Clear history",
+      exportResponse: "Export response",
     },
     practice: {
       setupTitle: "Practice setup",
@@ -272,6 +290,8 @@ const locales = {
       answered: "{count} / {total} answered",
       noWrongQuestions: "No wrong questions are available from recent attempts",
       allTypes: "All types",
+      evidenceSaved: "The original response is stored locally as a separate learning record.",
+      clearHistoryConfirm: "Clear this paper's answer history and corresponding original response records? This cannot be undone.",
     },
     question: {
       listTitle: "Questions",
@@ -339,7 +359,10 @@ const locales = {
       importSuccess: "Import complete",
       importFail: "Import failed. Please choose a valid JSON paper file.",
       unsupportedLanguage: "This language is not supported yet.",
-      historyCleared: "Answer history cleared",
+      historyCleared: "Answer history and response records cleared",
+      responseSaveFail: "The original response could not be saved. Check browser storage space and try again.",
+      responseExportFail: "The learner response could not be exported.",
+      historySaveFail: "The original response was saved, but the score summary could not be added to local history.",
     },
     samplePaper: {
       title: "First Quiz Paper",
@@ -959,13 +982,19 @@ function renderQuizStart() {
   document.getElementById("startWrongQuiz").addEventListener("click", () => startQuiz({ questionIds: wrongIds, wrongOnly: true }));
   document.getElementById("backToEdit").addEventListener("click", () => setMode("edit"));
   document.getElementById("clearHistory").addEventListener("click", clearPaperHistory);
+  document.querySelectorAll("[data-export-response]").forEach((button) => {
+    button.addEventListener("click", () => exportLearnerResponse(button.dataset.exportResponse));
+  });
 }
 
 function renderHistoryItem(item) {
   return `
     <div class="history-item">
-      <strong>${item.percent}%</strong>
-      <span>${item.correctCount}/${item.questionCount} · ${formatDate(item.completedAt)}</span>
+      <div class="history-summary">
+        <strong>${item.percent}%</strong>
+        <span>${item.correctCount}/${item.questionCount} · ${formatDate(item.completedAt)}</span>
+      </div>
+      ${item.responseId ? `<button class="small-button" type="button" data-export-response="${escapeHtml(item.responseId)}">${t("actions.exportResponse")}</button>` : ""}
     </div>
   `;
 }
@@ -1208,11 +1237,18 @@ function renderResults() {
   const correctCount = session.results.filter((result) => result.correct).length;
   const percent = Math.round((correctCount / session.questions.length) * 100);
   const missedQuestionIds = session.results.filter((item) => !item.correct).map((item) => item.questionId);
-  session.completed = true;
   session.completedAt = new Date().toISOString();
   session.correctCount = correctCount;
   session.percent = percent;
-  recordHistory();
+  const learnerResponse = finalizeLearnerResponse();
+  if (!learnerResponse) {
+    session.completed = false;
+    persistSession();
+    return;
+  }
+  session.responseId = learnerResponse.id;
+  session.completed = true;
+  if (!recordHistory(learnerResponse)) showToast(t("toast.historySaveFail"));
   localStorage.removeItem(ACTIVE_SESSION_KEY);
 
   quizPanel.innerHTML = `
@@ -1225,6 +1261,7 @@ function renderResults() {
         <div>
           <strong>${percent}%</strong>
           <p>${t("result.score", { correct: correctCount, total: session.questions.length })}</p>
+          <p class="meta-text">${t("practice.evidenceSaved")}</p>
         </div>
       </div>
       <div class="review-list">
@@ -1244,6 +1281,7 @@ function renderResults() {
       </div>
       <div class="quiz-actions">
         <button class="secondary-button" id="backToEditorAfterResult" type="button">${t("actions.backToEdit")}</button>
+        <button class="secondary-button" id="exportResponseAfterResult" type="button">${t("actions.exportResponse")}</button>
         <button class="secondary-button" id="retryWrongAfterResult" type="button" ${missedQuestionIds.length ? "" : "disabled"}>${t("actions.startWrongQuiz")}</button>
         <button class="primary-button" id="retryQuiz" type="button">${t("actions.retry")}</button>
       </div>
@@ -1251,6 +1289,7 @@ function renderResults() {
   `;
 
   document.getElementById("backToEditorAfterResult").addEventListener("click", () => setMode("edit"));
+  document.getElementById("exportResponseAfterResult").addEventListener("click", () => exportLearnerResponse(learnerResponse.id));
   document.getElementById("retryQuiz").addEventListener("click", () => startQuiz());
   document.getElementById("retryWrongAfterResult").addEventListener("click", () => startQuiz({ questionIds: missedQuestionIds, wrongOnly: true }));
 }
@@ -1426,13 +1465,16 @@ function importPaper(event) {
 }
 
 function exportLibraryBackup() {
-  const backup = {
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    exportedAt: new Date().toISOString(),
-    library,
-    history: loadHistory(),
-  };
-  downloadJson(backup, `quiz-studio-backup-${new Date().toISOString().slice(0, 10)}.json`);
+  try {
+    const backup = createLibraryBackup({
+      library,
+      history: loadHistory(),
+      learnerResponses: loadLearnerResponses(),
+    });
+    downloadJson(backup, `quiz-studio-backup-${new Date().toISOString().slice(0, 10)}.json`);
+  } catch {
+    showToast(t("library.backupExportFail"));
+  }
 }
 
 function importLibraryBackup(event) {
@@ -1441,8 +1483,10 @@ function importLibraryBackup(event) {
 
   readJsonFile(file, (imported) => {
     if (imported.library?.papers?.length) {
-      library = normalizeLibrary(imported.library, { createDefaultPaper });
-      if (Array.isArray(imported.history)) saveJson(HISTORY_KEY, imported.history);
+      const restored = parseLibraryBackup(imported, { createDefaultPaper });
+      if (restored.hasLearnerResponses) saveJson(LEARNER_RESPONSES_KEY, restored.learnerResponses);
+      saveJson(HISTORY_KEY, restored.history);
+      library = restored.library;
       activePaperId = library.papers[0].id;
       localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
       showToast(t("library.backupImported"));
@@ -1493,6 +1537,35 @@ function persistSession() {
   saveJson(ACTIVE_SESSION_KEY, session);
 }
 
+function finalizeLearnerResponse() {
+  try {
+    const response = createQuizLearnerResponse({ id: session.responseId || makeId(), session });
+    const next = upsertLearnerResponse(loadLearnerResponses(), response);
+    saveJson(LEARNER_RESPONSES_KEY, next);
+    return response;
+  } catch {
+    showToast(t("toast.responseSaveFail"));
+    return null;
+  }
+}
+
+function loadLearnerResponses() {
+  const saved = localStorage.getItem(LEARNER_RESPONSES_KEY);
+  return parseLearnerResponseCollection(saved ? JSON.parse(saved) : []);
+}
+
+function exportLearnerResponse(responseId) {
+  try {
+    const response = findLearnerResponse(loadLearnerResponses(), responseId);
+    if (!response) throw new Error("Learner Response not found");
+    const portable = toPortableLearnerResponse(response);
+    const title = safeFileName(portable.material.title || "learner-response");
+    downloadJson(portable, `${title}-response-${portable.id}.json`);
+  } catch {
+    showToast(t("toast.responseExportFail"));
+  }
+}
+
 function loadActiveSession() {
   const saved = loadJson(ACTIVE_SESSION_KEY);
   return saved?.paperId === activePaperId && !saved.completed ? saved : null;
@@ -1503,7 +1576,7 @@ function clearActiveSession() {
   session = null;
 }
 
-function recordHistory() {
+function recordHistory(learnerResponse) {
   const history = loadHistory();
   const entry = {
     id: session.id,
@@ -1513,12 +1586,18 @@ function recordHistory() {
     questionCount: session.questions.length,
     correctCount: session.correctCount,
     percent: session.percent,
+    responseId: learnerResponse.id,
     missedQuestionIds: session.results.filter((item) => !item.correct).map((item) => item.questionId),
     results: session.results,
   };
   const withoutDuplicate = history.filter((item) => item.id !== entry.id);
   withoutDuplicate.unshift(entry);
-  saveJson(HISTORY_KEY, withoutDuplicate.slice(0, 100));
+  try {
+    saveJson(HISTORY_KEY, withoutDuplicate.slice(0, 100));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function loadHistory() {
@@ -1543,8 +1622,16 @@ function getWrongQuestionIds() {
 }
 
 function clearPaperHistory() {
+  if (!window.confirm(t("practice.clearHistoryConfirm"))) return;
   const kept = loadHistory().filter((item) => item.paperId !== activePaperId);
-  saveJson(HISTORY_KEY, kept);
+  try {
+    const keptResponses = removeLearnerResponsesForMaterial(loadLearnerResponses(), activePaperId);
+    saveJson(LEARNER_RESPONSES_KEY, keptResponses);
+    saveJson(HISTORY_KEY, kept);
+  } catch {
+    showToast(t("toast.responseSaveFail"));
+    return;
+  }
   renderQuizStart();
   showToast(t("toast.historyCleared"));
 }

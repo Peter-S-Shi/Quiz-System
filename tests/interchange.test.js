@@ -10,6 +10,13 @@ import {
   validateLearnerResponse,
   validateTeacherReview,
 } from "../src/core/interchange.js";
+import { createLibraryBackup, parseLibraryBackup } from "../src/core/backup.js";
+import {
+  findLearnerResponse,
+  parseLearnerResponseCollection,
+  removeLearnerResponsesForMaterial,
+  upsertLearnerResponse,
+} from "../src/core/learning-records.js";
 import { normalizePaper } from "../src/core/migrations.js";
 
 function makeCompletedSession() {
@@ -103,4 +110,41 @@ test("quiz paper provenance survives normalization without personal identifiers"
   const paper = normalizePaper({ id: "paper-2", title: "Follow-up", questions: [], provenance });
 
   assert.deepEqual(paper.provenance, provenance);
+});
+
+test("learner response storage is independent and has no silent history cap", () => {
+  const records = [];
+  for (let index = 0; index < 125; index += 1) {
+    const response = createQuizLearnerResponse({ id: `response-${index}`, session: makeCompletedSession() });
+    records.splice(0, records.length, ...upsertLearnerResponse(records, response));
+  }
+
+  assert.equal(records.length, 125);
+  assert.equal(findLearnerResponse(records, "response-0").id, "response-0");
+  assert.equal(removeLearnerResponsesForMaterial(records, "paper-1").length, 0);
+});
+
+test("library backups include learner responses and accept legacy backups", () => {
+  const response = createQuizLearnerResponse({ id: "response-1", session: makeCompletedSession() });
+  const library = { schemaVersion: 1, papers: [{ id: "paper-1", title: "Synthetic Quiz", questions: [] }] };
+  const backup = createLibraryBackup({
+    library,
+    history: [{ id: "session-1", percent: 100 }],
+    learnerResponses: [response],
+    exportedAt: "2026-01-01T12:00:00.000Z",
+  });
+  const parsed = parseLibraryBackup(backup);
+
+  assert.equal(parsed.hasLearnerResponses, true);
+  assert.equal(parsed.learnerResponses[0].responses[0].answer, "option-a");
+
+  const legacy = parseLibraryBackup({ schemaVersion: 1, library, history: [] });
+  assert.equal(legacy.hasLearnerResponses, false);
+  assert.deepEqual(legacy.learnerResponses, []);
+});
+
+test("backup parsing rejects malformed learner evidence before applying data", () => {
+  const library = { schemaVersion: 1, papers: [{ id: "paper-1", title: "Synthetic Quiz", questions: [] }] };
+  assert.throws(() => parseLibraryBackup({ library, history: [], learnerResponses: [{ id: "broken" }] }));
+  assert.throws(() => parseLearnerResponseCollection({}));
 });
