@@ -4,12 +4,15 @@ export function parseLearnerResponseCollection(value) {
   if (value == null) return [];
   if (!Array.isArray(value)) throw new TypeError("Learner Response collection must be an array.");
 
+  const seenIds = new Set();
   return value.map((item, index) => {
     const normalized = normalizeLearnerResponse(item);
     const validation = validateLearnerResponse(normalized);
     if (!validation.valid) {
       throw new TypeError(`Invalid Learner Response at index ${index}: ${validation.errors.join(" ")}`);
     }
+    if (seenIds.has(normalized.id)) throw new TypeError(`Duplicate Learner Response id: ${normalized.id}`);
+    seenIds.add(normalized.id);
     return normalized;
   });
 }
@@ -33,6 +36,13 @@ export function upsertLearnerResponse(collection, response) {
 
 export function removeLearnerResponsesForMaterial(collection, materialId) {
   return parseLearnerResponseCollection(collection).filter((item) => item.material.id !== materialId);
+}
+
+// Deletes exactly one Learner Response by its stable id. Callers are responsible for deciding
+// whether dependent Teacher Reviews should be cascade-deleted alongside it (see
+// src/core/deletion-policy.js); this function never touches any other collection.
+export function removeLearnerResponse(collection, responseId) {
+  return parseLearnerResponseCollection(collection).filter((item) => item.id !== responseId);
 }
 
 export function findLearnerResponse(collection, responseId) {

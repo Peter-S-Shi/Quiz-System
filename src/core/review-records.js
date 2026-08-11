@@ -4,6 +4,7 @@ export function parseTeacherReviewCollection(value, options = {}) {
   if (value == null) return [];
   if (!Array.isArray(value)) throw new TypeError("Teacher Review collection must be an array.");
 
+  const seenIds = new Set();
   return value.map((item, index) => {
     const normalized = normalizeTeacherReview(item);
     const { learnerResponse, hasContext } = resolveResponseContext(options, normalized.responseId);
@@ -14,6 +15,11 @@ export function parseTeacherReviewCollection(value, options = {}) {
     if (!validation.valid) {
       throw new TypeError(`Invalid Teacher Review at index ${index}: ${validation.errors.join(" ")}`);
     }
+    // A response may legitimately hold multiple reviews, but each review id is its own stable
+    // identity and must be unique within the collection (mirrors upsertTeacherReview()'s live
+    // dedupe-by-id behavior for the bulk/backup-restore parsing path).
+    if (seenIds.has(normalized.id)) throw new TypeError(`Duplicate Teacher Review id: ${normalized.id}`);
+    seenIds.add(normalized.id);
     return normalized;
   });
 }
@@ -39,6 +45,20 @@ export function upsertTeacherReview(collection, review, options = {}) {
   }
 
   return [normalized, ...existing.filter((item) => item.id !== normalized.id)];
+}
+
+// Deletes exactly one Teacher Review by its stable id. Never mutates the Learner Response it
+// targets; a retry/remediation response that carried this review's id as sourceReviewId simply
+// becomes an unresolved (but safely represented) historical reference afterward.
+export function removeTeacherReview(collection, reviewId) {
+  return parseTeacherReviewCollection(collection).filter((item) => item.id !== reviewId);
+}
+
+// Cascade-delete helper for when the target Learner Response itself is being removed: every review
+// pointing at that response is deleted alongside it, since a Teacher Review's responseId is a
+// protected link that must always resolve to a real response.
+export function removeTeacherReviewsForResponse(collection, responseId) {
+  return parseTeacherReviewCollection(collection).filter((item) => item.responseId !== responseId);
 }
 
 export function findTeacherReviewForResponse(collection, responseId) {

@@ -17,6 +17,9 @@ Quiz Studio 是一个静态 ES module 应用。
 - `src/core/corrections.js`：与 DOM 解耦的 rich correction 模型，服务于 M6.5 批改工作区——用单一的 `correction` 概念覆盖表现型样式、内容变更类操作（插入/替换/删除）和批注，每一条都锚定在一个字符范围上；包含校验、样式/颜色校验、内容操作冲突策略，以及一个确定性的渲染投影函数。
 - `src/core/review-records.js`：独立的 Teacher Review 集合操作（按 ID 新增/更新、按 `responseId` 查找单条或查找某个 response 的全部 review），与 `learning-records.js` 对应，同样没有静默的历史条数上限。
 - `src/core/review-transport.js`：与 DOM 解耦的 M6.6 外部互通层——带版本号的评阅请求与补救练习请求传输信封（创建/校验）、带明确版本门槛的 Teacher Review 外部导入解析、导入冲突分类（新增/幂等/更新/拒绝改指），以及补救翻译文档的 provenance 交叉校验。复用既有的 M6.5 Teacher Review 校验器和 M6.2 Translation Document JSON 解析器，而不是重复实现。
+- `src/core/translation-history.js`：与 DOM 解耦的 M6.7 历史派生逻辑——从 Learner Response 和 Teacher Review（绝不新建第二个真源）派生历史条目/索引、需要加强条目的判定、条目状态派生、筛选，以及跨越重新练习和补救 provenance 的前向/后向溯源解析。
+- `src/core/translation-retry.js`：与 DOM 解耦的 M6.7 重新练习材料派生逻辑——基于某条历史 Learner Response 快照（整份或选定的条目子集）构建一个带 `provenance.purpose: "retry"` 的临时、文档形状对象，可直接交给 `createTranslationSession()`，全程不触碰实时 Translation Library。
+- `src/core/deletion-policy.js`：与 DOM 解耦的 M6.7 依赖分析——针对删除翻译文档、Learner Response 或 Teacher Review 各自计算依赖关系，只报告依赖、绝不修改任何数据，供 `src/app.js` 在破坏性操作前渲染准确的白话警告。
 - `src/core/migrations.js`：schema 版本和数据标准化。
 - `src/storage/local-storage.js`：浏览器本地存储边界。
 - `schemas/`：公开 Quiz Paper、Learner Response、Teacher Review、Translation Document、评阅请求和补救练习请求 JSON Schema。
@@ -75,6 +78,47 @@ M6.6 在完全不依赖任何应用内 AI API 的前提下，闭合了 Open Teac
 补救材料是一份普通的 `quiz-studio.translation-document`，通过一个增量的 `provenance` 字段块（M6.0 早已通用支持）来区分：`purpose: "remediation"`、`sourceResponseId`、`sourceReviewId`、`sourceMaterialId`、`createdAt`、`author`。通用的 `validateRemediationProvenance()` 对不声称补救用途的文档仍是空操作；专用补救文件解析器和 `validateRemediationImportProvenance()` 则要求真实的补救用途声明、有效的原始时间戳/actor 元数据、能在本地解析的 response/review ID、确实属于该 response 的 review，以及匹配的可选 material ID。普通 M6.2 导入保持不变；冲突检测、"复制为新 ID"重映射和本地文件夹重新绑定仍不会改写 `provenance`。
 
 溯源信息进入练习证据的方式是在 session 层做增量扩展：`createTranslationSession()` 会把 `document.provenance` 复制进 `session.materialProvenance`（仅当该文档确实带有 provenance 时才存在），`createTranslationLearnerResponse()` 会把它归一化后带入新 response 的 `provenance` 字段，取代原来写死的 `{ purpose: "practice" }`。由于 finalized response 是按值携带完整 provenance 字段块的，即使之后删除了实时的补救翻译文档，回溯到来源 response/review 的链路依然完好——不依赖它是否还存在。
+
+## Translation 历史、重新练习与溯源（M6.7）
+
+M6.7 没有引入第二个数据库。Translation 历史在每次渲染时都从 M6.0/M6.5 已经维护的同一批规范集合（`quiz-studio-learner-responses-v1` 和 `quiz-studio-teacher-reviews-v1`）重新派生——`buildHistoryIndex()` 只筛选出 Translation response（`material.type === "translation-document"`），并仅从这两个集合计算批改数量、需要加强数量以及重新练习/补救徽章；因此它始终可重建、绝不设置历史条数上限，并且在实时翻译文档被删除后依然完全可用（response 自身的 `material.snapshot` 已经携带历史视图所需的全部信息）。
+
+`deriveNeedsWorkItemIds()` 是唯一有文档说明的、确定性的"需要加强"规则：一个条目会被纳入，只要它带有任意学习者标记（`unknown`/`uncertain`/`should_know`），或任意一条 Teacher Review 对它给出 `incorrect`/`partial`/`needs-review` 评判，或任意一条 Teacher Review 对它附加了批改——这些信号会跨这个 response 的全部 review 取并集（而不仅仅是最新一条），因此结果绝不会依赖 review 的先后顺序。
+
+重新练习复用了 M6.6 既有的 provenance/session 机制，而不是新增一套平行机制：`buildRetryMaterial()` 接收一条历史 Learner Response（可选地传入条目 ID 子集），返回一个带有全新条目/材料 ID 的文档形状对象，其 `provenance: { purpose: "retry", sourceResponseId, sourceReviewId?, sourceMaterialId, createdAt }`，直接交给既有的 `createTranslationSession()`——正是这套已经把 `document.provenance` 带入 `session.materialProvenance`、再带入 finalized response 的 `provenance` 字段（M6.6 为补救材料所做的机制），在这里为重新练习做了同样的事，`translation-session.js` 和 `interchange.js` 都不需要任何改动。重新练习与补救练习只通过 `provenance.purpose` 区分；当"需要加强"集合来自不止一条 review（或仅来自标记）时，针对需要加强条目的重新练习绝不会设置 `sourceReviewId`，因为此时不存在唯一的一条"它是针对哪条 review 的重新练习"。
+
+`resolveResponseLineage()` 沿 `provenance.sourceResponseId`（以及可选的 `sourceReviewId`）向后回溯，并查找所有 `provenance.sourceResponseId` 指向当前 response 的记录（向前）。缺失的来源记录（已删除的 response 或 review）会被表示为 `{ ...Available: false }`，而不是抛出异常——这正是 M6.6 已经为补救材料建立的"历史 provenance 可以指向一个如今已经不存在的来源"约定，在这里被推广到重新练习和历史 UI。
+
+### 删除安全（M6.7）
+
+`deletion-policy.js` 本身从不删除任何数据；它只报告依赖关系，供 `src/app.js` 在执行不可逆操作前给出准确的警告：
+
+- **翻译文档**：删除它绝不会影响 Learner Response（它们携带自己的快照）；分析函数只报告有多少条依赖它，供确认提示引用。
+- **Learner Response**：影响较大，因为 Teacher Review 的 `responseId` 是一条必须始终可解析的受保护链接。文档化的策略是显式级联：确认后会把这条 response 连同所有指向它的 review 一并删除，但绝不会删除由它派生出的重新练习/补救 response——它们的 `provenance.sourceResponseId` 之后会安全地变成一条无法解析、但被明确表示出来的历史引用（参见上面的 `resolveResponseLineage()`）。
+- **Teacher Review**：绝不会修改它所针对的 Learner Response。某条重新练习/补救 response 可能把这条 review 的 ID 记作 `sourceReviewId`；这是历史引用而非规范链接，因此该 review 始终可以被删除——UI 只会先警告有多少派生记录引用了它。
+
+**收尾补丁——实时补救文档是规范数据，不是历史引用。** 一条 *finalized Learner Response* 自身的 `provenance.sourceResponseId`/`sourceReviewId` 可以安全地引用一个已经被删除的来源（见上面关于溯源的讨论）。但一份仍然存在于 Translation Library 中的*实时*补救翻译文档不同：`parseLibraryBackup()` 每次恢复时都会把它的 `provenance` 与备份中的 Learner Response/Teacher Review 集合做交叉校验，因此如果一份实时补救文档声称的来源不再能解析，下一次备份就会恢复失败。为此，`analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` 现在接受 `translationDocuments` 参数，并报告 `dependentRemediationDocumentIds`/`hasBlockingDependents`——只要有任意一份*实时*补救文档仍把目标记为自己的 `sourceResponseId`/`sourceReviewId`。当 `hasBlockingDependents` 为真时，`deleteLearnerResponseConfirm()`/`deleteTeacherReviewConfirm()` 会直接拒绝这次删除（通过 `showToast()` 提示依赖数量，连确认对话框都不会弹出），而不是级联穿过它——补救文档绝不会作为副作用被自动删除。先删除依赖它的补救文档（普通的翻译文档删除，行为不变）即可解除这个阻塞，之后上面描述的级联/警告行为照常适用。
+
+有一条排序规则值得任何后续扩展者注意：`src/app.js` 中的 `loadTeacherReviews()` 每次调用都会把全部 review 重新对照*当前*的 Learner Response 集合做校验（因此孤儿 review 会被立即发现，而不仅仅在导入时）。任何删除某条 response 的流程都必须在写入更新后的 response 集合*之前*先给 `loadTeacherReviews()` 拍一份快照——如果在那之后才调用它，会看到刚刚变成孤儿的 review 并抛出异常。`deleteLearnerResponseConfirm()` 正是因为这个原因才提前对两个集合都做了快照。
+
+### 存储治理（M6.7）
+
+M1-M6 引入的每一个持久化 key，为 M6.7 生命周期收尾而逐一复查：
+
+| Key | 规范记录 | 迁移 | 备份 | 删除行为 |
+| --- | --- | --- | --- | --- |
+| `quiz-studio-library-v1` | Quiz 试卷 | `migrations.js` | 包含 | 删除试卷是显式操作；对应的历史/response 需要同样的确认清空 |
+| `quiz-studio-legacy-paper`（`quiz-studio-paper-v1`） | 试卷库之前的单套试卷 | 一次性迁移进试卷库后不再使用 | 不适用 | 只读迁移来源 |
+| `quiz-studio-active-paper` | 当前选中试卷 ID | 不适用 | 不备份（UI 选中状态，可重建） | 删除试卷时清空 |
+| `quiz-studio-active-session-v1` | 进行中的 Objective Quiz session | 不适用 | 不备份（仅为可恢复的临时状态） | 完成/放弃时清空 |
+| `quiz-studio-translation-active-session-v1` | 进行中的 Translation session | 不适用 | 不备份（仅为可恢复的临时状态） | 完成/放弃时清空；与 Objective Quiz 的 key 相互隔离 |
+| `quiz-studio-history-v1` | Quiz 成绩摘要历史 | 不适用 | 包含 | 按设计上限 100 条；随对应试卷的 response 一起被显式清空 |
+| `quiz-studio-learner-responses-v1` | Learner Response（Quiz 和 Translation） | 不适用（按记录带 `schemaVersion`） | 包含 | 无上限；M6.7 新增单条 response 删除，并级联删除其批改（见上文） |
+| `quiz-studio-teacher-reviews-v1` | Teacher Review | 不适用（按记录带 `schemaVersion`） | 包含 | 无上限；M6.7 新增单条批改删除 |
+| `quiz-studio-translation-library-v1` | 翻译文件夹/文档/条目（包含补救文档） | 不适用（带 `schemaVersion`） | 包含 | 删除文件夹会级联删除其文档；删除文档绝不影响 Learner Response |
+| `quiz-studio-theme` / `quiz-studio-language` | UI 偏好 | 不适用 | 不备份（设备本地偏好） | 不适用 |
+
+本次复查未发现重复真源：Translation 历史（M6.7）和 Quiz 成绩摘要历史都是建立在规范集合之上的派生/展示层，而不是另一个规范存储。复查过程中直接修复（而非推迟）了两个会影响备份原子性的完整性缺口：`parseLearnerResponseCollection()`/`parseTeacherReviewCollection()` 现在会拒绝同一集合中出现两条相同稳定 ID 的记录（此前只有实时的 `upsert*()` 写入路径会做这项检查，批量/备份解析路径并没有）；`parseLibraryBackup()` 现在会在替换任何状态之前，把每一份补救翻译文档的 `provenance` 与同一份备份中的 Learner Response/Teacher Review 集合做交叉校验，复用 `review-transport.js` 中的 `validateRemediationProvenance()`。其余部分——"规范链接必须可解析 vs. 历史引用可能已缺失"的区分、无静默上限，以及完整的备份覆盖——在 M6.6 时就已经正确，此次无需改动。
 
 ## 验证
 

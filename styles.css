@@ -1057,6 +1057,13 @@ label small {
   border-color: var(--accent);
 }
 
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
 .correction-preview {
   border: 1px solid var(--line);
   border-radius: 8px;

@@ -156,7 +156,7 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: In progress; M6.0 and M6.1 accepted; M6.2, M6.3, M6.4, M6.5, and M6.6 implementation complete with M6-wide acceptance deferred; M6.7 next
+Status: Feature-development implementation complete; M6.0 and M6.1 accepted; M6.2, M6.3, M6.4, M6.5, M6.6, and M6.7 implementation complete with comprehensive M6-wide acceptance pending
 
 Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7 is complete. Implementation review, regression testing, CI, and scope review still apply to every sub-milestone in the meantime. M6.0 and M6.1 were accepted before this policy took effect and remain accepted.
 
@@ -248,7 +248,20 @@ M6.6 state:
 - A Translation Practice session started from remediation material captures that provenance, and finalizing carries it into the new Learner Response's `provenance` field, so the resulting evidence remains traceable to the source response, source review, and remediation material even if the live remediation document is later deleted.
 - All externally supplied JSON is treated as untrusted: rendered through the existing escaped-text correction renderer, never as raw HTML, with no embedded script/markup execution.
 - Deliberately does not add any in-app AI API, model selector, API key field, or automatic review/remediation generation; the user manually hands exported JSON to an external human/AI/agent and manually imports the result. Also does not build the M6.7 full history browser, analytics, retry system, or lineage dashboard.
-- M6.7 must not begin without a new prompt.
+
+M6.7 state:
+
+- Implementation complete; M6-wide acceptance deferred (not individually accepted; see the acceptance policy note above). M6.7 is the last feature-development sub-milestone of M6.
+- Adds Translation History: a durable, filterable browse view over every finalized Translation Learner Response, derived entirely from the existing Learner Response and Teacher Review collections (`src/core/translation-history.js`) rather than a second mutable database. History remains fully usable after the originating live Translation Document is deleted, since a response's own `material.snapshot` already carries everything the index needs.
+- A history detail view exposes the full durable evidence for one response: source item snapshots, original learner answers, learner annotations, session timestamps, provenance, every linked Teacher Review (open a specific one, or delete one that is no longer needed), and a lineage section showing where the response came from and what was retried or remediated from it.
+- Adds explicit retry actions (`src/core/translation-retry.js`): retry the entire response, retry selected items, or retry only items flagged by a deterministic, documented needs-work rule (a learner annotation, a Teacher Review judgment of incorrect/partial/needs-review, or an attached correction — unioned across every review for the response so the result never depends on review order). Every retry starts a brand-new Translation Practice session built from the historical response snapshot (never the live document) and produces a new, independent Learner Response; it never reopens or overwrites the response it was retried from.
+- Retry reuses the M6.6 provenance/session machinery rather than duplicating it: the retry material carries `provenance: { purpose: "retry", sourceResponseId, sourceReviewId?, sourceMaterialId, createdAt }`, and the same session/finalization path that already threads remediation provenance into a finalized response does the same for retry, with no changes to `translation-session.js` or `interchange.js`. Retry and remediation provenance stay distinct by `purpose` and are never conflated.
+- Adds explicit deletion safety (`src/core/deletion-policy.js`), reporting dependents before any irreversible action: deleting a Translation Document never deletes Learner Responses; deleting a Learner Response requires an explicit cascade confirmation that also deletes its Teacher Reviews (a protected link that must always resolve) while leaving any retry/remediation responses derived from it in place, with their `sourceResponseId` becoming a safely-represented unresolved historical reference; deleting a Teacher Review never mutates the Learner Response it targets. A closure patch after initial CI approval additionally blocks deleting a Learner Response or Teacher Review outright (no cascade, no confirmation) while a *live* remediation Translation Document still claims it as `sourceResponseId`/`sourceReviewId` — that claim is canonical, not historical, since `parseLibraryBackup()` requires it to keep resolving; the user must delete the dependent remediation material first.
+- Closes an M6.6-documented gap by adding a "delete review" action to the Correction Workspace and to Translation History.
+- Closes two backup-atomicity gaps found during the M6.7 storage-governance review: `parseLearnerResponseCollection()`/`parseTeacherReviewCollection()` now reject duplicate stable IDs within a collection (previously enforced only by the live `upsert*()` paths, not bulk/backup parsing), and `parseLibraryBackup()` now cross-validates every remediation Translation Document's provenance against that same backup's Learner Response/Teacher Review collections before any state is replaced.
+- Completes a full storage-governance inventory of every M1-M6 localStorage key (schema/version, migration, backup inclusion, deletion behavior); no duplicate source of truth was found, and full-library backup already covered every canonical M6 record as of M6.6.
+- Consolidates the manual-QA questionnaire with an M6.7 delta and a comprehensive end-to-end M6 acceptance journey covering M6.0 through M6.7, ready for the deferred M6-wide acceptance.
+- Does not add any in-app AI API, semantic grading, advanced analytics, graph-style lineage visualization, cloud sync, or accounts. Does not begin M7 Product Hardening or declare Feature Freeze.
 
 Approved macro scope:
 

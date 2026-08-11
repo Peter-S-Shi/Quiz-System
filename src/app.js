@@ -17,6 +17,7 @@ import {
 import {
   findLearnerResponse,
   parseLearnerResponseCollection,
+  removeLearnerResponse,
   removeLearnerResponsesForMaterial,
   upsertLearnerResponse,
 } from "./core/learning-records.js";
@@ -24,6 +25,8 @@ import {
   findTeacherReviewForResponse,
   findTeacherReviewsForResponse,
   parseTeacherReviewCollection,
+  removeTeacherReview,
+  removeTeacherReviewsForResponse,
   upsertTeacherReview,
 } from "./core/review-records.js";
 import {
@@ -34,6 +37,19 @@ import {
   parseRemediationTranslationDocumentText,
   validateRemediationImportProvenance,
 } from "./core/review-transport.js";
+import {
+  analyzeLearnerResponseDeletion,
+  analyzeTeacherReviewDeletion,
+  analyzeTranslationDocumentDeletion,
+} from "./core/deletion-policy.js";
+import {
+  buildHistoryIndex,
+  deriveEntryStatus,
+  deriveNeedsWorkItemIds,
+  filterHistoryEntries,
+  resolveResponseLineage,
+} from "./core/translation-history.js";
+import { buildRetryMaterial } from "./core/translation-retry.js";
 import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
 import {
   addTranslationItem,
@@ -282,6 +298,14 @@ const locales = {
       remediationRequestExportFail: "无法导出补救练习请求。",
       remediationImportFail: "导入补救练习材料失败，请检查文件内容或所选文件夹。",
       remediationImportSuccess: "补救练习材料已导入。",
+      historyResponseNotFound: "未找到对应的作答记录，可能已被删除。",
+      retryFail: "无法开始重新练习，请检查所选条目。",
+      retryStarted: "已开始重新练习。",
+      retryNeedsWorkNone: "这条记录目前没有需要加强的条目。",
+      responseDeleted: "作答记录已删除。",
+      reviewDeleted: "批改已删除。",
+      deleteResponseBlockedByRemediation: "还有 {count} 份实时补救翻译文档引用着这条作答记录，请先删除这些补救材料，再删除这条记录。",
+      deleteReviewBlockedByRemediation: "还有 {count} 份实时补救翻译文档引用着这份批改，请先删除这些补救材料，再删除这份批改。",
     },
     translationPractice: {
       recoverTitle: "发现未完成的翻译练习",
@@ -373,6 +397,8 @@ const locales = {
       reassignedRejectError: "该 Review ID 已属于另一份作答记录，不能被静默改指，已拒绝导入。",
       sourceResponse: "来源作答记录",
       sourceReview: "来源 Teacher Review",
+      deleteReview: "删除批改",
+      deleteReviewConfirm: "确定删除这份批改吗？此操作不会影响原始作答记录，且无法撤销。",
       color: {
         red: "红色",
         blue: "蓝色",
@@ -397,6 +423,56 @@ const locales = {
         delete: "删除",
         comment: "批注",
       },
+    },
+    history: {
+      title: "翻译历史",
+      open: "打开",
+      backToList: "返回历史列表",
+      empty: "还没有可浏览的翻译历史记录。",
+      filterPurpose: "来源筛选",
+      purposeAll: "全部",
+      purposePractice: "正常练习",
+      purposeRetry: "重新练习",
+      purposeRemediation: "补救练习",
+      filterStatus: "状态筛选",
+      statusAll: "全部",
+      statusUnreviewed: "未批改",
+      statusReviewed: "已批改",
+      statusNeedsWork: "需要加强",
+      sort: "排序",
+      sortNewest: "最新优先",
+      sortOldest: "最早优先",
+      purposeLabel: {
+        practice: "正常练习",
+        retry: "重新练习",
+        remediation: "补救练习",
+      },
+      statusLabel: {
+        unreviewed: "未批改",
+        reviewed: "已批改",
+        multipleReviews: "多份批改",
+      },
+      needsWorkBadge: "{count} 个条目需要加强",
+      needsWorkFlag: "需要加强",
+      hasRemediationBadge: "已生成补救材料",
+      hasRetryBadge: "已重新练习",
+      lineageTitle: "溯源链",
+      derivedInto: "由此派生出的记录",
+      itemsSection: "条目与作答",
+      started: "开始时间",
+      completed: "完成时间",
+      originalMaterialUnavailable: "来源记录不可用（可能已被删除）",
+      retryEntire: "整份重新练习",
+      retrySelected: "选择条目重新练习",
+      retryNeedsWork: "针对需要加强的条目重新练习",
+      retrySelectTitle: "选择要重新练习的条目",
+      retrySelectHint: "勾选需要重新练习的条目，至少选择一项。",
+      retryStart: "开始重新练习",
+      needsWorkConfirm: "将针对 {count} 个需要加强的条目开始新的练习，是否继续？",
+      deleteResponse: "删除这条历史记录",
+      deleteResponseConfirm: "确定删除这条作答记录吗？此操作无法撤销。",
+      deleteResponseCascadeConfirm: "这条作答记录有 {reviewCount} 份批改、{derivedCount} 份由它派生出的记录（重新练习或补救练习）。删除它会一并删除这些批改；派生记录会保留，但将无法再找到这条来源记录。是否仍要删除？",
+      deleteReviewLineageConfirm: "有 {count} 份由它派生出的记录（重新练习或补救练习）引用了这份批改。删除批改不会影响这些记录本身，但其中的来源批改信息将无法再找到。是否仍要删除？",
     },
     translation: {
       title: "翻译练习库",
@@ -424,6 +500,7 @@ const locales = {
       exportDocument: "导出文档 JSON",
       deleteDocument: "删除文档",
       deleteDocumentConfirm: "确定删除这份翻译文档吗？此操作只影响浏览器本地数据。",
+      deleteDocumentConfirmWithResponses: "这份翻译文档有 {count} 份已完成的作答记录。删除文档不会删除这些作答记录（可在“翻译历史”中继续查看），但之后无法从这份文档再次开始练习。是否仍要删除？",
       importSection: "导入材料",
       importSourceOnly: "仅原文批量导入",
       importSourceOnlyHint: "每行一条，仅原文，不含参考译文。",
@@ -648,6 +725,14 @@ const locales = {
       remediationRequestExportFail: "The remediation request could not be exported.",
       remediationImportFail: "The remediation material could not be imported. Check the file content or the selected folder.",
       remediationImportSuccess: "Remediation material imported.",
+      historyResponseNotFound: "The response could not be found. It may have been deleted.",
+      retryFail: "Could not start retry practice. Check the selected items.",
+      retryStarted: "Retry practice started.",
+      retryNeedsWorkNone: "This response has no items that currently need work.",
+      responseDeleted: "Response deleted.",
+      reviewDeleted: "Review deleted.",
+      deleteResponseBlockedByRemediation: "{count} live remediation Translation Document(s) still reference this response. Delete those remediation materials first, then delete this response.",
+      deleteReviewBlockedByRemediation: "{count} live remediation Translation Document(s) still reference this review. Delete those remediation materials first, then delete this review.",
     },
     translationPractice: {
       recoverTitle: "Unfinished translation practice found",
@@ -739,6 +824,8 @@ const locales = {
       reassignedRejectError: "This review ID already belongs to a different response and cannot be silently reassigned, so the import was rejected.",
       sourceResponse: "Source response",
       sourceReview: "Source Teacher Review",
+      deleteReview: "Delete review",
+      deleteReviewConfirm: "Delete this review? This does not affect the original response and cannot be undone.",
       color: {
         red: "Red",
         blue: "Blue",
@@ -763,6 +850,56 @@ const locales = {
         delete: "Delete",
         comment: "Comment",
       },
+    },
+    history: {
+      title: "Translation History",
+      open: "Open",
+      backToList: "Back to history",
+      empty: "No Translation history yet.",
+      filterPurpose: "Origin",
+      purposeAll: "All",
+      purposePractice: "Original practice",
+      purposeRetry: "Retry",
+      purposeRemediation: "Remediation",
+      filterStatus: "Status",
+      statusAll: "All",
+      statusUnreviewed: "Unreviewed",
+      statusReviewed: "Reviewed",
+      statusNeedsWork: "Needs work",
+      sort: "Sort",
+      sortNewest: "Newest first",
+      sortOldest: "Oldest first",
+      purposeLabel: {
+        practice: "Original practice",
+        retry: "Retry",
+        remediation: "Remediation",
+      },
+      statusLabel: {
+        unreviewed: "Unreviewed",
+        reviewed: "Reviewed",
+        multipleReviews: "Multiple reviews",
+      },
+      needsWorkBadge: "{count} items need work",
+      needsWorkFlag: "Needs work",
+      hasRemediationBadge: "Has remediation",
+      hasRetryBadge: "Retried",
+      lineageTitle: "Lineage",
+      derivedInto: "Derived into",
+      itemsSection: "Items and answers",
+      started: "Started",
+      completed: "Completed",
+      originalMaterialUnavailable: "Source record unavailable (it may have been deleted)",
+      retryEntire: "Retry entire response",
+      retrySelected: "Retry selected items",
+      retryNeedsWork: "Retry needs-work items",
+      retrySelectTitle: "Select items to retry",
+      retrySelectHint: "Check the items to retry. Select at least one.",
+      retryStart: "Start retry",
+      needsWorkConfirm: "This will start new practice on {count} item(s) that need work. Continue?",
+      deleteResponse: "Delete this history entry",
+      deleteResponseConfirm: "Delete this response? This cannot be undone.",
+      deleteResponseCascadeConfirm: "This response has {reviewCount} review(s) and {derivedCount} record(s) derived from it (retry or remediation). Deleting it will also delete those reviews; derived records will remain but will no longer be able to find this source record. Delete anyway?",
+      deleteReviewLineageConfirm: "{count} record(s) derived from it (retry or remediation) reference this review. Deleting the review does not affect those records themselves, but their source-review reference will no longer resolve. Delete anyway?",
     },
     translation: {
       title: "Translation Library",
@@ -790,6 +927,7 @@ const locales = {
       exportDocument: "Export document JSON",
       deleteDocument: "Delete document",
       deleteDocumentConfirm: "Delete this Translation Document? This only affects local browser data.",
+      deleteDocumentConfirmWithResponses: "This Translation Document has {count} finalized response(s). Deleting the document does not delete those responses (they remain visible in Translation History), but you will no longer be able to start new practice from this document. Delete anyway?",
       importSection: "Import material",
       importSourceOnly: "Source-only batch import",
       importSourceOnlyHint: "One line = one item, source text only.",
@@ -854,6 +992,10 @@ let correctionReviewDraft = null;
 let correctionItemIndex = 0;
 let reviewImportDraft = null;
 let remediationImportDraft = null;
+let translationHistoryOpen = false;
+let translationHistoryFilters = { purpose: "all", status: "all", sort: "newest" };
+let translationHistoryDetailId = null;
+let retrySelectionDraft = null;
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
@@ -2074,6 +2216,9 @@ function renderTranslationLibraryPanel() {
     <div class="library-actions single-action">
       <button class="small-button" type="button" id="newTranslationFolder">${t("translation.newFolder")}</button>
     </div>
+    <div class="library-actions single-action">
+      <button class="small-button" type="button" id="openTranslationHistory">${t("history.title")}</button>
+    </div>
     <div class="library-list">
       ${translationLibrary.folders.length
         ? translationLibrary.folders.map(renderTranslationFolderBlock).join("")
@@ -2086,6 +2231,7 @@ function renderTranslationLibraryPanel() {
   `;
 
   document.getElementById("newTranslationFolder").addEventListener("click", createTranslationFolderPrompt);
+  document.getElementById("openTranslationHistory").addEventListener("click", openTranslationHistory);
   bindTranslationFolderEvents();
   bindImportFormEvents();
 }
@@ -2373,6 +2519,14 @@ function renderTranslationMainPanel() {
   }
   if (remediationImportDraft) {
     renderRemediationImportPreview();
+    return;
+  }
+  if (translationHistoryDetailId) {
+    renderHistoryDetail(translationHistoryDetailId);
+    return;
+  }
+  if (translationHistoryOpen) {
+    renderHistoryBrowser();
     return;
   }
   if (correctionWorkspaceResponseId) {
@@ -3025,6 +3179,7 @@ function renderCorrectionWorkspace(responseId) {
         ${isPersistedReview ? `
           <button class="secondary-button" type="button" id="exportReviewJson">${t("review.exportReviewJson")}</button>
           <button class="secondary-button" type="button" id="exportRemediationRequest">${t("review.exportRemediationRequest")}</button>
+          <button class="danger-button secondary-button" type="button" id="deleteCurrentReview">${t("review.deleteReview")}</button>
         ` : ""}
         <button class="primary-button" type="button" id="saveCorrectionReview">${t("review.save")}</button>
       </div>
@@ -3084,6 +3239,7 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
   });
   document.getElementById("exportReviewJson")?.addEventListener("click", () => exportCurrentReviewJson(response));
   document.getElementById("exportRemediationRequest")?.addEventListener("click", () => exportCurrentRemediationRequest(response));
+  document.getElementById("deleteCurrentReview")?.addEventListener("click", () => deleteTeacherReviewConfirm(correctionReviewDraft.id));
   document.querySelectorAll("[data-style]").forEach((button) => {
     button.addEventListener("mousedown", (event) => event.preventDefault());
     button.addEventListener("click", () => applyStyleCorrection(item.id, answerText, button.dataset.style));
@@ -3410,7 +3566,11 @@ function addTranslationItemToDocument(documentId) {
 }
 
 function deleteTranslationDocumentConfirm(documentId) {
-  if (!window.confirm(t("translation.deleteDocumentConfirm"))) return;
+  const analysis = analyzeTranslationDocumentDeletion(documentId, { learnerResponses: loadLearnerResponses() });
+  const message = analysis.hasDependents
+    ? t("translation.deleteDocumentConfirmWithResponses", { count: analysis.dependentResponseIds.length })
+    : t("translation.deleteDocumentConfirm");
+  if (!window.confirm(message)) return;
   const next = deleteTranslationDocument(translationLibrary, documentId);
   if (selectedTranslationDocumentId === documentId) selectedTranslationDocumentId = null;
   if (translationSession?.documentId === documentId) translationPracticeActive = false;
@@ -3590,6 +3750,395 @@ function confirmRemediationImport() {
   } catch {
     showToast(t("toast.remediationImportFail"));
   }
+}
+
+function openTranslationHistory() {
+  translationHistoryOpen = true;
+  translationHistoryDetailId = null;
+  retrySelectionDraft = null;
+  correctionWorkspaceResponseId = null;
+  correctionReviewDraft = null;
+  translationPracticeActive = false;
+  translationImportDraft = null;
+  reviewImportDraft = null;
+  remediationImportDraft = null;
+  renderTranslationView();
+}
+
+function closeTranslationHistory() {
+  translationHistoryOpen = false;
+  translationHistoryDetailId = null;
+  retrySelectionDraft = null;
+  renderTranslationView();
+}
+
+function openHistoryDetail(responseId) {
+  translationHistoryDetailId = responseId;
+  retrySelectionDraft = null;
+  renderTranslationMainPanel();
+}
+
+function renderHistoryBrowser() {
+  const entries = filterHistoryEntries(buildHistoryIndex(loadLearnerResponses(), loadTeacherReviews()), translationHistoryFilters);
+
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions">
+        <span class="type-pill">${t("history.title")}</span>
+        <div class="row-actions">
+          <button class="secondary-button small-button" type="button" id="closeTranslationHistory">${t("review.back")}</button>
+        </div>
+      </div>
+      <div class="field-grid">
+        <label><span>${t("history.filterPurpose")}</span>
+          <select id="historyFilterPurpose">
+            <option value="all" ${translationHistoryFilters.purpose === "all" ? "selected" : ""}>${t("history.purposeAll")}</option>
+            <option value="practice" ${translationHistoryFilters.purpose === "practice" ? "selected" : ""}>${t("history.purposePractice")}</option>
+            <option value="retry" ${translationHistoryFilters.purpose === "retry" ? "selected" : ""}>${t("history.purposeRetry")}</option>
+            <option value="remediation" ${translationHistoryFilters.purpose === "remediation" ? "selected" : ""}>${t("history.purposeRemediation")}</option>
+          </select>
+        </label>
+        <label><span>${t("history.filterStatus")}</span>
+          <select id="historyFilterStatus">
+            <option value="all" ${translationHistoryFilters.status === "all" ? "selected" : ""}>${t("history.statusAll")}</option>
+            <option value="unreviewed" ${translationHistoryFilters.status === "unreviewed" ? "selected" : ""}>${t("history.statusUnreviewed")}</option>
+            <option value="reviewed" ${translationHistoryFilters.status === "reviewed" ? "selected" : ""}>${t("history.statusReviewed")}</option>
+            <option value="needs-work" ${translationHistoryFilters.status === "needs-work" ? "selected" : ""}>${t("history.statusNeedsWork")}</option>
+          </select>
+        </label>
+        <label><span>${t("history.sort")}</span>
+          <select id="historyFilterSort">
+            <option value="newest" ${translationHistoryFilters.sort === "newest" ? "selected" : ""}>${t("history.sortNewest")}</option>
+            <option value="oldest" ${translationHistoryFilters.sort === "oldest" ? "selected" : ""}>${t("history.sortOldest")}</option>
+          </select>
+        </label>
+      </div>
+      <div class="review-list">
+        ${entries.length ? entries.map(renderHistoryEntryRow).join("") : `<div class="library-empty">${t("history.empty")}</div>`}
+      </div>
+    </div>
+  `;
+
+  document.getElementById("closeTranslationHistory").addEventListener("click", closeTranslationHistory);
+  document.getElementById("historyFilterPurpose").addEventListener("change", (event) => {
+    translationHistoryFilters = { ...translationHistoryFilters, purpose: event.target.value };
+    renderTranslationMainPanel();
+  });
+  document.getElementById("historyFilterStatus").addEventListener("change", (event) => {
+    translationHistoryFilters = { ...translationHistoryFilters, status: event.target.value };
+    renderTranslationMainPanel();
+  });
+  document.getElementById("historyFilterSort").addEventListener("change", (event) => {
+    translationHistoryFilters = { ...translationHistoryFilters, sort: event.target.value };
+    renderTranslationMainPanel();
+  });
+  document.querySelectorAll("[data-open-history-detail]").forEach((button) => {
+    button.addEventListener("click", () => openHistoryDetail(button.dataset.openHistoryDetail));
+  });
+}
+
+const HISTORY_STATUS_LABEL_KEYS = {
+  unreviewed: "unreviewed",
+  reviewed: "reviewed",
+  "multiple-reviews": "multipleReviews",
+};
+
+function renderHistoryEntryRow(entry) {
+  const status = deriveEntryStatus(entry);
+  const badges = [
+    `<span class="type-pill">${t(`history.purposeLabel.${entry.purpose}`)}</span>`,
+    `<span class="type-pill">${t(`history.statusLabel.${HISTORY_STATUS_LABEL_KEYS[status]}`)}</span>`,
+    entry.needsWorkCount ? `<span class="type-pill">${t("history.needsWorkBadge", { count: entry.needsWorkCount })}</span>` : "",
+    entry.hasRemediationChild ? `<span class="type-pill">${t("history.hasRemediationBadge")}</span>` : "",
+    entry.hasRetryChild ? `<span class="type-pill">${t("history.hasRetryBadge")}</span>` : "",
+  ].filter(Boolean).join(" ");
+  return `
+    <div class="review-item">
+      <div>
+        <strong>${escapeHtml(entry.materialTitle || t("library.untitled"))}</strong>
+        <div class="meta-text">${escapeHtml(entry.sourceLanguage)} &rarr; ${escapeHtml(entry.targetLanguage)} &middot; ${formatDate(entry.completedAt)} &middot; ${t("translation.itemCount", { count: entry.itemCount })}</div>
+        <div class="badge-row">${badges}</div>
+      </div>
+      <div class="row-actions">
+        <button class="small-button" type="button" data-open-history-detail="${entry.responseId}">${t("history.open")}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderHistoryDetail(responseId) {
+  const response = findLearnerResponse(loadLearnerResponses(), responseId);
+  if (!response) {
+    translationHistoryDetailId = null;
+    showToast(t("toast.historyResponseNotFound"));
+    renderTranslationMainPanel();
+    return;
+  }
+
+  if (retrySelectionDraft?.responseId === responseId) {
+    renderRetrySelection(response);
+    return;
+  }
+
+  const allResponses = loadLearnerResponses();
+  const allReviews = loadTeacherReviews();
+  const reviews = findTeacherReviewsForResponse(allReviews, responseId);
+  const lineage = resolveResponseLineage(response, { learnerResponses: allResponses, teacherReviews: allReviews });
+  const needsWork = deriveNeedsWorkItemIds(response, allReviews);
+  const needsWorkIds = new Set(needsWork.map((item) => item.itemId));
+
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions">
+        <span class="type-pill">${escapeHtml(response.material.snapshot.sourceLanguage || "")} &rarr; ${escapeHtml(response.material.snapshot.targetLanguage || "")}</span>
+        <div class="row-actions">
+          <button class="secondary-button small-button" type="button" id="backToHistoryBrowser">${t("history.backToList")}</button>
+        </div>
+      </div>
+      <div class="quiz-title-block">
+        <h2>${escapeHtml(response.material.title || t("library.untitled"))}</h2>
+        <p class="meta-text">${t(`history.purposeLabel.${response.provenance?.purpose || "practice"}`)} &middot; ${t("history.started")}: ${formatDate(response.session.startedAt)} &middot; ${t("history.completed")}: ${formatDate(response.finalizedAt)}</p>
+      </div>
+
+      ${lineage.ancestors.length ? `
+        <div class="library-heading"><strong>${t("history.lineageTitle")}</strong></div>
+        <div class="review-list">${lineage.ancestors.map(renderLineageAncestorRow).join("")}</div>
+      ` : ""}
+      ${lineage.descendants.length ? `
+        <div class="library-heading"><strong>${t("history.derivedInto")}</strong></div>
+        <div class="review-list">${lineage.descendants.map(renderLineageDescendantRow).join("")}</div>
+      ` : ""}
+
+      <div class="library-heading"><strong>${t("history.itemsSection")}</strong></div>
+      <div class="review-list">
+        ${response.material.snapshot.items.map((item) => renderHistoryItemRow(item, response, needsWorkIds)).join("")}
+      </div>
+
+      <div class="library-heading"><strong>${t("review.availableReviews")}</strong><span>${reviews.length}</span></div>
+      <div class="review-list">
+        ${reviews.length ? reviews.map(renderHistoryReviewRow).join("") : `<p class="meta-text">${t("review.noCorrections")}</p>`}
+      </div>
+
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button" id="historyRetryEntire">${t("history.retryEntire")}</button>
+        <button class="secondary-button" type="button" id="historyRetrySelected">${t("history.retrySelected")}</button>
+        <button class="secondary-button" type="button" id="historyRetryNeedsWork" ${needsWork.length ? "" : "disabled"}>${t("history.retryNeedsWork")}</button>
+        <button class="secondary-button" type="button" id="historyOpenReview">${t("review.openWorkspace")}</button>
+        <button class="secondary-button" type="button" id="historyExportResponse">${t("actions.exportResponse")}</button>
+        <button class="secondary-button" type="button" id="historyExportReviewRequest">${t("review.exportReviewRequest")}</button>
+        <button class="danger-button secondary-button" type="button" id="historyDeleteResponse">${t("history.deleteResponse")}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("backToHistoryBrowser").addEventListener("click", () => {
+    translationHistoryDetailId = null;
+    renderTranslationMainPanel();
+  });
+  document.getElementById("historyRetryEntire").addEventListener("click", () => startRetryPractice(responseId));
+  document.getElementById("historyRetrySelected").addEventListener("click", () => {
+    retrySelectionDraft = { responseId, selectedItemIds: response.material.snapshot.items.map((item) => item.id) };
+    renderTranslationMainPanel();
+  });
+  document.getElementById("historyRetryNeedsWork").addEventListener("click", () => startRetryNeedsWork(response));
+  document.getElementById("historyOpenReview").addEventListener("click", () => {
+    translationHistoryOpen = false;
+    translationHistoryDetailId = null;
+    openCorrectionWorkspace(responseId);
+  });
+  document.getElementById("historyExportResponse").addEventListener("click", () => exportLearnerResponse(responseId));
+  document.getElementById("historyExportReviewRequest").addEventListener("click", () => exportReviewRequest(responseId));
+  document.getElementById("historyDeleteResponse").addEventListener("click", () => deleteLearnerResponseConfirm(responseId));
+  document.querySelectorAll("[data-open-history-detail]").forEach((button) => {
+    button.addEventListener("click", () => openHistoryDetail(button.dataset.openHistoryDetail));
+  });
+  document.querySelectorAll("[data-open-history-review]").forEach((button) => {
+    button.addEventListener("click", () => {
+      translationHistoryOpen = false;
+      translationHistoryDetailId = null;
+      correctionWorkspaceResponseId = responseId;
+      correctionReviewDraft = reviews.find((review) => review.id === button.dataset.openHistoryReview) || null;
+      correctionItemIndex = 0;
+      renderTranslationMainPanel();
+    });
+  });
+  document.querySelectorAll("[data-delete-history-review]").forEach((button) => {
+    button.addEventListener("click", () => deleteTeacherReviewConfirm(button.dataset.deleteHistoryReview));
+  });
+}
+
+function renderLineageAncestorRow(node) {
+  const sourceLabel = node.sourceResponseAvailable
+    ? escapeHtml(node.sourceResponseTitle || node.sourceResponseId)
+    : `${t("history.originalMaterialUnavailable")} (${escapeHtml(node.sourceResponseId)})`;
+  const reviewPart = node.sourceReviewId
+    ? ` &middot; ${t("review.sourceReview")}: ${node.sourceReviewAvailable ? escapeHtml(reviewerLabel(node.sourceReviewer)) : `${t("history.originalMaterialUnavailable")} (${escapeHtml(node.sourceReviewId)})`}`
+    : "";
+  return `
+    <div class="review-item">
+      <span class="meta-text">${t(`history.purposeLabel.${node.purpose || "practice"}`)} &larr; ${t("review.sourceResponse")}: ${sourceLabel}${reviewPart}</span>
+      ${node.sourceResponseAvailable ? `<button class="small-button" type="button" data-open-history-detail="${node.sourceResponseId}">${t("history.open")}</button>` : ""}
+    </div>
+  `;
+}
+
+function renderLineageDescendantRow(node) {
+  return `
+    <div class="review-item">
+      <span class="meta-text">${t(`history.purposeLabel.${node.purpose || "practice"}`)} &rarr; ${escapeHtml(node.materialTitle || node.responseId)} &middot; ${formatDate(node.completedAt)}</span>
+      <button class="small-button" type="button" data-open-history-detail="${node.responseId}">${t("history.open")}</button>
+    </div>
+  `;
+}
+
+function renderHistoryItemRow(item, response, needsWorkIds) {
+  const answerEntry = response.responses.find((entry) => entry.itemId === item.id);
+  const answerText = typeof answerEntry?.answer === "string" ? answerEntry.answer : "";
+  const annotations = (response.learnerAnnotations || []).filter((annotation) => annotation.itemId === item.id);
+  return `
+    <div class="review-item">
+      <div>
+        <strong>${escapeHtml(item.sourceText)}</strong>
+        <div class="answer-compare">
+          <p><strong>${t("translationPractice.yourTranslation")}:</strong> ${escapeHtml(answerText || t("result.noAnswer"))}</p>
+          ${item.referenceTranslation ? `<p><strong>${t("translationPractice.referenceLabel")}:</strong> ${escapeHtml(item.referenceTranslation)}</p>` : ""}
+        </div>
+        ${annotations.length ? `<div class="annotation-list">${annotations.map(renderAnnotationRowReadOnly).join("")}</div>` : ""}
+        ${needsWorkIds.has(item.id) ? `<span class="type-pill">${t("history.needsWorkFlag")}</span>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function renderHistoryReviewRow(review) {
+  const correctionCount = (review.itemReviews || []).reduce((sum, item) => sum + (item.corrections?.length || 0), 0);
+  return `
+    <div class="review-item">
+      <span class="meta-text">${escapeHtml(reviewerLabel(review.reviewer))} &middot; ${escapeHtml(review.id)} &middot; ${formatDate(review.createdAt)} &middot; ${t("review.correctionCount", { count: correctionCount })}</span>
+      <div class="row-actions">
+        <button class="small-button" type="button" data-open-history-review="${review.id}">${t("review.openReview")}</button>
+        <button class="danger-button small-button" type="button" data-delete-history-review="${review.id}">${t("review.deleteReview")}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderRetrySelection(response) {
+  const draft = retrySelectionDraft;
+  translationDocumentPanel.innerHTML = `
+    <div class="editor-stack">
+      <div class="editor-actions"><span class="type-pill">${t("history.retrySelectTitle")}</span></div>
+      <p class="meta-text">${t("history.retrySelectHint")}</p>
+      <div class="review-list">
+        ${response.material.snapshot.items.map((item) => `
+          <label class="inline-check">
+            <span>${escapeHtml(item.sourceText)}</span>
+            <input type="checkbox" data-retry-item="${item.id}" ${draft.selectedItemIds.includes(item.id) ? "checked" : ""}>
+          </label>
+        `).join("")}
+      </div>
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button" id="cancelRetrySelection">${t("translation.importCancel")}</button>
+        <button class="primary-button" type="button" id="confirmRetrySelection" ${draft.selectedItemIds.length ? "" : "disabled"}>${t("history.retryStart")}</button>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll("[data-retry-item]").forEach((input) => {
+    input.addEventListener("change", (event) => {
+      const itemId = input.dataset.retryItem;
+      const nextIds = event.target.checked
+        ? [...retrySelectionDraft.selectedItemIds, itemId]
+        : retrySelectionDraft.selectedItemIds.filter((id) => id !== itemId);
+      retrySelectionDraft = { ...retrySelectionDraft, selectedItemIds: nextIds };
+      renderTranslationMainPanel();
+    });
+  });
+  document.getElementById("cancelRetrySelection").addEventListener("click", () => {
+    retrySelectionDraft = null;
+    renderTranslationMainPanel();
+  });
+  document.getElementById("confirmRetrySelection").addEventListener("click", () => {
+    startRetryPractice(response.id, { itemIds: retrySelectionDraft.selectedItemIds });
+  });
+}
+
+function startRetryPractice(responseId, options = {}) {
+  const response = findLearnerResponse(loadLearnerResponses(), responseId);
+  if (!response) {
+    showToast(t("toast.historyResponseNotFound"));
+    return;
+  }
+  let material;
+  try {
+    material = buildRetryMaterial({ response, itemIds: options.itemIds, sourceReviewId: options.sourceReviewId });
+  } catch {
+    showToast(t("toast.retryFail"));
+    return;
+  }
+  if (translationSession && !translationSession.completed) {
+    if (!window.confirm(t("translationPractice.overwriteConfirm"))) return;
+  }
+  translationSession = createTranslationSession({ document: material });
+  translationPracticeActive = true;
+  translationHistoryOpen = false;
+  translationHistoryDetailId = null;
+  retrySelectionDraft = null;
+  persistTranslationSession();
+  renderTranslationView();
+  showToast(t("toast.retryStarted"));
+}
+
+function startRetryNeedsWork(response) {
+  const needsWork = deriveNeedsWorkItemIds(response, loadTeacherReviews());
+  if (!needsWork.length) {
+    showToast(t("toast.retryNeedsWorkNone"));
+    return;
+  }
+  if (!window.confirm(t("history.needsWorkConfirm", { count: needsWork.length }))) return;
+  startRetryPractice(response.id, { itemIds: needsWork.map((item) => item.itemId) });
+}
+
+function deleteLearnerResponseConfirm(responseId) {
+  // Snapshot both collections up front: loadTeacherReviews() re-validates every review against the
+  // current Learner Response collection, so it must never be called again after the response has
+  // already been removed (it would see the now-dangling reviews as orphans and throw). Computing
+  // both next collections from these snapshots first, then writing them, avoids that hazard.
+  const learnerResponses = loadLearnerResponses();
+  const teacherReviews = loadTeacherReviews();
+  const analysis = analyzeLearnerResponseDeletion(responseId, { teacherReviews, learnerResponses, translationDocuments: translationLibrary.documents });
+  if (analysis.hasBlockingDependents) {
+    showToast(t("toast.deleteResponseBlockedByRemediation", { count: analysis.dependentRemediationDocumentIds.length }));
+    return;
+  }
+  const message = analysis.hasDependents
+    ? t("history.deleteResponseCascadeConfirm", { reviewCount: analysis.dependentReviewIds.length, derivedCount: analysis.dependentResponseIds.length })
+    : t("history.deleteResponseConfirm");
+  if (!window.confirm(message)) return;
+  const nextReviews = removeTeacherReviewsForResponse(teacherReviews, responseId);
+  const nextResponses = removeLearnerResponse(learnerResponses, responseId);
+  saveJson(TEACHER_REVIEWS_KEY, nextReviews);
+  saveJson(LEARNER_RESPONSES_KEY, nextResponses);
+  translationHistoryDetailId = null;
+  if (correctionWorkspaceResponseId === responseId) correctionWorkspaceResponseId = null;
+  renderTranslationMainPanel();
+  showToast(t("toast.responseDeleted"));
+}
+
+function deleteTeacherReviewConfirm(reviewId) {
+  const analysis = analyzeTeacherReviewDeletion(reviewId, { learnerResponses: loadLearnerResponses(), translationDocuments: translationLibrary.documents });
+  if (analysis.hasBlockingDependents) {
+    showToast(t("toast.deleteReviewBlockedByRemediation", { count: analysis.dependentRemediationDocumentIds.length }));
+    return;
+  }
+  const message = analysis.hasDependents
+    ? t("history.deleteReviewLineageConfirm", { count: analysis.dependentResponseIds.length })
+    : t("review.deleteReviewConfirm");
+  if (!window.confirm(message)) return;
+  saveJson(TEACHER_REVIEWS_KEY, removeTeacherReview(loadTeacherReviews(), reviewId));
+  if (correctionReviewDraft?.id === reviewId) correctionReviewDraft = null;
+  renderTranslationMainPanel();
+  showToast(t("toast.reviewDeleted"));
 }
 
 function exportLearnerResponse(responseId) {

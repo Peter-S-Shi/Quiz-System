@@ -156,7 +156,7 @@ Freeze 规则：
 
 ## Milestone 6：Translation Practice
 
-状态：进行中；M6.0、M6.1 已验收；M6.2、M6.3、M6.4、M6.5、M6.6 已完成实现，验收统一推迟到 M6 整体验收；下一个是 M6.7
+状态：功能开发阶段实现完成；M6.0、M6.1 已验收；M6.2、M6.3、M6.4、M6.5、M6.6、M6.7 均已完成实现，整体 M6 验收待进行
 
 验收政策说明：M6.2 到 M6.7 不再逐个进行正式用户验收，而是推迟到 M6.7 完成后进行一次覆盖整个 M6 的综合验收。在此期间，每个子里程碑仍然需要实现评审、回归测试、CI 和范围审查。M6.0 和 M6.1 在这一政策生效前已经验收，继续保持已验收状态。
 
@@ -248,7 +248,20 @@ M6.6 状态：
 - 从补救材料开始的 Translation Practice session 会捕获这份 provenance，完成练习时会把它带入新的 Learner Response 的 `provenance` 字段，因此即使之后删除了实时的补救文档，产生的 evidence 依然可以追溯回来源 response、来源 review 和补救材料。
 - 所有外部提供的 JSON 都被当作不可信数据处理：统一通过既有的、会转义的批改渲染器展示，绝不作为原始 HTML 渲染，不会执行任何内嵌脚本或标记。
 - 刻意不添加任何应用内 AI API、模型选择器、API key 字段，也不做自动评阅/补救生成；由用户手动把导出的 JSON 交给外部人类/AI/agent，再手动导入结果。同样不构建 M6.7 的完整历史浏览器、分析、重练系统或溯源仪表盘。
-- 未经新的 prompt，不得开始 M6.7。
+
+M6.7 状态：
+
+- 已完成实现；验收推迟到 M6 整体验收（未单独验收，见上方验收政策说明）。M6.7 是 M6 功能开发阶段的最后一个子里程碑。
+- 新增 Translation 历史：一个可筛选的、覆盖全部 finalized Translation Learner Response 的持久浏览视图，完全从既有的 Learner Response 和 Teacher Review 集合派生（`src/core/translation-history.js`），而不是新建第二个可变数据库。即使原始的实时翻译文档被删除，历史依然完全可用，因为一条 response 自身的 `material.snapshot` 已经携带索引所需的全部信息。
+- 历史详情视图展示某条 response 的完整持久证据：源条目快照、学习者原始作答、学习者标记、session 时间戳、provenance、每一条关联的 Teacher Review（可打开指定一条，也可以删除不再需要的一条），以及一个溯源区块，显示这条 response 来自哪里、又派生出了哪些重新练习或补救记录。
+- 新增显式的重新练习操作（`src/core/translation-retry.js`）：整份重新练习、选择条目重新练习，或只重新练习由一条有文档说明的确定性"需要加强"规则标记出的条目（学习者标记、Teacher Review 给出 incorrect/partial/needs-review 评判，或附带批改——这些信号会跨该 response 的全部 review 取并集，因此结果绝不依赖 review 的先后顺序）。每一次重新练习都会基于历史 response 快照（绝不是实时文档）开启一个全新的 Translation Practice session，并产生新的、独立的 Learner Response；绝不会重新打开或覆盖被重新练习的那条记录。
+- 重新练习复用了 M6.6 既有的 provenance/session 机制，而不是重复实现：重新练习材料携带 `provenance: { purpose: "retry", sourceResponseId, sourceReviewId?, sourceMaterialId, createdAt }`，沿用把补救 provenance 带入 finalized response 的同一条 session/finalization 路径，`translation-session.js` 和 `interchange.js` 都无需改动。重新练习与补救练习的 provenance 通过 `purpose` 保持区分，绝不会被混淆。
+- 新增显式的删除安全机制（`src/core/deletion-policy.js`），在任何不可逆操作前先报告依赖关系：删除翻译文档绝不会删除 Learner Response；删除 Learner Response 需要显式的级联确认，会一并删除其 Teacher Review（一条必须始终可解析的受保护链接），但会保留由它派生出的重新练习/补救 response，其 `sourceResponseId` 会安全地变成一条被明确表示出来的、无法解析的历史引用；删除 Teacher Review 绝不会修改它所针对的 Learner Response。在初次 CI 通过之后又追加了一个收尾补丁：只要有*实时*补救翻译文档仍把某条 Learner Response 或 Teacher Review 记作自己的 `sourceResponseId`/`sourceReviewId`，删除它就会被直接拒绝（不级联、不出现确认对话框）——这是一条规范性声明而非历史引用，因为 `parseLibraryBackup()` 要求它必须始终可解析；用户需要先删除依赖的补救材料。
+- 在批改工作区和 Translation 历史中都新增了"删除批改"操作，补上了 M6.6 中已经明确记录的一处缺口。
+- 修复了 M6.7 存储治理复查中发现的两处备份原子性缺口：`parseLearnerResponseCollection()`/`parseTeacherReviewCollection()` 现在会拒绝同一集合中出现重复的稳定 ID（此前只有实时的 `upsert*()` 路径会做这项检查，批量/备份解析路径没有）；`parseLibraryBackup()` 现在会在替换任何状态之前，把每一份补救翻译文档的 provenance 与同一份备份中的 Learner Response/Teacher Review 集合做交叉校验。
+- 完成了对 M1-M6 全部 localStorage key 的存储治理盘点（schema/版本、迁移、备份覆盖、删除行为）；未发现重复真源，完整库备份在 M6.6 时就已经覆盖了全部规范 M6 记录。
+- 把手工 QA 问卷整合进一个 M6.7 增量模块和一段覆盖 M6.0 到 M6.7 的完整端到端 M6 验收流程，为推迟到此刻的整体 M6 验收做好准备。
+- 不添加任何应用内 AI API、语义判分、高级分析、图形化溯源可视化、云同步或账号系统。不开始 M7 Product Hardening，也不宣布 Feature Freeze。
 
 已批准的宏观范围：
 
