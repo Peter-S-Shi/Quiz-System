@@ -106,15 +106,15 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Next Engineering Objective
 
-M6.7 is implementation complete on branch `milestone/6.7-history-retry-integration` (PR #6, CI green), completing M6 feature-development implementation. The comprehensive M6-wide acceptance (covering M6.0-M6.7) is the next step and requires the user's own review; it has not been performed. Do not begin Product Hardening (M7) or Feature Freeze work before that acceptance is complete. Do not merge PR #6 without explicit user instruction.
+M6.7 (including the deletion-integrity closure patch) is implementation complete and merged into `main` through PR #6, completing M6 feature-development implementation. The comprehensive M6-wide acceptance (covering M6.0-M6.7) is the next step and requires the user's own review; it has not been performed. Do not begin Product Hardening (M7) or Feature Freeze work before that acceptance is complete.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
 - Verified baseline before M6.7: `61cd16f Record M6.6 merge into main` (`main`)
-- M6.7 branch: `milestone/6.7-history-retry-integration`, main implementation commit `ffb7303 M6.7: History, Retry, Portability, and Whole-Product Integration`, PR/CI status recorded in `3c1fca5`, plus a deletion-integrity closure patch commit; use Git history for its immutable identifier
+- M6.7 merge commit: `d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)` (`main`) — squash of the main implementation, the PR/CI status update, and the deletion-integrity closure patch
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
-- Synchronization status: M6.7 (including the deletion-integrity closure patch) is implemented and pushed to `origin` on its feature branch; not merged into `main`
+- Synchronization status: M6.7 is merged into `main`; this status-only follow-up records the completed merge
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #6 is open against `main`; GitHub CI passed on the feature commit; awaiting independent review and explicit user instruction before merge
+- Pull request status: PR #6 was squash-merged after explicit user approval; GitHub CI passed on the final feature commit before merge

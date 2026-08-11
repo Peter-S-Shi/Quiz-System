@@ -106,15 +106,15 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-M6.7 已在分支 `milestone/6.7-history-retry-integration` 完成实现（PR #6，CI 通过），M6 功能开发实现现已全部完成。下一步是覆盖 M6.0-M6.7 的整体 M6 验收，需要用户亲自评审，目前尚未进行。在完成该验收前，不开始 Product Hardening（M7）或 Feature Freeze 工作。未经用户明确指示，不合并 PR #6。
+M6.7（含删除完整性收尾补丁）已完成实现，并通过 PR #6 合并进 `main`，M6 功能开发实现现已全部完成。下一步是覆盖 M6.0-M6.7 的整体 M6 验收，需要用户亲自评审，目前尚未进行。在完成该验收前，不开始 Product Hardening（M7）或 Feature Freeze 工作。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程：`origin`
 - M6.7 开始前已验证的基线：`61cd16f Record M6.6 merge into main`（`main`）
-- M6.7 分支：`milestone/6.7-history-retry-integration`，主体实现提交 `ffb7303 M6.7: History, Retry, Portability, and Whole-Product Integration`，PR/CI 状态记录于 `3c1fca5`，另加一个删除完整性收尾补丁提交；具体标识以 Git 历史为准
+- M6.7 合并提交：`d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)`（`main`）——由主体实现、PR/CI 状态更新和删除完整性收尾补丁 squash 而成
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步状态：M6.7（含删除完整性收尾补丁）已实现并推送到 `origin` 上的功能分支；尚未合并进 `main`
+- 同步状态：M6.7 已合并进 `main`；本次纯状态文档提交用于记录已完成的合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #6 已针对 `main` 开启；该 feature commit 的 GitHub CI 已通过；等待独立评审和用户明确指示后再合并
+- Pull Request 状态：PR #6 已在用户明确批准后 squash merge；合并前最终 feature commit 的 GitHub CI 已通过
