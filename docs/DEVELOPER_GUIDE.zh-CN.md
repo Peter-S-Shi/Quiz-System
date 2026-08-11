@@ -97,6 +97,8 @@ M6.7 没有引入第二个数据库。Translation 历史在每次渲染时都从
 - **Learner Response**：影响较大，因为 Teacher Review 的 `responseId` 是一条必须始终可解析的受保护链接。文档化的策略是显式级联：确认后会把这条 response 连同所有指向它的 review 一并删除，但绝不会删除由它派生出的重新练习/补救 response——它们的 `provenance.sourceResponseId` 之后会安全地变成一条无法解析、但被明确表示出来的历史引用（参见上面的 `resolveResponseLineage()`）。
 - **Teacher Review**：绝不会修改它所针对的 Learner Response。某条重新练习/补救 response 可能把这条 review 的 ID 记作 `sourceReviewId`；这是历史引用而非规范链接，因此该 review 始终可以被删除——UI 只会先警告有多少派生记录引用了它。
 
+**收尾补丁——实时补救文档是规范数据，不是历史引用。** 一条 *finalized Learner Response* 自身的 `provenance.sourceResponseId`/`sourceReviewId` 可以安全地引用一个已经被删除的来源（见上面关于溯源的讨论）。但一份仍然存在于 Translation Library 中的*实时*补救翻译文档不同：`parseLibraryBackup()` 每次恢复时都会把它的 `provenance` 与备份中的 Learner Response/Teacher Review 集合做交叉校验，因此如果一份实时补救文档声称的来源不再能解析，下一次备份就会恢复失败。为此，`analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` 现在接受 `translationDocuments` 参数，并报告 `dependentRemediationDocumentIds`/`hasBlockingDependents`——只要有任意一份*实时*补救文档仍把目标记为自己的 `sourceResponseId`/`sourceReviewId`。当 `hasBlockingDependents` 为真时，`deleteLearnerResponseConfirm()`/`deleteTeacherReviewConfirm()` 会直接拒绝这次删除（通过 `showToast()` 提示依赖数量，连确认对话框都不会弹出），而不是级联穿过它——补救文档绝不会作为副作用被自动删除。先删除依赖它的补救文档（普通的翻译文档删除，行为不变）即可解除这个阻塞，之后上面描述的级联/警告行为照常适用。
+
 有一条排序规则值得任何后续扩展者注意：`src/app.js` 中的 `loadTeacherReviews()` 每次调用都会把全部 review 重新对照*当前*的 Learner Response 集合做校验（因此孤儿 review 会被立即发现，而不仅仅在导入时）。任何删除某条 response 的流程都必须在写入更新后的 response 集合*之前*先给 `loadTeacherReviews()` 拍一份快照——如果在那之后才调用它，会看到刚刚变成孤儿的 review 并抛出异常。`deleteLearnerResponseConfirm()` 正是因为这个原因才提前对两个集合都做了快照。
 
 ### 存储治理（M6.7）

@@ -304,6 +304,8 @@ const locales = {
       retryNeedsWorkNone: "这条记录目前没有需要加强的条目。",
       responseDeleted: "作答记录已删除。",
       reviewDeleted: "批改已删除。",
+      deleteResponseBlockedByRemediation: "还有 {count} 份实时补救翻译文档引用着这条作答记录，请先删除这些补救材料，再删除这条记录。",
+      deleteReviewBlockedByRemediation: "还有 {count} 份实时补救翻译文档引用着这份批改，请先删除这些补救材料，再删除这份批改。",
     },
     translationPractice: {
       recoverTitle: "发现未完成的翻译练习",
@@ -729,6 +731,8 @@ const locales = {
       retryNeedsWorkNone: "This response has no items that currently need work.",
       responseDeleted: "Response deleted.",
       reviewDeleted: "Review deleted.",
+      deleteResponseBlockedByRemediation: "{count} live remediation Translation Document(s) still reference this response. Delete those remediation materials first, then delete this response.",
+      deleteReviewBlockedByRemediation: "{count} live remediation Translation Document(s) still reference this review. Delete those remediation materials first, then delete this review.",
     },
     translationPractice: {
       recoverTitle: "Unfinished translation practice found",
@@ -4102,7 +4106,11 @@ function deleteLearnerResponseConfirm(responseId) {
   // both next collections from these snapshots first, then writing them, avoids that hazard.
   const learnerResponses = loadLearnerResponses();
   const teacherReviews = loadTeacherReviews();
-  const analysis = analyzeLearnerResponseDeletion(responseId, { teacherReviews, learnerResponses });
+  const analysis = analyzeLearnerResponseDeletion(responseId, { teacherReviews, learnerResponses, translationDocuments: translationLibrary.documents });
+  if (analysis.hasBlockingDependents) {
+    showToast(t("toast.deleteResponseBlockedByRemediation", { count: analysis.dependentRemediationDocumentIds.length }));
+    return;
+  }
   const message = analysis.hasDependents
     ? t("history.deleteResponseCascadeConfirm", { reviewCount: analysis.dependentReviewIds.length, derivedCount: analysis.dependentResponseIds.length })
     : t("history.deleteResponseConfirm");
@@ -4118,7 +4126,11 @@ function deleteLearnerResponseConfirm(responseId) {
 }
 
 function deleteTeacherReviewConfirm(reviewId) {
-  const analysis = analyzeTeacherReviewDeletion(reviewId, { learnerResponses: loadLearnerResponses() });
+  const analysis = analyzeTeacherReviewDeletion(reviewId, { learnerResponses: loadLearnerResponses(), translationDocuments: translationLibrary.documents });
+  if (analysis.hasBlockingDependents) {
+    showToast(t("toast.deleteReviewBlockedByRemediation", { count: analysis.dependentRemediationDocumentIds.length }));
+    return;
+  }
   const message = analysis.hasDependents
     ? t("history.deleteReviewLineageConfirm", { count: analysis.dependentResponseIds.length })
     : t("review.deleteReviewConfirm");

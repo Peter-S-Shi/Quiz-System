@@ -79,6 +79,7 @@ Quiz Studio can involve an outside human teacher, an AI assistant, or another to
 - From a history entry, use **Retry entire response** to practice the same material again as a brand-new attempt, **Retry selected items** to choose exactly which items to redo, or **Retry needs-work items** to automatically retry only the items that carry a mark or a review flag. Each retry creates new, independent evidence — it never overwrites or reopens the original response.
 - **Export response** and **Export for external review** are also available from the history detail view, alongside **Delete this history entry** for a response you no longer need. If the response has reviews or retry/remediation records derived from it, the confirmation explains exactly what will happen before you proceed.
 - Deleting a Translation Document that has finalized responses no longer makes that evidence disappear — it stays fully browsable and retriable from Translation History; the confirmation tells you how many responses exist before you delete the document.
+- If a response or a review still has a **live remediation material** in your Translation Library based on it, deleting that response or review is blocked with a message telling you to delete the remediation material first. This only applies to remediation material that still exists in your library; it never blocks deleting a response or review just because a past retry or remediation attempt was made from it.
 
 ## Data Safety
 

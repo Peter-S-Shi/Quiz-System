@@ -37,6 +37,10 @@
 - Added versioned Learner Response and Teacher Review schemas, validation boundaries, and synthetic interoperability examples.
 - Added Learner Response coverage to full-library backups while preserving legacy backup compatibility.
 
+### Fixed
+
+- Fixed an M6.7 deletion-integrity gap: deleting a Learner Response or Teacher Review no longer ignores live remediation Translation Documents that still claim it as `sourceResponseId`/`sourceReviewId`. `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` now detect that case (`dependentRemediationDocumentIds`/`hasBlockingDependents`) and the deletion is refused outright with a bilingual warning until the dependent remediation material is deleted first, instead of silently leaving a live canonical record with unresolvable provenance (which `parseLibraryBackup()` would then reject on the next restore). Finalized retry/remediation responses are unaffected and still never block deletion; only *live* remediation documents do.
+
 ### Documentation
 
 - Added bilingual Translation History/Retry usage, developer architecture notes (including an M1-M6 storage-governance table), an M6.7 manual-QA delta, and a consolidated end-to-end M6.0-M6.7 manual acceptance journey.

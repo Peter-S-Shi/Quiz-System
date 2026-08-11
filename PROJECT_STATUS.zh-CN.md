@@ -47,8 +47,9 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 206 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion 自动测试通过（M6.7 从 178 增至 206）。新增覆盖证明：Translation 历史条目和状态完全依据 Learner Response/Teacher Review 数据派生，且在实时文档被删除后依然正确；需要加强规则对每一种学习者标记和每一种批改评判/内容变更信号都能正确触发，且不受 review 顺序影响；整份/选定条目/需要加强条目重新练习始终基于历史快照构建（绝不依赖实时文档）、在来源文档被删除后依然可用、绝不修改原始作答记录，并携带与补救练习明确区分的重新练习 provenance；溯源解析双向都能正确工作，并把已删除的来源 response 或 review 安全地表示为不可用；删除依赖分析的每一种情形（文档/作答记录/批改，含依赖和不含依赖）都有覆盖。此前 M6.0-M6.6 的全部覆盖继续通过。
-- CI workflow 已存在；已在 `milestone/6.7-history-retry-integration` 分支上通过（PR #6）。
+- 213 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion 自动测试通过（M6.7 主体实现从 178 增至 206，删除完整性收尾补丁又从 206 增至 213）。新增覆盖证明：Translation 历史条目和状态完全依据 Learner Response/Teacher Review 数据派生，且在实时文档被删除后依然正确；需要加强规则对每一种学习者标记和每一种批改评判/内容变更信号都能正确触发，且不受 review 顺序影响；整份/选定条目/需要加强条目重新练习始终基于历史快照构建（绝不依赖实时文档）、在来源文档被删除后依然可用、绝不修改原始作答记录，并携带与补救练习明确区分的重新练习 provenance；溯源解析双向都能正确工作，并把已删除的来源 response 或 review 安全地表示为不可用；删除依赖分析的每一种情形（文档/作答记录/批改，含依赖和不含依赖）都有覆盖。此前 M6.0-M6.6 的全部覆盖继续通过。
+- **删除完整性收尾补丁**：CI 通过后的复查发现 `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` 忽略了实时补救翻译文档，导致删除 Learner Response 或 Teacher Review 可能让 Translation Library 中仍然存在的补救文档留下无法解析的 provenance——这与 `parseLibraryBackup()` 的要求不一致（后者在每次恢复时都要求实时补救文档的 provenance 必须可解析）。修复方式是明确区分 finalized response 自身的（可以安全无法解析的）历史 provenance，与一份*实时*补救文档的规范性声明：两个分析函数现在都接受 `translationDocuments` 参数，并报告 `dependentRemediationDocumentIds`/`hasBlockingDependents`；只要存在这样的实时依赖，`app.js` 中的删除流程就会直接拒绝删除（弹出提示，不出现确认对话框），而不是级联穿过它。补救文档绝不会作为副作用被自动删除。新增 7 个测试，其中包括一个证明补丁修复前的操作序列会产生无法恢复的备份的回归防护测试，以及一个证明先删除补救文档后再执行的许可删除仍能正常完整备份/恢复的测试。
+- CI workflow 已存在；已在 `milestone/6.7-history-retry-integration` 分支上通过（PR #6），删除完整性收尾补丁提交后同样通过。
 - 本地浏览器 smoke test 使用预置的真实场景数据（一条带有两条评判相互冲突的批改的作答记录）完整走过了 M6.7 的流程：浏览并按来源/状态/排序筛选 Translation 历史；打开历史详情，确认条目级证据、学习者标记和两条关联批改均可访问；执行一次真实的"针对需要加强的条目重新练习"，确认新的 session 只包含被标记的条目、带有 `materialProvenance.purpose: "retry"`，完成后确认 finalized response 携带重新练习 provenance（`sourceResponseId`/`sourceMaterialId`），而原始记录未受影响；执行"选择条目重新练习"并取消勾选一个条目，确认只有被选中的条目被带入新的练习；从原始记录正向跟随溯源到重新练习记录、再反向跟随回去；删除一条被某个重新练习记录的 `sourceReviewId` 引用的 Teacher Review，确认溯源视图随后正确显示为不可用，而不是崩溃；删除一份带有依赖 finalized 作答记录的翻译文档，确认确认提示中说明了依赖数量，且该记录之后依然可以在历史中完整浏览和重新练习；触发作答记录删除的级联确认，确认提示中正确说明了依赖批改和派生记录的数量，确认后正确地把该记录连同其批改一起删除，同时保留了由它派生出的重新练习记录。同一批流程也抽查确认了英文界面的一致性。
 - 在本次 smoke test 中，发现并修复了一处真实缺陷（未被单元测试捕获，因为它存在于 `app.js` 的 UI glue 代码中而非核心模块）：`deleteLearnerResponseConfirm()` 最初会先写入更新后的 Learner Response 集合，之后才再次读取 `loadTeacherReviews()`；而 `loadTeacherReviews()` 每次调用都会把全部批改重新对照*当前*的作答记录集合做校验——于是它看到了刚刚变成孤儿的批改并抛出异常。修复方式是提前对两个集合都做快照。修复后通过一次独立的干净复现重新验证。
 - smoke test 中还观察到（这是预期中的既有 PWA 行为，不是缺陷）：在测试同一份修改过的 `app.js` 的多次迭代之间，必须清空已安装的 service worker 缓存，这与真实用户需要一次新的部署才能获取新版本是同样的道理；此处仅作记录，不作为回归处理。
@@ -112,8 +113,8 @@ M6.7 已在分支 `milestone/6.7-history-retry-integration` 完成实现（PR #6
 - 默认分支：`main`
 - 远程：`origin`
 - M6.7 开始前已验证的基线：`61cd16f Record M6.6 merge into main`（`main`）
-- M6.7 分支：`milestone/6.7-history-retry-integration`，提交 `ffb7303 M6.7: History, Retry, Portability, and Whole-Product Integration`
+- M6.7 分支：`milestone/6.7-history-retry-integration`，主体实现提交 `ffb7303 M6.7: History, Retry, Portability, and Whole-Product Integration`，PR/CI 状态记录于 `3c1fca5`，另加一个删除完整性收尾补丁提交；具体标识以 Git 历史为准
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步状态：M6.7 已实现并推送到 `origin` 上的功能分支；尚未合并进 `main`
+- 同步状态：M6.7（含删除完整性收尾补丁）已实现并推送到 `origin` 上的功能分支；尚未合并进 `main`
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
 - Pull Request 状态：PR #6 已针对 `main` 开启；该 feature commit 的 GitHub CI 已通过；等待独立评审和用户明确指示后再合并
