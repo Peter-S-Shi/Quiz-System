@@ -17,6 +17,9 @@ Quiz Studio is a static ES module app.
 - `src/core/corrections.js`: DOM-independent rich correction model for the M6.5 Correction Workspace — a single `correction` concept covering presentation styles, content-changing operations (insert/replace/delete), and comments, each anchored to a character range; validation, style/color validation, the content-op conflict policy, and a deterministic render projection.
 - `src/core/review-records.js`: independent Teacher Review collection operations (create/update by ID, lookup by `responseId` or all reviews for a `responseId`), mirroring `learning-records.js` without a silent history cap.
 - `src/core/review-transport.js`: DOM-independent M6.6 external-interchange layer — versioned review-request and remediation-request transport envelopes (create/validate), Teacher Review external-import parsing with an explicit version gate, import collision classification (new/idempotent/update/reassigned-reject), and remediation Translation Document provenance cross-validation. Reuses the M6.5 Teacher Review validators and the M6.2 Translation Document JSON parser rather than duplicating them.
+- `src/core/translation-history.js`: DOM-independent M6.7 history derivation — builds a history entry/index from Learner Responses and Teacher Reviews (never a second source of truth), needs-work item derivation, entry status derivation, filtering, and backward/forward lineage resolution across retry and remediation provenance.
+- `src/core/translation-retry.js`: DOM-independent M6.7 retry-material derivation — builds an ephemeral, document-shaped object from a historical Learner Response snapshot (whole response or a selected item subset) with `provenance.purpose: "retry"`, suitable for `createTranslationSession()` without ever touching the live Translation Library.
+- `src/core/deletion-policy.js`: DOM-independent M6.7 dependency analysis for deleting a Translation Document, Learner Response, or Teacher Review — reports dependents without mutating anything, so `src/app.js` can render an accurate plain-language warning before a destructive action.
 - `src/core/migrations.js`: schema versioning and data normalization.
 - `src/storage/local-storage.js`: local browser storage boundary.
 - `schemas/`: public Quiz Paper, Learner Response, Teacher Review, Translation Document, review-request, and remediation-request JSON Schemas.
@@ -75,6 +78,45 @@ Because a response may now legitimately carry more than one review (different re
 Remediation material is an ordinary `quiz-studio.translation-document` distinguished by an additive `provenance` block that M6.0 already generically supports (`purpose: "remediation"`, `sourceResponseId`, `sourceReviewId`, `sourceMaterialId`, `createdAt`, `author`). The generic `validateRemediationProvenance()` remains a no-op for documents that do not claim remediation. The dedicated remediation file parser and `validateRemediationImportProvenance()` instead require a real remediation claim, valid raw timestamp/actor metadata, locally resolving response/review IDs, a review that belongs to that response, and a matching optional material ID. Ordinary M6.2 import remains unchanged; collision detection, copy-as-new-ID remapping, and local-folder rebinding still never alter `provenance`.
 
 Lineage into practice evidence is additive at the session layer: `createTranslationSession()` copies `document.provenance` into `session.materialProvenance` (present only when the document has one), and `createTranslationLearnerResponse()` normalizes that forward into the new response's `provenance` field instead of the hardcoded `{ purpose: "practice" }`. Because the finalized response carries the full provenance block by value, lineage back to the source response/review survives even if the live remediation document is later deleted — nothing depends on it still existing.
+
+## Translation History, Retry, and Lineage (M6.7)
+
+M6.7 does not introduce a second database. Translation History is derived on every render from the same canonical `quiz-studio-learner-responses-v1` and `quiz-studio-teacher-reviews-v1` collections that M6.0/M6.5 already maintain — `buildHistoryIndex()` filters to Translation responses (`material.type === "translation-document"`) and computes review counts, needs-work counts, and retry/remediation badges from those two collections alone, so it stays reconstructible, never caps history, and remains fully usable after the live Translation Document is deleted (the response's own `material.snapshot` already carries everything History needs).
+
+`deriveNeedsWorkItemIds()` is the one documented, deterministic "needs work" rule: an item is included if it carries any learner annotation (`unknown`/`uncertain`/`should_know`), if any Teacher Review judges it `incorrect`/`partial`/`needs-review`, or if any Teacher Review attaches a correction to it — the signals are unioned across every review for the response (not just the newest), so the result never depends on review order.
+
+Retry reuses the M6.6 provenance/session machinery rather than adding a parallel one: `buildRetryMaterial()` takes a historical Learner Response (optionally a subset of item IDs) and returns a document-shaped object with fresh item/material IDs, `provenance: { purpose: "retry", sourceResponseId, sourceReviewId?, sourceMaterialId, createdAt }`, and hands it straight to the existing `createTranslationSession()` — the same mechanism that already threads `document.provenance` into `session.materialProvenance` and then into the finalized response's `provenance` field for M6.6 remediation material does the same work here for retry, with zero changes to `translation-session.js` or `interchange.js`. Retry and remediation stay distinguishable purely by `provenance.purpose`; a needs-work retry never sets `sourceReviewId` when the needs-work set was derived from more than one review (or from annotations alone), since there is no single review it is "the" retry of.
+
+`resolveResponseLineage()` walks `provenance.sourceResponseId` backward (through an optional `sourceReviewId`) and finds any responses whose `provenance.sourceResponseId` points at the current one, forward. A missing ancestor (deleted response or deleted review) is represented as `{ ...Available: false }` rather than thrown — this is the same "historical provenance may point to a now-missing source" contract that M6.6 already established for remediation, generalized to retry and to the History UI.
+
+### Deletion Safety (M6.7)
+
+`deletion-policy.js` never deletes anything itself; it only reports dependents so `src/app.js` can warn accurately before an irreversible action:
+
+- **Translation Document**: deleting it never touches Learner Responses (they carry their own snapshot); the analysis only reports how many exist so the confirmation can mention them.
+- **Learner Response**: high impact, because a Teacher Review's `responseId` is a protected link that must always resolve. The documented policy is an explicit cascade: confirming deletes the response together with every review that targets it, but never deletes retry/remediation responses derived from it — their `provenance.sourceResponseId` simply becomes a safely-represented unresolved reference afterward (see `resolveResponseLineage()` above).
+- **Teacher Review**: never mutates the Learner Response it targets. A retry/remediation response may carry the review's ID as `sourceReviewId`; that is historical, not canonical, so the review can always be deleted — the UI just warns how many derived records reference it first.
+
+One ordering rule matters for anyone extending this: `loadTeacherReviews()` in `src/app.js` re-validates every review against the *current* Learner Response collection on every call (so an orphan is caught immediately, not just at import time). A deletion flow that removes a response must snapshot `loadTeacherReviews()` *before* writing the updated response collection — calling it afterward would see the just-orphaned reviews and throw. `deleteLearnerResponseConfirm()` takes both snapshots up front for this reason.
+
+### Storage Governance (M6.7)
+
+Every persistent key introduced through M1-M6, reviewed for M6.7 lifecycle closure:
+
+| Key | Canonical record | Migration | Backup | Deletion behavior |
+| --- | --- | --- | --- | --- |
+| `quiz-studio-library-v1` | Quiz papers | `migrations.js` | Included | Paper delete is explicit; history/responses for it require the same confirmed clear |
+| `quiz-studio-legacy-paper` (`quiz-studio-paper-v1`) | Pre-library single paper | Migrated into the library once, then unused | N/A | Read-only migration source |
+| `quiz-studio-active-paper` | Selected paper ID | N/A | Not backed up (UI selection state, reconstructible) | Cleared on paper delete |
+| `quiz-studio-active-session-v1` | In-progress Objective Quiz session | N/A | Not backed up (ephemeral, recoverable state only) | Cleared on finish/discard |
+| `quiz-studio-translation-active-session-v1` | In-progress Translation session | N/A | Not backed up (ephemeral, recoverable state only) | Cleared on finish/discard; isolated from the Objective Quiz key |
+| `quiz-studio-history-v1` | Quiz score-summary history | N/A | Included | Capped at 100 entries by design; explicitly cleared alongside its paper's responses |
+| `quiz-studio-learner-responses-v1` | Learner Response (Quiz and Translation) | N/A (versioned per-record `schemaVersion`) | Included | No cap; M6.7 adds per-response deletion with cascade-to-reviews (see above) |
+| `quiz-studio-teacher-reviews-v1` | Teacher Review | N/A (versioned per-record `schemaVersion`) | Included | No cap; M6.7 adds per-review deletion |
+| `quiz-studio-translation-library-v1` | Translation folders/documents/items (including remediation documents) | N/A (versioned `schemaVersion`) | Included | Folder delete cascades to its documents; document delete never touches Learner Responses |
+| `quiz-studio-theme` / `quiz-studio-language` | UI preference | N/A | Not backed up (device-local preference) | N/A |
+
+No duplicate source of truth was found: Translation History (M6.7) and the Quiz score-summary history are both derived/display layers over canonical collections, not separate canonical stores. Two integrity gaps were closed as part of this review rather than deferred, since they affect backup atomicity directly: `parseLearnerResponseCollection()`/`parseTeacherReviewCollection()` now reject a collection containing two records with the same stable ID (previously only the live `upsert*()` write paths enforced this, not bulk/backup parsing), and `parseLibraryBackup()` now cross-validates every remediation Translation Document's `provenance` against that same backup's Learner Response/Teacher Review collections before any state is replaced, reusing `validateRemediationProvenance()` from `review-transport.js`. Everything else — the canonical-must-resolve vs. historical-may-be-missing distinction, no silent cap, and full backup coverage — was already correct as of M6.6 and required no change.
 
 ## Validation
 

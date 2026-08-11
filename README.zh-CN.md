@@ -39,6 +39,11 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 - 提供 Translation Practice 练习 session：原文可见、学习者独立书写译文、参考译文默认隐藏且可按需显示，并支持中断后恢复进度。
 - 为 Translation Practice 提供非客观的 finalized Learner Response 证据，与 Objective Quiz 判分完全分开。
 - 支持学习者对自己译文片段进行主动控制的元认知标记（不认识 / 不确定 / 应该会但想不起来），并保存为结构化证据。
+- 提供批改 / 修订工作区，支持评阅者样式、插入/替换/删除批改、评判和批注，并支持一份记录拥有多条批改。
+- 提供外部教师往返：导出评阅请求、导入外部生成的 Teacher Review、导出/导入补救翻译文档，全程不依赖任何应用内 AI API。
+- 提供覆盖全部 finalized 作答记录的 Translation 历史浏览，支持筛选、溯源导航，以及在原始文档被删除后依然可用的证据访问。
+- 支持从任意历史记录整份重新练习、选择条目重新练习，或针对需要加强的条目重新练习，每一次都会产生新的、独立的证据，重新练习的 provenance 与补救练习明确区分。
+- 为 Learner Response 和 Teacher Review 提供带明确警告的删除操作，执行任何不可逆操作前都会先展示依赖分析。
 - 提供 PWA 文件，为静态托管和离线能力做准备。
 - 提供 CI workflow 文件，并保留仅手动触发的 GitHub Pages workflow，供未来公开发布时使用。
 
@@ -84,6 +89,7 @@ node --test
 8. 需要与外部教师共享可移植作答包时，导出 finalized Learner Response。
 9. 切换到 **翻译练习** 页面，把 Translation Document 组织到文件夹中、添加条目、批量导入材料，并把文档导出为可移植 JSON。
 10. 在某份翻译文档中开始练习，为每条条目独立书写译文，可选择把自己作答中的片段标记为不认识/不确定/应该会但想不起来，完成后保存为受保护的 Learner Response。详见 `docs/USER_GUIDE.zh-CN.md`。
+11. 使用 **翻译历史** 浏览全部 finalized 作答记录，查看其证据和溯源，打开或删除对应的 Teacher Review，并可以整份、按选定条目或按需要加强条目重新练习成一次新的作答。
 
 ## 项目结构
 
@@ -117,7 +123,7 @@ Translation 领域与持久化基础见 `docs/TRANSLATION_DOMAIN.zh-CN.md`。
 
 ### 当前版本已规划能力
 
-Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2（Translation Library 与材料导入导出）、M6.3（Translation Practice 与 session 恢复）、M6.4（学习者作答标记基础）、M6.5（批改 / 修订工作区）和 M6.6（外部教师往返）均已完成实现；M6.2 到 M6.7 的正式验收被有意推迟到 M6.7 之后的一次整体 M6 验收。计划中的功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
+Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2（Translation Library 与材料导入导出）、M6.3（Translation Practice 与 session 恢复）、M6.4（学习者作答标记基础）、M6.5（批改 / 修订工作区）、M6.6（外部教师往返）和 M6.7（历史、重新练习、可移植性与全产品整合）均已完成实现；M6.2 到 M6.7 的正式验收被有意推迟到 M6.7 完成后的一次整体 M6 验收。计划中的功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
 
 ## 多语言支持
 
@@ -129,9 +135,9 @@ Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Op
 
 当前阶段：Feature Development - Scope Reopened（功能开发阶段，范围已重新开放）。
 
-Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 Translation Library and Material Import/Export、M6.3 Translation Practice and Session Recovery、M6.4 Learner Answer Marking and Annotation Foundation、M6.5 Rich Correction / Revision Workspace 和 M6.6 External Teacher Round Trip 均已完成实现。M6.2 到 M6.7 的正式验收被有意推迟：用户决定不逐个验收子里程碑，而是在 M6.7 完成后进行一次覆盖整个 M6 的综合验收。当前版本尚未 Release Ready。
+Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 Translation Library and Material Import/Export、M6.3 Translation Practice and Session Recovery、M6.4 Learner Answer Marking and Annotation Foundation、M6.5 Rich Correction / Revision Workspace、M6.6 External Teacher Round Trip 和 M6.7 History, Retry, Portability, and Whole-Product Integration 均已完成实现。M6.2 到 M6.7 的正式验收被有意推迟：用户决定不逐个验收子里程碑，而是在 M6.7 完成后进行一次覆盖整个 M6 的综合验收。当前版本尚未 Release Ready。
 
-覆盖整个 M6 的综合验收、其余 M6.7 工作、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
+覆盖整个 M6 的综合验收、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
 
 ## 数据和隐私
 

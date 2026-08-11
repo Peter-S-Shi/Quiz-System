@@ -4,6 +4,12 @@
 
 ### Added
 
+- Added M6.7 History, Retry, Portability, and Whole-Product Integration, the last feature-development sub-milestone of M6: durable Translation History browsing across all finalized responses (independent of whether the source document still exists), retry-entire/retry-selected/retry-needs-work workflows that always produce new independent evidence, backward/forward lineage navigation, and explicit, warned deletion for Translation Documents, Learner Responses, and Teacher Reviews.
+- Added `src/core/translation-history.js`: history entries and a deterministic needs-work rule derived entirely from the existing Learner Response/Teacher Review collections (never a second source of truth), plus lineage resolution that safely represents a deleted ancestor response or review as unavailable rather than throwing.
+- Added `src/core/translation-retry.js`: builds an ephemeral retry material from a historical response snapshot with `provenance.purpose: "retry"`, reusing the existing M6.6 session/provenance machinery unchanged.
+- Added `src/core/deletion-policy.js`: pure dependency analysis for deleting a Translation Document, Learner Response, or Teacher Review. Deleting a response cascades to its reviews (a protected link that must always resolve) but never to retry/remediation responses derived from it; deleting a review or a document never mutates other canonical evidence.
+- Added a "Delete review" action to the Correction Workspace, closing a gap M6.6 had explicitly deferred to M6.7.
+- Closed two backup-atomicity gaps found during the M6.7 storage-governance review: duplicate stable IDs within a Learner Response or Teacher Review collection are now rejected during bulk/backup parsing (previously only the live upsert paths enforced this), and `parseLibraryBackup()` now cross-validates every remediation Translation Document's provenance against that same backup's Learner Response/Teacher Review collections before any state is replaced.
 - Added M6.6 External Teacher Round Trip: completes the first real end-to-end Open Teaching Interchange round trip using Translation Practice, entirely without an in-app AI API. Export a self-contained review-request from a finalized Translation Learner Response, hand it to an external human/AI/agent reviewer, import their returned canonical Teacher Review with validation/preview/confirm, inspect the imported rich corrections, export a remediation-request bundling the response and review, and import an externally produced remediation Translation Document with cross-validated provenance that practices and finalizes like any other material.
 - Added `src/core/review-transport.js`: versioned, provider-independent `quiz-studio.review-request` and `quiz-studio.remediation-request` transport envelopes that embed faithful portable copies of the canonical Learner Response/Teacher Review rather than a competing evidence format; an explicit external-interchange version gate (stricter than the generic, forward-tolerant runtime validators) for Teacher Review import and both request envelopes; non-mutating import-collision classification (new / idempotent / update / reassigned-reject); and remediation Translation Document provenance cross-validation against local Learner Response/Teacher Review records.
 - A response may now legitimately hold more than one Teacher Review; the Correction Workspace shows a minimal picker (reviewer, review ID) when more than one exists, with an in-workspace switcher, instead of the M6.7-scoped full history browser.
@@ -33,6 +39,7 @@
 
 ### Documentation
 
+- Added bilingual Translation History/Retry usage, developer architecture notes (including an M1-M6 storage-governance table), an M6.7 manual-QA delta, and a consolidated end-to-end M6.0-M6.7 manual acceptance journey.
 - Added bilingual External Teacher Round Trip usage, developer architecture notes, and an M6.6 manual-QA delta.
 - Added bilingual Correction Workspace usage, developer architecture notes, and an M6.5 manual-QA delta.
 - Added bilingual learner-marking usage, developer architecture notes, and an M6.4 manual-QA delta.

@@ -71,6 +71,15 @@ Quiz Studio can involve an outside human teacher, an AI assistant, or another to
 - When you import remediation material, Quiz Studio checks that it genuinely traces back to the response and review you exported — it will refuse a file that claims to be remediation material but points at evidence that doesn't exist or doesn't match. Choose a destination folder as with any other Translation Document import.
 - Practicing imported remediation material works exactly like practicing anything else, and the resulting evidence keeps a record of which original response and review it followed from, even if the remediation document is later deleted.
 
+## Translation History, Retry, and Lineage
+
+- Select **Translation History** in the Translation Library to browse every finalized Translation response, independent of whether its original document still exists. Each entry shows the material title, languages, completion time, item count, review count, and badges for needs-work items, remediation, and retries.
+- Filter by origin (original practice, retry, or remediation), by review status (unreviewed, reviewed, or needs work), and sort newest or oldest first.
+- Open an entry to see its full evidence: the source text and your original answer for every item, any metacognitive marks, every linked Teacher Review (open a specific one, or delete one you no longer need), and — where applicable — a **Lineage** section showing where this response came from and a **Derived into** section showing anything retried or remediated from it. If a linked record has since been deleted, it is clearly labeled unavailable rather than hidden.
+- From a history entry, use **Retry entire response** to practice the same material again as a brand-new attempt, **Retry selected items** to choose exactly which items to redo, or **Retry needs-work items** to automatically retry only the items that carry a mark or a review flag. Each retry creates new, independent evidence — it never overwrites or reopens the original response.
+- **Export response** and **Export for external review** are also available from the history detail view, alongside **Delete this history entry** for a response you no longer need. If the response has reviews or retry/remediation records derived from it, the confirmation explains exactly what will happen before you proceed.
+- Deleting a Translation Document that has finalized responses no longer makes that evidence disappear — it stays fully browsable and retriable from Translation History; the confirmation tells you how many responses exist before you delete the document.
+
 ## Data Safety
 
 Exported response and backup files can contain authored quiz or Translation material, reference translations, private notes, and learner answers. They remain under your control and are not uploaded automatically. Keep real data outside the repository in ignored folders such as `user-data/` or `exports/`, and review each file before sharing it with an external teacher.

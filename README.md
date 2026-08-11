@@ -39,6 +39,11 @@ The current version is a static ES module web application. It runs in a browser 
 - Translation Practice sessions: source text visible, independent learner translation, optional hidden-by-default reference reveal, and recoverable progress.
 - Non-objective finalized Learner Response evidence for Translation Practice, kept separate from Objective Quiz grading.
 - Learner-controlled metacognitive marking (Unknown / Uncertain / Should know) on spans of a learner's own translation, preserved as structured evidence.
+- Rich Correction / Revision Workspace with reviewer styles, insert/replace/delete corrections, judgments, and comments, plus multiple reviews per response.
+- External Teacher Round Trip: export a review-request, import an externally produced Teacher Review, and export/import a remediation Translation Document, entirely without an in-app AI API.
+- Translation History browsing across all finalized responses, with filters, lineage navigation, and evidence access that survives deletion of the original document.
+- Retry entire response, retry selected items, or retry needs-work items from any history entry, each producing new, independent evidence with retry provenance distinct from remediation.
+- Explicit, warned deletion for Learner Responses and Teacher Reviews, with dependency analysis shown before any irreversible action.
 - PWA files for offline-capable static hosting.
 - CI workflow files and a manual-only GitHub Pages workflow for future public release.
 
@@ -84,6 +89,7 @@ node --test
 8. Export the finalized Learner Response when you want to share a portable response package with an external teacher.
 9. Switch to the **Translation** view to organize Translation Documents into folders, add items, import material in bulk, and export a document as portable JSON.
 10. From a Translation Document, start practice, write your own translation for each item, optionally mark spans of your own answer as Unknown/Uncertain/Should know, and finish to save a protected Learner Response. See `docs/USER_GUIDE.md` for details.
+11. Use **Translation History** to browse every finalized response, inspect its evidence and lineage, open or delete its Teacher Reviews, and retry the entire response, selected items, or needs-work items into a new attempt.
 
 ## Project Structure
 
@@ -117,7 +123,7 @@ Project development is organized by lifecycle stages. See `ROADMAP.md` for the f
 
 ### Planned Current-Version Capability
 
-Translation Practice remains Milestone 6's primary new learning workflow. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 (Translation Library and material import/export), M6.3 (Translation Practice and session recovery), M6.4 (learner answer marking and annotation foundation), M6.5 (rich correction / revision workspace), and M6.6 (external Teacher round trip) are implementation complete; individual formal acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7. The planned capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
+Translation Practice remains Milestone 6's primary new learning workflow. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 (Translation Library and material import/export), M6.3 (Translation Practice and session recovery), M6.4 (learner answer marking and annotation foundation), M6.5 (rich correction / revision workspace), M6.6 (external Teacher round trip), and M6.7 (history, retry, portability, and whole-product integration) are implementation complete; individual formal acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance now that M6.7 is complete. The planned capability remains local-first, multilingual, and independent of AI grading or paid model APIs.
 
 ## Localization
 
@@ -129,9 +135,9 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 Current phase: Feature Development - Scope Reopened.
 
-Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 Translation Library and Material Import/Export, M6.3 Translation Practice and Session Recovery, M6.4 Learner Answer Marking and Annotation Foundation, M6.5 Rich Correction / Revision Workspace, and M6.6 External Teacher Round Trip are implementation complete. Individual formal acceptance for M6.2 through M6.7 has been intentionally deferred: the user has decided to run one comprehensive M6-wide acceptance after M6.7 instead of accepting each sub-milestone separately. The project is not Release Ready.
+Quiz Studio is a local-first private pre-release prototype. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 Translation Library and Material Import/Export, M6.3 Translation Practice and Session Recovery, M6.4 Learner Answer Marking and Annotation Foundation, M6.5 Rich Correction / Revision Workspace, M6.6 External Teacher Round Trip, and M6.7 History, Retry, Portability, and Whole-Product Integration are implementation complete. Individual formal acceptance for M6.2 through M6.7 has been intentionally deferred: the user has decided to run one comprehensive M6-wide acceptance now that M6.7 is complete, instead of accepting each sub-milestone separately. The project is not Release Ready.
 
-The comprehensive M6-wide acceptance, the remaining M6.7 work, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
+The comprehensive M6-wide acceptance, a new Feature Complete Review, Feature Freeze, Milestone 7 Product Hardening, Milestone 8 Release Candidate validation, full manual QA, and final clean-environment verification are still pending. GitHub Pages deployment remains deferred until the repository is public and release validation is complete.
 
 ## Data and Privacy
 

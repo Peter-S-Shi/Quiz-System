@@ -78,14 +78,14 @@ Clearing a paper's history requires confirmation and explicitly removes both sum
 
 M6.0 supplied schemas, normalization, and validation functions for Teacher Review data, without a Teacher Review import screen or external-correction rendering. M6.6 completed this: it added the Teacher Review upload/preview/confirmation/storage/rendering pipeline described in `DEVELOPER_GUIDE.md`, reusing this same protected-response validation boundary for previewed and confirmed review imports.
 
-## Deferred To Later M6 Work
+## History, Retry, and Lineage (M6.7)
 
-M6.1 through M6.6 delivered the full round trip described above: the Translation domain and non-objective response boundary (`TRANSLATION_DOMAIN.md`), the Translation Library and practice UI, learner `unknown`/`uncertain`/`should_know` span marking, the M6.5 rich correction/revision language and workspace, and the M6.6 external Teacher Review round trip and remediation material round trip described in `DEVELOPER_GUIDE.md`.
+M6.7 turns the interchange loop into a durable, navigable history rather than a one-off screen. Translation History (`src/core/translation-history.js`) is derived from the same canonical Learner Response and Teacher Review collections described above — it is an index/navigation layer, never a second source of truth, and it remains fully usable after the originating live Translation Document is deleted.
 
-Still deferred to M6.7:
+M6.7 adds a second, distinct provenance purpose alongside `"remediation"`: `"retry"`. A retry (entire response, selected items, or automatically selected needs-work items) always produces new, independent evidence with its own stable IDs; it never reopens or overwrites the historical response it was retried from. `resolveResponseLineage()` walks both directions — back through `sourceResponseId`/`sourceReviewId` to the response's origin, and forward to anything retried or remediated from it — representing a deleted ancestor or reviewer as explicitly unavailable rather than crashing or silently dropping the relationship.
 
-- A full Translation history/retry browser across all finalized responses, reviews, and remediation lineage.
-- History analytics, advanced review search/filtering, and needs-work queues.
-- Whole-product portability and integration work.
+M6.7 also makes deletion semantics explicit for the first time: deleting a Learner Response cascades to its Teacher Reviews (a protected link that must always resolve) but never to responses derived from it; deleting a Teacher Review never mutates the Learner Response it targets. See `DEVELOPER_GUIDE.md` for the full dependency-analysis and storage-governance detail.
 
-No embedded AI API, provider configuration, or automatic AI grading is part of M6.0-M6.6.
+## Deferred Beyond M6.7
+
+M6.0 through M6.7 delivered the full round trip described above plus durable history, retry, lineage, and deletion safety. No embedded AI API, provider configuration, or automatic AI grading is part of M6.0-M6.7. Still explicitly out of scope: advanced history analytics or search, a graph-style lineage visualization, cloud sync or accounts, and any of the M7 Product Hardening or M8 Release Candidate work.

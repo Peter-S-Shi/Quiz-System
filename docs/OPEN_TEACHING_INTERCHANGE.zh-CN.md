@@ -78,14 +78,14 @@ Objective Quiz 完成时，会先生成独立 Learner Response，再最终确认
 
 M6.0 提供了 Teacher Review 的 schema、标准化和校验函数，但没有提供 Teacher Review 导入界面，也不渲染外部批改。M6.6 补齐了这一点：新增了 `DEVELOPER_GUIDE.zh-CN.md` 中描述的 Teacher Review 上传/预览/确认/存储/渲染流程，并复用同一套受保护 response 校验边界来处理带预览和确认的 review 导入。
 
-## 后续 M6 工作
+## 历史、重新练习与溯源（M6.7）
 
-M6.1 到 M6.6 已经交付了上面描述的完整往返：`TRANSLATION_DOMAIN.zh-CN.md` 中的 Translation 领域和非客观 response 边界、Translation Library 与练习 UI、学习者 `unknown`/`uncertain`/`should_know` span 标记、M6.5 的 rich correction/revision 语言与工作区，以及 `DEVELOPER_GUIDE.zh-CN.md` 中描述的 M6.6 外部 Teacher Review 往返与补救材料往返。
+M6.7 把互通循环变成一段可长期查阅、可导航的历史，而不再只是一次性的界面。Translation 历史（`src/core/translation-history.js`）派生自上面描述的同一批规范 Learner Response 和 Teacher Review 集合——它是索引/导航层，绝不是第二个真源，并且在原始的实时翻译文档被删除后依然完全可用。
 
-仍然推迟到 M6.7 的工作：
+M6.7 在 `"remediation"` 之外新增了第二种独立的 provenance 用途：`"retry"`（重新练习）。无论是整份重新练习、选定条目重新练习，还是自动选中需要加强条目的重新练习，都会产生新的、独立的证据，拥有自己的稳定 ID；绝不会重新打开或覆盖被重新练习的那条历史记录。`resolveResponseLineage()` 会双向回溯：向后沿 `sourceResponseId`/`sourceReviewId` 找到这条 response 的来源，向前找到由它派生出的任何重新练习或补救记录；如果来源的 response 或 reviewer 已经被删除，会被明确标注为不可用，而不是崩溃或悄悄丢弃这层关系。
 
-- 覆盖全部 finalized response、review 和补救溯源的完整 Translation 历史/重练浏览器。
-- 历史分析、更高级的 review 搜索/筛选，以及待处理队列。
-- 全产品层面的可移植性与整合工作。
+M6.7 还首次让删除语义变得明确：删除一条 Learner Response 会级联删除它的 Teacher Review（一条必须始终可解析的受保护链接），但绝不会级联删除由它派生出的记录；删除一条 Teacher Review 绝不会修改它所针对的 Learner Response。完整的依赖分析与存储治理细节见 `DEVELOPER_GUIDE.zh-CN.md`。
 
-M6.0-M6.6 均不包含内置 AI API、provider 配置或自动 AI 判分。
+## M6.7 之后仍推迟的工作
+
+M6.0 到 M6.7 已经交付了上面描述的完整往返，外加持久历史、重新练习、溯源和删除安全。M6.0-M6.7 均不包含内置 AI API、provider 配置或自动 AI 判分。仍然明确排除在范围之外的：更高级的历史分析或搜索、图形化的溯源可视化、云同步或账号系统，以及任何 M7 Product Hardening 或 M8 Release Candidate 的工作。
