@@ -4297,6 +4297,16 @@ function showToast(message) {
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
+
+  const hasController = Boolean(navigator.serviceWorker.controller);
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hasController && !refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {
       // Offline support is optional; the app remains usable without it.

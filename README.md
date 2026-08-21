@@ -61,7 +61,7 @@ python -m http.server 8000
 
 Then open `http://localhost:8000`.
 
-On Windows, you can also double-click `start-local.bat`. It starts a local server on port `8000` and opens the app in your browser.
+On Windows, you can also double-click `start-local.bat`. It starts a local server on port `8000` (or another available port if `8000` is occupied) and opens the app in your browser.
 
 ## Validation
 
