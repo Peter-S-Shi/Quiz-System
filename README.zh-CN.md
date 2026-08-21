@@ -49,19 +49,21 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 
 ## 开始使用
 
-用本地静态服务器启动仓库，然后通过该服务器打开 `index.html`。
+在 Windows 上推荐的标准本地开发命令为：
 
-不需要构建步骤。
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\start-local.ps1"
+```
 
-示例：
+该命令会在 `http://127.0.0.1:8000` 启动 Python 本地 HTTP 服务器并服务于当前仓库目录，用浏览器打开 `http://localhost:8000`，并在 localhost 开发模式下自动绕过 Service Worker 缓存，确保本地开发始终加载最新代码。
+
+你也可以使用任何本地静态服务器手动启动：
 
 ```bash
 python -m http.server 8000
 ```
 
-然后打开 `http://localhost:8000`。
-
-在 Windows 上，也可以直接双击 `start-local.bat`。它会在 `8000` 端口（如果 `8000` 端口被占用，则会自动选择其他可用端口）启动本地服务器，并自动用浏览器打开应用。
+然后打开 `http://localhost:8000`。双击 `start-local.bat` 亦可作为批处理备用启动器使用。
 
 ## 验证
 
@@ -73,13 +75,13 @@ npm run check
 如果本机没有 npm，可以直接运行等价的核心检查：
 
 ```bash
+node --test tests/*.test.js
 node --check src/app.js
-node --test
 ```
 
 ## 使用方式
 
-1. 打开 `index.html`。
+1. 使用上面的 PowerShell 命令启动应用并打开 `http://localhost:8000`。
 2. 在 **编辑** 页面创建或更新试卷。
 3. 添加题目并标记正确答案。
 4. 切换到 **做题** 页面。
@@ -97,7 +99,8 @@ node --test
 Quiz System/
   index.html        应用页面结构
   styles.css        界面样式和响应式布局
-  start-local.bat   Windows 本地启动器
+  start-local.ps1   标准 PowerShell 本地开发启动器
+  start-local.bat   Windows 批处理备用启动器
   src/app.js        试卷库、试卷编辑、练习流程和多语言支持
   src/core/         题型注册、校验、判分和迁移
   src/storage/      浏览器存储边界

@@ -147,7 +147,9 @@ test("renderCorrectionProjection produces deterministic segments for style, inse
   ];
   const segments = renderCorrectionProjection(ANSWER, corrections);
 
-  assert.deepEqual(segments[0], { type: "text", text: "The", styles: [{ styleType: "bold" }], comments: [] });
+  assert.equal(segments[0].type, "text");
+  assert.equal(segments[0].text, "The");
+  assert.deepEqual(segments[0].styles, [{ styleType: "bold" }]);
   const insertSegment = segments.find((segment) => segment.type === "inserted" && segment.text === "-ly");
   assert.equal(insertSegment.color, "blue");
   const deletedOriginal = segments.find((segment) => segment.type === "replaced-original");
@@ -158,7 +160,105 @@ test("renderCorrectionProjection produces deterministic segments for style, inse
   assert.equal(deletedSegment.text, "jumps");
 });
 
+test("renderCorrectionProjection produces single boundary brackets for a multi-word phrase with internal sub-runs", () => {
+  const text = "hello world example";
+  const corrections = [
+    createCorrection({ id: "b1", operation: "style", styleType: "bracket", start: 0, end: 11, anchoredText: "hello world", createdAt: "t" }),
+    createCorrection({ id: "s1", operation: "style", styleType: "bold", start: 0, end: 5, anchoredText: "hello", createdAt: "t" }),
+  ];
+  const segments = renderCorrectionProjection(text, corrections);
+
+  // Sub-run 1: "hello" (0..5) -> bold style, bracketsBefore = 1, bracketsAfter = 0
+  assert.equal(segments[0].text, "hello");
+  assert.equal(segments[0].bracketsBefore, 1);
+  assert.equal(segments[0].bracketsAfter, 0);
+
+  // Sub-run 2: " world" (5..11) -> no inline style, bracketsBefore = 0, bracketsAfter = 1
+  assert.equal(segments[1].text, " world");
+  assert.equal(segments[1].bracketsBefore, 0);
+  assert.equal(segments[1].bracketsAfter, 1);
+
+  // Sub-run 3: " example" (11..19) -> outside bracket range
+  assert.equal(segments[2].text, " example");
+  assert.equal(segments[2].bracketsBefore, 0);
+  assert.equal(segments[2].bracketsAfter, 0);
+});
+
+test("renderCorrectionProjection attaches commentsAfter at the end of a comment span", () => {
+  const text = "hello world";
+  const corrections = [
+    createCorrection({ id: "c1", operation: "comment", start: 0, end: 5, anchoredText: "hello", text: "Good opener.", createdAt: "t" }),
+  ];
+  const segments = renderCorrectionProjection(text, corrections);
+
+  assert.equal(segments[0].text, "hello");
+  assert.deepEqual(segments[0].comments, ["Good opener."]);
+  assert.deepEqual(segments[0].commentsAfter, ["Good opener."]);
+});
+
 test("renderCorrectionProjection returns the full unmodified text when there are no corrections", () => {
   const segments = renderCorrectionProjection(ANSWER, []);
   assert.equal(segments.map((segment) => segment.text).join(""), ANSWER);
+});
+
+test("renderCorrectionProjection outputs comment highlight class data and commentsAfter badge text", () => {
+  const text = "hello world";
+  const corrections = [
+    createCorrection({ id: "c1", operation: "comment", start: 0, end: 5, anchoredText: "hello", text: "Good opener.", createdAt: "t" }),
+  ];
+  const segments = renderCorrectionProjection(text, corrections);
+
+  assert.equal(segments[0].text, "hello");
+  assert.deepEqual(segments[0].comments, ["Good opener."]);
+  assert.deepEqual(segments[0].commentsAfter, ["Good opener."]);
+});
+
+test("end-to-end comment projection chain generates visible comment highlight and comment badge HTML for leaves -> 时 case", () => {
+  const answerText = "The train leaves at 9:00.";
+  const corrections = addCorrection([], {
+    operation: "comment",
+    start: 10,
+    end: 16,
+    anchoredText: "leaves",
+    text: "时",
+  }, answerText);
+
+  const segments = renderCorrectionProjection(answerText, corrections);
+
+  const leavesSegment = segments.find((s) => s.text === "leaves");
+  assert.ok(leavesSegment, "Segment for 'leaves' must exist");
+  assert.deepEqual(leavesSegment.comments, ["时"]);
+  assert.deepEqual(leavesSegment.commentsAfter, ["时"]);
+
+  // Render HTML using projection renderer logic
+  const html = segments.map((segment) => {
+    let content = "";
+    const hasComments = Array.isArray(segment.comments) && segment.comments.length > 0;
+    const commentClass = hasComments ? " correction-comment-highlight" : "";
+    if (segment.type === "deleted" || segment.type === "replaced-original") {
+      content = `<span class="correction-deleted${commentClass}">${segment.text}</span>`;
+    } else if (segment.type === "inserted") {
+      const colorClass = segment.color ? ` correction-color-${segment.color}` : "";
+      content = `<span class="correction-inserted${colorClass}${commentClass}">${segment.text}</span>`;
+    } else {
+      const classes = (segment.styles || []).map((style) => (style.styleType === "color"
+        ? `correction-color-${style.color}`
+        : `correction-style-${style.styleType}`));
+      if (hasComments) {
+        classes.push("correction-comment-highlight");
+      }
+      content = `<span class="${classes.join(" ")}">${segment.text}</span>`;
+    }
+
+    const openBrackets = segment.bracketsBefore ? '<span class="correction-bracket">[</span>'.repeat(segment.bracketsBefore) : "";
+    const closeBrackets = segment.bracketsAfter ? '<span class="correction-bracket">]</span>'.repeat(segment.bracketsAfter) : "";
+    const commentBadges = (segment.commentsAfter && segment.commentsAfter.length > 0)
+      ? segment.commentsAfter.map((c) => `<span class="correction-comment-badge" title="${c}">💬 ${c}</span>`).join("")
+      : "";
+
+    return `${openBrackets}${content}${closeBrackets}${commentBadges}`;
+  }).join("");
+
+  assert.ok(html.includes('<span class="correction-comment-highlight">leaves</span>'), "Must wrap 'leaves' with correction-comment-highlight class");
+  assert.ok(html.includes('<span class="correction-comment-badge" title="时">💬 时</span>'), "Must output visible comment badge element containing '💬 时'");
 });

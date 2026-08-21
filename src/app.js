@@ -3140,7 +3140,6 @@ function renderCorrectionWorkspace(responseId) {
         <button class="small-button" type="button" data-style="bold">${t("review.bold")}</button>
         <button class="small-button" type="button" data-style="italic">${t("review.italic")}</button>
         <button class="small-button" type="button" data-style="underline">${t("review.underline")}</button>
-        <button class="small-button" type="button" data-style="strikethrough">${t("review.strikethrough")}</button>
         <button class="small-button" type="button" data-style="highlight">${t("review.highlight")}</button>
         <button class="small-button" type="button" data-style="bracket">${t("review.bracket")}</button>
         <select id="correctionColorSelect" aria-label="${t("review.textColor")}">
@@ -3189,32 +3188,51 @@ function renderCorrectionWorkspace(responseId) {
   bindCorrectionWorkspaceEvents(response, item, answerText, availableReviews);
 }
 
-function renderProjectionHtml(segments) {
+export function renderProjectionHtml(segments) {
   return segments.map((segment) => {
+    let content = "";
+    const hasComments = Array.isArray(segment.comments) && segment.comments.length > 0;
+    const commentClass = hasComments ? " correction-comment-highlight" : "";
+
     if (segment.type === "deleted" || segment.type === "replaced-original") {
-      return `<span class="correction-deleted">${escapeHtml(segment.text)}</span>`;
-    }
-    if (segment.type === "inserted") {
+      content = `<span class="correction-deleted${commentClass}">${escapeHtml(segment.text)}</span>`;
+    } else if (segment.type === "inserted") {
       const colorClass = segment.color ? ` correction-color-${segment.color}` : "";
-      return `<span class="correction-inserted${colorClass}">${escapeHtml(segment.text)}</span>`;
+      content = `<span class="correction-inserted${colorClass}${commentClass}">${escapeHtml(segment.text)}</span>`;
+    } else {
+      const classes = (segment.styles || []).map((style) => (style.styleType === "color"
+        ? `correction-color-${style.color}`
+        : `correction-style-${style.styleType}`));
+      if (hasComments) {
+        classes.push("correction-comment-highlight");
+      }
+      content = `<span class="${classes.join(" ")}">${escapeHtml(segment.text)}</span>`;
     }
-    const classes = segment.styles.map((style) => (style.styleType === "color"
-      ? `correction-color-${style.color}`
-      : `correction-style-${style.styleType}`));
-    const title = segment.comments.length ? ` title="${escapeHtml(segment.comments.join(" | "))}"` : "";
-    return `<span class="${classes.join(" ")}"${title}>${escapeHtml(segment.text)}</span>`;
+
+    const openBrackets = segment.bracketsBefore ? '<span class="correction-bracket">[</span>'.repeat(segment.bracketsBefore) : "";
+    const closeBrackets = segment.bracketsAfter ? '<span class="correction-bracket">]</span>'.repeat(segment.bracketsAfter) : "";
+    const commentBadges = (segment.commentsAfter && segment.commentsAfter.length > 0)
+      ? segment.commentsAfter.map((c) => `<span class="correction-comment-badge" title="${escapeHtml(c)}">💬 ${escapeHtml(c)}</span>`).join("")
+      : "";
+
+    return `${openBrackets}${content}${closeBrackets}${commentBadges}`;
   }).join("");
 }
 
-function renderCorrectionRow(correction) {
+export function renderCorrectionRow(correction) {
   const label = correction.operation === "style" ? t(`review.styleType.${correction.styleType}`) : t(`review.operation.${correction.operation}`);
-  const detail = correction.operation === "insert" || correction.operation === "replace" || correction.operation === "comment"
-    ? correction.text
-    : correction.anchoredText;
+  let detailHtml = "";
+  if (correction.operation === "comment") {
+    detailHtml = `&ldquo;${escapeHtml(correction.anchoredText)}&rdquo; &rarr; &ldquo;${escapeHtml(correction.text)}&rdquo;`;
+  } else if (correction.operation === "insert" || correction.operation === "replace") {
+    detailHtml = `&ldquo;${escapeHtml(correction.text)}&rdquo;`;
+  } else {
+    detailHtml = `&ldquo;${escapeHtml(correction.anchoredText)}&rdquo;`;
+  }
   return `
     <div class="correction-row" data-correction-id="${correction.id}">
       <span class="correction-op-pill">${label}</span>
-      <span class="annotation-text">&ldquo;${escapeHtml(detail)}&rdquo;</span>
+      <span class="annotation-text">${detailHtml}</span>
       <button type="button" class="danger-button small-button" data-remove-correction="${correction.id}">${t("actions.delete")}</button>
     </div>
   `;
@@ -4297,6 +4315,25 @@ function showToast(message) {
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
+
+  const isLocalhost = Boolean(
+    window.location.hostname === "localhost"
+    || window.location.hostname === "127.0.0.1"
+    || window.location.hostname === "[::1]"
+  );
+
+  if (isLocalhost) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      }).catch(() => {
+        // Ignore unregistration errors in constrained environments
+      });
+    });
+    return;
+  }
 
   const hasController = Boolean(navigator.serviceWorker.controller);
   let refreshing = false;

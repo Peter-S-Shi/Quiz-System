@@ -55,10 +55,15 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 - During this smoke test, found and fixed one real bug (not caught by unit tests, since it lives in `app.js` UI glue rather than a core module): `deleteLearnerResponseConfirm()` originally wrote the updated Learner Response collection before reading `loadTeacherReviews()` again, and `loadTeacherReviews()` re-validates every review against the *current* response collection on every call — so it saw the just-orphaned reviews and threw. Fixed by snapshotting both collections up front. Re-verified after the fix with a clean isolated reproduction.
 - **Service worker cache upgrade**: Originally, the service worker used a cache-first strategy which required manual cache clearing to pick up new deployments or changes. This is resolved: `sw.js` was upgraded to Network-First (v4) with immediate takeover triggers (`skipWaiting`/`claim`), ensuring updates are fetched immediately on reload when the server is running.
 - The browser harness cannot drive native `window.confirm()`/`window.prompt()` dialogs; deletion and retry confirmations were smoke-tested by monkey-patching `window.confirm` to capture the exact message text and to accept/decline programmatically, which exercises the real confirmation logic and message content but not the native dialog UI itself. This is a known automation-harness limitation carried over from earlier milestones, not a product defect.
-- Manual acceptance for the full v1 journey is not complete.
+- Manual acceptance for the full v1 journey is underway:
+  - **Journey 01** (Create material, edit, start practice): **PASS**
+  - **Journey 02** (Answer, mark, navigate, reload, resume): **PASS**
+  - **Journey 03** (Finalize and verify History): **PASS**
+  - **Journey 04** (Evidence + local Correction Workspace): **FAIL / Corrective repair required** (3 issues found in manual testing of Correction Workspace)
+- Current overall testing flow: Journey 01–03 PASS -> Journey 04 corrective repair -> Re-test Journey 04 -> Journey 05.
 - Clean clone verification has not been performed.
 - GitHub Pages deployment is manual-only and deferred.
-- M6.0 and M6.1 are accepted. M6.2 through M6.7 have automated and smoke-test coverage; formal acceptance for all six is intentionally deferred to the comprehensive M6-wide review, which is now unblocked since M6.7 is complete.
+- M6.0 and M6.1 are accepted. M6.2 through M6.7 have automated and smoke-test coverage; formal acceptance for all six is intentionally deferred to the comprehensive M6-wide review, which is now actively being conducted.
 
 ## Known Risks
 
@@ -107,7 +112,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Next Engineering Objective
 
-M6.7 (including the deletion-integrity closure patch) is implementation complete and merged into `main` through PR #6, completing M6 feature-development implementation. The comprehensive M6-wide acceptance (covering M6.0-M6.7) is the next step and requires the user's own review; it has not been performed. Do not begin Product Hardening (M7) or Feature Freeze work before that acceptance is complete.
+M6.7 (including the deletion-integrity closure patch) is implementation complete and merged into `main`. Comprehensive M6-wide manual acceptance is actively underway: Journeys 01–03 have passed, and Journey 04 identified 3 Correction Workspace issues. The immediate next objective is to repair the 3 Journey 04 defects, re-test Journey 04, and then proceed with Journey 05. Do not begin Product Hardening (M7) or Feature Freeze work before M6-wide acceptance is complete.
 
 ## Repository State
 
@@ -118,4 +123,4 @@ M6.7 (including the deletion-integrity closure patch) is implementation complete
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Synchronization status: M6.7 is merged into `main`; this status-only follow-up records the completed merge
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #7 opened for bugfix/local-launcher-port-conflict (commit bb555e9); CI passed locally with 215 tests passing. Mainline review passed; merge deferred awaiting user approval.
+- Pull request status: PR #7 (local launcher port conflict & SW cache upgrade) merged into `main` (commit 242f229). All 215 tests passing.

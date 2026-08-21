@@ -49,19 +49,21 @@ The current version is a static ES module web application. It runs in a browser 
 
 ## Getting Started
 
-Serve the repository with a local static server, then open `index.html` through that server.
+The canonical local development workflow on Windows is:
 
-No build step is required.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\start-local.ps1"
+```
 
-Example:
+This starts Python's local HTTP server on `http://127.0.0.1:8000` serving the repository directory, opens `http://localhost:8000` in your browser, and bypasses Service Worker caching on localhost for reliable development.
+
+Alternatively, you can manually serve the repository with any local static server:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then open `http://localhost:8000`.
-
-On Windows, you can also double-click `start-local.bat`. It starts a local server on port `8000` (or another available port if `8000` is occupied) and opens the app in your browser.
+Then open `http://localhost:8000`. Double-clicking `start-local.bat` is also supported as a batch fallback launcher.
 
 ## Validation
 
@@ -73,20 +75,20 @@ npm run check
 If npm is not available locally, the equivalent core checks are:
 
 ```bash
+node --test tests/*.test.js
 node --check src/app.js
-node --test
 ```
 
-## Usage
+## How to Use
 
-1. Open `index.html`.
-2. Use the **Edit** view to create or update a quiz paper.
-3. Add questions and mark the correct answers.
-4. Switch to the **Quiz** view.
-5. Choose optional question type filters or a random question count.
-6. Start the quiz, submit answers, and recover progress after refresh if needed.
-7. Review the final score, per-question answer comparison, history, and wrong-question retry options.
-8. Export the finalized Learner Response when you want to share a portable response package with an external teacher.
+1. Serve the app locally using `.\start-local.ps1` and open `http://localhost:8000`.
+2. Browse the included sample quizzes in the library.
+3. Select a quiz and click **Start Quiz** to answer questions.
+4. Immediate feedback is shown for multiple-choice questions. Text-input questions are graded when you submit or finish.
+5. Review your score and feedback on the completion screen.
+6. Click **Edit Quiz** to modify existing questions or add new ones.
+7. Click **New Quiz** to build a paper from scratch.
+8. Click **Export Quiz** to save your work as a JSON file, or **Import Quiz** to load a saved quiz file.
 9. Switch to the **Translation** view to organize Translation Documents into folders, add items, import material in bulk, and export a document as portable JSON.
 10. From a Translation Document, start practice, write your own translation for each item, optionally mark spans of your own answer as Unknown/Uncertain/Should know, and finish to save a protected Learner Response. See `docs/USER_GUIDE.md` for details.
 11. Use **Translation History** to browse every finalized response, inspect its evidence and lineage, open or delete its Teacher Reviews, and retry the entire response, selected items, or needs-work items into a new attempt.
@@ -97,7 +99,8 @@ node --test
 Quiz System/
   index.html        Application shell
   styles.css        Interface styling and responsive layout
-  start-local.bat   Windows local launcher
+  start-local.ps1   Canonical PowerShell local development launcher
+  start-local.bat   Windows batch launcher fallback
   src/app.js        Quiz library, editor, quiz session flow, and localization
   src/core/         Question registry, validation, grading, and migrations
   src/storage/      Browser storage boundary

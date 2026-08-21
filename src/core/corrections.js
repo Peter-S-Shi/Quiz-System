@@ -125,6 +125,8 @@ export function renderCorrectionProjection(answerText, corrections) {
     .slice()
     .sort((a, b) => a.start - b.start || a.end - b.end);
   const styleOps = list.filter((item) => item.operation === "style");
+  const bracketOps = styleOps.filter((item) => item.styleType === "bracket");
+  const inlineStyleOps = styleOps.filter((item) => item.styleType !== "bracket");
   const commentOps = list.filter((item) => item.operation === "comment");
 
   const segments = [];
@@ -132,29 +134,54 @@ export function renderCorrectionProjection(answerText, corrections) {
 
   editOps.forEach((edit) => {
     if (edit.start > cursor) {
-      segments.push(...renderPlainRun(answerText, cursor, edit.start, styleOps, commentOps));
+      segments.push(...renderPlainRun(answerText, cursor, edit.start, inlineStyleOps, commentOps, bracketOps));
     }
     if (edit.operation === "delete") {
-      segments.push({ type: "deleted", text: answerText.slice(edit.start, edit.end) });
+      segments.push({
+        type: "deleted",
+        text: answerText.slice(edit.start, edit.end),
+        comments: commentOps.filter((c) => c.start < edit.end && c.end > edit.start).map((c) => c.text),
+        bracketsBefore: bracketOps.filter((b) => b.start === edit.start).length,
+        bracketsAfter: bracketOps.filter((b) => b.end === edit.end).length,
+        commentsAfter: commentOps.filter((c) => c.end === edit.end).map((c) => c.text),
+      });
       cursor = edit.end;
     } else if (edit.operation === "replace") {
-      segments.push({ type: "replaced-original", text: answerText.slice(edit.start, edit.end) });
-      segments.push({ type: "inserted", text: edit.text, color: edit.color });
+      segments.push({
+        type: "replaced-original",
+        text: answerText.slice(edit.start, edit.end),
+        comments: commentOps.filter((c) => c.start < edit.end && c.end > edit.start).map((c) => c.text),
+        bracketsBefore: bracketOps.filter((b) => b.start === edit.start).length,
+      });
+      segments.push({
+        type: "inserted",
+        text: edit.text,
+        color: edit.color,
+        bracketsAfter: bracketOps.filter((b) => b.end === edit.end).length,
+        commentsAfter: commentOps.filter((c) => c.end === edit.end).map((c) => c.text),
+      });
       cursor = edit.end;
     } else if (edit.operation === "insert") {
-      segments.push({ type: "inserted", text: edit.text, color: edit.color });
+      segments.push({
+        type: "inserted",
+        text: edit.text,
+        color: edit.color,
+        bracketsBefore: bracketOps.filter((b) => b.start === edit.start).length,
+        bracketsAfter: bracketOps.filter((b) => b.end === edit.start).length,
+        commentsAfter: commentOps.filter((c) => c.end === edit.start).map((c) => c.text),
+      });
       cursor = edit.start;
     }
   });
 
   if (cursor < answerText.length) {
-    segments.push(...renderPlainRun(answerText, cursor, answerText.length, styleOps, commentOps));
+    segments.push(...renderPlainRun(answerText, cursor, answerText.length, inlineStyleOps, commentOps, bracketOps));
   }
 
   return segments;
 }
 
-function renderPlainRun(answerText, from, to, styleOps, commentOps) {
+function renderPlainRun(answerText, from, to, styleOps, commentOps, bracketOps = []) {
   const breakpoints = new Set([from, to]);
   styleOps.forEach((style) => {
     if (style.start >= from && style.start <= to) breakpoints.add(style.start);
@@ -163,6 +190,10 @@ function renderPlainRun(answerText, from, to, styleOps, commentOps) {
   commentOps.forEach((comment) => {
     if (comment.start >= from && comment.start <= to) breakpoints.add(comment.start);
     if (comment.end >= from && comment.end <= to) breakpoints.add(comment.end);
+  });
+  bracketOps.forEach((bracket) => {
+    if (bracket.start >= from && bracket.start <= to) breakpoints.add(bracket.start);
+    if (bracket.end >= from && bracket.end <= to) breakpoints.add(bracket.end);
   });
   const points = Array.from(breakpoints).sort((a, b) => a - b);
 
@@ -177,7 +208,19 @@ function renderPlainRun(answerText, from, to, styleOps, commentOps) {
     const comments = commentOps
       .filter((comment) => comment.start <= p && comment.end >= q)
       .map((comment) => comment.text);
-    runs.push({ type: "text", text: answerText.slice(p, q), styles, comments });
+    const bracketsBefore = bracketOps.filter((b) => b.start === p).length;
+    const bracketsAfter = bracketOps.filter((b) => b.end === q).length;
+    const commentsAfter = commentOps.filter((c) => c.end === q).map((c) => c.text);
+
+    runs.push({
+      type: "text",
+      text: answerText.slice(p, q),
+      styles,
+      comments,
+      bracketsBefore,
+      bracketsAfter,
+      commentsAfter,
+    });
   }
   return runs;
 }
