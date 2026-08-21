@@ -135,6 +135,20 @@ test("needs-work selection includes each supported learner-annotation signal", (
     assert.equal(needsWork[0].itemId, "item-1");
     assert.ok(needsWork[0].reasons.includes(`annotation:${kind}`), kind);
   });
+
+  ["unknown", "uncertain", "should_know"].forEach((kind) => {
+    const response = {
+      ...finalizeResponse({ document, responseId: `response-item-mark-${kind}`, answers: { "item-1": "Hello there" } }),
+      learnerItemMarks: [{ itemId: "item-1", kind }],
+    };
+    const needsWork = deriveNeedsWorkItemIds(response, []);
+    assert.equal(needsWork.length, 1, kind);
+    assert.equal(needsWork[0].itemId, "item-1");
+    assert.ok(needsWork[0].reasons.includes(`itemMark:${kind}`), kind);
+
+    const entry = buildHistoryEntry(response);
+    assert.equal(entry.learnerAnnotationCount, 1);
+  });
 });
 
 test("needs-work selection includes supported review judgments and corrections per the documented rule", () => {

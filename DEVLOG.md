@@ -2,6 +2,13 @@
 
 ## 2026-08-21
 
+- Completed M6 UX Hardening Closure Batch following successful completion of comprehensive human acceptance Journeys 01–10 (PASS):
+  1. **Item-level metacognitive marking**: Added first-class whole-item Unknown / Uncertain / Should know states to Translation Practice (`setTranslationItemMark`). Item marks are additive, independent of span-level annotations and text editing, normalized and recovered through active sessions (`normalizeTranslationSession`), finalized into `learnerItemMarks` on `createTranslationLearnerResponse`, validated via runtime and JSON Schema (`schemas/learner-response.schema.json`), and integrated into `deriveNeedsWorkItemIds` (`itemMark:${kind}`) and `buildHistoryEntry`.
+  2. **Practice navigation boundary states**: Added `button:disabled, button[disabled]` visual styling (`opacity: 0.45; cursor: not-allowed; pointer-events: none;`) in `styles.css`, and boundary guards on navigation click handlers in `src/app.js` for `#previousTranslationItem` and `#nextTranslationItem`.
+  3. **Backup restore immediate Translation Library refresh**: In `importLibraryBackup()`, updated in-memory `translationLibrary` and active document selection immediately on successful restore so Translation Library folders and documents render instantly without requiring a browser reload.
+- Span Comment creation remains removed from current product scope per M6 Product Gate.
+- Added regression tests covering whole-item mark persistence, schema validation, and needs-work derivation (219/219 tests pass).
+
 - Applied the M6 Product Gate from the exact `main` baseline `242f2291df1b2ca2fcaa094308f8581a5579df57` on a fresh `recovery/m6-comment-scope-rollback` branch. Span Comment creation is out of the current M6 product and acceptance scope: the Add Comment control and its event binding are absent, while historical `comment` correction data remains accepted and safely rendered by the existing compatibility path without migration or deletion. The Strikethrough creation control is also absent while historical `strikethrough` data remains valid. Bracket projection now emits one opening and one closing boundary around the selected range even when overlapping styles or historical comments divide it into internal segments. Delete, judgment, suggested revision, and the existing Teacher Review save/reopen persistence path are unchanged. Added two focused regressions and updated only the M6 status/manual-QA scope; `npm.cmd run check` passes 217/217. The historical `recovery/m6-acceptance-closure` branch and Draft PR #8 remain preserved and must not be merged. Journey 04 remains pending under the reduced scope; Journey 05 has not started.
 
 ## 2026-08-10

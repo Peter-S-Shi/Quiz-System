@@ -82,6 +82,7 @@ import {
   normalizeTranslationSession,
   removeTranslationAnnotation,
   setTranslationAnswer,
+  setTranslationItemMark,
   setTranslationRevealed,
 } from "./core/translation-session.js";
 import {
@@ -328,6 +329,10 @@ const locales = {
       completeSummary: "共 {count} 条翻译",
       backToDocument: "返回文档",
       practiceAgain: "再练一次",
+      markItemAs: "将整题标记为",
+      clearMark: "清除整题标记",
+      wholeQuestionMark: "整题标记",
+      entireQuestionMarked: "（整题已标记）",
       markSelectionAs: "把选中内容标记为",
       noAnnotations: "还没有标记",
       kind: {
@@ -753,6 +758,10 @@ const locales = {
       completeSummary: "{count} translation items",
       backToDocument: "Back to document",
       practiceAgain: "Practice again",
+      markItemAs: "Mark entire question as",
+      clearMark: "Clear whole-item mark",
+      wholeQuestionMark: "Whole question",
+      entireQuestionMarked: "(Whole question marked)",
       markSelectionAs: "Mark selection as",
       noAnnotations: "No marks yet",
       kind: {
@@ -2099,7 +2108,13 @@ function importLibraryBackup(event) {
       const restored = parseLibraryBackup(imported, { createDefaultPaper });
       if (restored.hasLearnerResponses) saveJson(LEARNER_RESPONSES_KEY, restored.learnerResponses);
       if (restored.hasTeacherReviews) saveJson(TEACHER_REVIEWS_KEY, restored.teacherReviews);
-      if (restored.hasTranslationLibrary) saveJson(TRANSLATION_LIBRARY_KEY, restored.translationLibrary);
+      if (restored.hasTranslationLibrary) {
+        saveJson(TRANSLATION_LIBRARY_KEY, restored.translationLibrary);
+        translationLibrary = restored.translationLibrary;
+        if (!translationLibrary.documents.some((doc) => doc.id === selectedTranslationDocumentId)) {
+          selectedTranslationDocumentId = translationLibrary.documents[0]?.id || null;
+        }
+      }
       saveJson(HISTORY_KEY, restored.history);
       library = restored.library;
       activePaperId = library.papers[0].id;
@@ -2733,6 +2748,7 @@ function renderTranslationPracticeScreen() {
   const answeredCount = activeSession.items.filter((entry) => (activeSession.answers[entry.id] || "").trim()).length;
   const revealed = Boolean(activeSession.revealed[item.id]);
   const progress = Math.round((activeSession.index / Math.max(total - 1, 1)) * 100);
+  const currentItemMark = activeSession.itemMarks?.[item.id] || null;
 
   translationDocumentPanel.innerHTML = `
     <div class="editor-stack">
@@ -2755,6 +2771,13 @@ function renderTranslationPracticeScreen() {
         <p class="translation-source-text">${escapeHtml(item.sourceText)}</p>
       </div>
       ${item.referenceTranslation ? renderReferenceBlock(item, revealed) : ""}
+      <div class="item-mark-toolbar">
+        <span class="meta-text">${t("translationPractice.markItemAs")}</span>
+        <button type="button" class="small-button ${currentItemMark === "unknown" ? "active" : ""}" data-item-mark-kind="unknown">${t("translationPractice.kind.unknown")}</button>
+        <button type="button" class="small-button ${currentItemMark === "uncertain" ? "active" : ""}" data-item-mark-kind="uncertain">${t("translationPractice.kind.uncertain")}</button>
+        <button type="button" class="small-button ${currentItemMark === "should_know" ? "active" : ""}" data-item-mark-kind="should_know">${t("translationPractice.kind.should_know")}</button>
+        ${currentItemMark ? `<button type="button" class="secondary-button small-button" data-clear-item-mark="true">${t("translationPractice.clearMark")}</button>` : ""}
+      </div>
       <label>
         <span>${t("translationPractice.yourTranslation")}</span>
         <textarea id="translationAnswerEditor" rows="6">${escapeHtml(activeSession.answers[item.id] || "")}</textarea>
@@ -2770,6 +2793,20 @@ function renderTranslationPracticeScreen() {
 
   document.getElementById("exitTranslationPractice").addEventListener("click", exitTranslationPractice);
   bindAnnotationSectionEvents(item.id);
+  document.querySelectorAll("[data-item-mark-kind]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const kind = button.dataset.itemMarkKind;
+      const nextKind = currentItemMark === kind ? null : kind;
+      translationSession = setTranslationItemMark(translationSession, item.id, nextKind);
+      persistTranslationSession();
+      renderTranslationMainPanel();
+    });
+  });
+  document.querySelector("[data-clear-item-mark]")?.addEventListener("click", () => {
+    translationSession = setTranslationItemMark(translationSession, item.id, null);
+    persistTranslationSession();
+    renderTranslationMainPanel();
+  });
   document.getElementById("translationAnswerEditor").addEventListener("input", (event) => {
     const beforeCount = (translationSession.annotations[item.id] || []).length;
     translationSession = setTranslationAnswer(translationSession, item.id, event.target.value);
@@ -2782,11 +2819,13 @@ function renderTranslationPracticeScreen() {
     }
   });
   document.getElementById("previousTranslationItem").addEventListener("click", () => {
+    if (translationSession.index <= 0) return;
     translationSession = goToTranslationIndex(translationSession, translationSession.index - 1);
     persistTranslationSession();
     renderTranslationMainPanel();
   });
   document.getElementById("nextTranslationItem").addEventListener("click", () => {
+    if (translationSession.index >= translationSession.items.length - 1) return;
     translationSession = goToTranslationIndex(translationSession, translationSession.index + 1);
     persistTranslationSession();
     renderTranslationMainPanel();
@@ -2942,9 +2981,15 @@ function renderTranslationPracticeComplete() {
               <p><strong>${t("translationPractice.yourTranslation")}:</strong> ${escapeHtml(completedSession.answers[item.id] || t("result.noAnswer"))}</p>
               ${item.referenceTranslation ? `<p><strong>${t("translationPractice.referenceLabel")}:</strong> ${escapeHtml(item.referenceTranslation)}</p>` : ""}
             </div>
-            ${(completedSession.annotations[item.id] || []).length ? `
+            ${((completedSession.annotations[item.id] || []).length || completedSession.itemMarks?.[item.id]) ? `
               <div class="annotation-list">
-                ${completedSession.annotations[item.id].map(renderAnnotationRowReadOnly).join("")}
+                ${completedSession.itemMarks?.[item.id] ? `
+                  <div class="annotation-row">
+                    <span class="annotation-kind-pill annotation-kind-${completedSession.itemMarks[item.id]}">${t("translationPractice.wholeQuestionMark")}: ${t(`translationPractice.kind.${completedSession.itemMarks[item.id]}`)}</span>
+                    <span class="annotation-text">${t("translationPractice.entireQuestionMarked")}</span>
+                  </div>
+                ` : ""}
+                ${(completedSession.annotations[item.id] || []).map(renderAnnotationRowReadOnly).join("")}
               </div>
             ` : ""}
           </div>
@@ -3085,6 +3130,7 @@ function renderCorrectionWorkspace(responseId) {
   const itemReview = getWorkspaceItemReview(item.id);
   const corrections = itemReview.corrections || [];
   const annotations = (response.learnerAnnotations || []).filter((annotation) => annotation.itemId === item.id);
+  const itemMark = (response.learnerItemMarks || []).find((mark) => mark.itemId === item.id);
   const segments = renderCorrectionProjection(answerText, corrections);
 
   translationDocumentPanel.innerHTML = `
@@ -3125,9 +3171,15 @@ function renderCorrectionWorkspace(responseId) {
         <span>${t("review.originalAnswer")}</span>
         <textarea id="correctionAnswerViewer" rows="6" readonly>${escapeHtml(answerText)}</textarea>
       </label>
-      ${annotations.length ? `
+      ${(annotations.length || itemMark) ? `
         <span class="meta-text">${t("review.learnerMarks")}</span>
         <div class="annotation-list">
+          ${itemMark ? `
+            <div class="annotation-row">
+              <span class="annotation-kind-pill annotation-kind-${itemMark.kind}">${t("translationPractice.wholeQuestionMark")}: ${t(`translationPractice.kind.${itemMark.kind}`)}</span>
+              <span class="annotation-text">${t("translationPractice.entireQuestionMarked")}</span>
+            </div>
+          ` : ""}
           ${annotations.map(renderAnnotationRowReadOnly).join("")}
         </div>
       ` : ""}

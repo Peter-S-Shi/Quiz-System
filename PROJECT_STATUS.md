@@ -14,31 +14,34 @@ M6.7 is the last feature-development sub-milestone of M6. M6 feature-development
 
 The user has intentionally deferred individual formal user acceptance for M6.2 through M6.7. Implementation review, regression testing, CI, and scope review still apply to each sub-milestone, but one comprehensive M6 acceptance will happen now that M6.7 is complete. M6.0 and M6.1 were already individually accepted before this policy change and remain historically accepted; that is not being revised retroactively. Do not read "implementation complete / M6-wide acceptance deferred" as equivalent to accepted.
 
-## M6 Product Gate Scope Reduction
+## M6 Comprehensive Acceptance and Hardening Closure
 
-Span Comment creation and its acceptance requirement are removed from the current M6 scope. The Correction Workspace no longer exposes Add Comment. Historical `comment` correction records remain readable through the existing validation/rendering path and are not migrated, rewritten, or deleted. Strikethrough creation is also absent, while historical `strikethrough` records remain compatible. Journey 04 now covers Bracket, other style/content corrections, real Delete, Judgment / Suggested Revision, and save -> leave -> reopen persistence.
+- **M6 comprehensive acceptance Journeys 01–10**: PASS.
+- Span Comment creation remains removed from the current product scope.
+- **Small UX Hardening Closure Batch**:
+  1. Item-level metacognitive marking: added first-class whole-item Unknown / Uncertain / Should know states, additive, persisted through session recovery and into finalized evidence, and reflected in needs-work derivation.
+  2. Practice navigation boundary states: previous/next question navigation controls now carry disabled styling and boundary guards at first/last items.
+  3. Backup restore immediate Translation Library refresh: in-memory `translationLibrary` and active document selection now update immediately upon backup restore without requiring an F5 browser reload.
 
 ## Current Release Scope
 
-The current-version scope includes the Milestone 1-5 baseline and the approved Milestone 6 line. Translation Practice remains M6's primary new learner workflow. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 Translation Library and Material Import/Export, M6.3 Translation Practice and Session Recovery, M6.4 Learner Answer Marking and Annotation Foundation, M6.5 Rich Correction / Revision Workspace, M6.6 External Teacher Round Trip, and M6.7 History, Retry, Portability, and Whole-Product Integration are implementation complete with M6-wide acceptance deferred. M6.7 turns the completed Translation/Open Teaching feature set into a durable product: Translation History browsing across every finalized response (independent of whether the source document still exists), explicit retry (entire response / selected items / needs-work items) that always produces new independent evidence, backward/forward lineage navigation, and explicit, warned deletion for Translation Documents, Learner Responses, and Teacher Reviews. M6 remains local-first and does not require embedded AI APIs, paid inference, or network access.
+The current-version scope includes the Milestone 1-5 baseline and the approved Milestone 6 line. Translation Practice remains M6's primary new learner workflow. M6.0 Open Teaching Interchange, M6.1 Translation Domain and Persistence Foundation, and M6.2–M6.7 are verified with comprehensive manual acceptance Journeys 01–10 complete (PASS). M6.7 turns the completed Translation/Open Teaching feature set into a durable product: Translation History browsing across every finalized response (independent of whether the source document still exists), explicit retry (entire response / selected items / needs-work items) that always produces new independent evidence, backward/forward lineage navigation, and explicit, warned deletion for Translation Documents, Learner Responses, and Teacher Reviews. M6 remains local-first and does not require embedded AI APIs, paid inference, or network access.
 
 ## Feature Complete Status
 
 Previous candidate review reached; current scope reopened and no longer feature complete.
 
-Milestone 1 is complete as the foundation baseline. Milestones 2-5 have first implementations landed, but full acceptance is pending. The Feature Complete Candidate review reached under that earlier boundary remains historical evidence. M6.0 and M6.1 are accepted. M6.2 through M6.7 are implementation complete with M6-wide acceptance deferred; M6 feature-development implementation is complete. A new whole-product Feature Complete Review is required after the deferred M6-wide acceptance is complete.
+Milestone 1 is complete as the foundation baseline. Milestones 2-5 have first implementations landed, but full acceptance is pending. The Feature Complete Candidate review reached under that earlier boundary remains historical evidence. M6 comprehensive acceptance Journeys 01–10 are complete (PASS) under the reduced comment scope and hardening batch. A new whole-product Feature Complete Review is required before entering Feature Freeze.
 
 ## Feature Freeze Status
 
 Not entered.
 
-Feature Freeze can begin only after the deferred M6-wide acceptance is complete, the reopened scope passes a new Feature Complete Review, Deferred Features are separated from the current version, and the user explicitly accepts the expanded product boundary.
+Feature Freeze can begin only after the reopened scope passes a new whole-product Feature Complete Review, Deferred Features are separated from the current version, and the user explicitly authorizes entering Feature Freeze.
 
 ## Open Release Blockers
 
-- Full project-wide manual acceptance has not been completed.
-- The comprehensive M6-wide acceptance is in progress: Journeys 01-03 were previously accepted; Journey 04 is pending reacceptance under the reduced Product Gate scope; Journeys 05-10 remain stopped and unaccepted.
-- M6 feature-development implementation is complete; the reduced-scope Journey 04 and remaining M6-wide acceptance are release blockers until performed.
+- Full project-wide manual acceptance across all milestones (M1–M5 baseline + whole product) has not been completed.
 - Data migration, backup round-trip, active-session recovery, and destructive workflows have not yet received formal end-to-end verification.
 - Public Pages deployment remains deferred while the repository is private.
 - A release candidate and final clean-environment verification do not yet exist.
@@ -51,7 +54,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Verification Status
 
-- 217 automated core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure tests pass. Two Product Gate regressions prove that Bracket emits one pair across internally divided ranges and that the current Correction Workspace omits Comment/Strikethrough creation while retaining real Delete. Historical `comment` and `strikethrough` validation remains green; all earlier M6.0-M6.7 coverage continues to pass.
+- 219 automated core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure tests pass. Covers item-level metacognitive marking, schema/runtime validation, needs-work derivation, navigation boundaries, and backup state refresh. Historical `comment` and `strikethrough` validation remains green; all earlier M6.0-M6.7 coverage continues to pass.
 - **Deletion-integrity closure patch**: a post-approval review found that `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` ignored live remediation Translation Documents, so deleting a Learner Response or Teacher Review could leave a still-live remediation document in the Translation Library with unresolvable provenance — inconsistent with `parseLibraryBackup()`, which correctly requires a live remediation document's provenance to resolve on every restore. Fixed by distinguishing a finalized response's own (safely-unresolvable) historical provenance from a *live* remediation document's canonical claim: both analysis functions now accept `translationDocuments` and report `dependentRemediationDocumentIds`/`hasBlockingDependents`, and the delete flows in `app.js` refuse the deletion outright (a toast warning, no confirmation dialog) while such a live dependency exists, rather than cascading through it. Remediation documents are never auto-deleted as a side effect. Added 7 tests, including a regression guard proving the pre-patch sequence would have produced an unrestorable backup, and a full backup round trip proving a permitted deletion (remediation document removed first) still restores cleanly.
 - **Local launcher port conflict and verification fix (M6 acceptance-support)**: Fixed `start-local.bat` to dynamically locate a free TCP port starting from `8000`, verify that the server has successfully started listening and is serving the correct app content (checking for 'Quiz Studio' in response body) by writing and running a temporary Python HTTP client script (polling up to 5 attempts, using a safe non-interactive ping delay), and only then launch the browser with the correct URL. Also upgraded `sw.js` to Network-First (v4) with immediate active takeover (`skipWaiting`/`claim`), auto-navigation upgrade on legacy cache removal, and complete precaching of all 19 ESM modules in the app dependency closure. Verified in free-port, occupied-port, repeated-launch, incorrect-server-rejection, offline ESM closure, and M6 UI scenarios.
 - CI workflow exists; it passed on the `milestone/6.7-history-retry-integration` branch (PR #6), including after the deletion-integrity closure patch.

@@ -14,31 +14,34 @@ M6.7 是 M6 功能开发阶段的最后一个子里程碑。M6 的功能开发�
 
 用户已明确决定：M6.2 到 M6.7 不再逐个进行正式用户验收。每个子里程碑仍然需要实现评审、回归测试、CI 和范围审查，但一次性的、覆盖整个 M6 的综合验收现在 M6.7 已经完成，可以统一进行。M6.0 和 M6.1 在这一政策变更之前已经分别完成验收，这一历史事实不会被追溯改写。请不要把"implementation complete / M6-wide acceptance deferred"理解为等同于已验收。
 
-## M6 Product Gate 范围缩减
+## M6 综合人工验收与 UX 强化收尾
 
-片段批注（Comment）的创建及其验收要求已移出当前 M6 范围。批改工作区不再显示 Add Comment。历史 `comment` 批改记录继续通过现有校验/渲染路径安全读取，不迁移、不改写、不删除。删除线创建入口同样不再显示，但历史 `strikethrough` 记录仍保持兼容。Journey 04 当前范围为：加括号、其他样式/内容批改、真实删除、评判 / 建议修订，以及保存 -> 离开 -> 重新打开的持久化。
+- **M6 综合人工验收 Journeys 01–10**：PASS（全部通过）。
+- 片段批注（Comment）创建入口继续从当前产品范围中移除。
+- **小型 UX 强化收尾批次**：
+  1. 条目级元认知标记：为整道翻译题目新增一等公民的“不认识 / 不确定 / 应该会但想不起来”标记状态，具备可替换与可清除性，在进度恢复与最终作答证据中完整持久化，并纳入 needs-work 派生。
+  2. 练习导航边界状态：翻译练习上下题切换按钮在第一题和最后一题边界上实现真实的 `disabled` 状态、置灰样式与边界守护。
+  3. 备份恢复即时刷新翻译题库：导入完整备份成功后，内存中的 `translationLibrary` 与选中状态立即同步刷新并渲染，无需用户手动 F5 刷新页面。
 
 ## 当前发布范围
 
-当前版本范围包括 Milestone 1-5 基线和已批准的 Milestone 6 工作线。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 Translation Library and Material Import/Export、M6.3 Translation Practice and Session Recovery、M6.4 Learner Answer Marking and Annotation Foundation、M6.5 Rich Correction / Revision Workspace、M6.6 External Teacher Round Trip 和 M6.7 History, Retry, Portability, and Whole-Product Integration 均已完成实现，验收统一推迟到 M6 整体验收时进行。M6.7 把已经完成的 Translation/Open Teaching 功能集合变成了一个持久的产品：覆盖全部 finalized 作答记录的 Translation 历史浏览（无论原始文档是否还存在）、总是产生新的独立证据的显式重新练习（整份/选定条目/需要加强条目）、双向溯源导航，以及针对翻译文档、Learner Response 和 Teacher Review 的显式带警告删除。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
+当前版本范围包括 Milestone 1-5 基线和已批准的 Milestone 6 工作线。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange、M6.1 Translation Domain and Persistence Foundation 以及 M6.2–M6.7 均已完成实现并通过综合人工验收 Journeys 01–10（PASS）。M6.7 把已经完成的 Translation/Open Teaching 功能集合变成了一个持久的产品：覆盖全部 finalized 作答记录的 Translation 历史浏览（无论原始文档是否还存在）、总是产生新的独立证据的显式重新练习（整份/选定条目/需要加强条目）、双向溯源导航，以及针对翻译文档、Learner Response 和 Teacher Review 的显式带警告删除。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
 
 ## Feature Complete 状态
 
 旧范围下曾达到候选评审；当前范围已重新开放，因此不再属于功能完整状态。
 
-Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6.0 和 M6.1 已验收。M6.2 到 M6.7 均已完成实现，验收推迟到 M6 整体验收；M6 的功能开发实现现已完成。完成推迟的 M6 整体验收后，必须重新执行全产品 Feature Complete Review。
+Milestone 1 作为基础基线已完成。Milestones 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6 综合人工验收 Journeys 01–10 已在缩减 Comment 范围及完成强化批次后全部通过（PASS）。进入 Feature Freeze 之前需要重新执行全产品 Feature Complete Review。
 
 ## Feature Freeze 状态
 
 尚未进入。
 
-只有在完成推迟的 M6 整体验收、重新开放的范围通过新一轮 Feature Complete Review、Deferred Features 与当前版本分离，并且用户明确接受扩展后的产品边界后，才可以进入 Feature Freeze。
+只有在重新开放的范围通过新一轮全产品 Feature Complete Review、Deferred Features 与当前版本分离，并且用户明确授权进入 Feature Freeze 后，才可以进入 Feature Freeze。
 
 ## 当前发布阻断项
 
-- 尚未完成项目级完整人工验收。
-- M6 整体验收正在进行：Journey 01-03 已在此前通过；Journey 04 按 Product Gate 缩减后的范围等待重新验收；Journey 05-10 保持停止且尚未验收。
-- M6 功能开发实现已经完成；缩减范围后的 Journey 04 与后续 M6 整体验收仍是发布阻断项。
+- 尚未完成全项目全里程碑（M1–M5 基线 + 全产品）的最终完整人工验收。
 - 数据迁移、备份往返、答题进度恢复和破坏性工作流尚未获得正式端到端验证。
 - 仓库保持 private 时，公开 Pages 部署继续暂缓。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
@@ -51,7 +54,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 217 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure 自动测试通过。两项 Product Gate 回归测试证明：加括号在被内部分段的范围上只输出一对边界括号；当前批改工作区不再提供 Comment/Strikethrough 创建入口，同时保留真实 Delete。历史 `comment` 和 `strikethrough` 校验继续通过；此前全部 M6.0-M6.7 覆盖保持通过。
+- 219 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure 自动测试通过。覆盖条目级元认知标记、Schema/运行时校验、needs-work 派生、导航边界以及备份即时刷新。历史 `comment` 和 `strikethrough` 校验继续通过；此前全部 M6.0-M6.7 覆盖保持通过。
 - **删除完整性收尾补丁**：CI 通过后的复查发现 `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` 忽略了实时补救翻译文档，导致删除 Learner Response 或 Teacher Review 可能让 Translation Library 中仍然存在的补救文档留下无法解析的 provenance——这与 `parseLibraryBackup()` 的要求不一致（后者在每次恢复时都要求实时补救文档的 provenance 必须可解析）。修复方式是明确区分 finalized response 自身的（可以安全无法解析的）历史 provenance，与一份*实时*补救文档的规范性声明：两个分析函数现在都接受 `translationDocuments` 参数，并报告 `dependentRemediationDocumentIds`/`hasBlockingDependents`；只要存在这样的实时依赖，`app.js` 中的删除流程就会直接拒绝删除（弹出提示，不出现确认对话框），而不是级联穿过它。补救文档绝不会作为副作用被自动删除。新增 7 个测试，其中包括一个证明补丁修复前的操作序列会产生无法恢复的备份的回归防护测试，以及一个证明先删除补救文档后再执行的许可删除仍能正常完整备份/恢复的测试。
 - **本地启动脚本端口冲突与验证修复 (M6 验收支持)**：修复了 `start-local.bat`，使其能够动态查找从 `8000` 开始的空闲 TCP 端口，通过运行临时 Python 脚本向 `http://127.0.0.1:%PORT%/` 发送 HTTP 请求并检查响应体中是否包含 'Quiz Studio' 字符来验证服务器是否已成功启动且服务于正确的应用（最多尝试 5 次，使用安全的非交互式 ping 延迟），然后才使用正确的 URL 启动浏览器。同时，将 `sw.js` 升级为 Network-First（v4）策略，实现了 install/activate 事件中的立即客户端接管（`skipWaiting`/`claim`）与旧缓存清除时的客户端自动重定向导航，并将应用依赖闭包中的全部 19 个 ESM 模块完整加入预缓存列表。已在空闲端口、占用端口、重复启动、错误服务器拦截、离线 ESM 依赖闭包以及 M6 UI 场景中完成验证。
 - CI workflow 已存在；已在 `milestone/6.7-history-retry-integration` 分支上通过（PR #6），删除完整性收尾补丁提交后同样通过。
