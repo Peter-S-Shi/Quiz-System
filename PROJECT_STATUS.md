@@ -124,4 +124,4 @@ M6.7 feature development remains complete. The Journey 04 corrective implementat
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Synchronization status: remote `main` is verified at `242f229`; `recovery/m6-acceptance-closure` is pushed with Draft PR #8. CI was triggered for the recovery branch and was still in progress when this status was recorded.
 - Private repository status: verified Private through GitHub before publishing the recovery branch
-- Pull request status: commit `242f229` from PR #7 is present on remote `main`; Draft PR #8 contains the M6 acceptance-recovery work and remains intentionally unmergeable pending real-browser Journey 04 reacceptance and Journeys 05–10 acceptance.
+- Pull request status: commit `242f229` from PR #7 is present on remote `main`; Draft PR #8 contains the M6 acceptance-recovery work and must not be merged pending real-browser Journey 04 reacceptance and Journeys 05–10 acceptance.
