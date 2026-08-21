@@ -27,6 +27,7 @@ export function createTranslationSession({ id = makeId(), document, startedAt = 
     answers: {},
     revealed: {},
     annotations: {},
+    itemMarks: {},
     completed: false,
     ...(isPlainObject(document.provenance) ? { materialProvenance: structuredClone(document.provenance) } : {}),
   };
@@ -68,6 +69,15 @@ export function normalizeTranslationSession(value) {
     });
   }
 
+  const itemMarks = {};
+  if (isPlainObject(value.itemMarks)) {
+    Object.entries(value.itemMarks).forEach(([itemId, kind]) => {
+      if (itemIds.has(itemId) && (kind === "unknown" || kind === "uncertain" || kind === "should_know")) {
+        itemMarks[itemId] = kind;
+      }
+    });
+  }
+
   return {
     schemaVersion: value.schemaVersion,
     id: value.id,
@@ -81,6 +91,7 @@ export function normalizeTranslationSession(value) {
     answers,
     revealed,
     annotations,
+    itemMarks,
     completed: value.completed === true,
     ...(nonEmptyString(value.completedAt) ? { completedAt: value.completedAt } : {}),
     ...(nonEmptyString(value.responseId) ? { responseId: value.responseId } : {}),
@@ -124,6 +135,19 @@ export function removeTranslationAnnotation(session, itemId, annotationId) {
 export function changeTranslationAnnotationKind(session, itemId, annotationId, kind) {
   const nextList = changeAnnotationKind(session.annotations[itemId], annotationId, kind);
   return { ...session, annotations: { ...session.annotations, [itemId]: nextList } };
+}
+
+export function setTranslationItemMark(session, itemId, kind) {
+  if (!session.items.some((item) => item.id === itemId)) {
+    throw new TypeError(`Translation Item not found in session: ${itemId}`);
+  }
+  const next = { ...session.itemMarks };
+  if (kind === "unknown" || kind === "uncertain" || kind === "should_know") {
+    next[itemId] = kind;
+  } else {
+    delete next[itemId];
+  }
+  return { ...session, itemMarks: next };
 }
 
 export function setTranslationRevealed(session, itemId, revealed) {

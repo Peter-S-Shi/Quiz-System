@@ -358,6 +358,13 @@ label small {
   font-size: 13px;
 }
 
+button:disabled,
+button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .question-list-header,
 .utility-row,
 .editor-actions,
@@ -971,11 +978,19 @@ label small {
   white-space: pre-wrap;
 }
 
+.item-mark-toolbar,
 .annotation-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.item-mark-toolbar .small-button.active {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
+  border-color: var(--accent);
+  color: var(--text);
+  font-weight: 700;
 }
 
 .annotation-list {

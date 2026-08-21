@@ -141,6 +141,12 @@ export function createTranslationLearnerResponse({ id = makeId(), session }) {
       createdAt: annotation.createdAt,
     }))
     : []));
+  const learnerItemMarks = items
+    .filter((item) => session.itemMarks?.[item.id] && LEARNER_ANNOTATION_KINDS.has(session.itemMarks[item.id]))
+    .map((item) => ({
+      itemId: item.id,
+      kind: session.itemMarks[item.id],
+    }));
 
   return {
     schemaVersion: INTERCHANGE_SCHEMA_VERSION,
@@ -169,6 +175,7 @@ export function createTranslationLearnerResponse({ id = makeId(), session }) {
     },
     provenance: normalizeProvenance(session.materialProvenance) || { purpose: "practice" },
     ...(learnerAnnotations.length ? { learnerAnnotations } : {}),
+    ...(learnerItemMarks.length ? { learnerItemMarks } : {}),
   };
 }
 
@@ -324,6 +331,25 @@ export function validateLearnerResponse(value) {
             }
           }
         }
+      });
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(value, "learnerItemMarks")) {
+    if (!Array.isArray(value.learnerItemMarks)) {
+      errors.push("Learner Response learnerItemMarks must be an array.");
+    } else {
+      const seenItemIds = new Set();
+      value.learnerItemMarks.forEach((mark, index) => {
+        if (!isPlainObject(mark)) {
+          errors.push(`Learner item mark ${index} must be an object.`);
+          return;
+        }
+        if (!nonEmptyString(mark.itemId)) errors.push(`Learner item mark ${index} requires an itemId.`);
+        else if (!itemIds.has(mark.itemId)) errors.push(`Learner item mark references unknown itemId: ${mark.itemId}`);
+        else if (seenItemIds.has(mark.itemId)) errors.push(`Duplicate learner item mark for itemId: ${mark.itemId}`);
+        else seenItemIds.add(mark.itemId);
+        if (!LEARNER_ANNOTATION_KINDS.has(mark.kind)) errors.push(`Invalid learner item mark kind: ${mark.kind}`);
       });
     }
   }

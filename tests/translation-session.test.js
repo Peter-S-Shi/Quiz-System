@@ -30,6 +30,7 @@ import {
   normalizeTranslationSession,
   removeTranslationAnnotation,
   setTranslationAnswer,
+  setTranslationItemMark,
   setTranslationRevealed,
 } from "../src/core/translation-session.js";
 import { STORAGE_KEYS } from "../src/storage/local-storage.js";
@@ -553,4 +554,72 @@ test("finalized annotated evidence remains immutable and full backup/restore sta
   const restored = parseLibraryBackup(JSON.parse(JSON.stringify(backup)));
   assert.deepEqual(restored.learnerResponses, parseLearnerResponseCollection([response]));
   assert.equal(restored.learnerResponses[0].learnerAnnotations.length, 1);
+});
+
+test("item-level metacognitive marking sets, replaces, clears whole-item marks and persists through recovery", () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+
+  // Set mark
+  session = setTranslationItemMark(session, "item-1", "unknown");
+  assert.equal(session.itemMarks["item-1"], "unknown");
+
+  // Replace mark
+  session = setTranslationItemMark(session, "item-1", "uncertain");
+  assert.equal(session.itemMarks["item-1"], "uncertain");
+
+  // Set mark on second item
+  session = setTranslationItemMark(session, "item-2", "should_know");
+  assert.equal(session.itemMarks["item-2"], "should_know");
+
+  // Editing answer does NOT invalidate item-level marks
+  session = setTranslationAnswer(session, "item-1", "My translation");
+  assert.equal(session.itemMarks["item-1"], "uncertain");
+
+  // Recovery round-trip
+  const recovered = normalizeTranslationSession(JSON.parse(JSON.stringify(session)));
+  assert.equal(recovered.itemMarks["item-1"], "uncertain");
+  assert.equal(recovered.itemMarks["item-2"], "should_know");
+
+  // Clear mark
+  session = setTranslationItemMark(session, "item-1", null);
+  assert.equal(session.itemMarks["item-1"], undefined);
+  assert.equal(session.itemMarks["item-2"], "should_know");
+
+  // Rejects invalid itemId
+  assert.throws(() => setTranslationItemMark(session, "invalid-item", "unknown"), /not found/);
+});
+
+test("finalization preserves learnerItemMarks and matches public schema and validator", async () => {
+  const { document } = createSyntheticDocument();
+  let session = createTranslationSession({ id: "session-1", document, startedAt: CREATED_AT });
+  session = setTranslationAnswer(session, "item-1", "Hello there");
+  session = setTranslationItemMark(session, "item-1", "uncertain");
+  session = setTranslationItemMark(session, "item-2", "should_know");
+  session = { ...session, completed: true, completedAt: "2026-03-01T09:10:00.000Z" };
+
+  const response = createTranslationLearnerResponse({ id: "response-1", session });
+  assert.deepEqual(response.learnerItemMarks, [
+    { itemId: "item-1", kind: "uncertain" },
+    { itemId: "item-2", kind: "should_know" },
+  ]);
+
+  // Runtime validator
+  const validation = validateLearnerResponse(response);
+  assert.equal(validation.valid, true);
+
+  // JSON Schema validator
+  const schemaSource = JSON.parse(await readFile(new URL("../schemas/learner-response.schema.json", import.meta.url), "utf8"));
+  const ajv = new Ajv2020({ allErrors: true, strict: false });
+  const validateSchema = ajv.compile(schemaSource);
+  assert.equal(validateSchema(response), true);
+
+  // Tampered validation checks
+  const duplicateMarkTampered = structuredClone(response);
+  duplicateMarkTampered.learnerItemMarks.push({ itemId: "item-1", kind: "unknown" });
+  assert.equal(validateLearnerResponse(duplicateMarkTampered).valid, false);
+
+  const unknownItemTampered = structuredClone(response);
+  unknownItemTampered.learnerItemMarks[0].itemId = "unknown-id";
+  assert.equal(validateLearnerResponse(unknownItemTampered).valid, false);
 });

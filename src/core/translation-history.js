@@ -29,6 +29,10 @@ export function deriveNeedsWorkItemIds(response, teacherReviews = []) {
     addReason(annotation.itemId, `annotation:${annotation.kind}`);
   });
 
+  (Array.isArray(response.learnerItemMarks) ? response.learnerItemMarks : []).forEach((mark) => {
+    addReason(mark.itemId, `itemMark:${mark.kind}`);
+  });
+
   (Array.isArray(teacherReviews) ? teacherReviews : [])
     .filter((review) => review?.responseId === response.id)
     .forEach((review) => {
@@ -54,6 +58,8 @@ export function buildHistoryEntry(response, { teacherReviews = [], learnerRespon
   const purpose = response.provenance?.purpose || "practice";
   const hasRemediationChild = derived.some((item) => item.provenance?.purpose === "remediation");
   const hasRetryChild = derived.some((item) => item.provenance?.purpose === "retry");
+  const spanCount = Array.isArray(response.learnerAnnotations) ? response.learnerAnnotations.length : 0;
+  const itemMarkCount = Array.isArray(response.learnerItemMarks) ? response.learnerItemMarks.length : 0;
 
   return {
     responseId: response.id,
@@ -63,7 +69,7 @@ export function buildHistoryEntry(response, { teacherReviews = [], learnerRespon
     targetLanguage: response.material.snapshot?.targetLanguage || "",
     completedAt: response.finalizedAt || response.session?.completedAt || "",
     itemCount: response.summary?.itemCount || response.responses.length,
-    learnerAnnotationCount: Array.isArray(response.learnerAnnotations) ? response.learnerAnnotations.length : 0,
+    learnerAnnotationCount: spanCount + itemMarkCount,
     reviewCount: reviews.length,
     reviewSummaries: reviews.map((review) => ({ id: review.id, reviewer: review.reviewer, createdAt: review.createdAt })),
     needsWorkCount: needsWork.length,

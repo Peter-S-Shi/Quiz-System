@@ -162,3 +162,20 @@ test("renderCorrectionProjection returns the full unmodified text when there are
   const segments = renderCorrectionProjection(ANSWER, []);
   assert.equal(segments.map((segment) => segment.text).join(""), ANSWER);
 });
+
+test("bracket correction emits one pair across internal style and historical comment segments", () => {
+  const answer = "hello world example";
+  const corrections = [
+    createCorrection({ id: "b1", operation: "style", styleType: "bracket", start: 0, end: 11, anchoredText: "hello world", createdAt: "t" }),
+    createCorrection({ id: "s1", operation: "style", styleType: "bold", start: 0, end: 5, anchoredText: "hello", createdAt: "t" }),
+    createCorrection({ id: "c1", operation: "comment", start: 6, end: 11, anchoredText: "world", text: "Historical note", createdAt: "t" }),
+  ];
+
+  const segments = renderCorrectionProjection(answer, corrections);
+
+  assert.equal(segments.map((segment) => segment.bracketsBefore || 0).reduce((sum, count) => sum + count, 0), 1);
+  assert.equal(segments.map((segment) => segment.bracketsAfter || 0).reduce((sum, count) => sum + count, 0), 1);
+  assert.equal(segments[0].bracketsBefore, 1);
+  assert.equal(segments.find((segment) => segment.text === "world").bracketsAfter, 1);
+  assert.deepEqual(segments.find((segment) => segment.text === "world").comments, ["Historical note"]);
+});

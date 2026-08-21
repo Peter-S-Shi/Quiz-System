@@ -89,6 +89,19 @@
         }
       }
     },
+    "learnerItemMarks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["itemId", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "itemId": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["unknown", "uncertain", "should_know"] },
+          "createdAt": { "type": "string" }
+        }
+      }
+    },
     "extensions": { "type": "object" }
   },
   "allOf": [
