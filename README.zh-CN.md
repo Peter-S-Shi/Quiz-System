@@ -55,7 +55,7 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\start-local.ps1"
 ```
 
-该命令会在 `127.0.0.1:8000` 启动仓库自带的 Node.js 本地 HTTP 服务器，先验证标准入口 `http://localhost:8000` 正在提供当前工作树的完全一致的 `index.html`，再用浏览器打开该网址；localhost 开发模式会绕过 Service Worker 缓存，确保加载最新代码。
+该命令会在 `127.0.0.1:8000` 启动仓库自带的 Node.js 本地 HTTP 服务器，先验证标准入口 `http://localhost:8000` 正在提供当前工作树完全一致的 `index.html`，再通过一次性的同源启动 URL 打开应用。该启动过程会在加载当前模块前移除旧 localhost Service Worker 的控制，恢复可见的标准 URL，并完整保留浏览器存储中的应用数据。
 
 你也可以使用任何本地静态服务器手动启动，例如 Python：
 

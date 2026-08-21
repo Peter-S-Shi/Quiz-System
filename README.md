@@ -55,7 +55,7 @@ The canonical local development workflow on Windows is:
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\start-local.ps1"
 ```
 
-This starts the repository's Node.js local HTTP server on `127.0.0.1:8000`, verifies that the canonical `http://localhost:8000` origin is serving this worktree's exact `index.html`, opens that URL, and bypasses Service Worker caching on localhost for reliable development.
+This starts the repository's Node.js local HTTP server on `127.0.0.1:8000`, verifies that the canonical `http://localhost:8000` origin is serving this worktree's exact `index.html`, and opens the app through a one-time same-origin boot URL. That boot removes legacy localhost Service Worker control before loading the current modules, restores the visible canonical URL, and preserves all application data in browser storage.
 
 Alternatively, you can manually serve the repository with any local static server, for example Python:
 

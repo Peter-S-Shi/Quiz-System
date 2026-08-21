@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,4 +78,34 @@ test("Freshly installed Service Worker APP_SHELL assets all exist on disk for fu
       `APP_SHELL asset does not exist on disk: ${assetPath}`
     );
   }
+});
+
+test("a legacy cache-first module graph reproduces the pre-bootstrap named-export failure", async (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "quiz-studio-legacy-module-"));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+
+  fs.copyFileSync(
+    path.join(rootDir, "src", "core", "correction-rendering.js"),
+    path.join(tempDir, "correction-rendering.js"),
+  );
+  fs.writeFileSync(path.join(tempDir, "utils.js"), `
+    export function makeId() { return "legacy-id"; }
+    export function safeFileName(value) { return String(value || "quiz-paper"); }
+  `);
+
+  await assert.rejects(
+    import(`${pathToFileURL(path.join(tempDir, "correction-rendering.js")).href}?legacy=${Date.now()}`),
+    /does not provide an export named ['"]escapeHtml['"]|does not provide an export named 'escapeHtml'/,
+  );
+});
+
+test("the localhost launcher bypasses legacy navigation caches and boot removes control before app import", () => {
+  const serverSource = fs.readFileSync(path.join(rootDir, "scripts", "local-server.mjs"), "utf8");
+  const indexSource = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
+
+  assert.match(serverSource, /devBoot=/, "Launcher must open a unique localhost URL that misses legacy cache-first navigation entries.");
+  const unregisterIndex = indexSource.indexOf("registration.unregister()");
+  const appImportIndex = indexSource.indexOf('import("./src/app.js")');
+  assert.ok(unregisterIndex >= 0, "Localhost bootstrap must unregister legacy Service Workers without clearing site data.");
+  assert.ok(appImportIndex > unregisterIndex, "Localhost bootstrap must finish Service Worker cleanup before importing app.js.");
 });

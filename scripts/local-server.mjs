@@ -98,7 +98,11 @@ server.listen(port, host, async () => {
     }
 
     if (shouldOpenBrowser) {
-      spawn("explorer.exe", [url], { detached: true, stdio: "ignore" }).unref();
+      // A unique navigation URL bypasses cache-first Service Workers left by early M6 builds.
+      // index.html removes their registration before importing the current module graph, then
+      // returns the visible address to the canonical localhost origin without touching storage.
+      const browserUrl = `${url}/?devBoot=${Date.now()}`;
+      spawn("explorer.exe", [browserUrl], { detached: true, stdio: "ignore" }).unref();
     }
   } catch (error) {
     console.error(`Server verification failed / 服务器验证失败: ${error.message}`);
