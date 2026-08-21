@@ -38,7 +38,7 @@ function discoverEsmDependencies(entryFile) {
     closure.add(relativePath);
 
     const content = fs.readFileSync(normPath, "utf8");
-    const importRegex = /import\s+[^'"]*from\s+['"]([^'"]+)['"]/g;
+    const importRegex = /(?:import\s+[^'"]*from\s+|import\s*\(\s*)['"]([^'"]+)['"]/g;
     let match;
     while ((match = importRegex.exec(content)) !== null) {
       const importPath = match[1];
@@ -55,8 +55,14 @@ function discoverEsmDependencies(entryFile) {
 
 test("Service Worker APP_SHELL contains the complete ESM dependency closure required for offline operation", () => {
   const appShell = parseAppShellFromSw();
-  const entryPoint = path.join(rootDir, "src", "app.js");
-  const requiredEsmFiles = discoverEsmDependencies(entryPoint);
+  const bootstrapEntryPoint = path.join(rootDir, "src", "bootstrap.js");
+  const appEntryPoint = path.join(rootDir, "src", "app.js");
+  const requiredEsmFiles = Array.from(
+    new Set([
+      ...discoverEsmDependencies(bootstrapEntryPoint),
+      ...discoverEsmDependencies(appEntryPoint),
+    ])
+  ).sort();
 
   for (const esmFile of requiredEsmFiles) {
     assert.ok(

@@ -18,37 +18,51 @@ if "%PYTHON_CMD%"=="" (
   exit /b 1
 )
 
-:: Find an available port starting from 8000
-set "PORT_FINDER_PY=%temp%\find_port_%RANDOM%.py"
+:: Canonical port is 8000 unless explicitly overridden as an argument
+set "PORT=%~1"
+if "%PORT%"=="" set "PORT=8000"
+
+:: Check if the specified port is available on 127.0.0.1
+set "PORT_CHECK_PY=%temp%\check_port_%RANDOM%.py"
 (
-  echo import socket
-  echo p = 8000
-  echo while True:
-  echo     try:
-  echo         s = socket.socket^(socket.AF_INET, socket.SOCK_STREAM^)
-  echo         s.bind^(^(^'127.0.0.1^', p^)^)
-  echo         s.close^(^)
-  echo         print^(p^)
-  echo         break
-  echo     except OSError:
-  echo         p += 1
-) > "%PORT_FINDER_PY%"
+  echo import socket, sys
+  echo p = int^(sys.argv[1]^)
+  echo s = socket.socket^(socket.AF_INET, socket.SOCK_STREAM^)
+  echo try:
+  echo     s.bind^(^(^'127.0.0.1^', p^)^)
+  echo     s.close^(^)
+  echo     sys.exit^(0^)
+  echo except OSError:
+  echo     sys.exit^(1^)
+) > "%PORT_CHECK_PY%"
 
-for /f "tokens=*" %%A in ('%PYTHON_CMD% "%PORT_FINDER_PY%"') do (
-  set "PORT=%%A"
-)
-del "%PORT_FINDER_PY%"
+"%PYTHON_CMD%" "%PORT_CHECK_PY%" %PORT% >nul 2>nul
+set "PORT_FREE=%ERRORLEVEL%"
+del "%PORT_CHECK_PY%"
 
-if "%PORT%"=="" (
-  echo Error: Could not find an available port.
+if not "%PORT_FREE%"=="0" (
+  echo.
+  if "%PORT%"=="8000" (
+    echo Error: Port 8000 is already in use by another process.
+    echo The canonical Quiz Studio local development origin is http://localhost:8000 to protect your localStorage data.
+    echo Please close the process using port 8000 ^(such as an existing Quiz Studio server^) and run start-local.bat again.
+    echo.
+    echo (If you intentionally need a different port, run: start-local.bat ^<port^>^)
+  ) else (
+    echo Error: Port %PORT% is already in use by another process.
+    echo Please close the process using port %PORT% and run start-local.bat again.
+  )
+  echo.
   pause
   exit /b 1
 )
 
-set "URL=http://localhost:%PORT%"
+:: Generate a dev nonce to bypass stale initial navigation cache while preserving canonical origin
+set "NONCE=%RANDOM%%RANDOM%"
+set "URL=http://localhost:%PORT%/?dev=%NONCE%"
 
-:: Launch http.server on the selected port asynchronously
-start "Quiz Studio Server" cmd /k "%PYTHON_CMD%" -m http.server %PORT% --bind 127.0.0.1
+:: Launch dev-server on the selected port asynchronously with no-store cache headers
+start "Quiz Studio Server" cmd /k "%PYTHON_CMD%" "scripts\dev-server.py" %PORT%
 
 :: Verify that the server actually started listening on %PORT% and is serving Quiz Studio
 echo Starting local server on port %PORT%...
@@ -57,21 +71,21 @@ set "TRY_COUNT=0"
 
 set "SERVER_VERIFIER_PY=%temp%\verify_server_%RANDOM%.py"
 (
-  echo import urllib.request
+  echo import urllib.request, sys
+  echo p = sys.argv[1]
   echo try:
-  echo     with urllib.request.urlopen^(^'http://127.0.0.1:%PORT%/^', timeout=1^) as r:
+  echo     with urllib.request.urlopen^(f^'http://127.0.0.1:{p}/^', timeout=1^) as r:
   echo         html = r.read^(^).decode^(^'utf-8^'^)
   echo         if ^'Quiz Studio^' in html:
-  echo             print^(^'OK^'^)
-  echo             exit^(0^)
+  echo             sys.exit^(0^)
   echo         else:
-  echo             exit^(1^)
+  echo             sys.exit^(1^)
   echo except Exception:
-  echo     exit^(1^)
+  echo     sys.exit^(1^)
 ) > "%SERVER_VERIFIER_PY%"
 
 :check_loop
-"%PYTHON_CMD%" "%SERVER_VERIFIER_PY%" >nul 2>nul
+"%PYTHON_CMD%" "%SERVER_VERIFIER_PY%" %PORT% >nul 2>nul
 if %ERRORLEVEL%==0 (
   set "STARTED=1"
   goto server_ready
@@ -94,7 +108,7 @@ if "%STARTED%"=="0" (
 )
 
 echo.
-echo Quiz Studio is running at %URL%
+echo Quiz Studio is running at http://localhost:%PORT%/
 echo Keep the server window open while using the app.
 echo.
 

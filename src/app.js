@@ -97,6 +97,7 @@ import {
   prepareQuizQuestion,
 } from "./core/question-registry.js";
 import { makeId, parseTags, safeFileName } from "./core/utils.js";
+import { isLocalDevelopmentHost } from "./bootstrap.js";
 import { STORAGE_KEYS, loadJson, removeStoredValue, saveJson } from "./storage/local-storage.js";
 
 const {
@@ -4331,6 +4332,7 @@ function showToast(message) {
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
+  if (isLocalDevelopmentHost(window.location?.hostname)) return;
 
   const hasController = Boolean(navigator.serviceWorker.controller);
   let refreshing = false;
@@ -4341,9 +4343,15 @@ function registerServiceWorker() {
     }
   });
 
-  window.addEventListener("load", () => {
+  const register = () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {
       // Offline support is optional; the app remains usable without it.
     });
-  });
+  };
+
+  if (document.readyState === "complete") {
+    register();
+  } else {
+    window.addEventListener("load", register);
+  }
 }
