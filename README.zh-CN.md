@@ -61,7 +61,7 @@ python -m http.server 8000
 
 然后打开 `http://localhost:8000`。
 
-在 Windows 上，也可以直接双击 `start-local.bat`。它会在 `8000` 端口启动本地服务器，并自动用浏览器打开应用。
+在 Windows 上，也可以直接双击 `start-local.bat`。它会在 `8000` 端口（如果 `8000` 端口被占用，则会自动选择其他可用端口）启动本地服务器，并自动用浏览器打开应用。
 
 ## 验证
 
