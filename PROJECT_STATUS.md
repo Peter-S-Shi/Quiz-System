@@ -6,13 +6,13 @@ Feature Development - Scope Reopened
 
 ## Current Milestone
 
-Milestone 6.7: History, Retry, Portability, and Whole-Product Integration - implementation complete / M6-wide acceptance deferred
+Milestone 6.7: History, Retry, Portability, and Whole-Product Integration - complete (M6 comprehensive human acceptance Journeys 01–10: PASS; UX hardening batch complete)
 
-M6.7 is the last feature-development sub-milestone of M6. M6 feature-development implementation is now complete.
+M6.7 is the last feature-development sub-milestone of M6. M6 feature-development implementation and comprehensive human acceptance are complete.
 
-## Acceptance Policy (Changed)
+## Acceptance Policy (Historical Record)
 
-The user has intentionally deferred individual formal user acceptance for M6.2 through M6.7. Implementation review, regression testing, CI, and scope review still apply to each sub-milestone, but one comprehensive M6 acceptance will happen now that M6.7 is complete. M6.0 and M6.1 were already individually accepted before this policy change and remain historically accepted; that is not being revised retroactively. Do not read "implementation complete / M6-wide acceptance deferred" as equivalent to accepted.
+Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) has now been executed and passed (PASS). M6.0 and M6.1 were previously accepted individually.
 
 ## M6 Comprehensive Acceptance and Hardening Closure
 
@@ -31,7 +31,7 @@ The current-version scope includes the Milestone 1-5 baseline and the approved M
 
 Previous candidate review reached; current scope reopened and no longer feature complete.
 
-Milestone 1 is complete as the foundation baseline. Milestones 2-5 have first implementations landed, but full acceptance is pending. The Feature Complete Candidate review reached under that earlier boundary remains historical evidence. M6 comprehensive acceptance Journeys 01–10 are complete (PASS) under the reduced comment scope and hardening batch. A new whole-product Feature Complete Review is required before entering Feature Freeze.
+Milestone 1 is complete as the foundation baseline. Milestones 2-5 have first implementations landed, but full acceptance is pending. The Feature Complete Candidate review reached under that earlier boundary remains historical evidence. M6 comprehensive acceptance Journeys 01–10 are complete (PASS) under the reduced comment scope and hardening batch. The next lifecycle gate is the whole-product Feature Complete Review before entering Feature Freeze.
 
 ## Feature Freeze Status
 
@@ -42,7 +42,7 @@ Feature Freeze can begin only after the reopened scope passes a new whole-produc
 ## Open Release Blockers
 
 - Full project-wide manual acceptance across all milestones (M1–M5 baseline + whole product) has not been completed.
-- Data migration, backup round-trip, active-session recovery, and destructive workflows have not yet received formal end-to-end verification.
+- Legacy single-paper migration across representative old localStorage states and full browser-close/restart active-session recovery have not received dedicated verification.
 - Public Pages deployment remains deferred while the repository is private.
 - A release candidate and final clean-environment verification do not yet exist.
 
@@ -62,19 +62,17 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 - During this smoke test, found and fixed one real bug (not caught by unit tests, since it lives in `app.js` UI glue rather than a core module): `deleteLearnerResponseConfirm()` originally wrote the updated Learner Response collection before reading `loadTeacherReviews()` again, and `loadTeacherReviews()` re-validates every review against the *current* response collection on every call — so it saw the just-orphaned reviews and threw. Fixed by snapshotting both collections up front. Re-verified after the fix with a clean isolated reproduction.
 - **Service worker cache upgrade**: Originally, the service worker used a cache-first strategy which required manual cache clearing to pick up new deployments or changes. This is resolved: `sw.js` was upgraded to Network-First (v4) with immediate takeover triggers (`skipWaiting`/`claim`), ensuring updates are fetched immediately on reload when the server is running.
 - The browser harness cannot drive native `window.confirm()`/`window.prompt()` dialogs; deletion and retry confirmations were smoke-tested by monkey-patching `window.confirm` to capture the exact message text and to accept/decline programmatically, which exercises the real confirmation logic and message content but not the native dialog UI itself. This is a known automation-harness limitation carried over from earlier milestones, not a product defect.
-- Manual acceptance for the full v1 journey is not complete. Journeys 01-03 are accepted; Journey 04 is pending under the reduced scope; Journeys 05-10 remain stopped.
+- Comprehensive M6 human acceptance Journeys 01–10 have been completed (PASS) under the reduced comment scope and hardening batch. Full v1 project-wide manual acceptance across all milestones remains open.
 - Clean clone verification has not been performed.
 - GitHub Pages deployment is manual-only and deferred.
-- M6.0 and M6.1 are accepted. M6.2 through M6.7 have automated and smoke-test coverage; the comprehensive review is currently blocked at the reduced-scope Journey 04 reacceptance gate.
+- M6.0–M6.7 are implementation complete and verified through comprehensive human acceptance.
 
 ## Known Risks
 
 - GitHub Pages cannot currently be treated as available because the repository remains private and Pages deployment is deferred.
 - Browser `file://` opening is not supported for the ES module app; users must use a local static server or `start-local.bat`.
-- The project has a larger feature surface than its current manual QA evidence.
 - Finalized Learner Responses use browser local storage without silent history truncation; large long-term evidence collections may eventually encounter browser storage limits. Translation History inherits this: it has no entry cap by design.
 - The external Teacher Review and remediation round trip is entirely manual (export a file, hand it to an external party, import the file they return); there is no in-app AI integration, and none is planned.
-- Deferring acceptance to the end of M6 means integration issues across M6.2-M6.7 may surface later than they would under per-milestone acceptance; regression tests and CI were relied on more heavily in the interim, and the comprehensive M6-wide acceptance is now the point where that trade-off gets tested.
 - Whether the learner revealed a hidden reference translation is tracked only in the active session, not carried into finalized evidence; this remains true for retry and remediation-material practice as well.
 - Deleting a Learner Response cascade-deletes its Teacher Reviews; there is no separate way to keep the reviews while removing only the response. This was a deliberate M6.7 design choice (a review's `responseId` link must always resolve), not an oversight, but a user who wants to keep review content after deleting a response must export the review first.
 - Translation History, retry item-selection, and deletion confirmations have not been manually verified on touch/mobile viewports, where the item-selection checklist and multi-button action rows may need layout attention during M7 hardening.
@@ -82,18 +80,13 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Unknown Or Unverified
 
-- Full backup export and import round trip with realistic local data, including History/retry/remediation lineage at scale.
+- Full backup export and import round trip with large-scale long-term history accumulation.
 - Legacy single-paper migration behavior across representative old localStorage states.
-- Active-session recovery across refresh and browser restart.
-- Destructive workflows such as paper delete, history clear, and backup import overwrite scenarios.
+- Translation Practice session recovery across a genuine browser restart (refresh-based recovery was verified; full browser-close/reopen was not separately tested), including a retry session.
+- Destructive workflows such as paper delete and history clear outside of Translation Document / Review deletion.
 - PWA install, offline behavior, and cache upgrade behavior across major browsers.
 - Accessibility and responsive behavior across representative devices, including the new Translation History browser and retry item-selection checklist.
 - Clean-environment clone and run process.
-- Manual inspection of downloaded Learner Response JSON and a real browser backup/restore round trip containing learner evidence.
-- Manual browser backup/restore round trip containing Translation Folder, Document, and Item data, and containing History/retry/remediation lineage.
-- Manual inspection of a downloaded Translation Document JSON file's on-disk content in a real browser (the automated smoke test verified the download trigger and filename, not on-disk bytes).
-- Translation Practice session recovery across a genuine browser restart (refresh-based recovery was verified; full browser-close/reopen was not separately tested), including a retry session.
-- Manual inspection of a downloaded Translation Learner Response JSON file's on-disk content in a real browser.
 - Learner annotation marking, review, removal, History browsing, and retry item-selection on touch/mobile viewports, where text-selection and multi-checkbox ergonomics differ from desktop pointer/keyboard interaction.
 - In-scope rich correction authoring (style/insert/replace/delete and the color picker) on touch/mobile viewports.
 - Manual inspection of a real browser's native `window.prompt()`/`window.confirm()` dialogs for Insert/Replace text entry and for retry/deletion confirmations.
@@ -114,7 +107,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Next Engineering Objective
 
-M6.7 remains implementation complete. The next step is only Journey 04 reacceptance under the reduced Product Gate scope: Bracket, style/content corrections, Delete, Judgment / Suggested Revision, and save/reopen persistence. Do not begin Journey 05, Product Hardening (M7), or Feature Freeze work before Journey 04 is accepted and the M6 acceptance sequence resumes.
+M6.0–M6.7 feature implementation, comprehensive human acceptance (Journeys 01–10: PASS), and UX hardening closure are complete. The next lifecycle gate is the whole-product Feature Complete Review before entering Feature Freeze. Product Hardening (M7) and Feature Freeze have not started.
 
 ## Repository State
 

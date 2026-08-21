@@ -6,13 +6,13 @@ Feature Development - Scope Reopened（功能开发阶段，范围已重新开�
 
 ## 当前里程碑
 
-Milestone 6.7：History, Retry, Portability, and Whole-Product Integration - implementation complete / M6-wide acceptance deferred
+Milestone 6.7：History, Retry, Portability, and Whole-Product Integration - complete（已完成，M6 综合人工验收 Journeys 01–10：PASS；UX 强化收尾批次已完成）
 
-M6.7 是 M6 功能开发阶段的最后一个子里程碑。M6 的功能开发实现现已完成。
+M6.7 是 M6 功能开发阶段的最后一个子里程碑。M6 的功能开发实现与综合人工验收均已完成。
 
-## 验收政策（已变更）
+## 验收政策（历史记录）
 
-用户已明确决定：M6.2 到 M6.7 不再逐个进行正式用户验收。每个子里程碑仍然需要实现评审、回归测试、CI 和范围审查，但一次性的、覆盖整个 M6 的综合验收现在 M6.7 已经完成，可以统一进行。M6.0 和 M6.1 在这一政策变更之前已经分别完成验收，这一历史事实不会被追溯改写。请不要把"implementation complete / M6-wide acceptance deferred"理解为等同于已验收。
+M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）现已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。
 
 ## M6 综合人工验收与 UX 强化收尾
 
@@ -31,7 +31,7 @@ M6.7 是 M6 功能开发阶段的最后一个子里程碑。M6 的功能开发�
 
 旧范围下曾达到候选评审；当前范围已重新开放，因此不再属于功能完整状态。
 
-Milestone 1 作为基础基线已完成。Milestones 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6 综合人工验收 Journeys 01–10 已在缩减 Comment 范围及完成强化批次后全部通过（PASS）。进入 Feature Freeze 之前需要重新执行全产品 Feature Complete Review。
+Milestone 1 作为基础基线已完成。Milestones 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6 综合人工验收 Journeys 01–10 已在缩减 Comment 范围及完成强化批次后全部通过（PASS）。进入 Feature Freeze 之前的下一个生命周期门禁是重新执行全产品 Feature Complete Review。
 
 ## Feature Freeze 状态
 
@@ -42,7 +42,7 @@ Milestone 1 作为基础基线已完成。Milestones 2-5 的首版实现已落�
 ## 当前发布阻断项
 
 - 尚未完成全项目全里程碑（M1–M5 基线 + 全产品）的最终完整人工验收。
-- 数据迁移、备份往返、答题进度恢复和破坏性工作流尚未获得正式端到端验证。
+- 旧版单试卷数据在代表性旧 localStorage 状态下的迁移行为，以及真实浏览器关闭/重开后的 active session 恢复尚未获得单独专项验证。
 - 仓库保持 private 时，公开 Pages 部署继续暂缓。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
 
@@ -62,19 +62,17 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 在本次 smoke test 中，发现并修复了一处真实缺陷（未被单元测试捕获，因为它存在于 `app.js` 的 UI glue 代码中而非核心模块）：`deleteLearnerResponseConfirm()` 最初会先写入更新后的 Learner Response 集合，之后才再次读取 `loadTeacherReviews()`；而 `loadTeacherReviews()` 每次调用都会把全部批改重新对照*当前*的作答记录集合做校验——于是它看到了刚刚变成孤儿的批改并抛出异常。修复方式是提前对两个集合都做快照。修复后通过一次独立的干净复现重新验证。
 - **Service Worker 缓存策略升级**：最初 Service Worker 使用 Cache-First 策略，开发迭代或部署更新时需要手动清除浏览器缓存。现已升级：`sw.js` 升级为 Network-First (v4) 策略，并结合 `skipWaiting`/`claim` 实现了立即的客户端接管，从而在服务器运行时页面刷新即可立即获取并使用最新版资源。
 - 浏览器测试工具无法驱动原生的 `window.confirm()`/`window.prompt()` 对话框；删除和重新练习相关的确认是通过给 `window.confirm` 打补丁来捕获确切的提示文字、并以编程方式接受/拒绝来测试的，这能验证真实的确认逻辑和提示内容，但不能验证原生对话框界面本身。这是延续自此前里程碑的已知测试工具局限，不是产品缺陷。
-- 完整 v1 用户旅程的人工验收尚未完成。Journey 01-03 已通过；Journey 04 按缩减范围等待验收；Journey 05-10 保持停止。
+- M6 综合人工验收 Journeys 01–10 已在缩减 Comment 范围及完成强化批次后全部通过（PASS）。全项目全里程碑人工验收仍待完成。
 - 尚未执行干净 clone 验证。
 - GitHub Pages 部署为仅手动触发，并继续暂缓。
-- M6.0 和 M6.1 已验收。M6.2 到 M6.7 已有自动化测试和 smoke test 覆盖；整体验收当前停在缩减范围后的 Journey 04 重新验收门。
+- M6.0–M6.7 均已完成实现，并通过综合人工验收验证。
 
 ## 已知风险
 
 - 由于仓库保持 private 且 Pages 部署暂缓，GitHub Pages 目前不能视为可用交付方式。
 - ES module 应用不支持通过浏览器 `file://` 直接打开；用户必须使用本地静态服务器或 `start-local.bat`。
-- 当前功能面已经较大，但人工 QA 证据还不足。
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。Translation 历史按设计同样没有条目数量上限，继承了这一风险。
 - 外部 Teacher Review 与补救往返完全是手动的（导出一份文件、交给外部一方、导入他们返回的文件）；目前没有、也不计划做任何应用内 AI 集成。
-- 把验收推迟到 M6 结束意味着 M6.2-M6.7 之间的集成问题可能比逐里程碑验收更晚才被发现；在此期间更依赖回归测试和 CI，现在 M6.7 已完成，这项权衡将在整体 M6 验收中接受检验。
 - 学习者是否显示过隐藏的参考译文只记录在 active session 中，不会带入 finalized evidence；重新练习和补救材料的练习同样如此。
 - 删除一条 Learner Response 会级联删除其 Teacher Review；目前没有单独保留批改内容、只删除作答记录的方式。这是 M6.7 的一项刻意设计选择（一条 review 的 `responseId` 链接必须始终可解析），而不是疏漏，但想要在删除作答记录后保留批改内容的用户，需要先导出该批改。
 - Translation 历史、重新练习的条目选择和删除确认尚未在触屏/移动端视口下进行人工验证，条目选择清单和多按钮操作行的布局可能需要在 M7 硬化阶段关注。
@@ -82,18 +80,13 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 未知或未验证事项
 
-- 使用接近真实规模的本地数据（包含历史/重新练习/补救溯源）进行完整备份导出和导入往返。
+- 使用超大规模积累数据进行完整备份导出和导入往返。
 - 旧版单试卷数据在代表性旧 localStorage 状态下的迁移行为。
-- 刷新和重启浏览器后的答题进度恢复。
-- 删除试卷、清空历史、导入备份覆盖等破坏性工作流。
+- 真实浏览器关闭后重新打开（而非仅刷新）时 Translation Practice session（包括重新练习 session）的恢复情况（已验证基于刷新的恢复，未单独验证完整关闭重开）。
+- 删除试卷、清空历史等针对翻译题库/批改之外的破坏性工作流。
 - PWA 安装、离线行为和缓存升级在主要浏览器中的表现。
 - 代表性设备上的可访问性和响应式行为，包括新增的 Translation 历史浏览器和重新练习条目选择清单。
 - 干净环境重新 clone 并运行项目。
-- 人工检查下载的 Learner Response JSON，并在真实浏览器中完成包含 learner evidence 的备份/恢复往返。
-- 在真实浏览器中完成包含 Translation Folder、Document 和 Item 数据、以及历史/重新练习/补救溯源的备份/恢复往返。
-- 在真实浏览器中人工检查下载的 Translation Document JSON 文件的实际内容（自动化 smoke test 只验证了下载触发和文件名，未验证落盘字节）。
-- 真实浏览器关闭后重新打开（而非仅刷新）时 Translation Practice session（包括重新练习 session）的恢复情况（已验证基于刷新的恢复，未单独验证完整关闭重开）。
-- 在真实浏览器中人工检查下载的 Translation Learner Response JSON 文件的实际内容。
 - 在触屏/移动端视口下进行标记、历史浏览和重新练习条目选择操作，这些场景的文本选择和多选框交互与桌面端指针/键盘操作存在差异。
 - 在触屏/移动端视口下进行当前范围内的 rich correction 创作（样式/插入/替换/删除和颜色选择器）。
 - 在真实浏览器中人工检查用于插入/替换文字录入、以及重新练习/删除确认的原生 `window.prompt()`/`window.confirm()` 对话框。
@@ -114,7 +107,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-M6.7 仍然完成实现。下一步仅为按 Product Gate 缩减范围重新验收 Journey 04：加括号、样式/内容批改、真实删除、评判 / 建议修订，以及保存/重新打开持久化。在 Journey 04 通过并恢复 M6 验收顺序之前，不开始 Journey 05、Product Hardening（M7）或 Feature Freeze。
+M6.0–M6.7 功能实现、综合人工验收（Journeys 01–10：PASS）以及 UX 强化收尾批次均已完成。下一个生命周期门禁是重新执行全产品 Feature Complete Review，之后再进入 Feature Freeze。Product Hardening（M7）与 Feature Freeze 尚未开始。
 
 ## 仓库状态
 
