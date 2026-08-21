@@ -6,6 +6,7 @@ import {
   removeCorrection,
   renderCorrectionProjection,
 } from "./core/corrections.js";
+import { renderCorrectionProjectionHtml } from "./core/correction-rendering.js";
 import {
   DOCUMENT_TYPES,
   createQuizLearnerResponse,
@@ -3154,7 +3155,7 @@ function renderCorrectionWorkspace(responseId) {
       </div>
       <div class="correction-preview">
         <span class="meta-text">${t("review.preview")}</span>
-        <p class="correction-projection">${renderProjectionHtml(segments)}</p>
+        <p class="correction-projection">${renderCorrectionProjectionHtml(segments)}</p>
       </div>
       <div class="correction-list" id="correctionList">
         ${corrections.length ? corrections.map(renderCorrectionRow).join("") : `<p class="meta-text">${t("review.noCorrections")}</p>`}
@@ -3186,37 +3187,6 @@ function renderCorrectionWorkspace(responseId) {
   `;
 
   bindCorrectionWorkspaceEvents(response, item, answerText, availableReviews);
-}
-
-export function renderProjectionHtml(segments) {
-  return segments.map((segment) => {
-    let content = "";
-    const hasComments = Array.isArray(segment.comments) && segment.comments.length > 0;
-    const commentClass = hasComments ? " correction-comment-highlight" : "";
-
-    if (segment.type === "deleted" || segment.type === "replaced-original") {
-      content = `<span class="correction-deleted${commentClass}">${escapeHtml(segment.text)}</span>`;
-    } else if (segment.type === "inserted") {
-      const colorClass = segment.color ? ` correction-color-${segment.color}` : "";
-      content = `<span class="correction-inserted${colorClass}${commentClass}">${escapeHtml(segment.text)}</span>`;
-    } else {
-      const classes = (segment.styles || []).map((style) => (style.styleType === "color"
-        ? `correction-color-${style.color}`
-        : `correction-style-${style.styleType}`));
-      if (hasComments) {
-        classes.push("correction-comment-highlight");
-      }
-      content = `<span class="${classes.join(" ")}">${escapeHtml(segment.text)}</span>`;
-    }
-
-    const openBrackets = segment.bracketsBefore ? '<span class="correction-bracket">[</span>'.repeat(segment.bracketsBefore) : "";
-    const closeBrackets = segment.bracketsAfter ? '<span class="correction-bracket">]</span>'.repeat(segment.bracketsAfter) : "";
-    const commentBadges = (segment.commentsAfter && segment.commentsAfter.length > 0)
-      ? segment.commentsAfter.map((c) => `<span class="correction-comment-badge" title="${escapeHtml(c)}">💬 ${escapeHtml(c)}</span>`).join("")
-      : "";
-
-    return `${openBrackets}${content}${closeBrackets}${commentBadges}`;
-  }).join("");
 }
 
 export function renderCorrectionRow(correction) {

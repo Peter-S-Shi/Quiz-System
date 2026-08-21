@@ -137,28 +137,28 @@ export function renderCorrectionProjection(answerText, corrections) {
       segments.push(...renderPlainRun(answerText, cursor, edit.start, inlineStyleOps, commentOps, bracketOps));
     }
     if (edit.operation === "delete") {
-      segments.push({
-        type: "deleted",
-        text: answerText.slice(edit.start, edit.end),
-        comments: commentOps.filter((c) => c.start < edit.end && c.end > edit.start).map((c) => c.text),
-        bracketsBefore: bracketOps.filter((b) => b.start === edit.start).length,
-        bracketsAfter: bracketOps.filter((b) => b.end === edit.end).length,
-        commentsAfter: commentOps.filter((c) => c.end === edit.end).map((c) => c.text),
-      });
+      segments.push(...renderPlainRun(
+        answerText,
+        edit.start,
+        edit.end,
+        inlineStyleOps,
+        commentOps,
+        bracketOps,
+      ).map((segment) => ({ ...segment, type: "deleted" })));
       cursor = edit.end;
     } else if (edit.operation === "replace") {
-      segments.push({
-        type: "replaced-original",
-        text: answerText.slice(edit.start, edit.end),
-        comments: commentOps.filter((c) => c.start < edit.end && c.end > edit.start).map((c) => c.text),
-        bracketsBefore: bracketOps.filter((b) => b.start === edit.start).length,
-      });
+      segments.push(...renderPlainRun(
+        answerText,
+        edit.start,
+        edit.end,
+        inlineStyleOps,
+        commentOps,
+        bracketOps,
+      ).map((segment) => ({ ...segment, type: "replaced-original" })));
       segments.push({
         type: "inserted",
         text: edit.text,
         color: edit.color,
-        bracketsAfter: bracketOps.filter((b) => b.end === edit.end).length,
-        commentsAfter: commentOps.filter((c) => c.end === edit.end).map((c) => c.text),
       });
       cursor = edit.end;
     } else if (edit.operation === "insert") {
@@ -166,9 +166,6 @@ export function renderCorrectionProjection(answerText, corrections) {
         type: "inserted",
         text: edit.text,
         color: edit.color,
-        bracketsBefore: bracketOps.filter((b) => b.start === edit.start).length,
-        bracketsAfter: bracketOps.filter((b) => b.end === edit.start).length,
-        commentsAfter: commentOps.filter((c) => c.end === edit.start).map((c) => c.text),
       });
       cursor = edit.start;
     }

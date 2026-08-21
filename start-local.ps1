@@ -1,4 +1,9 @@
 # Quiz Studio Local Development Launcher
+param(
+    [switch]$NoBrowser,
+    [switch]$VerifyAndExit
+)
+
 $ErrorActionPreference = "Stop"
 
 $repoDir = $PSScriptRoot
@@ -7,17 +12,11 @@ Set-Location -Path $repoDir
 Write-Host "Starting Quiz Studio local development server..." -ForegroundColor Cyan
 Write-Host "Repository directory: $repoDir" -ForegroundColor Gray
 
-# Detect Python
-$pythonCmd = $null
-if (Get-Command py -ErrorAction SilentlyContinue) {
-    $pythonCmd = "py"
-} elseif (Get-Command python -ErrorAction SilentlyContinue) {
-    $pythonCmd = "python"
-}
-
-if (-not $pythonCmd) {
-    Write-Host "Error: Python was not found on PATH." -ForegroundColor Red
-    Write-Host "Please install Python or add it to PATH to use start-local.ps1." -ForegroundColor Yellow
+# Detect Node.js, which is also used by the repository validation commands.
+$nodeCmd = Get-Command node -ErrorAction SilentlyContinue
+if (-not $nodeCmd) {
+    Write-Host "Error: Node.js was not found on PATH." -ForegroundColor Red
+    Write-Host "Install Node.js or add it to PATH to use start-local.ps1." -ForegroundColor Yellow
     exit 1
 }
 
@@ -44,22 +43,14 @@ if ($portOccupied) {
 
 $url = "http://localhost:$port"
 
-# Start Python HTTP server bound to 127.0.0.1 on port 8000
-$serverProcess = Start-Process -FilePath $pythonCmd -ArgumentList "-m", "http.server", "$port", "--bind", "127.0.0.1" -WorkingDirectory $repoDir -WindowStyle Hidden -PassThru
-
-Start-Sleep -Milliseconds 800
-
-# Open browser to canonical origin
-Start-Process $url
-
-Write-Host "Quiz Studio is running at $url" -ForegroundColor Green
-Write-Host "Local development mode: Service Worker caching is disabled on localhost." -ForegroundColor Gray
-Write-Host "Press Ctrl+C or close this window to stop the server." -ForegroundColor Gray
-
-try {
-    $serverProcess.WaitForExit()
-} finally {
-    if (-not $serverProcess.HasExited) {
-        Stop-Process -Id $serverProcess.Id -Force -ErrorAction SilentlyContinue
-    }
+# Run the server in the foreground so Ctrl+C or closing this window stops it.
+$serverScript = Join-Path $repoDir "scripts\local-server.mjs"
+$serverArgs = @($serverScript, "$port", "--parent-pid", "$PID")
+if (-not $NoBrowser) {
+    $serverArgs += "--open"
 }
+if ($VerifyAndExit) {
+    $serverArgs += "--verify-and-exit"
+}
+& $nodeCmd.Source @serverArgs
+exit $LASTEXITCODE

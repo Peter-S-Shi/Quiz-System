@@ -55,9 +55,9 @@ The canonical local development workflow on Windows is:
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\start-local.ps1"
 ```
 
-This starts Python's local HTTP server on `http://127.0.0.1:8000` serving the repository directory, opens `http://localhost:8000` in your browser, and bypasses Service Worker caching on localhost for reliable development.
+This starts the repository's Node.js local HTTP server on `127.0.0.1:8000`, verifies that the canonical `http://localhost:8000` origin is serving this worktree's exact `index.html`, opens that URL, and bypasses Service Worker caching on localhost for reliable development.
 
-Alternatively, you can manually serve the repository with any local static server:
+Alternatively, you can manually serve the repository with any local static server, for example Python:
 
 ```bash
 python -m http.server 8000
@@ -81,7 +81,7 @@ node --check src/app.js
 
 ## How to Use
 
-1. Serve the app locally using `.\start-local.ps1` and open `http://localhost:8000`.
+1. Serve the app locally using the PowerShell command above and open `http://localhost:8000`.
 2. Browse the included sample quizzes in the library.
 3. Select a quiz and click **Start Quiz** to answer questions.
 4. Immediate feedback is shown for multiple-choice questions. Text-input questions are graded when you submit or finish.

@@ -7,6 +7,7 @@ const APP_SHELL = [
   "./icons/icon.svg",
   "./src/app.js",
   "./src/core/backup.js",
+  "./src/core/correction-rendering.js",
   "./src/core/corrections.js",
   "./src/core/deletion-policy.js",
   "./src/core/grading.js",

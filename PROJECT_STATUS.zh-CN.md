@@ -33,7 +33,7 @@ Milestone 1 作为基础基线已完成。Milestone 2-5 的首版实现已落地
 ## 当前发布阻断项
 
 - 尚未完成项目级完整人工验收。
-- 覆盖 M6.0-M6.7 的整体 M6 验收尚未进行；M6.2 到 M6.7 已完成实现，但按设计不做单独验收。
+- 覆盖 M6.0-M6.7 的整体 M6 验收正在进行：Journey 01-03 已通过；Journey 04 的工程修复与自动化证据已完成，但仍待真实浏览器复验；Journey 05-10 尚未验收。
 - M6 的功能开发实现已经完成，不再有后续的 M6.x 子里程碑；但整体 M6 验收本身在完成之前仍是一项发布阻断项。
 - 数据迁移、备份往返、答题进度恢复和破坏性工作流尚未获得正式端到端验证。
 - 仓库保持 private 时，公开 Pages 部署继续暂缓。
@@ -47,15 +47,15 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 215 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure 自动测试通过（M6.7 主体实现 178->206，删除完整性补丁 206->213，SW 预缓存闭包补丁 213->215）。新增覆盖证明：Service Worker `APP_SHELL` 包含了 `src/app.js` 的完整 ESM 静态依赖图且全部资源在磁盘上均存在，确保离线加载完备；Translation 历史条目和状态完全依据数据派生；重新练习基于历史快照；删除依赖解析安全防护。此前全部覆盖继续通过。
+- 221 项 core/interchange/translation/import/session/annotation/corrections/rendering/review/transport/history/retry/deletion/sw-closure 自动测试通过。Journey 04 恢复新增覆盖会直接调用生产批改渲染器，验证精确的批注高亮/badge、安全转义，以及嵌套在 Replace/Delete 范围中的 Comment/Bracket 锚点。此前全部 M6.0-M6.7 覆盖继续通过。
 - **删除完整性收尾补丁**：CI 通过后的复查发现 `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` 忽略了实时补救翻译文档，导致删除 Learner Response 或 Teacher Review 可能让 Translation Library 中仍然存在的补救文档留下无法解析的 provenance——这与 `parseLibraryBackup()` 的要求不一致（后者在每次恢复时都要求实时补救文档的 provenance 必须可解析）。修复方式是明确区分 finalized response 自身的（可以安全无法解析的）历史 provenance，与一份*实时*补救文档的规范性声明：两个分析函数现在都接受 `translationDocuments` 参数，并报告 `dependentRemediationDocumentIds`/`hasBlockingDependents`；只要存在这样的实时依赖，`app.js` 中的删除流程就会直接拒绝删除（弹出提示，不出现确认对话框），而不是级联穿过它。补救文档绝不会作为副作用被自动删除。新增 7 个测试，其中包括一个证明补丁修复前的操作序列会产生无法恢复的备份的回归防护测试，以及一个证明先删除补救文档后再执行的许可删除仍能正常完整备份/恢复的测试。
-- **本地启动脚本端口冲突与验证修复 (M6 验收支持)**：修复了 `start-local.bat`，使其能够动态查找从 `8000` 开始的空闲 TCP 端口，通过运行临时 Python 脚本向 `http://127.0.0.1:%PORT%/` 发送 HTTP 请求并检查响应体中是否包含 'Quiz Studio' 字符来验证服务器是否已成功启动且服务于正确的应用（最多尝试 5 次，使用安全的非交互式 ping 延迟），然后才使用正确的 URL 启动浏览器。同时，将 `sw.js` 升级为 Network-First（v4）策略，实现了 install/activate 事件中的立即客户端接管（`skipWaiting`/`claim`）与旧缓存清除时的客户端自动重定向导航，并将应用依赖闭包中的全部 19 个 ESM 模块完整加入预缓存列表。已在空闲端口、占用端口、重复启动、错误服务器拦截、离线 ESM 依赖闭包以及 M6 UI 场景中完成验证。
+- **标准本地启动入口（M6 验收支持）**：`start-local.bat` 委托给 `start-local.ps1`，固定使用稳定来源 `http://localhost:8000`，端口被占用时直接拒绝启动。仓库自带的 Node 服务器绑定 `127.0.0.1:8000`，以 `Cache-Control: no-store` 提供开发资源，并在打开 QA 前把标准来源返回的 `index.html` 哈希与当前工作树进行比对。已成功执行文档中的 execution-policy-bypass 命令和非交互验证模式；验证进程退出后端口没有残留监听。
 - CI workflow 已存在；已在 `milestone/6.7-history-retry-integration` 分支上通过（PR #6），删除完整性收尾补丁提交后同样通过。
 - 本地浏览器 smoke test 使用预置的真实场景数据（一条带有两条评判相互冲突的批改的作答记录）完整走过了 M6.7 的流程：浏览并按来源/状态/排序筛选 Translation 历史；打开历史详情，确认条目级证据、学习者标记和两条关联批改均可访问；执行一次真实的"针对需要加强的条目重新练习"，确认新的 session 只包含被标记的条目、带有 `materialProvenance.purpose: "retry"`，完成后确认 finalized response 携带重新练习 provenance（`sourceResponseId`/`sourceMaterialId`），而原始记录未受影响；执行"选择条目重新练习"并取消勾选一个条目，确认只有被选中的条目被带入新的练习；从原始记录正向跟随溯源到重新练习记录、再反向跟随回去；删除一条被某个重新练习记录的 `sourceReviewId` 引用的 Teacher Review，确认溯源视图随后正确显示为不可用，而不是崩溃；删除一份带有依赖 finalized 作答记录的翻译文档，确认确认提示中说明了依赖数量，且该记录之后依然可以在历史中完整浏览和重新练习；触发作答记录删除的级联确认，确认提示中正确说明了依赖批改和派生记录的数量，确认后正确地把该记录连同其批改一起删除，同时保留了由它派生出的重新练习记录。同一批流程也抽查确认了英文界面的一致性。
 - 在本次 smoke test 中，发现并修复了一处真实缺陷（未被单元测试捕获，因为它存在于 `app.js` 的 UI glue 代码中而非核心模块）：`deleteLearnerResponseConfirm()` 最初会先写入更新后的 Learner Response 集合，之后才再次读取 `loadTeacherReviews()`；而 `loadTeacherReviews()` 每次调用都会把全部批改重新对照*当前*的作答记录集合做校验——于是它看到了刚刚变成孤儿的批改并抛出异常。修复方式是提前对两个集合都做快照。修复后通过一次独立的干净复现重新验证。
-- **Service Worker 缓存策略升级**：最初 Service Worker 使用 Cache-First 策略，开发迭代或部署更新时需要手动清除浏览器缓存。现已升级：`sw.js` 升级为 Network-First (v4) 策略，并结合 `skipWaiting`/`claim` 实现了立即的客户端接管，从而在服务器运行时页面刷新即可立即获取并使用最新版资源。
+- **Service Worker 缓存策略升级**：生产 PWA 行为继续使用 Network-First、`skipWaiting`/`claim` 和 v5 缓存；在 localhost/loopback 上会移除注册，标准开发服务器还会发送 `Cache-Control: no-store`，确保刷新后能观察到源码修改。
 - 浏览器测试工具无法驱动原生的 `window.confirm()`/`window.prompt()` 对话框；删除和重新练习相关的确认是通过给 `window.confirm` 打补丁来捕获确切的提示文字、并以编程方式接受/拒绝来测试的，这能验证真实的确认逻辑和提示内容，但不能验证原生对话框界面本身。这是延续自此前里程碑的已知测试工具局限，不是产品缺陷。
-- 完整 v1 用户旅程的人工验收尚未完成。
+- 完整 v1 用户旅程的人工验收正在进行：Journey 01-03 PASS；Journey 04 工程修复完成但真实浏览器复验待进行；Journey 05-10 尚未验收。当前下一步是一次连续完成 Journey 04-10 的浏览器验收。
 - 尚未执行干净 clone 验证。
 - GitHub Pages 部署为仅手动触发，并继续暂缓。
 - M6.0 和 M6.1 已验收。M6.2 到 M6.7 已有自动化测试和 smoke test 覆盖；六者的正式验收都按政策推迟到整体 M6 验收——现在 M6.7 已完成，这项验收已不再有阻塞因素。
@@ -107,15 +107,15 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-M6.7（含删除完整性收尾补丁）已完成实现，并通过 PR #6 合并进 `main`，M6 功能开发实现现已全部完成。下一步是覆盖 M6.0-M6.7 的整体 M6 验收，需要用户亲自评审，目前尚未进行。在完成该验收前，不开始 Product Hardening（M7）或 Feature Freeze 工作。
+M6.7 功能开发仍然完成。Journey 04 的纠正实现和自动化恢复证据已完成，但仍需真实浏览器复验；Journey 05-10 仍未验收。下一步是从 Journey 04 到 Journey 10 的一次连续浏览器验收。在完成 M6 整体验收前，不开始 Product Hardening（M7）或 Feature Freeze。
 
 ## 仓库状态
 
-- 默认分支：`main`
+- 默认分支：`main`；当前本地恢复分支：`recovery/m6-acceptance-closure`
 - 远程：`origin`
 - M6.7 开始前已验证的基线：`61cd16f Record M6.6 merge into main`（`main`）
 - M6.7 合并提交：`d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)`（`main`）——由主体实现、PR/CI 状态更新和删除完整性收尾补丁 squash 而成
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步状态：M6.7 已合并进 `main`；本次纯状态文档提交用于记录已完成的合并
+- 同步状态：远端 `main` 已核实位于 `242f229`；恢复分支尚未 push，也没有 PR/远端 CI
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：已为 bugfix/local-launcher-port-conflict 打开 PR #7（commit bb555e9）；本地 CI 通过（215 项测试全部通过）。主线评审通过；等待用户批准后合并。
+- Pull Request 状态：PR #7 对应的提交 `242f229` 已存在于远端 `main`；GitHub 返回的 PR 状态元数据不完整，因此以祖先关系/提交存在性为准。当前没有恢复 PR。
