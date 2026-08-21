@@ -5,6 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { startQuizStudio } from "../src/local-development-bootstrap.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
@@ -99,13 +101,82 @@ test("a legacy cache-first module graph reproduces the pre-bootstrap named-expor
   );
 });
 
-test("the localhost launcher bypasses legacy navigation caches and boot removes control before app import", () => {
+test("the localhost launcher bypasses legacy navigation caches", () => {
   const serverSource = fs.readFileSync(path.join(rootDir, "scripts", "local-server.mjs"), "utf8");
-  const indexSource = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
-
   assert.match(serverSource, /devBoot=/, "Launcher must open a unique localhost URL that misses legacy cache-first navigation entries.");
-  const unregisterIndex = indexSource.indexOf("registration.unregister()");
-  const appImportIndex = indexSource.indexOf('import("./src/app.js")');
-  assert.ok(unregisterIndex >= 0, "Localhost bootstrap must unregister legacy Service Workers without clearing site data.");
-  assert.ok(appImportIndex > unregisterIndex, "Localhost bootstrap must finish Service Worker cleanup before importing app.js.");
+});
+
+test("local boot unregisters legacy control, navigates once, then starts without touching storage", async () => {
+  let unregisterCount = 0;
+  let importCount = 0;
+  let replacementUrl = null;
+  let visibleUrl = null;
+  const forbiddenStorage = new Proxy({}, {
+    get() {
+      throw new Error("Bootstrap must not inspect or mutate persisted application data.");
+    },
+  });
+
+  const firstWindow = {
+    indexedDB: forbiddenStorage,
+    localStorage: forbiddenStorage,
+    location: {
+      hash: "",
+      hostname: "localhost",
+      origin: "http://localhost:8000",
+      pathname: "/",
+      replace(url) { replacementUrl = String(url); },
+      search: "?devBoot=123",
+    },
+    history: { replaceState() { throw new Error("First controlled boot must navigate before changing history."); } },
+  };
+  const controlledNavigator = {
+    serviceWorker: {
+      controller: {},
+      async getRegistrations() {
+        return [{ async unregister() { unregisterCount += 1; return true; } }];
+      },
+    },
+  };
+
+  const firstResult = await startQuizStudio({
+    windowObject: firstWindow,
+    navigatorObject: controlledNavigator,
+    importApp: async () => { importCount += 1; },
+    now: () => 456,
+  });
+
+  assert.deepEqual(firstResult, { navigated: true, started: false });
+  assert.equal(unregisterCount, 1);
+  assert.equal(importCount, 0);
+  assert.equal(replacementUrl, "http://localhost:8000/?devReady=456");
+
+  const secondWindow = {
+    indexedDB: forbiddenStorage,
+    localStorage: forbiddenStorage,
+    location: {
+      hash: "",
+      hostname: "localhost",
+      origin: "http://localhost:8000",
+      pathname: "/",
+      search: "?devReady=456",
+    },
+    history: { replaceState(_state, _title, url) { visibleUrl = url; } },
+  };
+  const cleanNavigator = {
+    serviceWorker: {
+      controller: null,
+      async getRegistrations() { return []; },
+    },
+  };
+
+  const secondResult = await startQuizStudio({
+    windowObject: secondWindow,
+    navigatorObject: cleanNavigator,
+    importApp: async () => { importCount += 1; },
+  });
+
+  assert.deepEqual(secondResult, { navigated: false, started: true });
+  assert.equal(importCount, 1);
+  assert.equal(visibleUrl, "/");
 });

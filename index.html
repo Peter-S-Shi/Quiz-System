@@ -96,34 +96,8 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script type="module">
-      const isLocalDevelopment = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
-      let shouldStartApp = true;
-
-      if (isLocalDevelopment && "serviceWorker" in navigator) {
-        try {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          const hadLegacyControl = Boolean(navigator.serviceWorker.controller || registrations.length);
-          await Promise.all(registrations.map((registration) => registration.unregister()));
-
-          if (hadLegacyControl) {
-            shouldStartApp = false;
-            const cleanNavigation = new URL("/", window.location.origin);
-            cleanNavigation.searchParams.set("devReady", Date.now().toString());
-            window.location.replace(cleanNavigation);
-          }
-        } catch {
-          // A constrained browser may deny Service Worker inspection. app.js still keeps its
-          // localhost unregistration safeguard, and no persisted application data is changed.
-        }
-      }
-
-      if (shouldStartApp) {
-        if (isLocalDevelopment && window.location.search) {
-          window.history.replaceState(null, "", `${window.location.pathname}${window.location.hash}`);
-        }
-
-        await import("./src/app.js");
-      }
+      import { startQuizStudio } from "./src/local-development-bootstrap.js";
+      await startQuizStudio();
     </script>
   </body>
 </html>
