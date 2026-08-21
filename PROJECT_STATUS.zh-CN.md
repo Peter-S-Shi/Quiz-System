@@ -116,8 +116,7 @@ M6.0–M6.7 功能实现、综合人工验收（Journeys 01–10：PASS）以及
 - M6.7 开始前已验证的基线：`61cd16f Record M6.6 merge into main`（`main`）
 - M6.7 合并提交：`d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)`（`main`）——由主体实现、PR/CI 状态更新和删除完整性收尾补丁 squash 而成
 - PR #10 之前的 main 基线：`eb5b70b Merge pull request #9 from Peter-S-Shi/recovery/m6-comment-scope-rollback`（`main`）
-- 当前分支：`fix/local-dev-cache-coherence`
-- 当前 Pull Request：[PR #10](https://github.com/Peter-S-Shi/Quiz-System/pull/10)（状态：开启，CI 测试全部通过/绿色，等待人工评审；未自动合并）
+- PR #10（本地开发模块缓存一致性与规范源修复）：已合并入 `main` 并成为当前 `main` 基线的一部分
 - 历史 PR 状态：Draft PR #8 已关闭/未合并/被取代；PR #9 已合并至 `main`（`eb5b70b`）
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理

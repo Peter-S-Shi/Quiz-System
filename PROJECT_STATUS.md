@@ -116,8 +116,7 @@ M6.0–M6.7 feature implementation, comprehensive human acceptance (Journeys 01�
 - Verified baseline before M6.7: `61cd16f Record M6.6 merge into main` (`main`)
 - M6.7 merge commit: `d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)` (`main`) — squash of the main implementation, the PR/CI status update, and the deletion-integrity closure patch
 - Baseline before PR #10: `eb5b70b Merge pull request #9 from Peter-S-Shi/recovery/m6-comment-scope-rollback` (`main`)
-- Current branch: `fix/local-dev-cache-coherence`
-- Current Pull Request: [PR #10](https://github.com/Peter-S-Shi/Quiz-System/pull/10) (status: open, CI: pass/green, pending review; not merged)
+- PR #10 (local development cache coherence & canonical origin fix): merged into `main` and forms part of the current `main` baseline
 - Historical PRs: PR #8 is closed / not merged / superseded; PR #9 is merged into `main` (`eb5b70b`)
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: assumed private based on current project policy and deferred Pages decision
