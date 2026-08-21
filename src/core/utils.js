@@ -25,3 +25,12 @@ export function parseTags(value) {
 export function safeFileName(value) {
   return String(value || "quiz-paper").replace(/[\\/:*?"<>|]+/g, "-").slice(0, 80);
 }
+
+export function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}

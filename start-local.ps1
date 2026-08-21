@@ -1,4 +1,4 @@
-# Quiz Studio Local Development Launcher
+﻿# Quiz Studio Local Development Launcher
 param(
     [switch]$NoBrowser,
     [switch]$VerifyAndExit
@@ -9,14 +9,14 @@ $ErrorActionPreference = "Stop"
 $repoDir = $PSScriptRoot
 Set-Location -Path $repoDir
 
-Write-Host "Starting Quiz Studio local development server..." -ForegroundColor Cyan
-Write-Host "Repository directory: $repoDir" -ForegroundColor Gray
+Write-Host "Starting Quiz Studio local development server... / 正在启动 Quiz Studio 本地开发服务器……" -ForegroundColor Cyan
+Write-Host "Repository directory / 仓库目录: $repoDir" -ForegroundColor Gray
 
 # Detect Node.js, which is also used by the repository validation commands.
 $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
 if (-not $nodeCmd) {
-    Write-Host "Error: Node.js was not found on PATH." -ForegroundColor Red
-    Write-Host "Install Node.js or add it to PATH to use start-local.ps1." -ForegroundColor Yellow
+    Write-Host "Error: Node.js was not found on PATH. / 错误：PATH 中未找到 Node.js。" -ForegroundColor Red
+    Write-Host "Install Node.js or add it to PATH to use start-local.ps1. / 请安装 Node.js 或将其加入 PATH。" -ForegroundColor Yellow
     exit 1
 }
 
@@ -36,8 +36,8 @@ try {
 }
 
 if ($portOccupied) {
-    Write-Host "Error: Port $port is already in use by another process." -ForegroundColor Red
-    Write-Host "Please stop the process on port $port before running start-local.ps1." -ForegroundColor Yellow
+    Write-Host "Error: Port $port is already in use. / 错误：端口 $port 已被占用。" -ForegroundColor Red
+    Write-Host "Stop that process before running start-local.ps1. / 请先停止占用该端口的进程。" -ForegroundColor Yellow
     exit 1
 }
 

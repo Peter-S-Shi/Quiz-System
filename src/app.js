@@ -96,7 +96,7 @@ import {
   isQuestionReady,
   prepareQuizQuestion,
 } from "./core/question-registry.js";
-import { makeId, parseTags, safeFileName } from "./core/utils.js";
+import { escapeHtml, makeId, parseTags, safeFileName } from "./core/utils.js";
 import { STORAGE_KEYS, loadJson, removeStoredValue, saveJson } from "./storage/local-storage.js";
 
 const {
@@ -3189,7 +3189,7 @@ function renderCorrectionWorkspace(responseId) {
   bindCorrectionWorkspaceEvents(response, item, answerText, availableReviews);
 }
 
-export function renderCorrectionRow(correction) {
+function renderCorrectionRow(correction) {
   const label = correction.operation === "style" ? t(`review.styleType.${correction.styleType}`) : t(`review.operation.${correction.operation}`);
   let detailHtml = "";
   if (correction.operation === "comment") {
@@ -4265,15 +4265,6 @@ function formatDate(value) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
 
 function showToast(message) {

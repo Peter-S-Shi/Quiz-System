@@ -87,10 +87,10 @@ server.listen(port, host, async () => {
       throw new Error("Canonical origin did not return this worktree's exact index");
     }
 
-    console.log(`${verifyAndExit ? "Verified Quiz Studio at" : "Quiz Studio is running at"} ${url}`);
-    console.log(`Verified repository directory: ${root}`);
-    console.log("Local development mode: Service Worker and HTTP caching are disabled on localhost.");
-    if (!verifyAndExit) console.log("Press Ctrl+C or close this window to stop the server.");
+    console.log(`${verifyAndExit ? "Verified Quiz Studio at / 已验证 Quiz Studio" : "Quiz Studio is running at / Quiz Studio 正在运行"} ${url}`);
+    console.log(`Verified repository directory / 已验证仓库目录: ${root}`);
+    console.log("Local development mode: Service Worker and HTTP caching are disabled on localhost. / 本地开发模式已在 localhost 禁用 Service Worker 与 HTTP 缓存。");
+    if (!verifyAndExit) console.log("Press Ctrl+C or close this window to stop the server. / 按 Ctrl+C 或关闭窗口即可停止服务器。");
 
     if (verifyAndExit) {
       server.close();
@@ -101,7 +101,7 @@ server.listen(port, host, async () => {
       spawn("explorer.exe", [url], { detached: true, stdio: "ignore" }).unref();
     }
   } catch (error) {
-    console.error(`Server verification failed: ${error.message}`);
+    console.error(`Server verification failed / 服务器验证失败: ${error.message}`);
     server.close(() => { process.exitCode = 1; });
   }
 });
