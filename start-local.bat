@@ -48,6 +48,7 @@ if not "%PORT_FREE%"=="0" (
     echo Please close the process using port 8000 ^(such as an existing Quiz Studio server^) and run start-local.bat again.
     echo.
     echo (If you intentionally need a different port, run: start-local.bat ^<port^>^)
+    echo (Note: A different port is a different browser origin and will not access existing localhost:8000 localStorage data.^)
   ) else (
     echo Error: Port %PORT% is already in use by another process.
     echo Please close the process using port %PORT% and run start-local.bat again.

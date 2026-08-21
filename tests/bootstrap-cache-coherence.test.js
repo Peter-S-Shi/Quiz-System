@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   isLocalDevelopmentHost,
+  getDevCycleNonce,
   cleanupLocalDevelopmentServiceWorker,
 } from "../src/bootstrap.js";
 
@@ -25,7 +26,15 @@ test("isLocalDevelopmentHost correctly distinguishes local development origins f
   assert.equal(isLocalDevelopmentHost("custom-domain.org"), false);
 });
 
-test("cleanupLocalDevelopmentServiceWorker unregisters SWs and clears only quiz-studio caches", async () => {
+test("getDevCycleNonce extracts the nonce from query parameters correctly", () => {
+  assert.equal(getDevCycleNonce("?dev=123456"), "123456");
+  assert.equal(getDevCycleNonce("?other=1&dev=abc_789&foo=bar"), "abc_789");
+  assert.equal(getDevCycleNonce("?other=1"), null);
+  assert.equal(getDevCycleNonce(""), null);
+  assert.equal(getDevCycleNonce(null), null);
+});
+
+test("cleanupLocalDevelopmentServiceWorker unregisters SWs and clears only quiz-studio- prefixed caches", async () => {
   const unregistered = [];
   const mockServiceWorker = {
     controller: null,
@@ -45,8 +54,9 @@ test("cleanupLocalDevelopmentServiceWorker unregisters SWs and clears only quiz-
     keys: async () => [
       "quiz-studio-v1",
       "quiz-studio-v4",
-      "unrelated-third-party-cache",
       "quiz-studio-precache",
+      "quiz-studio_legacy", // not starting with quiz-studio-
+      "unrelated-third-party-cache",
     ],
     delete: async (name) => {
       deletedCaches.push(name);
@@ -66,19 +76,20 @@ test("cleanupLocalDevelopmentServiceWorker unregisters SWs and clears only quiz-
 
   let reloaded = false;
   const mockLocation = {
+    search: "?dev=cycle_1",
     reload: () => {
       reloaded = true;
     },
   };
 
-  const reloadTriggered = await cleanupLocalDevelopmentServiceWorker({
+  const result = await cleanupLocalDevelopmentServiceWorker({
     serviceWorker: mockServiceWorker,
     caches: mockCaches,
     location: mockLocation,
     sessionStorage: mockSessionStorage,
   });
 
-  assert.equal(reloadTriggered, false);
+  assert.deepEqual(result, { status: "clean" });
   assert.equal(reloaded, false);
   assert.deepEqual(unregistered, ["http://localhost:8000/"]);
   assert.deepEqual(deletedCaches.sort(), [
@@ -88,7 +99,7 @@ test("cleanupLocalDevelopmentServiceWorker unregisters SWs and clears only quiz-
   ]);
 });
 
-test("cleanupLocalDevelopmentServiceWorker performs at most one controlled reload when controller is active", async () => {
+test("cleanupLocalDevelopmentServiceWorker scopes reload guard to nonce, avoids loops, and blocks persistent controllers", async () => {
   const mockServiceWorker = {
     controller: { scriptURL: "http://localhost:8000/sw.js" },
     getRegistrations: async () => [],
@@ -109,12 +120,13 @@ test("cleanupLocalDevelopmentServiceWorker performs at most one controlled reloa
 
   let reloadCount = 0;
   const mockLocation = {
+    search: "?dev=nonce_alpha",
     reload: () => {
       reloadCount++;
     },
   };
 
-  // First run: active controller present, not yet detached -> triggers reload
+  // 1. First run on nonce_alpha: active controller present -> triggers one reload
   const firstRun = await cleanupLocalDevelopmentServiceWorker({
     serviceWorker: mockServiceWorker,
     caches: mockCaches,
@@ -122,20 +134,48 @@ test("cleanupLocalDevelopmentServiceWorker performs at most one controlled reloa
     sessionStorage: mockSessionStorage,
   });
 
-  assert.equal(firstRun, true);
+  assert.deepEqual(firstRun, { status: "reloading" });
   assert.equal(reloadCount, 1);
-  assert.equal(mockSessionStorage.getItem("qs_sw_detached"), "1");
+  assert.equal(mockSessionStorage.getItem("qs_sw_detached_nonce_alpha"), "1");
 
-  // Second run: session marked as detached -> does not loop reload
-  const secondRun = await cleanupLocalDevelopmentServiceWorker({
+  // 2. Second run on same nonce_alpha with PERSISTENT controller: must NOT reload loop and must be BLOCKED
+  const secondRunPersistent = await cleanupLocalDevelopmentServiceWorker({
     serviceWorker: mockServiceWorker,
     caches: mockCaches,
     location: mockLocation,
     sessionStorage: mockSessionStorage,
   });
 
-  assert.equal(secondRun, false);
+  assert.equal(secondRunPersistent.status, "blocked");
+  assert.equal(reloadCount, 1); // No second reload triggered for same nonce
+
+  // 3. Second run on same nonce_alpha when controller is successfully detached (normal case): clean status
+  const detachedServiceWorker = {
+    controller: null,
+    getRegistrations: async () => [],
+  };
+  const secondRunDetached = await cleanupLocalDevelopmentServiceWorker({
+    serviceWorker: detachedServiceWorker,
+    caches: mockCaches,
+    location: mockLocation,
+    sessionStorage: mockSessionStorage,
+  });
+
+  assert.deepEqual(secondRunDetached, { status: "clean" });
   assert.equal(reloadCount, 1);
+
+  // 4. New launcher invocation with new nonce (nonce_beta): allowed to perform its own fresh detachment cycle
+  mockLocation.search = "?dev=nonce_beta";
+  const newCycleRun = await cleanupLocalDevelopmentServiceWorker({
+    serviceWorker: mockServiceWorker, // active controller present again in future development cycle
+    caches: mockCaches,
+    location: mockLocation,
+    sessionStorage: mockSessionStorage,
+  });
+
+  assert.deepEqual(newCycleRun, { status: "reloading" });
+  assert.equal(reloadCount, 2); // Allowed to perform fresh detachment reload for new nonce
+  assert.equal(mockSessionStorage.getItem("qs_sw_detached_nonce_beta"), "1");
 });
 
 test("Python dev-server serves static files with no-store / no-cache response headers", async () => {
@@ -214,4 +254,3 @@ test("Python dev-server exits with code 1 and error message if target port is al
     await new Promise((resolve) => blocker.close(resolve));
   }
 });
-
