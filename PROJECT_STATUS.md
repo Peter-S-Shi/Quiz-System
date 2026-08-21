@@ -118,4 +118,4 @@ M6.7 (including the deletion-integrity closure patch) is implementation complete
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Synchronization status: M6.7 is merged into `main`; this status-only follow-up records the completed merge
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #7 opened for bugfix/local-launcher-port-conflict (commit 989f769); CI passed locally with 213 tests passing. Awaiting review; merge deferred per acceptance policy.
+- Pull request status: PR #7 opened for bugfix/local-launcher-port-conflict (commit bb555e9); CI passed locally with 215 tests passing. Mainline review passed; merge deferred awaiting user approval.
