@@ -63,7 +63,7 @@ set "NONCE=%RANDOM%%RANDOM%"
 set "URL=http://localhost:%PORT%/?dev=%NONCE%"
 
 :: Launch dev-server on the selected port asynchronously with no-store cache headers
-start "Quiz Studio Server" cmd /k "%PYTHON_CMD%" "scripts\dev-server.py" %PORT%
+start "Quiz Studio Server" cmd /k %PYTHON_CMD% scripts\dev-server.py %PORT%
 
 :: Verify that the server actually started listening on %PORT% and is serving Quiz Studio
 echo Starting local server on port %PORT%...
