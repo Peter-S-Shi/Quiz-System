@@ -116,6 +116,6 @@ M6.7 功能开发仍然完成。Journey 04 的纠正实现和自动化恢复证�
 - M6.7 开始前已验证的基线：`61cd16f Record M6.6 merge into main`（`main`）
 - M6.7 合并提交：`d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)`（`main`）——由主体实现、PR/CI 状态更新和删除完整性收尾补丁 squash 而成
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 同步状态：远端 `main` 已核实位于 `242f229`；恢复分支尚未 push，也没有 PR/远端 CI
-- private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #7 对应的提交 `242f229` 已存在于远端 `main`；GitHub 返回的 PR 状态元数据不完整，因此以祖先关系/提交存在性为准。当前没有恢复 PR。
+- 同步状态：远端 `main` 已核实位于 `242f229`；`recovery/m6-acceptance-closure` 已 push，并创建 Draft PR #8。恢复分支的 CI 已触发；记录此状态时仍在运行。
+- private 仓库状态：恢复分支发布前已通过 GitHub 核实为 Private
+- Pull Request 状态：PR #7 对应的提交 `242f229` 已存在于远端 `main`；Draft PR #8 包含 M6 验收恢复工作，并会在 Journey 04 完成真实浏览器复验、Journeys 05–10 完成验收之前保持不可合并状态。
