@@ -14,6 +14,10 @@ M6.7 is the last feature-development sub-milestone of M6. M6 feature-development
 
 The user has intentionally deferred individual formal user acceptance for M6.2 through M6.7. Implementation review, regression testing, CI, and scope review still apply to each sub-milestone, but one comprehensive M6 acceptance will happen now that M6.7 is complete. M6.0 and M6.1 were already individually accepted before this policy change and remain historically accepted; that is not being revised retroactively. Do not read "implementation complete / M6-wide acceptance deferred" as equivalent to accepted.
 
+## M6 Product Gate Scope Reduction
+
+Span Comment creation and its acceptance requirement are removed from the current M6 scope. The Correction Workspace no longer exposes Add Comment. Historical `comment` correction records remain readable through the existing validation/rendering path and are not migrated, rewritten, or deleted. Strikethrough creation is also absent, while historical `strikethrough` records remain compatible. Journey 04 now covers Bracket, other style/content corrections, real Delete, Judgment / Suggested Revision, and save -> leave -> reopen persistence.
+
 ## Current Release Scope
 
 The current-version scope includes the Milestone 1-5 baseline and the approved Milestone 6 line. Translation Practice remains M6's primary new learner workflow. M6.0 Open Teaching Interchange and M6.1 Translation Domain and Persistence Foundation are accepted. M6.2 Translation Library and Material Import/Export, M6.3 Translation Practice and Session Recovery, M6.4 Learner Answer Marking and Annotation Foundation, M6.5 Rich Correction / Revision Workspace, M6.6 External Teacher Round Trip, and M6.7 History, Retry, Portability, and Whole-Product Integration are implementation complete with M6-wide acceptance deferred. M6.7 turns the completed Translation/Open Teaching feature set into a durable product: Translation History browsing across every finalized response (independent of whether the source document still exists), explicit retry (entire response / selected items / needs-work items) that always produces new independent evidence, backward/forward lineage navigation, and explicit, warned deletion for Translation Documents, Learner Responses, and Teacher Reviews. M6 remains local-first and does not require embedded AI APIs, paid inference, or network access.
@@ -33,8 +37,8 @@ Feature Freeze can begin only after the deferred M6-wide acceptance is complete,
 ## Open Release Blockers
 
 - Full project-wide manual acceptance has not been completed.
-- The comprehensive M6-wide acceptance covering M6.0-M6.7 has not happened yet; M6.2 through M6.7 are implementation complete but not individually accepted by design.
-- M6 feature-development implementation is complete; no further M6.x sub-milestones remain, but the comprehensive M6-wide acceptance itself is a release blocker until performed.
+- The comprehensive M6-wide acceptance is in progress: Journeys 01-03 were previously accepted; Journey 04 is pending reacceptance under the reduced Product Gate scope; Journeys 05-10 remain stopped and unaccepted.
+- M6 feature-development implementation is complete; the reduced-scope Journey 04 and remaining M6-wide acceptance are release blockers until performed.
 - Data migration, backup round-trip, active-session recovery, and destructive workflows have not yet received formal end-to-end verification.
 - Public Pages deployment remains deferred while the repository is private.
 - A release candidate and final clean-environment verification do not yet exist.
@@ -47,7 +51,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Verification Status
 
-- 215 automated core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure tests pass (178 -> 206 for the main M6.7 implementation, 206 -> 213 for deletion integrity, 213 -> 215 for SW precache closure). New coverage proves: Service Worker `APP_SHELL` contains the full static ESM dependency graph of `src/app.js` and all assets exist on disk for complete offline operation; Translation History entries and status derive correctly from Learner Response/Teacher Review data alone; retry builds from historical snapshots; and lineage resolution handles deleted records safely. All earlier M6.0-M6.6 coverage remains green.
+- 217 automated core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure tests pass. Two Product Gate regressions prove that Bracket emits one pair across internally divided ranges and that the current Correction Workspace omits Comment/Strikethrough creation while retaining real Delete. Historical `comment` and `strikethrough` validation remains green; all earlier M6.0-M6.7 coverage continues to pass.
 - **Deletion-integrity closure patch**: a post-approval review found that `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` ignored live remediation Translation Documents, so deleting a Learner Response or Teacher Review could leave a still-live remediation document in the Translation Library with unresolvable provenance — inconsistent with `parseLibraryBackup()`, which correctly requires a live remediation document's provenance to resolve on every restore. Fixed by distinguishing a finalized response's own (safely-unresolvable) historical provenance from a *live* remediation document's canonical claim: both analysis functions now accept `translationDocuments` and report `dependentRemediationDocumentIds`/`hasBlockingDependents`, and the delete flows in `app.js` refuse the deletion outright (a toast warning, no confirmation dialog) while such a live dependency exists, rather than cascading through it. Remediation documents are never auto-deleted as a side effect. Added 7 tests, including a regression guard proving the pre-patch sequence would have produced an unrestorable backup, and a full backup round trip proving a permitted deletion (remediation document removed first) still restores cleanly.
 - **Local launcher port conflict and verification fix (M6 acceptance-support)**: Fixed `start-local.bat` to dynamically locate a free TCP port starting from `8000`, verify that the server has successfully started listening and is serving the correct app content (checking for 'Quiz Studio' in response body) by writing and running a temporary Python HTTP client script (polling up to 5 attempts, using a safe non-interactive ping delay), and only then launch the browser with the correct URL. Also upgraded `sw.js` to Network-First (v4) with immediate active takeover (`skipWaiting`/`claim`), auto-navigation upgrade on legacy cache removal, and complete precaching of all 19 ESM modules in the app dependency closure. Verified in free-port, occupied-port, repeated-launch, incorrect-server-rejection, offline ESM closure, and M6 UI scenarios.
 - CI workflow exists; it passed on the `milestone/6.7-history-retry-integration` branch (PR #6), including after the deletion-integrity closure patch.
@@ -55,10 +59,10 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 - During this smoke test, found and fixed one real bug (not caught by unit tests, since it lives in `app.js` UI glue rather than a core module): `deleteLearnerResponseConfirm()` originally wrote the updated Learner Response collection before reading `loadTeacherReviews()` again, and `loadTeacherReviews()` re-validates every review against the *current* response collection on every call — so it saw the just-orphaned reviews and threw. Fixed by snapshotting both collections up front. Re-verified after the fix with a clean isolated reproduction.
 - **Service worker cache upgrade**: Originally, the service worker used a cache-first strategy which required manual cache clearing to pick up new deployments or changes. This is resolved: `sw.js` was upgraded to Network-First (v4) with immediate takeover triggers (`skipWaiting`/`claim`), ensuring updates are fetched immediately on reload when the server is running.
 - The browser harness cannot drive native `window.confirm()`/`window.prompt()` dialogs; deletion and retry confirmations were smoke-tested by monkey-patching `window.confirm` to capture the exact message text and to accept/decline programmatically, which exercises the real confirmation logic and message content but not the native dialog UI itself. This is a known automation-harness limitation carried over from earlier milestones, not a product defect.
-- Manual acceptance for the full v1 journey is not complete.
+- Manual acceptance for the full v1 journey is not complete. Journeys 01-03 are accepted; Journey 04 is pending under the reduced scope; Journeys 05-10 remain stopped.
 - Clean clone verification has not been performed.
 - GitHub Pages deployment is manual-only and deferred.
-- M6.0 and M6.1 are accepted. M6.2 through M6.7 have automated and smoke-test coverage; formal acceptance for all six is intentionally deferred to the comprehensive M6-wide review, which is now unblocked since M6.7 is complete.
+- M6.0 and M6.1 are accepted. M6.2 through M6.7 have automated and smoke-test coverage; the comprehensive review is currently blocked at the reduced-scope Journey 04 reacceptance gate.
 
 ## Known Risks
 
@@ -88,8 +92,8 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 - Translation Practice session recovery across a genuine browser restart (refresh-based recovery was verified; full browser-close/reopen was not separately tested), including a retry session.
 - Manual inspection of a downloaded Translation Learner Response JSON file's on-disk content in a real browser.
 - Learner annotation marking, review, removal, History browsing, and retry item-selection on touch/mobile viewports, where text-selection and multi-checkbox ergonomics differ from desktop pointer/keyboard interaction.
-- Rich correction authoring (style/insert/replace/delete/comment selection and the color picker) on touch/mobile viewports.
-- Manual inspection of a real browser's native `window.prompt()`/`window.confirm()` dialogs for Insert/Replace/Comment text entry and for retry/deletion confirmations.
+- In-scope rich correction authoring (style/insert/replace/delete and the color picker) on touch/mobile viewports.
+- Manual inspection of a real browser's native `window.prompt()`/`window.confirm()` dialogs for Insert/Replace text entry and for retry/deletion confirmations.
 - A real end-to-end round trip using an actual external human reviewer or a real AI assistant/LLM session (not a synthetic fixture) to produce a Teacher Review or remediation Translation Document from an exported request file.
 - Native OS file-picker behavior for the Teacher Review and remediation-document file inputs (the automated smoke test dispatched a synthetic `File`/`change` event rather than driving a real picker dialog).
 - Very large review-request/remediation-request export files (many items, many corrections) have not been tested for practical file size or the target external tool's context/input limits.
@@ -107,7 +111,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Next Engineering Objective
 
-M6.7 (including the deletion-integrity closure patch) is implementation complete and merged into `main` through PR #6, completing M6 feature-development implementation. The comprehensive M6-wide acceptance (covering M6.0-M6.7) is the next step and requires the user's own review; it has not been performed. Do not begin Product Hardening (M7) or Feature Freeze work before that acceptance is complete.
+M6.7 remains implementation complete. The next step is only Journey 04 reacceptance under the reduced Product Gate scope: Bracket, style/content corrections, Delete, Judgment / Suggested Revision, and save/reopen persistence. Do not begin Journey 05, Product Hardening (M7), or Feature Freeze work before Journey 04 is accepted and the M6 acceptance sequence resumes.
 
 ## Repository State
 
@@ -116,6 +120,6 @@ M6.7 (including the deletion-integrity closure patch) is implementation complete
 - Verified baseline before M6.7: `61cd16f Record M6.6 merge into main` (`main`)
 - M6.7 merge commit: `d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)` (`main`) — squash of the main implementation, the PR/CI status update, and the deletion-integrity closure patch
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
-- Synchronization status: M6.7 is merged into `main`; this status-only follow-up records the completed merge
+- Recovery baseline: exact remote `main` commit `242f2291df1b2ca2fcaa094308f8581a5579df57`; current work is on `recovery/m6-comment-scope-rollback`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #7 opened for bugfix/local-launcher-port-conflict (commit bb555e9); CI passed locally with 215 tests passing. Mainline review passed; merge deferred awaiting user approval.
+- Pull request status: historical Draft PR #8 and `recovery/m6-acceptance-closure` are preserved as backup and must not be merged. No merge is authorized for the fresh recovery branch.

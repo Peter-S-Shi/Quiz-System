@@ -354,10 +354,8 @@ const locales = {
       insert: "插入",
       replace: "替换",
       delete: "删除/划掉",
-      addComment: "添加批注",
       insertPrompt: "输入要插入的文字",
       replacePrompt: "输入替换后的文字",
-      commentPrompt: "输入批注内容",
       preview: "批改后预览",
       noCorrections: "还没有批改",
       judgment: "评判（可选）",
@@ -781,10 +779,8 @@ const locales = {
       insert: "Insert",
       replace: "Replace",
       delete: "Delete",
-      addComment: "Add comment",
       insertPrompt: "Enter the text to insert",
       replacePrompt: "Enter the replacement text",
-      commentPrompt: "Enter the comment",
       preview: "Corrected preview",
       noCorrections: "No corrections yet",
       judgment: "Judgment (optional)",
@@ -3140,7 +3136,6 @@ function renderCorrectionWorkspace(responseId) {
         <button class="small-button" type="button" data-style="bold">${t("review.bold")}</button>
         <button class="small-button" type="button" data-style="italic">${t("review.italic")}</button>
         <button class="small-button" type="button" data-style="underline">${t("review.underline")}</button>
-        <button class="small-button" type="button" data-style="strikethrough">${t("review.strikethrough")}</button>
         <button class="small-button" type="button" data-style="highlight">${t("review.highlight")}</button>
         <button class="small-button" type="button" data-style="bracket">${t("review.bracket")}</button>
         <select id="correctionColorSelect" aria-label="${t("review.textColor")}">
@@ -3151,7 +3146,6 @@ function renderCorrectionWorkspace(responseId) {
         <button class="small-button" type="button" id="applyInsertCorrection">${t("review.insert")}</button>
         <button class="small-button" type="button" id="applyReplaceCorrection">${t("review.replace")}</button>
         <button class="small-button" type="button" id="applyDeleteCorrection">${t("review.delete")}</button>
-        <button class="small-button" type="button" id="applyCommentCorrection">${t("review.addComment")}</button>
       </div>
       <div class="correction-preview">
         <span class="meta-text">${t("review.preview")}</span>
@@ -3191,18 +3185,20 @@ function renderCorrectionWorkspace(responseId) {
 
 function renderProjectionHtml(segments) {
   return segments.map((segment) => {
+    const bracketsBefore = "[".repeat(segment.bracketsBefore || 0);
+    const bracketsAfter = "]".repeat(segment.bracketsAfter || 0);
     if (segment.type === "deleted" || segment.type === "replaced-original") {
-      return `<span class="correction-deleted">${escapeHtml(segment.text)}</span>`;
+      return `${bracketsBefore}<span class="correction-deleted">${escapeHtml(segment.text)}</span>${bracketsAfter}`;
     }
     if (segment.type === "inserted") {
       const colorClass = segment.color ? ` correction-color-${segment.color}` : "";
-      return `<span class="correction-inserted${colorClass}">${escapeHtml(segment.text)}</span>`;
+      return `${bracketsBefore}<span class="correction-inserted${colorClass}">${escapeHtml(segment.text)}</span>${bracketsAfter}`;
     }
     const classes = segment.styles.map((style) => (style.styleType === "color"
       ? `correction-color-${style.color}`
       : `correction-style-${style.styleType}`));
     const title = segment.comments.length ? ` title="${escapeHtml(segment.comments.join(" | "))}"` : "";
-    return `<span class="${classes.join(" ")}"${title}>${escapeHtml(segment.text)}</span>`;
+    return `${bracketsBefore}<span class="${classes.join(" ")}"${title}>${escapeHtml(segment.text)}</span>${bracketsAfter}`;
   }).join("");
 }
 
@@ -3254,13 +3250,12 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
     }
     applyStyleCorrection(item.id, answerText, "color", color);
   });
-  ["applyInsertCorrection", "applyReplaceCorrection", "applyDeleteCorrection", "applyCommentCorrection"].forEach((id) => {
+  ["applyInsertCorrection", "applyReplaceCorrection", "applyDeleteCorrection"].forEach((id) => {
     document.getElementById(id).addEventListener("mousedown", (event) => event.preventDefault());
   });
   document.getElementById("applyInsertCorrection").addEventListener("click", () => applyInsertCorrection(item.id, answerText));
   document.getElementById("applyReplaceCorrection").addEventListener("click", () => applyReplaceCorrection(item.id, answerText));
   document.getElementById("applyDeleteCorrection").addEventListener("click", () => applyDeleteCorrection(item.id, answerText));
-  document.getElementById("applyCommentCorrection").addEventListener("click", () => applyCommentCorrection(item.id, answerText));
   document.querySelectorAll("[data-remove-correction]").forEach((button) => {
     button.addEventListener("click", () => removeWorkspaceCorrection(item.id, button.dataset.removeCorrection));
   });
@@ -3348,19 +3343,6 @@ function applyDeleteCorrection(itemId, answerText) {
     return;
   }
   applyWorkspaceCorrection(itemId, answerText, { operation: "delete", start, end, anchoredText: answerText.slice(start, end) });
-}
-
-function applyCommentCorrection(itemId, answerText) {
-  const textarea = document.getElementById("correctionAnswerViewer");
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  if (start === end) {
-    showToast(t("toast.correctionSelectionRequired"));
-    return;
-  }
-  const text = window.prompt(t("review.commentPrompt"), "");
-  if (!text) return;
-  applyWorkspaceCorrection(itemId, answerText, { operation: "comment", start, end, anchoredText: answerText.slice(start, end), text });
 }
 
 function applyWorkspaceCorrection(itemId, answerText, draft) {
