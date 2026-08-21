@@ -118,4 +118,4 @@ M6.7（含删除完整性收尾补丁）已完成实现，并通过 PR #6 合并
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - 同步状态：M6.7 已合并进 `main`；本次纯状态文档提交用于记录已完成的合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #6 已在用户明确批准后 squash merge；已准备好用于 M6 验收评审的本地启动脚本 bug 修复分支 `bugfix/local-launcher-port-conflict`。
+- Pull Request 状态：已为 bugfix/local-launcher-port-conflict 打开 PR #7（commit 989f769）；本地 CI 通过（213 项测试全部通过）。等待评审；按验收政策暂不合并。
