@@ -16,7 +16,7 @@ UI Productization: Layered Paper Study Desk（分层纸质研习台：设计规�
 - **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮、可拖拽侧边栏，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好、侧边栏宽度）。
 - **核心做题与研习纸面**：客观题练习与翻译练习重构为停靠在桌面上的连续手稿纸（Laid Paper Sheet），提供有机物理翻页动效、铅笔书写摩擦音效，以及匹配题逐对独立状态判定与内联正确答案提示。
 - **教师批改台**：批改工作区重构为单张连续纸面批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
-- **离线与测试闭包**：全量 238 项自动化测试（237 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败），包含 UI 偏好持久化测试、轻量偏好设置对话框与完整的 Service Worker ESM 离线预缓存闭包。
+- **离线与测试闭包**：全量 239 项自动化测试（238 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败），包含 UI 偏好持久化测试、轻量偏好设置对话框与完整的 Service Worker ESM 离线预缓存闭包。
 - **Human Acceptance Gate**：Final Human Acceptance Gate 已执行并通过（PASS）。
 
 ## 验收政策（历史记录）
@@ -119,4 +119,4 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；PR #11 已以 `6b38c40` 合并，BAT CRLF 后续修复 PR #12 已以 `6643a1b` 合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #14（`ui/layered-paper-productization`）已完成 Pre-Freeze UI Productization 并通过 Final Human Acceptance Gate，具备全量 238 项自动化测试：237 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败与 GitHub CI PASS；等待执行 Whole-Product Feature Complete Review V2。历史 PR #11 与 PR #12 保持已合并至 `main`。历史 Draft PR #10 保持 Closed/Superseded。
+- Pull Request 状态：PR #14（`ui/layered-paper-productization`）已完成 Pre-Freeze UI Productization 并通过 Final Human Acceptance Gate，具备全量 239 项自动化测试：238 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败与 GitHub CI PASS；等待执行 Whole-Product Feature Complete Review V2。历史 PR #11 与 PR #12 保持已合并至 `main`。历史 Draft PR #10 保持 Closed/Superseded。

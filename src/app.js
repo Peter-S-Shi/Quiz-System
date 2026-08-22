@@ -1,7 +1,12 @@
 import { formatAnswer, gradeQuestion } from "./core/grading.js";
 import { shouldRegisterProductionServiceWorker } from "./core/service-worker-policy.js";
 import { createLibraryBackup, parseLibraryBackup } from "./core/backup.js";
-import { loadUiPreferences, saveUiPreferences } from "./core/ui-preferences.js";
+import {
+  DEFAULT_SIDEBAR_WIDTH,
+  clampSidebarWidth,
+  loadUiPreferences,
+  saveUiPreferences,
+} from "./core/ui-preferences.js";
 import { studioAudio } from "./core/audio-engine.js";
 import {
   CORRECTION_COLORS,
@@ -129,6 +134,7 @@ const locales = {
       language: "界面语言",
       skip: "跳到主要内容",
       close: "关闭",
+      resizeSidebar: "调整侧边栏宽度",
     },
     preferences: {
       title: "偏好设置",
@@ -586,6 +592,7 @@ const locales = {
       language: "Interface language",
       skip: "Skip to main content",
       close: "Close",
+      resizeSidebar: "Resize sidebar",
     },
     preferences: {
       title: "Preferences",
@@ -1144,7 +1151,7 @@ function initSidebarResizing() {
       const currentX = e.clientX ?? e.touches?.[0]?.clientX;
       if (currentX === undefined) return;
       const deltaX = currentX - startX;
-      const newWidth = Math.min(Math.max(Math.round(startWidth + deltaX), 240), 500);
+      const newWidth = clampSidebarWidth(startWidth + deltaX);
       root.style.setProperty("--sidebar-width", `${newWidth}px`);
     };
 
@@ -1156,15 +1163,15 @@ function initSidebarResizing() {
       resizer.classList.remove("resizing");
       document.body.classList.remove("is-resizing");
 
-      const computedWidth = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10) || 320;
-      uiPreferences.sidebarWidth = Math.min(Math.max(computedWidth, 240), 500);
+      const computedWidth = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10);
+      uiPreferences.sidebarWidth = clampSidebarWidth(computedWidth);
       saveUiPreferences(uiPreferences);
     };
 
     const onPointerDown = (e) => {
       startX = e.clientX ?? e.touches?.[0]?.clientX;
       const currentVal = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10);
-      startWidth = Number.isFinite(currentVal) ? currentVal : 320;
+      startWidth = Number.isFinite(currentVal) ? currentVal : DEFAULT_SIDEBAR_WIDTH;
       resizer.classList.add("resizing");
       document.body.classList.add("is-resizing");
 
@@ -1180,8 +1187,8 @@ function initSidebarResizing() {
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
         const step = e.key === "ArrowRight" ? 20 : -20;
-        const currentVal = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10) || 320;
-        const newWidth = Math.min(Math.max(currentVal + step, 240), 500);
+        const currentVal = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10);
+        const newWidth = clampSidebarWidth((Number.isFinite(currentVal) ? currentVal : DEFAULT_SIDEBAR_WIDTH) + step);
         root.style.setProperty("--sidebar-width", `${newWidth}px`);
         uiPreferences.sidebarWidth = newWidth;
         saveUiPreferences(uiPreferences);
@@ -1204,14 +1211,7 @@ function bindGlobalEvents() {
   });
 
   prefSoundCheckbox?.addEventListener("change", () => {
-    const next = prefSoundCheckbox.checked;
-    studioAudio.setEnabled(next);
-    uiPreferences.soundEnabled = next;
-    saveUiPreferences(uiPreferences);
-    updateSoundToggleUi();
-    if (next) {
-      studioAudio.playPencilStroke();
-    }
+    setSoundEnabled(prefSoundCheckbox.checked);
   });
 
   prefMotionSelect?.addEventListener("change", () => {
@@ -1294,6 +1294,16 @@ function renderChrome() {
     closePreferencesDialog.setAttribute("aria-label", t("aria.close"));
     closePreferencesDialog.title = t("aria.close");
   }
+  const editorResizer = document.getElementById("editorSidebarResizer");
+  const translationResizer = document.getElementById("translationSidebarResizer");
+  if (editorResizer) {
+    editorResizer.title = t("aria.resizeSidebar");
+    editorResizer.setAttribute("aria-label", t("aria.resizeSidebar"));
+  }
+  if (translationResizer) {
+    translationResizer.title = t("aria.resizeSidebar");
+    translationResizer.setAttribute("aria-label", t("aria.resizeSidebar"));
+  }
   if (preferencesTitle) preferencesTitle.textContent = t("preferences.title");
   if (prefSoundLabel) prefSoundLabel.textContent = t("preferences.soundLabel");
   if (prefSoundHint) prefSoundHint.textContent = t("preferences.soundHint");
@@ -1334,8 +1344,8 @@ function updateSoundToggleUi() {
   }
 }
 
-function toggleSound() {
-  const next = !studioAudio.enabled;
+function setSoundEnabled(enabled) {
+  const next = Boolean(enabled);
   studioAudio.setEnabled(next);
   uiPreferences.soundEnabled = next;
   saveUiPreferences(uiPreferences);
@@ -1343,6 +1353,10 @@ function toggleSound() {
   if (next) {
     studioAudio.playPencilStroke();
   }
+}
+
+function toggleSound() {
+  setSoundEnabled(!studioAudio.enabled);
 }
 
 function renderHomeLauncher() {
@@ -3694,16 +3708,19 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
   document.querySelectorAll("[data-remove-correction]").forEach((button) => {
     button.addEventListener("click", () => removeWorkspaceCorrection(item.id, button.dataset.removeCorrection));
   });
+function triggerStampAnimation(stamp) {
+  if (stamp && document.documentElement.dataset.motion !== "reduced") {
+    stamp.classList.remove("stamping");
+    void stamp.offsetWidth;
+    stamp.classList.add("stamping");
+  }
+}
+
   document.getElementById("correctionJudgment").addEventListener("change", (event) => {
     studioAudio.playStampThud();
     updateWorkspaceItemReview(item.id, { judgment: event.target.value || undefined });
     renderTranslationMainPanel();
-    const stamp = document.getElementById("judgmentStamp");
-    if (stamp && document.documentElement.dataset.motion !== "reduced") {
-      stamp.classList.remove("stamping");
-      void stamp.offsetWidth;
-      stamp.classList.add("stamping");
-    }
+    triggerStampAnimation(document.getElementById("judgmentStamp"));
   });
   document.getElementById("correctionItemComment").addEventListener("input", (event) => {
     updateWorkspaceItemReview(item.id, { comment: event.target.value });
@@ -3725,12 +3742,7 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
   });
   document.getElementById("saveCorrectionReview").addEventListener("click", () => {
     studioAudio.playStampThud();
-    const stamp = document.getElementById("judgmentStamp");
-    if (stamp && document.documentElement.dataset.motion !== "reduced") {
-      stamp.classList.remove("stamping");
-      void stamp.offsetWidth;
-      stamp.classList.add("stamping");
-    }
+    triggerStampAnimation(document.getElementById("judgmentStamp"));
     saveCorrectionReview(response);
   });
 }

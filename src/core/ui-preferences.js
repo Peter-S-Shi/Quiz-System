@@ -3,14 +3,31 @@
  * Manages persisted user interface settings: Theme, Sound Effects, and Motion.
  */
 
-export const STORAGE_KEY_UI_PREFERENCES = "quiz_studio_ui_preferences";
+export const STORAGE_KEY_UI_PREFERENCES = "quiz-studio-ui-preferences-v1";
+export const LEGACY_STORAGE_KEY_UI_PREFERENCES = "quiz_studio_ui_preferences";
+
+export const MIN_SIDEBAR_WIDTH = 240;
+export const MAX_SIDEBAR_WIDTH = 500;
+export const DEFAULT_SIDEBAR_WIDTH = 320;
 
 export const DEFAULT_UI_PREFERENCES = {
   theme: "light",
   soundEnabled: true,
   motionPreference: "standard",
-  sidebarWidth: 320,
+  sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
 };
+
+/**
+ * Clamps sidebar width within accepted range [240, 500].
+ * @param {any} width
+ * @returns {number}
+ */
+export function clampSidebarWidth(width) {
+  if (width === null || width === undefined || width === "") return DEFAULT_SIDEBAR_WIDTH;
+  const num = Number(width);
+  if (!Number.isFinite(num)) return DEFAULT_SIDEBAR_WIDTH;
+  return Math.min(Math.max(Math.round(num), MIN_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
+}
 
 /**
  * Normalizes input object into valid UI preferences.
@@ -25,10 +42,7 @@ export function normalizeUiPreferences(input) {
   const theme = input.theme === "dark" ? "dark" : "light";
   const soundEnabled = typeof input.soundEnabled === "boolean" ? input.soundEnabled : DEFAULT_UI_PREFERENCES.soundEnabled;
   const motionPreference = input.motionPreference === "reduced" ? "reduced" : "standard";
-  const rawSidebarWidth = Number(input.sidebarWidth);
-  const sidebarWidth = Number.isFinite(rawSidebarWidth)
-    ? Math.min(Math.max(Math.round(rawSidebarWidth), 240), 500)
-    : DEFAULT_UI_PREFERENCES.sidebarWidth;
+  const sidebarWidth = clampSidebarWidth(input.sidebarWidth);
 
   return {
     theme,
@@ -41,7 +55,7 @@ export function normalizeUiPreferences(input) {
 /**
  * Loads UI preferences from storage with safe fallback to defaults.
  * @param {Storage} [storage]
- * @returns {{ theme: "light"|"dark", soundEnabled: boolean, motionPreference: "standard"|"reduced" }}
+ * @returns {{ theme: "light"|"dark", soundEnabled: boolean, motionPreference: "standard"|"reduced", sidebarWidth: number }}
  */
 export function loadUiPreferences(storage = (typeof window !== "undefined" ? window.localStorage : null)) {
   if (!storage) {
@@ -49,7 +63,7 @@ export function loadUiPreferences(storage = (typeof window !== "undefined" ? win
   }
 
   try {
-    const raw = storage.getItem(STORAGE_KEY_UI_PREFERENCES);
+    const raw = storage.getItem(STORAGE_KEY_UI_PREFERENCES) || storage.getItem(LEGACY_STORAGE_KEY_UI_PREFERENCES);
     if (!raw) {
       // Legacy theme and sound key fallback if present
       const legacyTheme = storage.getItem("quiz-studio-theme") || storage.getItem("quiz_system_theme");

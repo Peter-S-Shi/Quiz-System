@@ -2,10 +2,22 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   DEFAULT_UI_PREFERENCES,
+  MIN_SIDEBAR_WIDTH,
+  MAX_SIDEBAR_WIDTH,
+  DEFAULT_SIDEBAR_WIDTH,
+  clampSidebarWidth,
   loadUiPreferences,
   saveUiPreferences,
   normalizeUiPreferences,
 } from "../src/core/ui-preferences.js";
+
+test("clampSidebarWidth clamps correctly within [240, 500] and falls back to default on invalid inputs", () => {
+  assert.equal(clampSidebarWidth(100), MIN_SIDEBAR_WIDTH);
+  assert.equal(clampSidebarWidth(999), MAX_SIDEBAR_WIDTH);
+  assert.equal(clampSidebarWidth(350), 350);
+  assert.equal(clampSidebarWidth("invalid"), DEFAULT_SIDEBAR_WIDTH);
+  assert.equal(clampSidebarWidth(null), DEFAULT_SIDEBAR_WIDTH);
+});
 
 test("DEFAULT_UI_PREFERENCES has sound enabled, system/standard motion, default sidebarWidth, and valid default theme", () => {
   assert.equal(DEFAULT_UI_PREFERENCES.soundEnabled, true);

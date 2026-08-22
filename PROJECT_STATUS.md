@@ -16,7 +16,7 @@ This workstream establishes product-level UI convergence (DESIGN.md, Strong Pape
 - **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, resizable sidebars, and persistent UI preferences (theme, sound effects, motion preference, sidebar width).
 - **Core Learning Surfaces**: Rebuilt Objective Quiz and Translation Practice into continuous laid paper sheets resting on the study desk, with organic page-turn transitions, pencil stroke sounds, and granular per-pair matching feedback with inline correction hints.
 - **Teacher Marking Desk**: Rebuilt Correction Workspace into a continuous paper manuscript with pen marking tray, live projection, and tactile rubber stamp feedback with stamp thud audio.
-- **Offline & Verification Closure**: 238 total tests (237 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed), including UI preferences persistence, lightweight preferences dialog, and complete Service Worker ESM precache closure.
+- **Offline & Verification Closure**: 239 total tests (238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed), including UI preferences persistence, lightweight preferences dialog, and complete Service Worker ESM precache closure.
 - **Human Acceptance Gate**: Final Human Acceptance Gate has been executed and passed (PASS).
 
 ## Acceptance Policy (Historical Record)
@@ -119,4 +119,4 @@ Conduct the Whole-Product Feature Complete Review V2 across all user workflows b
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; PR #11 merged as `6b38c40`, and the BAT CRLF follow-up PR #12 merged as `6643a1b`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #14 (`ui/layered-paper-productization`) has completed Pre-Freeze UI Productization and passed the Final Human Acceptance Gate with 238 total tests: 237 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed and passing GitHub CI; awaits Whole-Product Feature Complete Review V2. Historical PR #11 and PR #12 remain merged on `main`. Historical Draft PR #10 remains Closed/Superseded.
+- Pull request status: PR #14 (`ui/layered-paper-productization`) has completed Pre-Freeze UI Productization and passed the Final Human Acceptance Gate with 239 total tests: 238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed and passing GitHub CI; awaits Whole-Product Feature Complete Review V2. Historical PR #11 and PR #12 remain merged on `main`. Historical Draft PR #10 remains Closed/Superseded.
