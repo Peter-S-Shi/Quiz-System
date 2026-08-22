@@ -2,15 +2,19 @@
 
 ## 当前阶段
 
-Pre-Freeze UI Productization（功能冻结前 UI 产品化阶段）
+Pre-Freeze V1 Scope Closure (Batch A) — 功能冻结前 V1 范围收尾（第 A 批次）
 
 ## 当前里程碑
 
-UI Productization: Layered Paper Study Desk（分层纸质研习台：设计规范、应用框架与工具启动台、核心做题与翻译研习纸面、教师批改台、物理动效与合成音效）— 已实现并通过全量测试；Final Human Acceptance Gate = PASS
+Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practice Information Architecture（练习反馈模式与专项练习信息架构）— 实现完成；自动化测试：243 项全量通过（Windows 本地 243/243 通过，Linux CI 242 项通过 + 1 项跳过）；Human Gate A 等待用户人工评估
 
-本工作流在进入下一轮 Feature Complete Review 之前完成产品级 UI 收敛（包括 DESIGN.md 规范、Strong Paper 亮色、Soft Near-Black 暗色、翻页动效/音效、MCQ 墨水选择反馈、匹配题逐对即时纠错、判定盖章反馈、首页 Tool Launcher 启动台与可拖拽侧边栏）。本工作流不重新开放 M6 产品业务逻辑语义，亦非 Milestone 7 Product Hardening。
+本工作流为功能冻结前的两批范围收尾之第一批：
+1. **客观题练习反馈模式**：在做题设置中新增“即时反馈”（`instant`，默认）与“答完交卷”（`submitAtEnd`）两种模式，完整支持页面刷新进度恢复与全部 5 种客观题型。
+2. **专项练习信息架构**：调整产品层级，将“翻译练习”收纳在顶级“专项练习”产品空间下，既有全部翻译研习工作流完整保持。
 
-## Pre-Freeze UI 产品化里程碑摘要
+后续将进入第 B 批次（题目媒体支持：图片/音频），随后执行全产品 Feature Complete Review V3。
+
+## Pre-Freeze UI 产品化里程碑摘要（历史基线）
 
 - **设计规范与系统基础**：创建 [DESIGN.md](file:///f:/CodexWorkspaces/Quiz%20System/DESIGN.md)，确立 Layered Paper Study Desk 设计 Token、字体层级、呼吸间距、自然语义墨水系统与基于 Web Audio API 的零外部依赖物理合成音效引擎。
 - **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮、可拖拽侧边栏，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好、侧边栏宽度）。
@@ -25,19 +29,19 @@ M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进
 
 ## 当前发布范围
 
-当前版本范围包括 Milestone 1-5 基线、已批准的 Milestone 6 工作线，以及 Pre-Freeze UI Productization 设计系统。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange、M6.1 Translation Domain and Persistence Foundation 以及 M6.2–M6.7 均已完成实现并通过综合人工验收 Journeys 01–10（PASS）。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
+当前版本范围包括 Milestone 1-5 基线、已批准的 Milestone 6 工作线、Pre-Freeze UI Productization 设计系统，以及 Pre-Freeze V1 范围收尾工作流（Batch A 反馈模式与专项练习架构；Batch B 题目媒体）。翻译练习作为专项练习的一个子分支。全部操作均保持本地优先，不要求外部网络连接或付费 AI 推理。
 
 ## Feature Complete 状态
 
-旧范围下曾达到候选评审；当前范围已重新开放，因此不再属于功能完整状态。
+暂缓宣布。
 
-Milestone 1 作为基础基线已完成。Milestones 2-5 的首版实现已落地，但完整验收待完成。旧边界下曾达到 Feature Complete Candidate 的事实作为历史证据保留。M6 综合人工验收 Journeys 01–10 已在缩减 Comment 范围及完成强化批次后全部通过（PASS）。进入 Feature Freeze 之前的下一个生命周期门禁是重新执行全产品 Feature Complete Review。
+仓库正在执行 Pre-Freeze V1 Scope Closure（Batch A 与 Batch B）。在两批次全部收尾后，将通过 Whole-Product Feature Complete Review V3 重新进行全产品功能完整性判定。
 
 ## Feature Freeze 状态
 
-尚未进入。
+尚未进入（非激活）。
 
-只有在重新开放的范围通过新一轮全产品 Feature Complete Review、Deferred Features 与当前版本分离，并且用户明确授权进入 Feature Freeze 后，才可以进入 Feature Freeze。
+只有在 Pre-Freeze V1 Scope Closure 批次通过人工验收、Whole-Product Review V3 获得正式确认，且用户明确授权后，才可以进入 Feature Freeze。
 
 ## 当前发布阻断项
 

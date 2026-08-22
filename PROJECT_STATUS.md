@@ -2,15 +2,19 @@
 
 ## Current Phase
 
-Pre-Freeze UI Productization
+Pre-Freeze V1 Scope Closure (Batch A)
 
 ## Current Milestone
 
-UI Productization: Layered Paper Study Desk (Design Foundation, App Shell & Tool Launcher, Core Learning Surfaces, Teacher Marking Desk, Synthesized Motion & Audio) — complete and verified; Final Human Acceptance Gate = PASS
+Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practice Information Architecture (Implementation complete; Automated test suite: 243 total / 243 passed on Windows, 242 passed + 1 skipped on Linux CI; Human Gate A pending user evaluation)
 
-This workstream establishes product-level UI convergence (DESIGN.md, Strong Paper light mode, Soft Near-Black dark mode, page-turn motion/sound, MCQ ink selection, per-pair matching feedback, rubber stamp feedback, Tool Launcher home, resizable sidebars) before the next Feature Complete Review. It does not reopen M6 product semantics and is not Milestone 7 Product Hardening.
+This workstream delivers the first of two pre-freeze scope closure packages:
+1. **Objective Quiz Practice Feedback Modes**: Adds Instant Feedback (`instant`, default) vs. Submit at End (`submitAtEnd`) modes in practice setup, preserving full refresh recovery and supporting all 5 objective question types.
+2. **Special Practice Information Architecture**: Reorganizes product hierarchy so that Translation is housed under the top-level `Special Practice` container, preserving all existing Translation workflows.
 
-## Pre-Freeze UI Productization Milestone Summary
+It precedes Batch B (Question Media: image/audio) and the subsequent Whole-Product Feature Complete Review V3.
+
+## Pre-Freeze UI Productization Milestone Summary (Historical Baseline)
 
 - **Design System Foundation**: Created `DESIGN.md` establishing the Layered Paper Study Desk design tokens, typography, spacing, natural semantic inks, and zero-dependency synthesized audio engine.
 - **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, resizable sidebars, and persistent UI preferences (theme, sound effects, motion preference, sidebar width).
@@ -25,19 +29,19 @@ Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 compre
 
 ## Current Release Scope
 
-The current-version scope includes the Milestone 1-5 baseline, the approved Milestone 6 line, and the Pre-Freeze UI Productization design system. Translation Practice remains M6's primary new learner workflow. M6.0 Open Teaching Interchange, M6.1 Translation Domain and Persistence Foundation, and M6.2–M6.7 are verified with comprehensive manual acceptance Journeys 01–10 complete (PASS). M6 remains local-first and does not require embedded AI APIs, paid inference, or network access.
+The current-version scope includes the Milestone 1-5 baseline, the approved Milestone 6 line, the Pre-Freeze UI Productization design system, and the Pre-Freeze V1 Scope Closure workstream (Batch A: Feedback Modes & Special Practice IA; Batch B: Question Media). Translation Practice is housed within Special Practice. All operations remain local-first without requiring external network access or paid AI inference.
 
 ## Feature Complete Status
 
-Not yet declared.
+Temporarily deferred.
 
-The next lifecycle gate is the Whole-Product Feature Complete Review V2 before entering Feature Freeze.
+The repository is completing Pre-Freeze V1 Scope Closure (Batch A & Batch B). Feature Complete declaration will be performed via Whole-Product Feature Complete Review V3 upon closure of both batches.
 
 ## Feature Freeze Status
 
-Not entered.
+Not entered (inactive).
 
-Feature Freeze can begin only after the UI Productization and reopened scope pass the Whole-Product Feature Complete Review V2, Deferred Features are separated from the current version, and the user explicitly authorizes entering Feature Freeze.
+Feature Freeze will begin only after Pre-Freeze V1 Scope Closure batches pass human acceptance gates, Whole-Product Review V3 is formally accepted, and the user explicitly authorizes entering Feature Freeze.
 
 ## Open Release Blockers
 
