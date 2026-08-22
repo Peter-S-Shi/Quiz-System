@@ -55,8 +55,40 @@ export function parseLibraryBackup(value, options = {}) {
     }
   });
 
+  // Media referential integrity validation
+  const assetMap = new Map();
+  for (const asset of mediaAssets) {
+    if (asset?.id) {
+      assetMap.set(asset.id, asset);
+    }
+  }
+
+  const normalizedLib = normalizeLibrary(value.library, options);
+  for (const paper of normalizedLib.papers) {
+    for (const question of paper.questions || []) {
+      if (question.image?.id && !assetMap.has(question.image.id)) {
+        throw new TypeError(`Backup media referential integrity failure: missing image asset "${question.image.id}" referenced in paper "${paper.id}".`);
+      }
+      if (question.audio?.id && !assetMap.has(question.audio.id)) {
+        throw new TypeError(`Backup media referential integrity failure: missing audio asset "${question.audio.id}" referenced in paper "${paper.id}".`);
+      }
+    }
+  }
+
+  for (const response of learnerResponses) {
+    const items = response.material?.snapshot?.items || [];
+    for (const item of items) {
+      if (item.image?.id && !assetMap.has(item.image.id)) {
+        throw new TypeError(`Backup media referential integrity failure: missing image asset "${item.image.id}" referenced in response "${response.id}".`);
+      }
+      if (item.audio?.id && !assetMap.has(item.audio.id)) {
+        throw new TypeError(`Backup media referential integrity failure: missing audio asset "${item.audio.id}" referenced in response "${response.id}".`);
+      }
+    }
+  }
+
   return {
-    library: normalizeLibrary(value.library, options),
+    library: normalizedLib,
     history: Array.isArray(value.history) ? structuredClone(value.history) : [],
     hasLearnerResponses,
     learnerResponses,

@@ -69,10 +69,10 @@ Product Hardening 是 Milestone 7，只能在 Pre-Freeze V1 Scope Closure（Batc
 
 ## 验证状态
 
-- 269 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、分类注册表规整、空分类持久化、重命名传播、安全删除契约、媒体格式校验、Media Asset Store 读写与导入导出、引用收集与孤儿清理、便携式单卷打包、媒体全量备份恢复、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
+- 270 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、分类注册表规整、空分类持久化、重命名传播、安全删除契约、媒体格式校验、IndexedDB 原生 Blob Media Asset Store 读写与导入导出、便携包引用完整性校验、引用收集与保守孤儿清理、便携式单卷打包、媒体全量备份恢复、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
 - **Pre-Freeze V1 Scope Closure (Batch A)**：客观做题反馈模式与专项练习信息架构已实现并通过人工验证（Human Gate A = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch B)**：试卷库集合式分类组织、空分类持久化、分类作用域搜索、重命名传播、试卷归类调整、渐进式单层导航及安全删除弹窗已完整实现并通过人工验证（Human Gate B = **PASS**）。
-- **Pre-Freeze V1 Scope Closure (Batch C)**：客观题多媒体支持（5 大题型图片/音频、IndexedDB 存储、模态图片查看器、内嵌播放器、单卷便携包、全量备份恢复、证据不可变性）已完整实现并就绪（Human Gate C = **待评估 PENDING EVALUATION**）。
+- **Pre-Freeze V1 Scope Closure (Batch C)**：客观题多媒体支持（5 大题型图片/音频、原生 Blob IndexedDB 存储、模态图片查看器、内嵌播放器、单卷便携包引用完整性校验、全量备份恢复、证据不可变性与保守引用清理）已完整实现并就绪（Human Gate C = **待评估 PENDING EVALUATION**）。
 
 ## 题目媒体支持规范（Batch C 范围定义）
 

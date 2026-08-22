@@ -126,7 +126,7 @@ import {
   validateMediaFileCandidate,
 } from "./core/media-types.js";
 import { createDefaultMediaStore } from "./core/media-store.js";
-import { collectReferencedMediaIds, findOrphanedMediaIds } from "./core/media-references.js";
+import { cleanupOrphanedMedia, collectReferencedMediaIds, findOrphanedMediaIds } from "./core/media-references.js";
 import { createPortablePaperPackage, parsePortablePaperPackage } from "./core/paper-portability.js";
 import { makeId, parseTags, safeFileName } from "./core/utils.js";
 import { STORAGE_KEYS, loadJson, removeStoredValue, saveJson } from "./storage/local-storage.js";
@@ -1314,6 +1314,29 @@ async function getOrResolveMediaUrl(assetId) {
   }
 }
 
+async function safeCleanupMedia(candidateAssetIds = []) {
+  try {
+    const deletedIds = await cleanupOrphanedMedia(mediaStore, {
+      library,
+      session: loadActiveSession(),
+      learnerResponses: loadLearnerResponses(),
+      activePaper: paper,
+      candidateAssetIds,
+    });
+    for (const id of deletedIds) {
+      if (mediaBlobUrlCache.has(id)) {
+        const url = mediaBlobUrlCache.get(id);
+        if (typeof URL !== "undefined" && typeof URL.revokeObjectURL === "function" && url) {
+          try {
+            URL.revokeObjectURL(url);
+          } catch {}
+        }
+        mediaBlobUrlCache.delete(id);
+      }
+    }
+  } catch {}
+}
+
 const imageViewerDialog = document.getElementById("imageViewerDialog");
 const closeImageViewerDialog = document.getElementById("closeImageViewerDialog");
 const imageViewerTitle = document.getElementById("imageViewerTitle");
@@ -1542,6 +1565,8 @@ function bindGlobalEvents() {
     }
     pendingDeleteCategoryName = null;
     categoryDeleteDialog?.close();
+    const targetPapers = library.papers.filter((p) => p.category === cat);
+    const candidateIds = targetPapers.flatMap((p) => (p.questions || []).flatMap((q) => [q.image?.id, q.audio?.id])).filter(Boolean);
     const result = deleteCategoryAndPapers(library.categories, cat, library.papers);
     library.categories = result.categoryList;
     library.papers = result.keptPapers.length ? result.keptPapers : [normalizePaper(createDefaultPaper())];
@@ -1556,6 +1581,7 @@ function bindGlobalEvents() {
     saveLibrary();
     renderAll();
     showToast(t("toast.categoryDeleted"));
+    if (candidateIds.length) safeCleanupMedia(candidateIds);
   });
 
   paperTags.addEventListener("input", () => {
@@ -2136,6 +2162,8 @@ function renameLibraryPaper() {
 
 function deleteLibraryPaper() {
   if (!window.confirm(t("library.deleteConfirm"))) return;
+  const target = library.papers.find((item) => item.id === activePaperId);
+  const candidateIds = (target?.questions || []).flatMap((q) => [q.image?.id, q.audio?.id]).filter(Boolean);
   library.papers = library.papers.filter((item) => item.id !== activePaperId);
   if (!library.papers.length) library.papers.push(normalizePaper(createDefaultPaper()));
   activePaperId = library.papers[0].id;
@@ -2146,6 +2174,7 @@ function deleteLibraryPaper() {
   saveLibrary();
   renderAll();
   showToast(t("toast.paperDeleted"));
+  if (candidateIds.length) safeCleanupMedia(candidateIds);
 }
 
 function openLibraryPaper(id) {
@@ -2349,9 +2378,11 @@ function bindQuestionMediaEditor(question) {
 
     const removeImgBtn = document.getElementById("removeQuestionImage");
     removeImgBtn?.addEventListener("click", () => {
+      const candidateId = question.image?.id;
       delete question.image;
       savePaper({ clearSession: false });
       renderQuestionEditor();
+      if (candidateId) safeCleanupMedia([candidateId]);
     });
 
     const replaceImgInput = document.getElementById("replaceQuestionImageInput");
@@ -2375,9 +2406,11 @@ function bindQuestionMediaEditor(question) {
 
     const removeAudBtn = document.getElementById("removeQuestionAudio");
     removeAudBtn?.addEventListener("click", () => {
+      const candidateId = question.audio?.id;
       delete question.audio;
       savePaper({ clearSession: false });
       renderQuestionEditor();
+      if (candidateId) safeCleanupMedia([candidateId]);
     });
 
     const replaceAudInput = document.getElementById("replaceQuestionAudioInput");
@@ -2404,6 +2437,7 @@ async function handleQuestionImageUpload(question, file) {
 
   try {
     const arrayBuffer = await file.arrayBuffer();
+    const previousId = question.image?.id;
     const assetId = `img-${makeId()}`;
     await mediaStore.saveMediaAsset({
       id: assetId,
@@ -2423,6 +2457,7 @@ async function handleQuestionImageUpload(question, file) {
 
     savePaper({ clearSession: false });
     renderQuestionEditor();
+    if (previousId && previousId !== assetId) safeCleanupMedia([previousId]);
   } catch {
     showToast(t("media.uploadFail"));
   }
@@ -2438,6 +2473,7 @@ async function handleQuestionAudioUpload(question, file) {
 
   try {
     const arrayBuffer = await file.arrayBuffer();
+    const previousId = question.audio?.id;
     const assetId = `aud-${makeId()}`;
     await mediaStore.saveMediaAsset({
       id: assetId,
@@ -2456,6 +2492,7 @@ async function handleQuestionAudioUpload(question, file) {
 
     savePaper({ clearSession: false });
     renderQuestionEditor();
+    if (previousId && previousId !== assetId) safeCleanupMedia([previousId]);
   } catch {
     showToast(t("media.uploadFail"));
   }
@@ -3287,11 +3324,14 @@ function duplicateQuestion(id) {
 }
 
 function deleteQuestion(id) {
+  const target = paper.questions.find((question) => question.id === id);
+  const candidateIds = [target?.image?.id, target?.audio?.id].filter(Boolean);
   paper.questions = paper.questions.filter((question) => question.id !== id);
   selectedQuestionId = paper.questions[0]?.id ?? null;
   savePaper();
   renderAll();
   showToast(t("toast.deleted"));
+  if (candidateIds.length) safeCleanupMedia(candidateIds);
 }
 
 function getSelectedQuestion() {
@@ -3455,6 +3495,9 @@ async function exportLibraryBackup() {
       session: loadActiveSession(),
     });
     const mediaAssets = await mediaStore.exportMediaAssets(Array.from(referencedIds));
+    if (mediaAssets.length < referencedIds.size) {
+      throw new Error("Missing one or more referenced media assets in storage.");
+    }
 
     const backup = createLibraryBackup({
       library,

@@ -10,12 +10,12 @@
 
 This guide provides step-by-step verification journeys for the Objective Question Media capabilities introduced in Pre-Freeze V1 Scope Closure Batch C:
 1. **Media Support across all 5 Objective Question Types**: Single Choice, Multiple Choice, Fill-in-the-Blank, True/False, Matching.
-2. **Local-Only Media Storage Architecture**: Offline-first storage using an IndexedDB-backed binary Media Asset Store (`quiz-studio-media-db` / `media_assets` object store) linked with stable UUIDs in Question JSON.
+2. **Local-Only Media Storage Architecture**: Offline-first storage using an IndexedDB-backed binary Media Asset Store (`quiz-studio-media-db` / `media_assets` object store) storing runtime Blobs, linked with stable UUIDs in Question JSON.
 3. **Image Authoring, Preview, and Accessibility**: Local image upload (PNG, JPEG, WebP, GIF, SVG), thumbnail preview, replace, remove, and accessible Alt text description.
 4. **Interactive Image Viewer & Zoom Controls**: Responsive modal viewer with Zoom In (`+`), Zoom Out (`-`), Reset (`1:1`), Close (`✕`), and keyboard shortcuts (`+`, `-`, `0`, `Esc`).
 5. **Audio Authoring and Practice Player**: Local audio upload (MP3, WAV, OGG, WebM, AAC, M4A, FLAC), in-editor preview, and in-question player with play/pause, seek/scrub, and unlimited replay.
-6. **Single-Paper Portability & Full Backup/Restore**: Self-contained export/import envelopes with bundled base64 assets, IndexedDB synchronization, and seamless backward compatibility with legacy text-only JSON.
-7. **Evidence Immutability & Historical Snapshot Safety**: Active session snapshots, finalized Learner Response snapshots, and review screen thumbnail rendering.
+6. **Single-Paper Portability & Full Backup/Restore with Referential Integrity**: Self-contained export/import envelopes with bundled base64 assets, IndexedDB synchronization, strict referential integrity validation (failing safely on missing/corrupted assets), and seamless backward compatibility with legacy text-only JSON.
+7. **Evidence Immutability & Reference-Aware Conservative Cleanup**: Active session snapshots, finalized Learner Response snapshots, and review screen thumbnail rendering with media retention across mutations.
 
 ---
 
@@ -29,25 +29,25 @@ Verify that all 5 Objective Question Types accept optional Image and Audio attac
 2. Navigate to **Edit** (编辑) mode, select or create a paper, and navigate to Level 3 (Questions).
 3. Test each question type:
    - **Single Choice**: Click `+ Add Image` under **Question Image**, upload `manual-qa/media-sample/assets/geometry-angles.svg`. Confirm thumbnail preview, file name, and file size appear. Fill in Alt text: `Geometric angle diagram`.
-   - **Multiple Choice**: Click `+ Add Audio` under **Question Audio**, upload `manual-qa/media-sample/assets/chime-440hz.wav`. Confirm audio player preview appears and plays cleanly in the editor.
-   - **Fill-in-the-Blank**: Attach **both** `manual-qa/media-sample/assets/data-structure.svg` (Image) and `manual-qa/media-sample/assets/beep-880hz.wav` (Audio) to the same question. Verify dual media sections coexist cleanly without UI collision.
+   - **Multiple Choice**: Click `+ Add Audio` under **Question Audio**, upload `manual-qa/media-sample/assets/mystery-pitch-sequence.wav`. Confirm audio player preview appears and plays cleanly in the editor.
+   - **Fill-in-the-Blank**: Attach **both** `manual-qa/media-sample/assets/data-structure.svg` (Image) and `manual-qa/media-sample/assets/chime-440hz.wav` (Audio) to the same question. Verify dual media sections coexist cleanly without UI collision.
    - **True/False**: Attach `manual-qa/media-sample/assets/data-structure.svg`. Test the `Replace Image` button by selecting `geometry-angles.svg`; verify image updates immediately.
-   - **Matching**: Attach `manual-qa/media-sample/assets/chime-440hz.wav`. Test the `Remove Audio` button; verify audio is cleanly removed and the `+ Add Audio` empty state returns.
+   - **Matching**: Attach `manual-qa/media-sample/assets/beep-880hz.wav`. Test the `Remove Audio` button; verify audio is cleanly removed and the `+ Add Audio` empty state returns.
 4. **Negative Validation**:
    - Try uploading an unsupported file format (e.g. `.txt`, `.pdf`, `.mp4` or executable) to the image or audio input.
    - Verify that an error toast appears and the question media is rejected without crashing the editor.
 
 ---
 
-## Verification Journey 2: Offline Media Asset Store & IndexedDB Persistence
+## Verification Journey 2: Offline Media Asset Store & IndexedDB Blob Persistence
 
 ### Objective
-Verify that binary media assets are stored locally in IndexedDB (`quiz-studio-media-db`) and survive browser reloads and offline usage without data loss.
+Verify that binary media assets are stored locally as native Blobs in IndexedDB (`quiz-studio-media-db`) and survive browser reloads and offline usage without data loss.
 
 ### Steps
 1. In the Question Editor, attach an image and an audio file to a question.
 2. Open Browser Developer Tools (`F12`) -> **Application** -> **IndexedDB** -> `quiz-studio-media-db` -> `media_assets`.
-3. Verify that new records exist with keys matching the media IDs (`img-...`, `aud-...`), storing MIME type, file name, byte size, and base64/blob data.
+3. Verify that new records exist with keys matching the media IDs (`img-...`, `aud-...`), storing MIME type, file name, byte size, and native binary `Blob` object.
 4. Hard refresh the page (`Ctrl+F5` / `Cmd+Shift+R`).
 5. Return to the question in Edit mode:
    - Confirm image thumbnail preview loads immediately from IndexedDB.
@@ -57,22 +57,26 @@ Verify that binary media assets are stored locally in IndexedDB (`quiz-studio-me
 
 ---
 
-## Verification Journey 3: Practice Mode Inline Presentation & Audio Playback
+## Verification Journey 3: Practice Mode Inline Presentation & Audio-Dependent Solving
 
 ### Objective
-Verify that practice mode renders attached images and audio players responsively in all 5 Objective Question Types, supporting play, pause, scrubbing, and unrestricted replay.
+Verify that practice mode renders attached images and audio players responsively in all 5 Objective Question Types, supporting play, pause, scrubbing, and unrestricted replay, with questions requiring listening/viewing to derive the answer.
 
 ### Steps
-1. Navigate to **Practice** (练习) mode and start a quiz using the paper created or `manual-qa/media-sample/quiz-studio-media-sample-paper.json`.
-2. Observe question media layout:
-   - On image-attached questions: verify the image is centered, responsive, crisp, and displays the `🔍 Click to zoom` overlay badge.
-   - On audio-attached questions: verify the audio player bar renders with standard browser controls (play/pause, timeline scrub bar, time display).
-   - On dual image + audio questions: verify image and audio stack cleanly without overflowing.
-3. Test audio playback:
-   - Click Play: verify sound plays cleanly.
-   - Scrub the timeline to the middle: verify playback jumps correctly.
-   - Replay the audio multiple times: confirm unrestricted replay in V1.
-4. Complete and submit the quiz.
+1. Navigate to **Practice** (练习) mode and start a quiz using `manual-qa/media-sample/quiz-studio-media-sample-paper.json`.
+2. **Q1 (Image-Dependent Single Choice)**:
+   - Observe the geometric diagram: the acute angle θ is labeled as 37°.
+   - Select `θ = 37°`.
+3. **Q2 (Genuinely Audio-Dependent Multiple Choice)**:
+   - Click Play on the in-question audio player bar.
+   - Listen to the 3-tone melody (`Low → High → Low`).
+   - Select the options corresponding to the contour heard (Options A & B: Low → High → Low, and bursts 1 and 3 share the same pitch). Notice the answer cannot be guessed without listening.
+4. **Q3 (Dual Media Fill-in-the-Blank)**:
+   - Observe both the data structure diagram and the chime audio player stacked cleanly.
+   - Enter `45` for the middle node value.
+5. **Q4 & Q5 (True/False & Matching)**:
+   - Solve the remaining questions with image and audio assistance.
+6. Complete and submit the quiz; observe the score calculation and sound feedback.
 
 ---
 
@@ -82,7 +86,7 @@ Verify that practice mode renders attached images and audio players responsively
 Verify the modal Image Viewer dialog (`#imageViewerDialog`), click-to-zoom interaction, zoom level scaling (25% to 400%), reset, and keyboard navigation.
 
 ### Steps
-1. In Practice mode, navigate to an image-attached question.
+1. In Practice mode, navigate to an image-attached question (e.g. Q1).
 2. Click on the image (or focus via `Tab` and press `Enter` / `Space`):
    - Verify the **Image Viewer Dialog** opens in a clean modal overlay with blurred backdrop.
    - Verify the initial zoom level shows `100%`.
@@ -99,32 +103,35 @@ Verify the modal Image Viewer dialog (`#imageViewerDialog`), click-to-zoom inter
 
 ---
 
-## Verification Journey 5: Single-Paper Portability & Backward Compatibility
+## Verification Journey 5: Single-Paper Portability, Referential Integrity & Legacy Compatibility
 
 ### Objective
-Verify that single-paper export creates a self-contained portable package with bundled base64 assets (`documentType: "quiz-studio.quiz-paper"`), imports cleanly into a fresh environment, and retains backward compatibility with legacy plain JSON papers.
+Verify that single-paper export creates a self-contained portable package with bundled base64 assets (`documentType: "quiz-studio.quiz-paper"`), validates referential integrity upon import, and retains backward compatibility with legacy plain JSON papers.
 
 ### Steps
-1. In Edit mode sidebar Level 3, click **Export** (导出).
+1. In Edit mode sidebar Level 3, click **Export** (导出) on the sample paper.
 2. Open the downloaded `.json` file in a text editor:
    - Verify schema: `schemaVersion: 2`, `documentType: "quiz-studio.quiz-paper"`, `paper: { ... }`, `assets: [ { id, mimeType, name, size, data } ]`.
-   - Verify binary media assets are bundled as base64 strings in the `assets` array.
+   - Verify binary media assets are converted to base64 strings in the `assets` array.
 3. Clear application storage or open a private browsing window.
 4. In Edit mode, click **Import** (导入) and select the exported paper JSON.
 5. Verify:
    - The paper is imported successfully into the library.
-   - Media assets are extracted and stored into IndexedDB.
+   - Media assets are extracted, converted from base64 to native Blobs, and stored into IndexedDB.
    - Question Editor and Practice mode display and play all media assets immediately.
-6. **Legacy Compatibility Test**:
+6. **Integrity Rejection Test**:
+   - Manually edit an export JSON to remove one referenced asset from `assets` or set its data to `""`.
+   - Try importing the corrupted file: verify the import is rejected with an error toast and no corrupted state is saved.
+7. **Legacy Compatibility Test**:
    - Import a legacy text-only paper JSON (e.g. `manual-qa/samples/quiz-normal-sample.json`).
-   - Verify the legacy paper imports smoothly without errors, normalizing missing media fields to undefined.
+   - Verify the legacy paper imports smoothly without errors.
 
 ---
 
 ## Verification Journey 6: Full Library Backup & Restore with Media Assets
 
 ### Objective
-Verify that full library backup bundles all referenced media assets across live papers, active sessions, and historical learner responses, and restores both library state and IndexedDB cleanly.
+Verify that full library backup bundles all referenced media assets across live papers, active sessions, and historical learner responses, and restores both library state and IndexedDB cleanly with referential integrity.
 
 ### Steps
 1. In Edit mode sidebar Level 1, click **Backup** (备份).
@@ -135,18 +142,18 @@ Verify that full library backup bundles all referenced media assets across live 
 4. In Edit mode sidebar Level 1, click **Import backup** (导入备份) and choose the backup JSON.
 5. Verify:
    - Library papers and categories are fully restored.
-   - IndexedDB `quiz-studio-media-db` is populated with all restored media assets.
+   - IndexedDB `quiz-studio-media-db` is populated with all restored media assets as Blobs.
    - All multimedia questions in the restored library display image previews and play audio immediately.
 
 ---
 
-## Verification Journey 7: Evidence Immutability & Historical Snapshot Safety
+## Verification Journey 7: Evidence Immutability & Reference-Aware Conservative Cleanup
 
 ### Objective
 Verify that active practice sessions and finalized Learner Responses retain independent media snapshots, historical review screens display media thumbnails with zoom, and editing or deleting live papers never corrupts historical evidence.
 
 ### Steps
-1. Start a practice session on a multimedia paper and complete the quiz.
+1. Start a practice session on the sample multimedia paper and complete the quiz.
 2. In the **Results & Review** screen:
    - Verify questions with images display clickable thumbnail previews (`.review-thumb-img`).
    - Clicking a thumbnail opens the Image Viewer modal.
@@ -156,6 +163,7 @@ Verify that active practice sessions and finalized Learner Responses retain inde
 4. Check Answer History:
    - Export the Learner Response from history.
    - Verify the snapshot items inside the Learner Response JSON retain the original `image.id` and original prompt without mutation.
+   - Verify the media asset in IndexedDB is preserved because historical evidence still references it.
 
 ---
 
@@ -164,11 +172,11 @@ Verify that active practice sessions and finalized Learner Responses retain inde
 | Journey | Focus | Result | Notes |
 | :--- | :--- | :---: | :--- |
 | **Journey 1** | Authoring across all 5 question types | **[ ] PASS / [ ] FAIL** | |
-| **Journey 2** | Local IndexedDB Media Asset Store | **[ ] PASS / [ ] FAIL** | |
-| **Journey 3** | Practice mode inline rendering & audio | **[ ] PASS / [ ] FAIL** | |
+| **Journey 2** | Local IndexedDB Blob Media Asset Store | **[ ] PASS / [ ] FAIL** | |
+| **Journey 3** | Practice mode inline rendering & audio solving | **[ ] PASS / [ ] FAIL** | |
 | **Journey 4** | Image Viewer modal & keyboard zoom | **[ ] PASS / [ ] FAIL** | |
-| **Journey 5** | Single-paper portability & legacy import | **[ ] PASS / [ ] FAIL** | |
+| **Journey 5** | Single-paper portability & referential integrity | **[ ] PASS / [ ] FAIL** | |
 | **Journey 6** | Full backup / restore with media assets | **[ ] PASS / [ ] FAIL** | |
-| **Journey 7** | Evidence immutability & review list | **[ ] PASS / [ ] FAIL** | |
+| **Journey 7** | Evidence immutability & reference-aware cleanup | **[ ] PASS / [ ] FAIL** | |
 
 **Final Verdict**: **PENDING HUMAN EVALUATION**

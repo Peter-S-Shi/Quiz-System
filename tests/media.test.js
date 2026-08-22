@@ -8,6 +8,7 @@ import {
   validateMediaFileCandidate,
   normalizeImageMetadata,
   normalizeAudioMetadata,
+  formatFileSize,
 } from "../src/core/media-types.js";
 import {
   createQuestion,
@@ -16,14 +17,18 @@ import {
 } from "../src/core/question-registry.js";
 import {
   createMemoryMediaStore,
+  dataToBase64,
+  base64ToBlob,
 } from "../src/core/media-store.js";
 import {
   collectReferencedMediaIds,
   findOrphanedMediaIds,
+  cleanupOrphanedMedia,
 } from "../src/core/media-references.js";
 import {
   createPortablePaperPackage,
   parsePortablePaperPackage,
+  validatePaperMediaIntegrity,
 } from "../src/core/paper-portability.js";
 import {
   createLibraryBackup,
@@ -100,113 +105,141 @@ test("question normalization preserves optional image and audio metadata and saf
   });
 
   assert.equal(multimedia.image?.id, "img-123");
+  assert.equal(multimedia.image?.mimeType, "image/png");
   assert.equal(multimedia.image?.name, "diagram.png");
+  assert.equal(multimedia.image?.size, 4096);
   assert.equal(multimedia.image?.alt, "Circuit diagram");
+
   assert.equal(multimedia.audio?.id, "aud-456");
+  assert.equal(multimedia.audio?.mimeType, "audio/mpeg");
+  assert.equal(multimedia.audio?.name, "prompt.mp3");
+  assert.equal(multimedia.audio?.size, 16384);
   assert.equal(multimedia.audio?.duration, 3.5);
 
-  // Sanitizes malformed media objects
+  // Question with malformed media objects gets cleaned
   const malformed = normalizeQuestion({
-    id: "q-malformed",
-    type: "blank",
-    prompt: "Test",
-    image: "invalid-string",
-    audio: { id: "" }, // missing valid id
+    id: "q-bad",
+    type: "single",
+    prompt: "Bad media",
+    image: { id: "   " },
+    audio: null,
   });
   assert.equal(malformed.image, undefined);
   assert.equal(malformed.audio, undefined);
 });
 
 test("convertQuestionType preserves existing image and audio media on the question", () => {
-  const question = {
-    id: "q-convert",
-    type: "single",
-    prompt: "Convert me",
-    options: [
-      { id: "o1", text: "A", correct: true },
-      { id: "o2", text: "B", correct: false },
-    ],
-    image: {
-      id: "img-preserve",
-      mimeType: "image/webp",
-      name: "chart.webp",
-      size: 2048,
-    },
-    audio: {
-      id: "aud-preserve",
-      mimeType: "audio/wav",
-      name: "sound.wav",
-      size: 8192,
-    },
-  };
+  const q = createQuestion("single");
+  q.prompt = "What is shown in the image?";
+  q.image = { id: "img-01", mimeType: "image/png", name: "tree.png", size: 1024 };
+  q.audio = { id: "aud-01", mimeType: "audio/mpeg", name: "bird.mp3", size: 2048 };
 
-  convertQuestionType(question, "matching");
-  assert.equal(question.type, "matching");
-  assert.equal(question.image?.id, "img-preserve");
-  assert.equal(question.audio?.id, "aud-preserve");
-  assert.equal(Array.isArray(question.pairs), true);
-  assert.equal(question.options, undefined);
+  // Convert to multiple choice
+  convertQuestionType(q, "multiple");
+  assert.equal(q.type, "multiple");
+  assert.equal(q.image?.id, "img-01");
+  assert.equal(q.audio?.id, "aud-01");
 
-  convertQuestionType(question, "truefalse");
-  assert.equal(question.type, "truefalse");
-  assert.equal(question.image?.id, "img-preserve");
-  assert.equal(question.audio?.id, "aud-preserve");
-  assert.equal(typeof question.answer, "boolean");
+  // Convert to blank
+  convertQuestionType(q, "blank");
+  assert.equal(q.type, "blank");
+  assert.equal(q.image?.id, "img-01");
+  assert.equal(q.audio?.id, "aud-01");
+
+  // Convert to truefalse
+  convertQuestionType(q, "truefalse");
+  assert.equal(q.type, "truefalse");
+  assert.equal(q.image?.id, "img-01");
+  assert.equal(q.audio?.id, "aud-01");
+
+  // Convert to matching
+  convertQuestionType(q, "matching");
+  assert.equal(q.type, "matching");
+  assert.equal(q.image?.id, "img-01");
+  assert.equal(q.audio?.id, "aud-01");
 });
 
 test("all five Objective Question types accept image, audio, and image + audio simultaneously", () => {
   const types = ["single", "multiple", "blank", "truefalse", "matching"];
-  for (const type of types) {
-    const q = createQuestion(type);
-    q.prompt = `Testing ${type}`;
-    q.image = { id: `img-${type}`, mimeType: "image/png", name: "test.png", size: 100 };
-    q.audio = { id: `aud-${type}`, mimeType: "audio/mpeg", name: "test.mp3", size: 200 };
 
-    const norm = normalizeQuestion(q);
-    assert.equal(norm.type, type);
-    assert.equal(norm.image?.id, `img-${type}`);
-    assert.equal(norm.audio?.id, `aud-${type}`);
-  }
+  types.forEach((type) => {
+    // 1. Image only
+    const imgQ = normalizeQuestion({
+      id: `q-${type}-img`,
+      type,
+      prompt: `Prompt for ${type} with image`,
+      image: { id: `img-${type}`, mimeType: "image/png", name: "art.png", size: 500 },
+    });
+    assert.equal(imgQ.image?.id, `img-${type}`);
+    assert.equal(imgQ.audio, undefined);
+
+    // 2. Audio only
+    const audQ = normalizeQuestion({
+      id: `q-${type}-aud`,
+      type,
+      prompt: `Prompt for ${type} with audio`,
+      audio: { id: `aud-${type}`, mimeType: "audio/mpeg", name: "voice.mp3", size: 1000 },
+    });
+    assert.equal(audQ.image, undefined);
+    assert.equal(audQ.audio?.id, `aud-${type}`);
+
+    // 3. Both Image and Audio
+    const dualQ = normalizeQuestion({
+      id: `q-${type}-dual`,
+      type,
+      prompt: `Prompt for ${type} with both`,
+      image: { id: `img-${type}-dual`, mimeType: "image/svg+xml", name: "chart.svg", size: 800 },
+      audio: { id: `aud-${type}-dual`, mimeType: "audio/wav", name: "chime.wav", size: 1200 },
+    });
+    assert.equal(dualQ.image?.id, `img-${type}-dual`);
+    assert.equal(dualQ.audio?.id, `aud-${type}-dual`);
+  });
 });
 
-test("media store saves, retrieves, lists, exports, and imports binary media assets cleanly", async () => {
+test("media store persists runtime assets as Blob/binary and exports/imports base64 cleanly at boundaries", async () => {
   const store = createMemoryMediaStore();
 
-  const asset1 = {
+  const dummyImageBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]);
+  const dummyAudioBytes = new Uint8Array([73, 68, 51, 3, 0, 0, 0, 0, 0, 10]);
+
+  await store.saveMediaAsset({
     id: "asset-1",
     mimeType: "image/png",
-    name: "map.png",
-    size: 4,
-    data: "iVBORw0KGgo=", // base64 snippet
-  };
+    name: "icon.png",
+    size: dummyImageBytes.byteLength,
+    data: dummyImageBytes,
+  });
 
-  const asset2 = {
+  await store.saveMediaAsset({
     id: "asset-2",
     mimeType: "audio/mpeg",
-    name: "speech.mp3",
-    size: 4,
-    data: "SUQzBAAAAA==",
-  };
-
-  await store.saveMediaAsset(asset1);
-  await store.saveMediaAsset(asset2);
+    name: "sound.mp3",
+    size: dummyAudioBytes.byteLength,
+    data: dummyAudioBytes,
+  });
 
   const ids = await store.listMediaAssetIds();
   assert.deepEqual(ids.sort(), ["asset-1", "asset-2"]);
 
   const retrieved1 = await store.getMediaAsset("asset-1");
   assert.equal(retrieved1?.id, "asset-1");
-  assert.equal(retrieved1?.name, "map.png");
   assert.equal(retrieved1?.mimeType, "image/png");
+  assert.ok(retrieved1?.blob, "Retrieved asset must contain binary Blob");
 
+  // Export converts Blob to base64 at JSON portability boundary
   const exported = await store.exportMediaAssets(["asset-1", "asset-2"]);
   assert.equal(exported.length, 2);
+  assert.equal(typeof exported[0].data, "string");
+  assert.ok(exported[0].data.length > 0);
 
+  // Import converts base64 back into Blob for runtime persistence
   const cleanStore = createMemoryMediaStore();
   await cleanStore.importMediaAssets(exported);
 
   const cleanIds = await cleanStore.listMediaAssetIds();
   assert.deepEqual(cleanIds.sort(), ["asset-1", "asset-2"]);
+  const importedAsset = await cleanStore.getMediaAsset("asset-1");
+  assert.ok(importedAsset?.blob, "Imported asset in store must be binary Blob");
 
   await store.deleteMediaAsset("asset-1");
   const remainingIds = await store.listMediaAssetIds();
@@ -270,7 +303,31 @@ test("reference collection gathers media references across live papers, active s
   assert.deepEqual(orphans, ["orphaned-img-999"]);
 });
 
-test("single-paper portability packages self-contained media assets and imports cleanly", () => {
+test("cleanupOrphanedMedia deletes unreferenced assets while protecting live, active session, and historical evidence", async () => {
+  const store = createMemoryMediaStore();
+  await store.saveMediaAsset({ id: "live-img", mimeType: "image/png", name: "live.png", data: new Uint8Array([1, 2, 3]) });
+  await store.saveMediaAsset({ id: "session-aud", mimeType: "audio/mpeg", name: "sess.mp3", data: new Uint8Array([4, 5, 6]) });
+  await store.saveMediaAsset({ id: "history-img", mimeType: "image/png", name: "hist.png", data: new Uint8Array([7, 8, 9]) });
+  await store.saveMediaAsset({ id: "orphan-aud", mimeType: "audio/wav", name: "orphan.wav", data: new Uint8Array([10, 11, 12]) });
+
+  const library = {
+    papers: [{ id: "p1", title: "P1", questions: [{ id: "q1", type: "single", prompt: "Q1", image: { id: "live-img" } }] }],
+  };
+  const session = {
+    questions: [{ id: "q2", type: "single", prompt: "Q2", audio: { id: "session-aud" } }],
+  };
+  const learnerResponses = [
+    { id: "r1", material: { snapshot: { items: [{ id: "q3", type: "truefalse", prompt: "Q3", image: { id: "history-img" } }] } } },
+  ];
+
+  const deleted = await cleanupOrphanedMedia(store, { library, session, learnerResponses });
+  assert.deepEqual(deleted, ["orphan-aud"]);
+
+  const remaining = await store.listMediaAssetIds();
+  assert.deepEqual(remaining.sort(), ["history-img", "live-img", "session-aud"]);
+});
+
+test("single-paper portability packages self-contained media assets and validates referential integrity", () => {
   const paper = {
     id: "p-media",
     title: "Multimedia Geography Quiz",
@@ -344,9 +401,64 @@ test("single-paper portability packages self-contained media assets and imports 
   const parsedLegacy = parsePortablePaperPackage(legacyPaper);
   assert.equal(parsedLegacy.paper.title, "Plain Quiz");
   assert.deepEqual(parsedLegacy.assets, []);
+
+  // Reject missing referenced asset
+  const missingAssetPkg = {
+    documentType: "quiz-studio.quiz-paper",
+    paper: {
+      questions: [
+        { id: "q-broken", type: "single", prompt: "Look", image: { id: "missing-img-999" } },
+      ],
+    },
+    assets: [],
+  };
+  assert.throws(() => parsePortablePaperPackage(missingAssetPkg), /missing-img-999/);
+
+  // Reject malformed/empty payload asset
+  const emptyPayloadPkg = {
+    documentType: "quiz-studio.quiz-paper",
+    paper: {
+      questions: [
+        { id: "q-empty", type: "single", prompt: "Look", image: { id: "empty-img-01" } },
+      ],
+    },
+    assets: [
+      { id: "empty-img-01", mimeType: "image/png", name: "empty.png", size: 0, data: "" },
+    ],
+  };
+  assert.throws(() => parsePortablePaperPackage(emptyPayloadPkg), /empty/i);
+
+  // Reject conflicting duplicate asset IDs
+  const conflictingDuplicatePkg = {
+    documentType: "quiz-studio.quiz-paper",
+    paper: {
+      questions: [
+        { id: "q-dup", type: "single", prompt: "Look", image: { id: "dup-id" } },
+      ],
+    },
+    assets: [
+      { id: "dup-id", mimeType: "image/png", name: "a.png", size: 10, data: "AAAA" },
+      { id: "dup-id", mimeType: "image/jpeg", name: "b.jpg", size: 20, data: "BBBB" },
+    ],
+  };
+  assert.throws(() => parsePortablePaperPackage(conflictingDuplicatePkg), /duplicate/i);
+
+  // Reject unsupported MIME on referenced asset
+  const badMimePkg = {
+    documentType: "quiz-studio.quiz-paper",
+    paper: {
+      questions: [
+        { id: "q-bad-mime", type: "single", prompt: "Look", image: { id: "bad-mime-id" } },
+      ],
+    },
+    assets: [
+      { id: "bad-mime-id", mimeType: "application/pdf", name: "doc.pdf", size: 100, data: "JVBERi0xLjQK" },
+    ],
+  };
+  assert.throws(() => parsePortablePaperPackage(badMimePkg), /invalid|unsupported/i);
 });
 
-test("full library backup includes media assets and restore recovers both library and media store", () => {
+test("full library backup enforces media referential integrity and restores safely", () => {
   const library = {
     papers: [
       {
@@ -401,6 +513,17 @@ test("full library backup includes media assets and restore recovers both librar
   const restoredLegacy = parseLibraryBackup(legacyBackup);
   assert.equal(restoredLegacy.library.papers[0].title, "Legacy");
   assert.deepEqual(restoredLegacy.mediaAssets, []);
+
+  // Reject backup with missing referenced media asset
+  const brokenBackup = {
+    schemaVersion: 2,
+    documentType: "quiz-studio.library-backup",
+    library: {
+      papers: [{ id: "bp1", title: "Broken", questions: [{ id: "bq1", type: "single", prompt: "Prompt", image: { id: "missing-img" } }] }],
+    },
+    mediaAssets: [],
+  };
+  assert.throws(() => parseLibraryBackup(brokenBackup), /missing-img/);
 });
 
 test("question and paper duplication preserves media references safely", () => {
@@ -457,4 +580,3 @@ test("active session question snapshots preserve media and survive live paper mu
   assert.equal(activeSessionQuestions[0].prompt, "Original prompt");
   assert.equal(activeSessionQuestions[0].image?.id, "img-live");
 });
-

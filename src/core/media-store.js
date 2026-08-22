@@ -27,8 +27,9 @@ export function arrayBufferToBase64(buffer) {
  */
 export function base64ToUint8Array(base64) {
   if (!base64 || typeof base64 !== "string") return new Uint8Array(0);
+  const clean = base64.startsWith("data:") ? base64.split(",")[1] || "" : base64.trim();
   if (typeof atob === "function") {
-    const binary = atob(base64);
+    const binary = atob(clean);
     const len = binary.length;
     const bytes = new Uint8Array(len);
     for (let i = 0; i < len; i++) {
@@ -37,13 +38,41 @@ export function base64ToUint8Array(base64) {
     return bytes;
   }
   if (typeof Buffer !== "undefined") {
-    return new Uint8Array(Buffer.from(base64, "base64"));
+    return new Uint8Array(Buffer.from(clean, "base64"));
   }
   return new Uint8Array(0);
 }
 
 /**
- * Converts Blob or ArrayBuffer or base64 to base64 string.
+ * Converts base64 string to Blob.
+ */
+export function base64ToBlob(base64, mimeType = "application/octet-stream") {
+  const bytes = base64ToUint8Array(base64);
+  if (typeof Blob !== "undefined") {
+    return new Blob([bytes], { type: mimeType });
+  }
+  return bytes;
+}
+
+/**
+ * Converts Blob or ArrayBuffer or base64 to Blob.
+ */
+export function dataToBlob(data, mimeType = "application/octet-stream") {
+  if (!data) return typeof Blob !== "undefined" ? new Blob([], { type: mimeType }) : new Uint8Array(0);
+  if (typeof Blob !== "undefined" && data instanceof Blob) {
+    return data;
+  }
+  if (data instanceof Uint8Array || data instanceof ArrayBuffer) {
+    return typeof Blob !== "undefined" ? new Blob([data], { type: mimeType }) : (data instanceof Uint8Array ? data : new Uint8Array(data));
+  }
+  if (typeof data === "string") {
+    return base64ToBlob(data, mimeType);
+  }
+  return typeof Blob !== "undefined" ? new Blob([], { type: mimeType }) : new Uint8Array(0);
+}
+
+/**
+ * Converts Blob / Uint8Array to base64 string.
  */
 export async function dataToBase64(data) {
   if (!data) return "";
@@ -57,30 +86,17 @@ export async function dataToBase64(data) {
     return arrayBufferToBase64(data);
   }
   if (typeof Blob !== "undefined" && data instanceof Blob) {
-    const buffer = await data.arrayBuffer();
-    return arrayBufferToBase64(buffer);
+    if (typeof data.arrayBuffer === "function") {
+      const buffer = await data.arrayBuffer();
+      return arrayBufferToBase64(buffer);
+    }
   }
   return "";
 }
 
 /**
- * Converts data to Blob with mimeType.
- */
-export function dataToBlob(data, mimeType = "application/octet-stream") {
-  if (typeof Blob === "undefined") return null;
-  if (data instanceof Blob) return data;
-  if (data instanceof Uint8Array || data instanceof ArrayBuffer) {
-    return new Blob([data], { type: mimeType });
-  }
-  if (typeof data === "string") {
-    const bytes = base64ToUint8Array(data.startsWith("data:") ? data.split(",")[1] : data);
-    return new Blob([bytes], { type: mimeType });
-  }
-  return null;
-}
-
-/**
  * In-memory Media Store implementation (for unit tests / non-browser environments).
+ * Stores binary Blob/Uint8Array objects in memory and handles base64 conversions on export/import.
  */
 export function createMemoryMediaStore() {
   const map = new Map();
@@ -88,13 +104,18 @@ export function createMemoryMediaStore() {
   return {
     async saveMediaAsset(asset) {
       if (!asset?.id) throw new TypeError("Media asset must have an id");
-      const base64Data = await dataToBase64(asset.data || asset.blob);
+      const mimeType = asset.mimeType || "application/octet-stream";
+      const blob = dataToBlob(asset.blob || asset.data, mimeType);
+      const size = typeof asset.size === "number" && asset.size >= 0
+        ? asset.size
+        : (blob.size !== undefined ? blob.size : (blob.byteLength || 0));
+
       const record = {
         id: asset.id,
-        mimeType: asset.mimeType || "application/octet-stream",
+        mimeType,
         name: asset.name || "asset",
-        size: typeof asset.size === "number" ? asset.size : base64Data.length,
-        data: base64Data,
+        size,
+        blob,
         createdAt: asset.createdAt || new Date().toISOString(),
       };
       map.set(asset.id, record);
@@ -104,10 +125,8 @@ export function createMemoryMediaStore() {
     async getMediaAsset(id) {
       const record = map.get(id);
       if (!record) return null;
-      const blob = dataToBlob(record.data, record.mimeType);
       return {
         ...record,
-        blob,
       };
     },
 
@@ -124,12 +143,13 @@ export function createMemoryMediaStore() {
       for (const id of assetIds) {
         const record = map.get(id);
         if (record) {
+          const base64Data = await dataToBase64(record.blob);
           results.push({
             id: record.id,
             mimeType: record.mimeType,
             name: record.name,
             size: record.size,
-            data: record.data,
+            data: base64Data,
           });
         }
       }
@@ -140,7 +160,20 @@ export function createMemoryMediaStore() {
       if (!Array.isArray(assets)) return;
       for (const item of assets) {
         if (item?.id) {
-          await this.saveMediaAsset(item);
+          const mimeType = item.mimeType || "application/octet-stream";
+          const blob = dataToBlob(item.data || item.blob, mimeType);
+          const size = typeof item.size === "number" && item.size >= 0
+            ? item.size
+            : (blob.size !== undefined ? blob.size : (blob.byteLength || 0));
+
+          map.set(item.id, {
+            id: item.id,
+            mimeType,
+            name: item.name || "asset",
+            size,
+            blob,
+            createdAt: item.createdAt || new Date().toISOString(),
+          });
         }
       }
     },
@@ -153,6 +186,7 @@ export function createMemoryMediaStore() {
 
 /**
  * IndexedDB-backed Media Store implementation (for browser runtime).
+ * Stores binary Blob objects natively in IndexedDB (not base64).
  */
 export function createIndexedDbMediaStore() {
   let dbPromise = null;
@@ -184,13 +218,18 @@ export function createIndexedDbMediaStore() {
     async saveMediaAsset(asset) {
       if (!asset?.id) throw new TypeError("Media asset must have an id");
       const db = await getDb();
-      const base64Data = await dataToBase64(asset.data || asset.blob);
+      const mimeType = asset.mimeType || "application/octet-stream";
+      const blob = dataToBlob(asset.blob || asset.data, mimeType);
+      const size = typeof asset.size === "number" && asset.size >= 0
+        ? asset.size
+        : (blob.size !== undefined ? blob.size : 0);
+
       const record = {
         id: asset.id,
-        mimeType: asset.mimeType || "application/octet-stream",
+        mimeType,
         name: asset.name || "asset",
-        size: typeof asset.size === "number" ? asset.size : base64Data.length,
-        data: base64Data,
+        size,
+        blob,
         createdAt: asset.createdAt || new Date().toISOString(),
       };
 
@@ -215,11 +254,7 @@ export function createIndexedDbMediaStore() {
             resolve(null);
             return;
           }
-          const blob = dataToBlob(record.data, record.mimeType);
-          resolve({
-            ...record,
-            blob,
-          });
+          resolve(record);
         };
         req.onerror = () => reject(req.error);
       });
@@ -258,13 +293,14 @@ export function createIndexedDbMediaStore() {
           req.onsuccess = () => resolve(req.result || null);
           req.onerror = () => resolve(null);
         });
-        if (asset) {
+        if (asset && asset.blob) {
+          const base64Data = await dataToBase64(asset.blob);
           results.push({
             id: asset.id,
             mimeType: asset.mimeType,
             name: asset.name,
             size: asset.size,
-            data: asset.data,
+            data: base64Data,
           });
         }
       }
@@ -281,12 +317,18 @@ export function createIndexedDbMediaStore() {
         tx.onerror = () => reject(tx.error);
         for (const asset of assets) {
           if (asset?.id) {
+            const mimeType = asset.mimeType || "application/octet-stream";
+            const blob = dataToBlob(asset.data || asset.blob, mimeType);
+            const size = typeof asset.size === "number" && asset.size >= 0
+              ? asset.size
+              : (blob.size !== undefined ? blob.size : 0);
+
             store.put({
               id: asset.id,
-              mimeType: asset.mimeType || "application/octet-stream",
+              mimeType,
               name: asset.name || "asset",
-              size: typeof asset.size === "number" ? asset.size : (asset.data ? asset.data.length : 0),
-              data: typeof asset.data === "string" ? (asset.data.startsWith("data:") ? asset.data.split(",")[1] : asset.data) : "",
+              size,
+              blob,
               createdAt: asset.createdAt || new Date().toISOString(),
             });
           }

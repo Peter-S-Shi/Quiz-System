@@ -64,3 +64,38 @@ export function findOrphanedMediaIds(storedIds = [], referencedIds = new Set()) 
   }
   return orphans;
 }
+
+/**
+ * Conservative reference-aware media cleanup.
+ * Removes assets only if they are not referenced in library papers, active session, or finalized evidence.
+ */
+export async function cleanupOrphanedMedia(mediaStore, {
+  library = null,
+  session = null,
+  learnerResponses = [],
+  activePaper = null,
+  candidateAssetIds = [],
+} = {}) {
+  if (!mediaStore) return [];
+
+  const referencedIds = collectReferencedMediaIds({
+    library,
+    session,
+    learnerResponses,
+    activePaper,
+  });
+
+  const targetsToCheck = candidateAssetIds && candidateAssetIds.length > 0
+    ? candidateAssetIds
+    : await mediaStore.listMediaAssetIds();
+
+  const deletedIds = [];
+  for (const id of targetsToCheck) {
+    if (!referencedIds.has(id)) {
+      await mediaStore.deleteMediaAsset(id);
+      deletedIds.push(id);
+    }
+  }
+
+  return deletedIds;
+}
