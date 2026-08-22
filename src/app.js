@@ -190,6 +190,7 @@ const locales = {
     },
     category: {
       title: "分类",
+      libraryTitle: "试卷库",
       allPapers: "所有试卷",
       uncategorized: "未分类",
       newCategory: "新建分类",
@@ -200,9 +201,15 @@ const locales = {
       deleteCategoryTitle: "删除分类",
       deleteEmptyConfirm: "确定要删除空分类 “{name}” 吗？",
       deleteChoicePrompt: "分类 “{name}” 下包含 {count} 份试卷。请选择删除方式：",
-      deleteOnly: "仅删除分类（保留试卷为未分类）",
-      deleteWithPapers: "删除分类及所有试卷 ({count} 份)",
+      deleteOnlyTitle: "仅删除分类",
+      deleteOnlyDesc: "保留该分类下的所有试卷并将其设为“未分类”。试卷内容、题目与作答历史均完好保存。",
+      deleteWithPapersTitle: "删除分类及所有试卷",
+      deleteWithPapersDesc: "永久删除该分类以及其中的全部试卷与题目。此操作无法撤销！",
+      deleteOnly: "仅删除分类",
+      deleteWithPapers: "删除分类及试卷 ({count} 份)",
       deleteWithPapersFinalConfirm: "【危险操作】确定要删除分类 “{name}” 及该分类下的全部 {count} 份试卷吗？此操作无法撤销！",
+      backToCategories: "← 返回分类列表",
+      backToPapers: "← 返回试卷列表",
     },
     library: {
       title: "本地试卷库",
@@ -685,6 +692,7 @@ const locales = {
     },
     category: {
       title: "Categories",
+      libraryTitle: "Quiz Library",
       allPapers: "All Papers",
       uncategorized: "Uncategorized",
       newCategory: "New Category",
@@ -695,9 +703,15 @@ const locales = {
       deleteCategoryTitle: "Delete Category",
       deleteEmptyConfirm: "Are you sure you want to delete the empty category '{name}'?",
       deleteChoicePrompt: "Category '{name}' contains {count} paper(s). Choose deletion option:",
-      deleteOnly: "Delete Category Only (keep papers as Uncategorized)",
+      deleteOnlyTitle: "Delete Category Only",
+      deleteOnlyDesc: "Keep all papers in the library and set them as 'Uncategorized'. No questions or records will be lost.",
+      deleteWithPapersTitle: "Delete Category + Papers",
+      deleteWithPapersDesc: "Permanently delete this category and all {count} paper(s) in it. This action cannot be undone!",
+      deleteOnly: "Delete Category Only",
       deleteWithPapers: "Delete Category + Papers ({count} papers)",
       deleteWithPapersFinalConfirm: "[CAUTION] Are you sure you want to delete category '{name}' AND all {count} paper(s) in it? This action cannot be undone!",
+      backToCategories: "← Back to Categories",
+      backToPapers: "← Back to Papers",
     },
     library: {
       title: "Local quiz library",
@@ -1157,6 +1171,7 @@ let translationHistoryOpen = false;
 let translationHistoryFilters = { purpose: "all", status: "all", sort: "newest" };
 let translationHistoryDetailId = null;
 let retrySelectionDraft = null;
+let editSidebarLevel = "questions"; // "categories" | "papers" | "questions"
 let selectedCategory = ALL_PAPERS_CATEGORY;
 let pendingDeleteCategoryName = null;
 
@@ -1181,6 +1196,10 @@ const categoryDeleteDialog = document.getElementById("categoryDeleteDialog");
 const closeCategoryDeleteDialog = document.getElementById("closeCategoryDeleteDialog");
 const categoryDeleteTitle = document.getElementById("categoryDeleteTitle");
 const categoryDeleteMessage = document.getElementById("categoryDeleteMessage");
+const deleteOnlyTitle = document.getElementById("deleteOnlyTitle");
+const deleteOnlyDescription = document.getElementById("deleteOnlyDescription");
+const deleteWithPapersTitle = document.getElementById("deleteWithPapersTitle");
+const deleteWithPapersDescription = document.getElementById("deleteWithPapersDescription");
 const btnDeleteCategoryOnly = document.getElementById("btnDeleteCategoryOnly");
 const btnDeleteCategoryWithPapers = document.getElementById("btnDeleteCategoryWithPapers");
 const btnCancelCategoryDelete = document.getElementById("btnCancelCategoryDelete");
@@ -1199,6 +1218,10 @@ const quizModeButton = document.getElementById("quizModeButton");
 const themeToggle = document.getElementById("themeToggle");
 const languageSelect = document.getElementById("languageSelect");
 const libraryPanel = document.getElementById("libraryPanel");
+const paperQuestionSection = document.getElementById("paperQuestionSection");
+const sidebarBackToPapers = document.getElementById("sidebarBackToPapers");
+const sidebarPaperTitle = document.getElementById("sidebarPaperTitle");
+const sidebarPaperCategoryBadge = document.getElementById("sidebarPaperCategoryBadge");
 const paperTitle = document.getElementById("paperTitle");
 const paperDescription = document.getElementById("paperDescription");
 const paperCategorySelect = document.getElementById("paperCategorySelect");
@@ -1328,8 +1351,14 @@ function bindGlobalEvents() {
 
   languageSelect.addEventListener("change", (event) => setLanguage(event.target.value));
 
+  sidebarBackToPapers?.addEventListener("click", () => {
+    editSidebarLevel = "papers";
+    renderLibraryPanel();
+  });
+
   paperTitle.addEventListener("input", () => {
     paper.title = paperTitle.value;
+    if (sidebarPaperTitle) sidebarPaperTitle.textContent = paper.title || t("library.untitled");
     savePaper({ clearSession: false });
     renderLibraryPanel();
   });
@@ -1355,6 +1384,7 @@ function bindGlobalEvents() {
         }
         paper.category = trimmed;
         selectedCategory = trimmed;
+        if (sidebarPaperCategoryBadge) sidebarPaperCategoryBadge.textContent = trimmed || t("category.uncategorized");
         savePaper({ clearSession: false });
         renderAll();
       } else {
@@ -1363,6 +1393,7 @@ function bindGlobalEvents() {
       return;
     }
     paper.category = e.target.value;
+    if (sidebarPaperCategoryBadge) sidebarPaperCategoryBadge.textContent = paper.category || t("category.uncategorized");
     savePaper({ clearSession: false });
     renderLibraryPanel();
   });
@@ -1646,6 +1677,18 @@ function setLanguage(nextLanguage) {
   renderAll();
 }
 
+function getCategoryDisplayName(cat) {
+  if (cat === ALL_PAPERS_CATEGORY) return t("category.allPapers");
+  if (cat === UNCATEGORIZED_CATEGORY) return t("category.uncategorized");
+  return cat;
+}
+
+function getCategoryIcon(cat) {
+  if (cat === ALL_PAPERS_CATEGORY) return "📋";
+  if (cat === UNCATEGORIZED_CATEGORY) return "📄";
+  return "📁";
+}
+
 function renderLibraryPanel() {
   const counts = getCategoryCounts(library.categories, library.papers);
 
@@ -1657,6 +1700,97 @@ function renderLibraryPanel() {
     selectedCategory = ALL_PAPERS_CATEGORY;
   }
 
+  // Manage progressive visibility between Levels 1 & 2 (libraryPanel) and Level 3 (paperQuestionSection)
+  if (editSidebarLevel === "questions") {
+    libraryPanel.classList.add("hidden");
+    paperQuestionSection?.classList.remove("hidden");
+    if (sidebarPaperTitle) sidebarPaperTitle.textContent = paper.title || t("library.untitled");
+    if (sidebarPaperCategoryBadge) sidebarPaperCategoryBadge.textContent = paper.category || t("category.uncategorized");
+    if (sidebarBackToPapers) sidebarBackToPapers.textContent = t("category.backToPapers");
+    renderPaperCategorySelect();
+    renderQuestionList();
+    renderQuestionEditor();
+    return;
+  }
+
+  libraryPanel.classList.remove("hidden");
+  paperQuestionSection?.classList.add("hidden");
+
+  if (editSidebarLevel === "categories") {
+    // -------------------------------------------------------------
+    // LEVEL 1: CATEGORIES
+    // -------------------------------------------------------------
+    libraryPanel.innerHTML = `
+      <div class="library-heading">
+        <strong>${t("category.libraryTitle")}</strong>
+        <span>${counts.allCount}</span>
+      </div>
+      <div class="category-nav-list" role="navigation" aria-label="${t("category.title")}">
+        <div class="category-nav-row ${selectedCategory === ALL_PAPERS_CATEGORY ? "active" : ""}">
+          <button class="category-nav-item" type="button" data-enter-category="${ALL_PAPERS_CATEGORY}" aria-label="${t("category.allPapers")} (${counts.allCount})">
+            <span class="category-nav-label">📋 ${t("category.allPapers")}</span>
+            <span class="category-nav-count">${counts.allCount}</span>
+          </button>
+        </div>
+        ${library.categories.map((cat) => `
+          <div class="category-nav-row ${selectedCategory === cat ? "active" : ""}">
+            <button class="category-nav-item" type="button" data-enter-category="${escapeHtml(cat)}" aria-label="${escapeHtml(cat)} (${counts.categoryCounts[cat] || 0})">
+              <span class="category-nav-label">📁 ${escapeHtml(cat)}</span>
+              <span class="category-nav-count">${counts.categoryCounts[cat] || 0}</span>
+            </button>
+            <span class="category-item-actions">
+              <button type="button" class="category-action-btn" data-rename-category="${escapeHtml(cat)}" title="${t("category.renameCategory")}" aria-label="${t("category.renameCategory")}: ${escapeHtml(cat)}">✎</button>
+              <button type="button" class="category-action-btn danger-action" data-delete-category="${escapeHtml(cat)}" title="${t("category.deleteCategory")}" aria-label="${t("category.deleteCategory")}: ${escapeHtml(cat)}">🗑</button>
+            </span>
+          </div>
+        `).join("")}
+        <div class="category-nav-row ${selectedCategory === UNCATEGORIZED_CATEGORY ? "active" : ""}">
+          <button class="category-nav-item" type="button" data-enter-category="${UNCATEGORIZED_CATEGORY}" aria-label="${t("category.uncategorized")} (${counts.uncategorizedCount})">
+            <span class="category-nav-label">📄 ${t("category.uncategorized")}</span>
+            <span class="category-nav-count">${counts.uncategorizedCount}</span>
+          </button>
+        </div>
+      </div>
+      <div class="category-manage-actions">
+        <button class="secondary-button small-button" type="button" id="newCategoryBtn">+ ${t("category.newCategory")}</button>
+      </div>
+      <div class="utility-row">
+        <button class="secondary-button" id="exportBackup" type="button">${t("library.exportBackup")}</button>
+        <label class="secondary-button file-label">
+          <span>${t("library.importBackup")}</span>
+          <input id="backupInput" type="file" accept="application/json,.json">
+        </label>
+      </div>
+    `;
+
+    document.getElementById("newCategoryBtn")?.addEventListener("click", promptCreateCategory);
+    libraryPanel.querySelectorAll("[data-enter-category]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        selectedCategory = btn.dataset.enterCategory;
+        editSidebarLevel = "papers";
+        renderLibraryPanel();
+      });
+    });
+    libraryPanel.querySelectorAll("[data-rename-category]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        promptRenameCategory(btn.dataset.renameCategory);
+      });
+    });
+    libraryPanel.querySelectorAll("[data-delete-category]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        promptDeleteCategory(btn.dataset.deleteCategory);
+      });
+    });
+    document.getElementById("exportBackup")?.addEventListener("click", exportLibraryBackup);
+    document.getElementById("backupInput")?.addEventListener("change", importLibraryBackup);
+    return;
+  }
+
+  // -------------------------------------------------------------
+  // LEVEL 2: PAPERS
+  // -------------------------------------------------------------
   const query = librarySearch.trim().toLowerCase();
   const categoryFiltered = filterPapersByCategory(library.papers, selectedCategory);
   const papers = categoryFiltered
@@ -1673,41 +1807,15 @@ function renderLibraryPanel() {
       : `${t("library.search")} (${escapeHtml(selectedCategory)})`;
 
   libraryPanel.innerHTML = `
-    <div class="library-heading">
-      <strong>${t("library.title")}</strong>
-      <span>${library.papers.length}</span>
+    <div class="sidebar-breadcrumb">
+      <button type="button" class="back-link-btn" id="sidebarBackToCategories">${t("category.backToCategories")}</button>
     </div>
-    <div class="category-nav">
-      <div class="category-nav-header">
-        <span>${t("category.title")}</span>
-        <button class="small-button" type="button" id="newCategoryBtn">+ ${t("category.newCategory")}</button>
+    <div class="category-current-header">
+      <div class="category-header-title">
+        <span>${getCategoryIcon(selectedCategory)}</span>
+        <span>${escapeHtml(getCategoryDisplayName(selectedCategory))}</span>
       </div>
-      <div class="category-nav-list" role="navigation" aria-label="${t("category.title")}">
-        <div class="category-nav-row ${selectedCategory === ALL_PAPERS_CATEGORY ? "active" : ""}">
-          <button class="category-nav-item" type="button" data-select-category="${ALL_PAPERS_CATEGORY}" aria-label="${t("category.allPapers")} (${counts.allCount})">
-            <span class="category-nav-label">📋 ${t("category.allPapers")}</span>
-            <span class="category-nav-count">${counts.allCount}</span>
-          </button>
-        </div>
-        ${library.categories.map((cat) => `
-          <div class="category-nav-row ${selectedCategory === cat ? "active" : ""}">
-            <button class="category-nav-item" type="button" data-select-category="${escapeHtml(cat)}" aria-label="${escapeHtml(cat)} (${counts.categoryCounts[cat] || 0})">
-              <span class="category-nav-label">📁 ${escapeHtml(cat)}</span>
-              <span class="category-nav-count">${counts.categoryCounts[cat] || 0}</span>
-            </button>
-            <span class="category-item-actions">
-              <button type="button" class="category-action-btn" data-rename-category="${escapeHtml(cat)}" title="${t("category.renameCategory")}" aria-label="${t("category.renameCategory")}: ${escapeHtml(cat)}">✎</button>
-              <button type="button" class="category-action-btn danger-action" data-delete-category="${escapeHtml(cat)}" title="${t("category.deleteCategory")}" aria-label="${t("category.deleteCategory")}: ${escapeHtml(cat)}">🗑</button>
-            </span>
-          </div>
-        `).join("")}
-        <div class="category-nav-row ${selectedCategory === UNCATEGORIZED_CATEGORY ? "active" : ""}">
-          <button class="category-nav-item" type="button" data-select-category="${UNCATEGORIZED_CATEGORY}" aria-label="${t("category.uncategorized")} (${counts.uncategorizedCount})">
-            <span class="category-nav-label">📄 ${t("category.uncategorized")}</span>
-            <span class="category-nav-count">${counts.uncategorizedCount}</span>
-          </button>
-        </div>
-      </div>
+      <span class="category-badge">${categoryFiltered.length}</span>
     </div>
     <input id="librarySearch" type="search" value="${escapeHtml(librarySearch)}" placeholder="${escapeHtml(searchPlaceholder)}">
     <div class="library-actions">
@@ -1719,48 +1827,25 @@ function renderLibraryPanel() {
     <div class="library-list">
       ${papers.length ? papers.map(renderLibraryItem).join("") : `<div class="library-empty">${t("library.empty")}</div>`}
     </div>
-    <div class="utility-row">
-      <button class="secondary-button" id="exportBackup" type="button">${t("library.exportBackup")}</button>
-      <label class="secondary-button file-label">
-        <span>${t("library.importBackup")}</span>
-        <input id="backupInput" type="file" accept="application/json,.json">
-      </label>
-    </div>
   `;
 
-  document.getElementById("newCategoryBtn")?.addEventListener("click", promptCreateCategory);
-  libraryPanel.querySelectorAll("[data-select-category]").forEach((elem) => {
-    elem.addEventListener("click", () => {
-      selectedCategory = elem.dataset.selectCategory;
-      renderLibraryPanel();
-    });
+  document.getElementById("sidebarBackToCategories")?.addEventListener("click", () => {
+    editSidebarLevel = "categories";
+    renderLibraryPanel();
   });
-  libraryPanel.querySelectorAll("[data-rename-category]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      promptRenameCategory(btn.dataset.renameCategory);
-    });
-  });
-  libraryPanel.querySelectorAll("[data-delete-category]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      promptDeleteCategory(btn.dataset.deleteCategory);
-    });
-  });
-
-  document.getElementById("librarySearch").addEventListener("input", (event) => {
+  document.getElementById("librarySearch")?.addEventListener("input", (event) => {
     librarySearch = event.target.value;
     renderLibraryPanel();
   });
-  document.getElementById("newPaper").addEventListener("click", createLibraryPaper);
-  document.getElementById("duplicatePaper").addEventListener("click", duplicateLibraryPaper);
-  document.getElementById("renamePaper").addEventListener("click", renameLibraryPaper);
-  document.getElementById("deletePaper").addEventListener("click", deleteLibraryPaper);
-  document.getElementById("exportBackup").addEventListener("click", exportLibraryBackup);
-  document.getElementById("backupInput").addEventListener("change", importLibraryBackup);
+  document.getElementById("newPaper")?.addEventListener("click", createLibraryPaper);
+  document.getElementById("duplicatePaper")?.addEventListener("click", duplicateLibraryPaper);
+  document.getElementById("renamePaper")?.addEventListener("click", renameLibraryPaper);
+  document.getElementById("deletePaper")?.addEventListener("click", deleteLibraryPaper);
 
   libraryPanel.querySelectorAll("[data-open-paper]").forEach((button) => {
-    button.addEventListener("click", () => openLibraryPaper(button.dataset.openPaper));
+    button.addEventListener("click", () => {
+      openLibraryPaper(button.dataset.openPaper);
+    });
   });
 }
 
@@ -1775,11 +1860,13 @@ function promptCreateCategory() {
   if (library.categories.includes(trimmed)) {
     showToast(t("toast.categoryExists"));
     selectedCategory = trimmed;
+    editSidebarLevel = "papers";
     renderLibraryPanel();
     return;
   }
   library.categories = createCategory(library.categories, trimmed);
   selectedCategory = trimmed;
+  editSidebarLevel = "papers";
   saveLibrary();
   renderAll();
   showToast(t("toast.categoryCreated"));
@@ -1833,7 +1920,11 @@ function promptDeleteCategory(categoryName) {
   pendingDeleteCategoryName = categoryName;
   if (categoryDeleteTitle) categoryDeleteTitle.textContent = t("category.deleteCategoryTitle");
   if (categoryDeleteMessage) categoryDeleteMessage.textContent = t("category.deleteChoicePrompt", { name: categoryName, count: matchingPapers.length });
+  if (deleteOnlyTitle) deleteOnlyTitle.textContent = t("category.deleteOnlyTitle");
+  if (deleteOnlyDescription) deleteOnlyDescription.textContent = t("category.deleteOnlyDesc");
   if (btnDeleteCategoryOnly) btnDeleteCategoryOnly.textContent = t("category.deleteOnly");
+  if (deleteWithPapersTitle) deleteWithPapersTitle.textContent = t("category.deleteWithPapersTitle");
+  if (deleteWithPapersDescription) deleteWithPapersDescription.textContent = t("category.deleteWithPapersDesc", { count: matchingPapers.length });
   if (btnDeleteCategoryWithPapers) btnDeleteCategoryWithPapers.textContent = t("category.deleteWithPapers", { count: matchingPapers.length });
   if (btnCancelCategoryDelete) btnCancelCategoryDelete.textContent = t("actions.cancel");
   categoryDeleteDialog?.showModal();
@@ -1883,6 +1974,7 @@ function createLibraryPaper() {
   activePaperId = nextPaper.id;
   localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
   selectedQuestionId = null;
+  editSidebarLevel = "questions";
   clearActiveSession();
   saveLibrary();
   renderAll();
@@ -1896,6 +1988,7 @@ function duplicateLibraryPaper() {
   activePaperId = copy.id;
   localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
   selectedQuestionId = copy.questions[0]?.id ?? null;
+  editSidebarLevel = "questions";
   clearActiveSession();
   saveLibrary();
   renderAll();
@@ -1926,14 +2019,16 @@ function deleteLibraryPaper() {
 }
 
 function openLibraryPaper(id) {
-  if (id === activePaperId) return;
-  activePaperId = id;
-  localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
-  paper = getActivePaper();
-  paper.lastOpenedAt = new Date().toISOString();
-  selectedQuestionId = paper.questions[0]?.id ?? null;
-  session = loadActiveSession();
-  saveLibrary();
+  if (id !== activePaperId) {
+    activePaperId = id;
+    localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+    paper = getActivePaper();
+    paper.lastOpenedAt = new Date().toISOString();
+    selectedQuestionId = paper.questions[0]?.id ?? null;
+    session = loadActiveSession();
+    saveLibrary();
+  }
+  editSidebarLevel = "questions";
   renderAll();
 }
 

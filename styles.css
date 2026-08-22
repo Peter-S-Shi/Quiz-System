@@ -739,6 +739,96 @@ button[disabled] {
 }
 
 /* -------------------------------------------------------------
+   PROGRESSIVE SINGLE-LEVEL SIDEBAR NAVIGATION
+   ------------------------------------------------------------- */
+.sidebar-breadcrumb {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.back-link-btn {
+  background: transparent;
+  border: none;
+  color: var(--brand-blue);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.back-link-btn:hover {
+  color: var(--brand-blue-hover, #205493);
+  text-decoration: underline;
+}
+
+.category-current-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--paper-line);
+  margin-bottom: 8px;
+}
+
+.category-header-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--paper-text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--paper-text-muted);
+  background: var(--paper-sheet-subtle);
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--paper-line);
+  white-space: nowrap;
+}
+
+.paper-summary-card {
+  padding: 8px 10px;
+  background: var(--paper-sheet-subtle);
+  border-radius: 6px;
+  border: 1px solid var(--paper-line);
+  margin-bottom: 12px;
+}
+
+.paper-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.paper-summary-header strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--paper-text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-manage-actions {
+  margin: 10px 0 8px;
+}
+
+/* -------------------------------------------------------------
    COLLECTION-STYLE CATEGORY NAVIGATION
    ------------------------------------------------------------- */
 .category-nav {
@@ -767,7 +857,7 @@ button[disabled] {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  max-height: 180px;
+  max-height: 240px;
   overflow-y: auto;
   padding-right: 2px;
 }
@@ -882,10 +972,96 @@ button[disabled] {
   background: var(--ink-vermilion-soft);
 }
 
-.category-delete-actions {
-  display: grid;
+/* -------------------------------------------------------------
+   CATEGORY DELETION DIALOG POLISH
+   ------------------------------------------------------------- */
+.category-delete-dialog {
+  max-width: 520px;
+}
+
+.category-delete-body {
+  gap: 16px;
+}
+
+.category-delete-prompt {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--paper-text-main);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.category-delete-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-delete-card {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
-  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--paper-line);
+  background: var(--paper-sheet-subtle);
+  transition: all 0.15s ease;
+}
+
+.category-delete-card.safe-card {
+  border-color: var(--paper-line);
+}
+
+.category-delete-card.safe-card:hover {
+  background: var(--paper-sheet);
+  border-color: var(--brand-blue-border);
+}
+
+.category-delete-card.danger-card {
+  border-color: rgba(186, 45, 25, 0.25);
+  background: var(--ink-vermilion-soft);
+}
+
+.category-delete-card.danger-card:hover {
+  border-color: var(--ink-vermilion);
+}
+
+.delete-card-info strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.delete-card-info p {
+  font-size: 12px;
+  color: var(--paper-text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.danger-text {
+  color: var(--ink-vermilion);
+}
+
+.danger-text-muted {
+  color: var(--ink-vermilion);
+  opacity: 0.85;
+}
+
+.delete-card-btn {
+  align-self: flex-start;
+  min-height: 30px;
+  font-size: 12.5px;
+  padding: 3px 12px;
+}
+
+.category-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--paper-line);
+  padding-top: 10px;
+  margin-top: 2px;
 }
 
 .library-list {

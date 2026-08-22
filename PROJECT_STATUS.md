@@ -6,14 +6,15 @@ Pre-Freeze V1 Scope Closure
 
 ## Current Milestone
 
-Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style Categories) — implemented and verified; ready for Human Gate B evaluation
+Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style Categories & Progressive Navigation) — implemented and verified; ready for Human Gate B evaluation
 
 This workstream delivers the second pre-freeze scope closure package:
-1. **Library Organization & Category Navigation**: Adds collection-style Category navigation in the Quiz Library sidebar (All Papers with total count, user-created Categories with counts and rename/delete actions, Uncategorized with count, and `+ New Category`).
-2. **Category Management & Scoped Search**: Supports creating categories, empty category persistence across reloads/backups, search queries scoped to the selected category or across all papers, and category-aware paper reassignment.
-3. **Safe Deletion Contract**: Implements single confirmation for empty categories, 3-way modal selection for populated categories (Cancel / Delete Category Only / Delete Category + Papers with explicit destructive confirmation), and safe active paper fallback.
-4. **Data & Backup Compatibility**: Seamlessly incorporates legacy category strings, preserves categories in full backup JSON, and maintains tag independence.
-5. **Human Gate B**: Verification guide prepared in `manual-qa/human-gate-b.md` and `manual-qa/human-gate-b.zh-CN.md`.
+1. **Progressive Single-Level Sidebar Navigation**: Refactors the Edit sidebar into a clean progressive single-level model (Level 1 Categories → Level 2 Papers → Level 3 Questions) with breadcrumb back-navigation, reducing cognitive load.
+2. **Library Organization & Category Navigation**: Collection-style Category navigation in the Quiz Library sidebar (All Papers with total count, user-created Categories with counts and rename/delete actions, Uncategorized with count, and `+ New Category`).
+3. **Category Management & Scoped Search**: Supports creating categories, reserved name protection (`__ALL__`, `__UNCATEGORIZED__`, `__NEW_CATEGORY__`), collision-safe renaming without merging, empty category persistence across reloads/backups, search queries scoped to the selected category, and category-aware paper reassignment.
+4. **Polished Deletion Modal & Safe Contract**: Implements single confirmation for empty categories, polished Study Desk design system 3-way modal selection for populated categories (Cancel / Delete Category Only / Delete Category + Papers with explicit destructive confirmation), and safe active paper fallback.
+5. **Data & Backup Compatibility**: Seamlessly incorporates legacy category strings, preserves categories in full backup JSON, and maintains tag independence.
+6. **Human Gate B**: Verification guide updated in `manual-qa/human-gate-b.md` and `manual-qa/human-gate-b.zh-CN.md`.
 
 It follows Batch A (Practice Feedback Modes & Special Practice IA, Human Gate A = PASS) and precedes Batch C (Question Media: image/audio) and the subsequent Whole-Product Feature Complete Review V3.
 

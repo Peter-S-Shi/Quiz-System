@@ -1,188 +1,225 @@
-﻿# Human Gate B Verification Guide — Quiz Library Organization & Collection-Style Categories
+﻿# Human Gate B Verification Guide — Quiz Library Organization & Progressive Navigation
 
 **Scope**: Pre-Freeze V1 Scope Closure · Batch B  
 **Status**: PENDING HUMAN EVALUATION  
-**Evaluator**: Human Reviewer / User  
+**Evaluator**: Human Reviewer / Product Owner  
 
 ---
 
 ## Overview
 
-This guide provides step-by-step verification journeys for the Library Organization capabilities introduced in Pre-Freeze V1 Scope Closure Batch B:
-1. **Category Navigation, Accessibility & Creation**: Focusable & activatable category list items, keyboard navigation, creating categories, reserved name protection (`__ALL__`, `__UNCATEGORIZED__`, `__NEW_CATEGORY__`), empty category persistence across reloads/backups, and scoped search.
-2. **Category Creation & Scoped Search**: Assigning papers to categories, new paper category inheritance, and category-scoped search queries.
-3. **Paper Category Reassignment & Inline Category Creation**: Moving papers between categories or Uncategorized via the category-aware selector, and creating new categories directly from paper settings.
+This guide provides step-by-step verification journeys for the Library Organization & UI Polish capabilities introduced in Pre-Freeze V1 Scope Closure Batch B:
+1. **Progressive Single-Level Sidebar Navigation (Level 1 → Level 2 → Level 3)**:
+   - **Level 1 (Categories)**: All Papers, user Categories, Uncategorized, Category CRUD, and Backup utilities.
+   - **Level 2 (Papers)**: Breadcrumb back-link to Categories, current category identity & count, scoped search, and paper actions.
+   - **Level 3 (Questions)**: Breadcrumb back-link to Papers, active paper identity & category badge, paper fields, and question list/actions.
+2. **Category Management, Accessibility & Protection**: Keyboard accessibility (Tab / Enter / Space), reserved name protection (`__ALL__`, `__UNCATEGORIZED__`, `__NEW_CATEGORY__`), empty category persistence across reloads/backups.
+3. **Paper Categorization, Scoped Search & Inline Category Creation**: Paper category reassignment, category inheritance for new papers, category-scoped search queries.
 4. **Category Renaming & Collision Safety**: Registry update with automatic propagation to assigned papers, reserved name protection, and safe rejection of rename collisions (preventing silent category merges).
-5. **Category Deletion Contract & Safety**: Empty deletion confirmation, non-empty 3-way choice (Cancel / Delete Category Only / Delete Category + Papers), destructive confirmation, and active paper fallback safety.
-6. **Backup & Restore Compatibility**: Preserving user-defined categories in full backup JSON, seamlessly recovering legacy backups, and bilingual localization.
+5. **Polished Category Deletion Modal & Safety Contract**:
+   - Modal header with conventional top-right close button.
+   - Distinct safe card ("Delete Category Only") and destructive card ("Delete Category + Papers" with permanent deletion count).
+   - Secondary cancel action, Layered Paper Study Desk design tokens, and secondary confirmation dialog.
+6. **Backup & Restore Compatibility & Localization**: Full backup preservation of categories and bilingual UI localization.
 
 ---
 
-## Verification Journey 1: Category Navigation, Accessibility & Creation
+## Verification Journey 1: Progressive Single-Level Sidebar Navigation
 
 ### Objective
-Verify that the Category navigation panel is fully keyboard-accessible (no invalid nested button markup), displays accurate paper counts, prevents reserved internal names, supports creating new categories, and persists empty categories.
+Verify that the Edit mode sidebar follows a clean, single-level progressive navigation model (Category → Paper → Question) that eliminates clutter and cognitive overload while providing clear breadcrumb navigation.
 
 ### Steps
 1. Launch Quiz Studio (`start-local.bat` or `python scripts/dev-server.py`).
-2. Navigate to **Edit** (编辑) mode in the top navigation.
-3. Inspect the sidebar Library panel:
-   - Verify the new **Categories** (分类) navigation block located above the search bar and action buttons.
-   - Confirm **All Papers** (所有试卷) is present and selected by default, displaying the total count of papers.
-   - Confirm **Uncategorized** (未分类) is present, displaying the count of papers without a category.
-   - Confirm the `+ New Category` (+ 新建分类) button is visible.
-4. Test Keyboard Accessibility:
+2. Navigate to **Edit** (编辑) mode from the topbar.
+3. **Inspect Level 1 (Categories)**:
+   - If the sidebar is currently viewing a paper, click `← Back to Papers` (← 返回试卷列表), then click `← Back to Categories` (← 返回分类列表).
+   - Verify that Level 1 shows **only**:
+     - Heading `Quiz Library` (`本地试卷库`) and total count.
+     - Category list: `All Papers` (`所有试卷`), user categories (if any), and `Uncategorized` (`未分类`).
+     - `+ New Category` (`+ 新建分类`) button.
+     - Full backup actions (`Backup` / `Import backup`).
+   - Confirm that paper fields, question lists, and question authoring buttons are **not visible** at this level.
+4. **Transition to Level 2 (Papers)**:
+   - Click on `All Papers` (or any Category row).
+   - Verify the sidebar transitions smoothly to Level 2:
+     - Clear breadcrumb back button: `← Back to Categories` (`← 返回分类列表`).
+     - Header showing current category identity and count: `📋 All Papers (N)`.
+     - Scoped search input.
+     - Paper action buttons: `New` (`新建`), `Duplicate` (`复制`), `Rename` (`重命名`), `Delete` (`删除`).
+     - Filtered paper list.
+5. **Transition to Level 3 (Questions)**:
+   - Click on any paper in the list.
+   - Verify the sidebar transitions smoothly to Level 3:
+     - Clear breadcrumb back button: `← Back to Papers` (`← 返回试卷列表`).
+     - Summary card displaying the paper's title and category badge.
+     - Paper fields: Title, Description, Category dropdown, Tags.
+     - Add question buttons: Single, Multiple, Blank, True/False, Matching.
+     - Question list with question count.
+     - Single-paper Export / Import buttons.
+6. **Test Backward Navigation**:
+   - Click `← Back to Papers`: verify sidebar returns to Level 2 for the selected category.
+   - Click `← Back to Categories`: verify sidebar returns to Level 1.
+7. **Subjective Assessment**:
+   - Confirm that at any moment, the sidebar presents only one focused hierarchy level, significantly reducing visual clutter and cognitive overload.
+
+---
+
+## Verification Journey 2: Category Management & Accessibility
+
+### Objective
+Verify that Category navigation is fully keyboard-accessible, prevents reserved internal names, supports creating new categories, and persists empty categories across reloads.
+
+### Steps
+1. In Level 1 (Categories), test Keyboard Accessibility:
    - Using the `Tab` key on your keyboard, navigate through the Category navigation list:
      - Verify each category entry (All Papers, user categories, Uncategorized) receives clear visible focus.
-     - Press `Enter` or `Space` on an entry to select and filter the library.
-     - Verify Rename (`✎`) and Delete (`🗑`) buttons are reachable as separate tab stops and can be activated via keyboard without conflicting with category selection.
-5. Test Reserved Name Protection:
+     - Press `Enter` or `Space` on an entry to select and enter that category (Level 2).
+     - Navigate back to Level 1.
+     - Verify Rename (`✎`) and Delete (`🗑`) buttons are reachable as separate tab stops and can be activated via keyboard.
+2. Test Reserved Name Protection:
    - Click `+ New Category` (+ 新建分类).
    - Enter `"__ALL__"` or `"__NEW_CATEGORY__"` or `"__UNCATEGORIZED__"`:
      - Verify toast `"This category name is reserved. Please use a different name"` (该分类名称为系统保留字，请使用其他名称) appears.
      - Verify no category is created.
-6. Click `+ New Category` (+ 新建分类) with a valid name:
-   - In the prompt dialog, enter `"Mathematics"` (数学) and confirm.
-   - Verify that `"Mathematics"` appears in the category list with count `0`.
-   - Verify toast notification `"Category created"` (分类已创建).
-   - Refresh the page and confirm the empty category `"Mathematics"` remains in the list.
-7. Create a second category `"Languages"` (语言):
-   - Confirm `"Languages"` appears with count `0`.
+3. Create Valid Categories:
+   - Click `+ New Category` (+ 新建分类).
+   - Enter `"Mathematics"` (数学) and confirm:
+     - Verify toast notification `"Category created"` (分类已创建).
+     - Verify sidebar automatically enters Level 2 for `"Mathematics"` with count `0`.
+   - Return to Level 1, refresh the page, and confirm `"Mathematics"` remains in the list with count `0`.
+4. Create a second category `"Languages"` (语言):
+   - Confirm `"Languages"` is created with count `0`.
 
 ---
 
-## Verification Journey 2: Paper Categorization & Scoped Search
+## Verification Journey 3: Paper Categorization & Scoped Search
 
 ### Objective
 Verify that papers can be assigned to categories, new papers created inside a category inherit that category, and search queries are properly scoped.
 
 ### Steps
-1. Select the `"Mathematics"` category in the sidebar:
+1. In Level 1, click `"Mathematics"` to enter Level 2:
    - Verify that the paper list is empty and displays `"No matching papers"` (没有匹配的试卷).
-   - Verify that the search input placeholder reads `"Search in 'Mathematics'..."` (在 “Mathematics” 中搜索...).
-2. Click **New Paper** (新建):
-   - Verify that a new paper is created with category automatically set to `"Mathematics"`.
-   - In the paper fields, set title to `"Algebra Basics"` and tags to `"math, algebra"`.
-   - Verify the category count for `"Mathematics"` updates to `1`, and `"All Papers"` increments by `1`.
-3. Select **All Papers** (所有试卷):
-   - Verify that both the default paper and `"Algebra Basics"` are visible in the list.
-4. Test Scoped Search:
-   - Select `"Mathematics"`. In the search bar, type `"sample"`:
-     - Verify no papers match (since `"Algebra Basics"` does not contain `"sample"`).
-   - Select **All Papers**. Keep `"sample"` in the search bar:
-     - Verify the default sample paper appears.
+   - Verify that the search input placeholder reads `"Search title, category, or tags (Mathematics)"`.
+2. Click **New** (新建) paper:
+   - Verify a new paper is created with category automatically set to `"Mathematics"`.
+   - Verify sidebar transitions to Level 3 (Questions) for this paper.
+   - In paper fields, set title to `"Algebra Basics"` and tags to `"math, algebra"`.
+   - Verify the summary card badge reflects `"Mathematics"`.
+3. Click `← Back to Papers`:
+   - Verify `"Algebra Basics"` appears in `"Mathematics"` with category count `1`.
+4. Click `← Back to Categories`:
+   - Verify `"Mathematics"` shows count `1` and `"All Papers"` reflects the updated total count.
+5. Test Scoped Search:
+   - Enter `"Mathematics"` (Level 2). In search, type `"sample"`:
+     - Verify no papers match.
+   - Return to Level 1, enter `"All Papers"`. Keep `"sample"` in search:
+     - Verify default sample paper appears.
    - Clear search query.
 
 ---
 
-## Verification Journey 3: Paper Category Reassignment & Inline Category Creation
+## Verification Journey 4: Paper Category Reassignment & Inline Creation
 
 ### Objective
 Verify that existing papers can be moved between categories, unassigned, or assigned to newly created categories via the paper editor dropdown.
 
 ### Steps
-1. Open the default sample paper from the library list.
-2. In the paper editor sidebar, locate the **Category** (分类) dropdown:
+1. Open the default sample paper in Level 3 (Questions).
+2. Locate the **Category** (分类) dropdown:
    - Verify it lists `"Uncategorized"` (未分类), `"Mathematics"`, `"Languages"`, and `"+ New Category..."` (+ 新建分类...).
 3. Select `"Languages"` from the dropdown:
-   - Verify the paper's category is updated to `"Languages"`.
-   - Verify the sidebar count for `"Languages"` increases to `1`.
-4. Select `"+ New Category..."` (+ 新建分类...) from the dropdown:
+   - Verify the summary card category badge updates to `"Languages"`.
+   - Click `← Back to Papers` → `← Back to Categories`: verify `"Languages"` count increases to `1`.
+4. Return to the paper (Level 3), and select `"+ New Category..."`:
    - Test reserved name check: enter `"__NEW_CATEGORY__"` -> verify toast `"This category name is reserved. Please use a different name"`.
    - In the prompt, enter `"Science"` (科学) and confirm.
    - Verify toast `"Category created"` appears.
-   - Verify the paper's category is set to `"Science"`.
-   - Verify `"Science"` now appears in the Category navigation list with count `1`.
-5. Change the category to `"Uncategorized"` (未分类):
-   - Verify the paper category becomes empty.
-   - Verify `"Uncategorized"` count increases by `1`, and `"Science"` count becomes `0`.
+   - Verify paper's category badge updates to `"Science"`.
+5. Change category to `"Uncategorized"`:
+   - Verify summary badge updates to `"Uncategorized"`.
+   - Return to Level 1: verify `"Uncategorized"` count increases by `1`, and `"Science"` count becomes `0`.
 
 ---
 
-## Verification Journey 4: Category Renaming & Collision Safety
+## Verification Journey 5: Category Renaming & Collision Safety
 
 ### Objective
 Verify that renaming a category updates the registry and automatically propagates the new name to all assigned papers without data loss, and that renaming to an existing category or reserved name is safely rejected without merging.
 
 ### Steps
-1. Assign at least two papers to the `"Mathematics"` category.
+1. In Level 1, ensure `"Mathematics"` contains at least 1 paper.
 2. Test Collision Safety:
    - Click the rename icon (`✎`) on `"Mathematics"`.
    - Enter `"Languages"` (which already exists):
      - Verify toast `"Category already exists"` (该分类名称已存在) appears.
      - Verify rename is rejected: `"Mathematics"` and `"Languages"` remain two separate categories, and paper counts/assignments are untouched (no silent merge).
 3. Test Reserved Name Rejection on Rename:
-   - Click the rename icon (`✎`) on `"Mathematics"`.
+   - Click rename icon (`✎`) on `"Mathematics"`.
    - Enter `"__ALL__"` -> verify toast `"This category name is reserved. Please use a different name"`.
 4. Perform Valid Rename:
    - Click rename icon (`✎`) on `"Mathematics"`.
-   - In the prompt dialog, change `"Mathematics"` to `"Advanced Mathematics"` and confirm.
+   - In prompt dialog, change `"Mathematics"` to `"Advanced Mathematics"` and confirm.
    - Verify toast `"Category renamed"` (分类已重命名).
-   - Verify the category navigation list now shows `"Advanced Mathematics"` with count `2`.
-   - Open each of the two papers and verify their Category field reflects `"Advanced Mathematics"`.
-   - Verify all questions, tags, and descriptions of both papers remain completely unchanged.
+   - Verify category navigation list now shows `"Advanced Mathematics"`.
+   - Enter `"Advanced Mathematics"` and open assigned paper: verify its Category reflects `"Advanced Mathematics"`.
 
 ---
 
-## Verification Journey 5: Safe Category Deletion Contract
+## Verification Journey 6: Polished Category Deletion Modal & Safety Contract
 
 ### Objective
-Verify both branches of the category deletion contract: single confirmation for empty categories, and the 3-way choice (Cancel, Delete Category Only, Delete Category + Papers) for populated categories with active paper safety.
+Verify the visual design and behavioral contract of the polished Category Deletion Modal: modal header, top-right close button, safe option card, destructive option card, cancel button, and secondary confirmation.
 
 ### Steps
 1. **Empty Category Deletion**:
-   - In the Category navigation list, click the delete icon (`🗑`) on the empty `"Science"` category.
-   - Verify a single confirmation dialog appears: `"Are you sure you want to delete the empty category 'Science'?"`.
-   - Confirm deletion.
-   - Verify `"Science"` is removed from the list and toast `"Category deleted"` appears.
-2. **Populated Category Deletion — Cancel**:
-   - Ensure `"Advanced Mathematics"` contains 2 papers.
-   - Click the delete icon (`🗑`) on `"Advanced Mathematics"`.
-   - Verify the Category Deletion Dialog opens, stating:
-     `"Category 'Advanced Mathematics' contains 2 paper(s). Choose deletion option:"`
-     with 3 buttons:
-     - `Delete Category Only (keep papers as Uncategorized)` (仅删除分类（保留试卷为未分类）)
-     - `Delete Category + Papers (2 papers)` (删除分类及所有试卷 (2 份))
-     - `Cancel` (取消)
-   - Click **Cancel** (or dialog close button `✕`):
-     - Verify nothing is modified: category and both papers remain untouched.
-3. **Populated Category Deletion — Delete Category Only**:
+   - In Level 1, click delete icon (`🗑`) on empty `"Science"` category.
+   - Verify single confirmation dialog appears: `"Are you sure you want to delete the empty category 'Science'?"`.
+   - Confirm deletion: verify `"Science"` is removed and toast `"Category deleted"` appears.
+2. **Populated Category Deletion Modal Inspection**:
+   - Ensure `"Advanced Mathematics"` contains at least 1 paper.
    - Click delete icon (`🗑`) on `"Advanced Mathematics"`.
-   - Click **Delete Category Only (keep papers as Uncategorized)**:
+   - Inspect the Category Deletion Dialog:
+     - **Header**: Verify title `"Delete Category"` (`删除分类`) with standard close button (`✕` / `&times;`) in the top-right corner.
+     - **Prompt**: Verify clear description stating the category name and how many papers it contains.
+     - **Safe Option Card**: Verify `"Delete Category Only"` (`仅删除分类`) card explaining that papers will be kept and set to Uncategorized.
+     - **Destructive Option Card**: Verify `"Delete Category + Papers"` (`删除分类及所有试卷`) card visually highlighted with vermilion styling and stating the permanent deletion warning.
+     - **Cancel Action**: Verify secondary `"Cancel"` (`取消`) button in footer.
+     - **Visual Consistency**: Confirm modal styling follows the Layered Paper Study Desk design system (rounded corners, subtle borders, paper sheet background).
+3. **Populated Category Deletion — Cancel**:
+   - Click **Cancel** (or `✕` close button):
+     - Verify dialog closes and category + papers remain untouched.
+4. **Populated Category Deletion — Delete Category Only**:
+   - Click delete icon (`🗑`) on `"Advanced Mathematics"`.
+   - Click **Delete Category Only** button:
      - Verify `"Advanced Mathematics"` is removed from the registry.
-     - Verify both papers still exist in the library, and their category is now `"Uncategorized"`.
-     - Verify no questions, tags, or paper content are lost.
-4. **Populated Category Deletion — Delete Category + Papers (Destructive)**:
-   - Create a test category `"Temporary"`, create 2 papers in it, and make one of them the currently active open paper.
+     - Verify its papers remain in the library, and their category is now `"Uncategorized"`.
+     - Verify zero paper or question loss.
+5. **Populated Category Deletion — Delete Category + Papers (Destructive)**:
+   - Create a test category `"Temporary"`, create 2 papers in it, and make one the active paper.
    - Click delete icon (`🗑`) on `"Temporary"`.
-   - Click **Delete Category + Papers (2 papers)**:
+   - Click **Delete Category + Papers** button:
      - Verify an explicit secondary destructive confirmation appears:
        `"[CAUTION] Are you sure you want to delete category 'Temporary' AND all 2 paper(s) in it? This action cannot be undone!"`
      - Confirm deletion.
-     - Verify `"Temporary"` is removed and both papers in it are deleted.
-     - Verify that the active paper safely falls back to an available remaining paper (or default paper), never leaving `activePaperId` invalid.
-     - Verify any active quiz session for the deleted paper is safely cleared.
+     - Verify `"Temporary"` and both papers are deleted.
+     - Verify active paper safely falls back to a remaining paper (never invalid).
 
 ---
 
-## Verification Journey 6: Backup & Restore Compatibility
+## Verification Journey 7: Backup & Restore Compatibility & Localization
 
 ### Objective
-Verify that user-created categories (including empty categories) survive backup export and import, and legacy backups without a category registry restore cleanly.
+Verify that user-created categories survive backup export and import, and bilingual localization is comprehensive.
 
 ### Steps
-1. Create categories `"Physics"`, `"Chemistry"`, and an empty category `"Biology"`. Assign papers to `"Physics"` and `"Chemistry"`.
-2. In the Library panel, click **Backup** (备份) to export the full library backup JSON.
-3. Inspect the exported JSON file:
-   - Confirm `library.categories` contains `["Physics", "Chemistry", "Biology"]`.
-4. Delete `"Biology"` and rename `"Physics"` locally to `"Physics Old"`.
-5. Click **Import Backup** (导入备份) and select the backup JSON from Step 2:
-   - Verify toast `"Backup imported"` (已导入备份).
-   - Verify that `"Physics"`, `"Chemistry"`, and empty `"Biology"` are fully restored in the Category navigation list.
-   - Verify all papers and their assigned categories are restored cleanly.
-6. Test Bilingual Localization:
+1. In Level 1, click **Backup** (备份) to export full library backup JSON.
+2. Inspect exported JSON: confirm `library.categories` contains all user categories.
+3. Import backup JSON: verify all categories and papers restore cleanly.
+4. Test Bilingual Localization:
    - Switch language between English and 中文 in the topbar.
-   - Verify that all Category navigation labels, buttons, tooltips, dialogs, and toasts update cleanly without untranslated keys.
+   - Verify that all breadcrumbs (`← Back to Categories`, `← Back to Papers`), headers, badges, buttons, dialog cards, and toasts update cleanly.
 
 ---
 
@@ -190,12 +227,13 @@ Verify that user-created categories (including empty categories) survive backup 
 
 | Journey | Description | Result |
 |---|---|---|
-| **Journey 1** | Category Navigation, Accessibility & Creation (Reserved name protection & Empty persistence) | `[PASS / FAIL]` |
-| **Journey 2** | Paper Categorization & Scoped Search | `[PASS / FAIL]` |
-| **Journey 3** | Paper Category Reassignment & Inline Category Creation | `[PASS / FAIL]` |
-| **Journey 4** | Category Renaming & Collision Safety (No silent merge) | `[PASS / FAIL]` |
-| **Journey 5** | Category Deletion Contract (Empty / Cancel / Delete Only / Delete with Papers) | `[PASS / FAIL]` |
-| **Journey 6** | Backup & Restore Compatibility & Bilingual Localization | `[PASS / FAIL]` |
+| **Journey 1** | Progressive Single-Level Sidebar Navigation (Level 1 → Level 2 → Level 3) & Cognitive Load Reduction | `[PASS / FAIL]` |
+| **Journey 2** | Category Management, Accessibility & Protection (Keyboard nav, Reserved names, Empty persistence) | `[PASS / FAIL]` |
+| **Journey 3** | Paper Categorization & Scoped Search | `[PASS / FAIL]` |
+| **Journey 4** | Paper Category Reassignment & Inline Category Creation | `[PASS / FAIL]` |
+| **Journey 5** | Category Renaming & Collision Safety (No silent merge) | `[PASS / FAIL]` |
+| **Journey 6** | Polished Category Deletion Modal & Safety Contract (Design system visual alignment & 3-way choices) | `[PASS / FAIL]` |
+| **Journey 7** | Backup & Restore Compatibility & Bilingual Localization | `[PASS / FAIL]` |
 
 **Overall Gate Verdict**: `[PASS / FAIL]`  
 **Notes / Comments**:
