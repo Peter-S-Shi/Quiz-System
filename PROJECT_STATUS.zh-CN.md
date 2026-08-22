@@ -18,7 +18,7 @@ M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进
 
 修正分支 `recovery/local-runtime-contract` 已从干净的 `main` 基线 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47` 完成重建。它只修改 Windows/本地运行边界；不会重新打开已经验收的 M6 产品行为，也不是 Milestone 7 Product Hardening。
 
-普通 Chrome profile Human Gate 在 PR #11 以 `6b38c40` 合并前，已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。该结果对当时五次启动仍然有效，但合并后的一次启动暴露出 Windows 批处理解析回归：当 `start-local.bat` 以裸 LF 换行检出并进入缺少 Python 的诊断路径时会被错误解析。专项后续分支 `fix/local-runtime-bat-crlf` 现在通过 `.gitattributes` 强制所有 `.bat` 使用 CRLF，并新增跨平台换行契约测试与真实 Windows 缺少 Python 启动器测试。使用随附 Python runtime 时，完整本地测试为 232/232 通过，PR #12 CI 通过；用户点击复验仍待完成。
+普通 Chrome profile Human Gate 在 PR #11 以 `6b38c40` 合并前，已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。该结果对当时五次启动仍然有效，但合并后的一次启动暴露出 Windows 批处理解析回归：当 `start-local.bat` 以裸 LF 换行检出并进入缺少 Python 的诊断路径时会被错误解析。专项后续分支 `fix/local-runtime-bat-crlf` 通过 `.gitattributes` 强制所有 `.bat` 使用 CRLF，并新增跨平台换行契约测试与真实 Windows 缺少 Python 启动器测试。使用随附 Python runtime 时，完整本地测试为 232/232 通过，PR #12 CI 通过，且 PR #12 已以 `6643a1b` 合并；合并后的用户点击复验仍待完成。
 
 ## M6 综合人工验收与 UX 强化收尾
 
@@ -113,7 +113,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-Local Runtime Recovery 的实现、Human Gate（5/5 PASS）、延后双轴 code review、finding 修复、完整本地重新验证与 PR CI 均已完成。PR #11 现为 Ready/Open 且达到 merge-ready，但仍必须取得用户明确批准，禁止自主合并。之后生命周期才回到进入 Feature Freeze 前的全产品 Feature Complete Review。Product Hardening（M7）与 Feature Freeze 尚未开始。
+Local Runtime Recovery PR #11 及其启动器换行后续修复 PR #12 均已合并。当前唯一的即时门禁是用户在合并后正常双击一次 `start-local.bat`；如仍失败，则直接返回 Local Runtime Recovery。确认通过后，生命周期才回到进入 Feature Freeze 前的全产品 Feature Complete Review。Product Hardening（M7）与 Feature Freeze 尚未开始。
 
 ## 仓库状态
 
@@ -122,6 +122,6 @@ Local Runtime Recovery 的实现、Human Gate（5/5 PASS）、延后双轴 code 
 - M6.7 开始前已验证的基线：`61cd16f Record M6.6 merge into main`（`main`）
 - M6.7 合并提交：`d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)`（`main`）——由主体实现、PR/CI 状态更新和删除完整性收尾补丁 squash 而成
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；当前工作位于 `recovery/local-runtime-contract`
+- Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；PR #11 已以 `6b38c40` 合并，BAT CRLF 后续修复 PR #12 已以 `6643a1b` 合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：替代 PR #11（`recovery/local-runtime-contract`）现为 Ready/Open，包含 5/5 Human Gate、最终 Standards/Spec PASS、230/230 本地验证与通过的 CI。合并前仍必须取得用户明确批准。历史 Draft PR #10（`fix/local-dev-cache-coherence`）现为 Closed/Superseded，只保留为取证检查点；禁止合并或作为实现基线。
+- Pull Request 状态：PR #11（`recovery/local-runtime-contract`）已以 `6b38c40` 合并；专项后续 PR #12（`fix/local-runtime-bat-crlf`）已以 `6643a1b` 合并，并具备 232/232 本地验证与最终 CI PASS。历史 Draft PR #10（`fix/local-dev-cache-coherence`）继续保持 Closed/Superseded，仅作为取证检查点保留。

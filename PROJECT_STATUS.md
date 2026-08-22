@@ -18,7 +18,7 @@ Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 compre
 
 The corrective `recovery/local-runtime-contract` workstream was rebuilt from the clean `main` baseline `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`. It changes only the Windows/local runtime boundary; it does not reopen accepted M6 product behavior and is not Milestone 7 Product Hardening.
 
-The normal-profile Chrome Human Gate passed 5/5 at the preserved `http://localhost:8000` origin before PR #11 merged as `6b38c40`: existing user data remained intact, current M6 behavior was visible and functional, cold/restart/already-open-browser cases succeeded, and no cache clearing or DevTools intervention was required. That result remains valid for those five runs, but a post-merge launch exposed a Windows batch parsing regression when `start-local.bat` was checked out with bare LF endings and entered the missing-Python diagnostic path. The focused `fix/local-runtime-bat-crlf` follow-up now enforces CRLF for every `.bat` through `.gitattributes` and adds both a cross-platform line-ending contract test and a real Windows missing-Python launcher test. The complete local suite passes 232/232 with the bundled Python runtime and PR #12 CI passes; user click-through confirmation remains required.
+The normal-profile Chrome Human Gate passed 5/5 at the preserved `http://localhost:8000` origin before PR #11 merged as `6b38c40`: existing user data remained intact, current M6 behavior was visible and functional, cold/restart/already-open-browser cases succeeded, and no cache clearing or DevTools intervention was required. That result remains valid for those five runs, but a post-merge launch exposed a Windows batch parsing regression when `start-local.bat` was checked out with bare LF endings and entered the missing-Python diagnostic path. The focused `fix/local-runtime-bat-crlf` follow-up enforces CRLF for every `.bat` through `.gitattributes` and adds both a cross-platform line-ending contract test and a real Windows missing-Python launcher test. The complete local suite passes 232/232 with the bundled Python runtime, PR #12 CI passed, and PR #12 merged as `6643a1b`; post-merge user click-through confirmation remains required.
 
 ## M6 Comprehensive Acceptance and Hardening Closure
 
@@ -113,7 +113,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Next Engineering Objective
 
-Local Runtime Recovery implementation, Human Gate (5/5 PASS), deferred two-axis code review, finding repair, complete local reverification, and PR CI are complete. PR #11 is Ready/Open and merge-ready subject to explicit user approval; it must not be merged autonomously. The lifecycle then returns to the whole-product Feature Complete Review before Feature Freeze. Product Hardening (M7) and Feature Freeze have not started.
+Local Runtime Recovery PR #11 and its launcher line-ending follow-up PR #12 are merged. The remaining immediate gate is a normal post-merge user double-click launch of `start-local.bat`; any failure returns directly to Local Runtime Recovery. After that confirmation, the lifecycle returns to the whole-product Feature Complete Review before Feature Freeze. Product Hardening (M7) and Feature Freeze have not started.
 
 ## Repository State
 
@@ -122,6 +122,6 @@ Local Runtime Recovery implementation, Human Gate (5/5 PASS), deferred two-axis 
 - Verified baseline before M6.7: `61cd16f Record M6.6 merge into main` (`main`)
 - M6.7 merge commit: `d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)` (`main`) — squash of the main implementation, the PR/CI status update, and the deletion-integrity closure patch
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
-- Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; current work is on `recovery/local-runtime-contract`
+- Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; PR #11 merged as `6b38c40`, and the BAT CRLF follow-up PR #12 merged as `6643a1b`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: replacement PR #11 (`recovery/local-runtime-contract`) is Ready/Open with the 5/5 Human Gate, final Standards/Spec PASS, 230/230 local verification, and passing CI. Explicit user approval is still required before merge. Historical Draft PR #10 (`fix/local-dev-cache-coherence`) is Closed/Superseded and retained only as a forensic checkpoint; it must not be merged or used as the implementation base.
+- Pull request status: PR #11 (`recovery/local-runtime-contract`) is Merged at `6b38c40`; focused follow-up PR #12 (`fix/local-runtime-bat-crlf`) is Merged at `6643a1b` with 232/232 local verification and passing final CI. Historical Draft PR #10 (`fix/local-dev-cache-coherence`) remains Closed/Superseded and is retained only as a forensic checkpoint.
