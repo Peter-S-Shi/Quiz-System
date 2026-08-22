@@ -9,12 +9,13 @@ export const DEFAULT_UI_PREFERENCES = {
   theme: "light",
   soundEnabled: true,
   motionPreference: "standard",
+  sidebarWidth: 320,
 };
 
 /**
  * Normalizes input object into valid UI preferences.
  * @param {any} input
- * @returns {{ theme: "light"|"dark", soundEnabled: boolean, motionPreference: "standard"|"reduced" }}
+ * @returns {{ theme: "light"|"dark", soundEnabled: boolean, motionPreference: "standard"|"reduced", sidebarWidth: number }}
  */
 export function normalizeUiPreferences(input) {
   if (!input || typeof input !== "object") {
@@ -24,11 +25,16 @@ export function normalizeUiPreferences(input) {
   const theme = input.theme === "dark" ? "dark" : "light";
   const soundEnabled = typeof input.soundEnabled === "boolean" ? input.soundEnabled : DEFAULT_UI_PREFERENCES.soundEnabled;
   const motionPreference = input.motionPreference === "reduced" ? "reduced" : "standard";
+  const rawSidebarWidth = Number(input.sidebarWidth);
+  const sidebarWidth = Number.isFinite(rawSidebarWidth)
+    ? Math.min(Math.max(Math.round(rawSidebarWidth), 240), 500)
+    : DEFAULT_UI_PREFERENCES.sidebarWidth;
 
   return {
     theme,
     soundEnabled,
     motionPreference,
+    sidebarWidth,
   };
 }
 

@@ -25,13 +25,15 @@
           <button class="tab-button" id="quizModeButton" type="button">做题</button>
           <button class="tab-button" id="translationModeButton" type="button">翻译练习</button>
         </nav>
-        <select class="language-select" id="languageSelect" aria-label="界面语言">
-          <option value="zh">中文</option>
-          <option value="en">English</option>
-        </select>
-        <button class="icon-button" id="soundToggle" type="button" title="切换物理音效" aria-label="切换物理音效">🔊</button>
-        <button class="icon-button" id="settingsToggle" type="button" title="偏好设置" aria-label="偏好设置">⚙️</button>
-        <button class="icon-button" id="themeToggle" type="button" title="切换亮色和暗色背景" aria-label="切换亮色和暗色背景">◐</button>
+        <div class="utility-cluster">
+          <select class="language-select" id="languageSelect" aria-label="界面语言">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+          <button class="icon-button" id="soundToggle" type="button" title="切换物理音效" aria-label="切换物理音效">🔊</button>
+          <button class="icon-button" id="settingsToggle" type="button" title="偏好设置" aria-label="偏好设置">⚙️</button>
+          <button class="icon-button" id="themeToggle" type="button" title="切换亮色和暗色背景" aria-label="切换亮色和暗色背景">◐</button>
+        </div>
       </header>
 
       <main id="mainContent" tabindex="-1">
@@ -85,6 +87,8 @@
             </div>
           </aside>
 
+          <div class="sidebar-resizer" id="editorSidebarResizer" role="separator" aria-orientation="vertical" tabindex="0" title="调整侧边栏宽度"></div>
+
           <section class="editor-panel">
             <div id="questionEditor"></div>
           </section>
@@ -96,6 +100,7 @@
 
         <section class="workspace edit-workspace hidden" id="translationView">
           <aside class="side-panel" id="translationLibraryPanel"></aside>
+          <div class="sidebar-resizer" id="translationSidebarResizer" role="separator" aria-orientation="vertical" tabindex="0" title="调整侧边栏宽度"></div>
           <section class="editor-panel" id="translationDocumentPanel"></section>
         </section>
       </main>

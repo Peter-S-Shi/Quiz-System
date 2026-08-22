@@ -150,7 +150,7 @@ const locales = {
       tagline: "专注文档研读、深度作答与精细批改",
       quizTitle: "客观做题练习",
       quizDesc: "单选、多选、填空、判断与配对题型，即时墨水批改",
-      translationTitle: "中英翻译研习",
+      translationTitle: "双语翻译研习",
       translationDesc: "双语沉浸翻译、词句元认知标记与独立证据链",
       editorTitle: "试卷制作与题库",
       editorDesc: "创建、管理、导入与导出本地练习试卷",
@@ -1115,13 +1115,79 @@ function init() {
   } else {
     delete document.documentElement.dataset.motion;
   }
+  document.documentElement.style.setProperty("--sidebar-width", `${uiPreferences.sidebarWidth || 320}px`);
   studioAudio.setEnabled(uiPreferences.soundEnabled);
   document.documentElement.lang = locales[language].code;
   bindGlobalEvents();
+  initSidebarResizing();
   registerServiceWorker();
   renderAll();
   setMode("home");
   updateSoundToggleUi();
+}
+
+function initSidebarResizing() {
+  const root = document.documentElement;
+  const initialWidth = uiPreferences.sidebarWidth || 320;
+  root.style.setProperty("--sidebar-width", `${initialWidth}px`);
+
+  const resizers = [
+    document.getElementById("editorSidebarResizer"),
+    document.getElementById("translationSidebarResizer"),
+  ].filter(Boolean);
+
+  resizers.forEach((resizer) => {
+    let startX = 0;
+    let startWidth = 0;
+
+    const onPointerMove = (e) => {
+      const currentX = e.clientX ?? e.touches?.[0]?.clientX;
+      if (currentX === undefined) return;
+      const deltaX = currentX - startX;
+      const newWidth = Math.min(Math.max(Math.round(startWidth + deltaX), 240), 500);
+      root.style.setProperty("--sidebar-width", `${newWidth}px`);
+    };
+
+    const onPointerUp = () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchend", onPointerUp);
+      resizer.classList.remove("resizing");
+      document.body.classList.remove("is-resizing");
+
+      const computedWidth = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10) || 320;
+      uiPreferences.sidebarWidth = Math.min(Math.max(computedWidth, 240), 500);
+      saveUiPreferences(uiPreferences);
+    };
+
+    const onPointerDown = (e) => {
+      startX = e.clientX ?? e.touches?.[0]?.clientX;
+      const currentVal = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10);
+      startWidth = Number.isFinite(currentVal) ? currentVal : 320;
+      resizer.classList.add("resizing");
+      document.body.classList.add("is-resizing");
+
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("touchmove", onPointerMove, { passive: true });
+      window.addEventListener("touchend", onPointerUp);
+    };
+
+    resizer.addEventListener("pointerdown", onPointerDown);
+
+    resizer.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const step = e.key === "ArrowRight" ? 20 : -20;
+        const currentVal = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10) || 320;
+        const newWidth = Math.min(Math.max(currentVal + step, 240), 500);
+        root.style.setProperty("--sidebar-width", `${newWidth}px`);
+        uiPreferences.sidebarWidth = newWidth;
+        saveUiPreferences(uiPreferences);
+      }
+    });
+  });
 }
 
 function bindGlobalEvents() {
@@ -2128,11 +2194,22 @@ function renderResults() {
           const result = session.results[index];
           return `
             <div class="review-item ${result.correct ? "correct" : "wrong"}">
-              <strong>${index + 1}. ${escapeHtml(question.prompt)}</strong>
-              <p class="meta-text">${typeLabel(question.type)} · ${result.correct ? t("result.correct") : t("result.wrong")}</p>
+              <div class="review-status-row">
+                <span class="review-status-pill ${result.correct ? "status-correct" : "status-wrong"}">
+                  ${result.correct ? "✓ " + t("result.correct") : "✕ " + t("result.wrong")}
+                </span>
+                <span class="type-pill">${typeLabel(question.type)}</span>
+              </div>
+              <strong class="review-question-prompt">${index + 1}. ${escapeHtml(question.prompt)}</strong>
               <div class="answer-compare">
-                <p><strong>${t("result.yourAnswer")}:</strong> ${escapeHtml(formatAnswer(question, session.answers[question.id], getGradeLabels()) || t("result.noAnswer"))}</p>
-                <p><strong>${result.correctLabel}:</strong> ${escapeHtml(result.correctAnswer)}</p>
+                <div class="answer-row learner-answer-row">
+                  <span class="answer-label">${t("result.yourAnswer")}:</span>
+                  <span class="learner-answer-val">${escapeHtml(formatAnswer(question, session.answers[question.id], getGradeLabels()) || t("result.noAnswer"))}</span>
+                </div>
+                <div class="answer-row correct-answer-row">
+                  <span class="answer-label">${result.correctLabel}:</span>
+                  <span class="correct-answer-val">${escapeHtml(result.correctAnswer)}</span>
+                </div>
               </div>
             </div>
           `;
@@ -2155,11 +2232,11 @@ function renderResults() {
 
 function renderFeedback(result) {
   return `
-    <div class="feedback ${result.correct ? "correct" : "wrong"}">
-      <span class="feedback-icon">${result.correct ? "✓" : "×"}</span>
-      <div>
-        <strong>${result.correct ? t("result.correctFeedback") : t("result.wrongFeedback")}</strong>
-        <p>${escapeHtml(result.correctAnswer)}</p>
+    <div class="feedback ${result.correct ? "correct" : "wrong"}" role="status" aria-live="polite">
+      <span class="feedback-icon">${result.correct ? "✓" : "✕"}</span>
+      <div class="feedback-content">
+        <strong class="feedback-title">${result.correct ? t("result.correctFeedback") : t("result.wrongFeedback")}</strong>
+        <p class="feedback-explanation">${escapeHtml(result.correctAnswer)}</p>
       </div>
     </div>
   `;

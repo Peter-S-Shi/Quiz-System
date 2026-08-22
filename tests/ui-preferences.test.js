@@ -7,25 +7,36 @@ import {
   normalizeUiPreferences,
 } from "../src/core/ui-preferences.js";
 
-test("DEFAULT_UI_PREFERENCES has sound enabled, system/standard motion, and valid default theme", () => {
+test("DEFAULT_UI_PREFERENCES has sound enabled, system/standard motion, default sidebarWidth, and valid default theme", () => {
   assert.equal(DEFAULT_UI_PREFERENCES.soundEnabled, true);
   assert.equal(DEFAULT_UI_PREFERENCES.theme, "light");
   assert.equal(DEFAULT_UI_PREFERENCES.motionPreference, "standard");
+  assert.equal(DEFAULT_UI_PREFERENCES.sidebarWidth, 320);
 });
 
 test("normalizeUiPreferences enforces valid values and recovers safely from corrupted input", () => {
   assert.deepEqual(normalizeUiPreferences(null), DEFAULT_UI_PREFERENCES);
   assert.deepEqual(normalizeUiPreferences({}), DEFAULT_UI_PREFERENCES);
-  assert.deepEqual(normalizeUiPreferences({ theme: "dark", soundEnabled: false, motionPreference: "reduced" }), {
+  assert.deepEqual(normalizeUiPreferences({ theme: "dark", soundEnabled: false, motionPreference: "reduced", sidebarWidth: 380 }), {
     theme: "dark",
     soundEnabled: false,
     motionPreference: "reduced",
+    sidebarWidth: 380,
   });
-  // Corrupted strings
-  assert.deepEqual(normalizeUiPreferences({ theme: "neon", soundEnabled: "yes", motionPreference: "hyper" }), {
+  // Bounds clamping and corrupted values
+  assert.deepEqual(normalizeUiPreferences({ sidebarWidth: 100 }), {
+    ...DEFAULT_UI_PREFERENCES,
+    sidebarWidth: 240,
+  });
+  assert.deepEqual(normalizeUiPreferences({ sidebarWidth: 999 }), {
+    ...DEFAULT_UI_PREFERENCES,
+    sidebarWidth: 500,
+  });
+  assert.deepEqual(normalizeUiPreferences({ theme: "neon", soundEnabled: "yes", motionPreference: "hyper", sidebarWidth: "wide" }), {
     theme: "light",
     soundEnabled: true,
     motionPreference: "standard",
+    sidebarWidth: 320,
   });
 });
 
@@ -45,7 +56,7 @@ test("loadUiPreferences and saveUiPreferences round-trip cleanly with storage mo
   assert.deepEqual(initial, DEFAULT_UI_PREFERENCES);
 
   // Saves updated preferences
-  const updated = { theme: "dark", soundEnabled: false, motionPreference: "reduced" };
+  const updated = { theme: "dark", soundEnabled: false, motionPreference: "reduced", sidebarWidth: 360 };
   saveUiPreferences(updated, mockStorage);
 
   // Reloads accurately
