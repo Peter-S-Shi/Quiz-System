@@ -1,4 +1,5 @@
 import { makeId, shuffle } from "./utils.js";
+import { normalizeImageMetadata, normalizeAudioMetadata } from "./media-types.js";
 
 export const QUESTION_TYPES = ["single", "multiple", "blank", "truefalse", "matching"];
 
@@ -60,6 +61,8 @@ export function createQuestion(type) {
 }
 
 export function convertQuestionType(question, nextType) {
+  const savedImage = question.image;
+  const savedAudio = question.audio;
   const replacement = createQuestion(nextType);
   question.type = replacement.type;
 
@@ -72,6 +75,9 @@ export function convertQuestionType(question, nextType) {
   Object.entries(replacement).forEach(([key, value]) => {
     if (key !== "id" && key !== "type" && key !== "prompt") question[key] = value;
   });
+
+  if (savedImage) question.image = savedImage;
+  if (savedAudio) question.audio = savedAudio;
 }
 
 export function ensureChoiceValidity(question) {
@@ -92,6 +98,15 @@ export function normalizeQuestion(question = {}) {
     type,
     prompt: question.prompt || "",
   };
+
+  // Image & Audio normalization
+  const image = normalizeImageMetadata(question.image);
+  if (image) normalized.image = image;
+  else delete normalized.image;
+
+  const audio = normalizeAudioMetadata(question.audio);
+  if (audio) normalized.audio = audio;
+  else delete normalized.audio;
 
   if (type === "single" || type === "multiple") {
     normalized.options = Array.isArray(question.options) ? question.options.map((option) => ({

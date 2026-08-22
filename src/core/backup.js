@@ -3,6 +3,7 @@ import { CURRENT_SCHEMA_VERSION, normalizeLibrary } from "./migrations.js";
 import { parseTeacherReviewCollection } from "./review-records.js";
 import { validateRemediationProvenance } from "./review-transport.js";
 import { parseTranslationLibrary } from "./translation-domain.js";
+import { validateItemsMediaIntegrity, validateMediaAssetsMap } from "./media-references.js";
 
 export function createLibraryBackup({
   library,
@@ -10,6 +11,7 @@ export function createLibraryBackup({
   learnerResponses,
   teacherReviews,
   translationLibrary,
+  mediaAssets = [],
   exportedAt = new Date().toISOString(),
 }) {
   const parsedLearnerResponses = parseLearnerResponseCollection(learnerResponses);
@@ -22,6 +24,7 @@ export function createLibraryBackup({
     learnerResponses: parsedLearnerResponses,
     teacherReviews: parseTeacherReviewCollection(teacherReviews, { learnerResponses: parsedLearnerResponses }),
     translationLibrary: parseTranslationLibrary(translationLibrary),
+    mediaAssets: Array.isArray(mediaAssets) ? structuredClone(mediaAssets) : [],
   };
 }
 
@@ -39,6 +42,7 @@ export function parseLibraryBackup(value, options = {}) {
   const learnerResponses = hasLearnerResponses ? parseLearnerResponseCollection(value.learnerResponses) : [];
   const teacherReviews = hasTeacherReviews ? parseTeacherReviewCollection(value.teacherReviews, { learnerResponses }) : [];
   const translationLibrary = hasTranslationLibrary ? parseTranslationLibrary(value.translationLibrary) : parseTranslationLibrary(null);
+  const mediaAssets = Array.isArray(value.mediaAssets) ? structuredClone(value.mediaAssets) : (Array.isArray(value.assets) ? structuredClone(value.assets) : []);
 
   // Cross-record integrity check: a remediation Translation Document's provenance must resolve
   // against this same backup's Learner Response/Teacher Review collections before any state is
@@ -52,8 +56,21 @@ export function parseLibraryBackup(value, options = {}) {
     }
   });
 
+  // Media referential integrity validation (same contract as single-paper portability)
+  const assetMap = validateMediaAssetsMap(mediaAssets);
+
+  const normalizedLib = normalizeLibrary(value.library, options);
+  for (const paper of normalizedLib.papers) {
+    validateItemsMediaIntegrity(paper.questions || [], assetMap, `Paper "${paper.title || paper.id}"`);
+  }
+
+  for (const response of learnerResponses) {
+    const items = response.material?.snapshot?.items || [];
+    validateItemsMediaIntegrity(items, assetMap, `Learner Response "${response.id}"`);
+  }
+
   return {
-    library: normalizeLibrary(value.library, options),
+    library: normalizedLib,
     history: Array.isArray(value.history) ? structuredClone(value.history) : [],
     hasLearnerResponses,
     learnerResponses,
@@ -61,5 +78,6 @@ export function parseLibraryBackup(value, options = {}) {
     teacherReviews,
     hasTranslationLibrary,
     translationLibrary,
+    mediaAssets,
   };
 }

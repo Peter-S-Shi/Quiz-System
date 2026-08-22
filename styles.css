@@ -2194,3 +2194,339 @@ button[disabled] {
     padding: 16px 12px 48px;
   }
 }
+
+/* -------------------------------------------------------------
+   OBJECTIVE QUESTION MEDIA (BATCH C)
+   ------------------------------------------------------------- */
+.question-media-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--paper-sheet-subtle);
+  border: 1px solid var(--paper-line);
+  border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+  .question-media-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.media-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--paper-sheet);
+  border: 1px dashed var(--paper-line);
+  border-radius: 6px;
+}
+
+.media-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.media-box-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--paper-text-main);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.media-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  gap: 6px;
+  text-align: center;
+}
+
+.media-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.media-upload-btn input[type="file"] {
+  display: none;
+}
+
+.media-preview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.media-img-preview-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  background: var(--paper-sheet-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+  max-height: 140px;
+}
+
+.media-preview-img {
+  max-width: 100%;
+  max-height: 140px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.media-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--paper-text-muted);
+}
+
+.media-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--paper-text-main);
+}
+
+.media-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.media-alt-input {
+  width: 100%;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* Practice Mode Media Presentation */
+.question-media-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
+.question-image-box {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 100%;
+}
+
+.question-image-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--paper-line);
+  background: var(--paper-sheet-subtle);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.question-image-wrapper:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.question-image {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.image-zoom-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.question-image-wrapper:hover .image-zoom-badge {
+  opacity: 1;
+}
+
+.question-image-alt {
+  font-size: 11.5px;
+  color: var(--paper-text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.question-audio-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--paper-sheet-subtle);
+  border: 1px solid var(--paper-line);
+  border-radius: 6px;
+  max-width: 480px;
+}
+
+.question-audio-box audio {
+  width: 100%;
+  height: 36px;
+  outline: none;
+}
+
+/* Image Viewer Modal */
+.image-viewer-dialog {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 860px;
+  padding: 0;
+  border: 1px solid var(--paper-line);
+  border-radius: 10px;
+  background: var(--paper-desk-bg, #f4ecd8);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.image-viewer-dialog::backdrop {
+  background: rgba(20, 16, 12, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.image-viewer-content {
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  max-height: 700px;
+}
+
+.image-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--paper-sheet);
+  border-bottom: 1px solid var(--paper-line);
+  flex-shrink: 0;
+}
+
+.image-viewer-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.image-viewer-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--paper-text-main);
+}
+
+.image-viewer-zoom-level {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper-text-muted);
+  background: var(--paper-sheet-subtle);
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--paper-line);
+}
+
+.image-viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zoom-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--paper-line);
+  background: var(--paper-sheet);
+  color: var(--paper-text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.zoom-btn:hover {
+  background: var(--paper-sheet-subtle);
+  border-color: var(--brand-blue-border);
+  color: var(--brand-blue);
+}
+
+.image-viewer-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 24px;
+  background: var(--paper-desk-bg, #f4ecd8);
+  user-select: none;
+}
+
+.image-viewer-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s ease-out;
+  transform-origin: center center;
+}
+
+/* Review / Result View Media Thumbnails */
+.review-media-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 8px;
+}
+
+.review-thumb-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--paper-line);
+  cursor: pointer;
+}
+
+.review-audio-inline {
+  height: 32px;
+  max-width: 320px;
+}
+

@@ -91,7 +91,31 @@
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "type": { "type": "string" },
-        "prompt": { "type": "string" }
+        "prompt": { "type": "string" },
+        "image": { "$ref": "#/$defs/imageMedia" },
+        "audio": { "$ref": "#/$defs/audioMedia" }
+      }
+    },
+    "imageMedia": {
+      "type": "object",
+      "required": ["id", "mimeType", "name", "size"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "mimeType": { "type": "string" },
+        "name": { "type": "string" },
+        "size": { "type": "integer", "minimum": 0 },
+        "alt": { "type": "string" }
+      }
+    },
+    "audioMedia": {
+      "type": "object",
+      "required": ["id", "mimeType", "name", "size"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "mimeType": { "type": "string" },
+        "name": { "type": "string" },
+        "size": { "type": "integer", "minimum": 0 },
+        "duration": { "type": "number", "minimum": 0 }
       }
     },
     "option": {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "quiz-studio-v4";
+const CACHE_NAME = "quiz-studio-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,7 +14,11 @@ const APP_SHELL = [
   "./src/core/grading.js",
   "./src/core/interchange.js",
   "./src/core/learning-records.js",
+  "./src/core/media-references.js",
+  "./src/core/media-store.js",
+  "./src/core/media-types.js",
   "./src/core/migrations.js",
+  "./src/core/paper-portability.js",
   "./src/core/question-registry.js",
   "./src/core/review-records.js",
   "./src/core/review-transport.js",
