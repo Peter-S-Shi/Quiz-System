@@ -18,7 +18,7 @@ M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进
 
 修正分支 `recovery/local-runtime-contract` 已从干净的 `main` 基线 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47` 完成重建。它只修改 Windows/本地运行边界；不会重新打开已经验收的 M6 产品行为，也不是 Milestone 7 Product Hardening。
 
-普通 Chrome profile Human Gate 在 PR #11 以 `6b38c40` 合并前，已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。该结果对当时五次启动仍然有效，但合并后的一次启动暴露出 Windows 批处理解析回归：当 `start-local.bat` 以裸 LF 换行检出并进入缺少 Python 的诊断路径时会被错误解析。专项后续分支 `fix/local-runtime-bat-crlf` 现在通过 `.gitattributes` 强制所有 `.bat` 使用 CRLF，并新增跨平台换行契约测试与真实 Windows 缺少 Python 启动器测试。使用随附 Python runtime 时，完整本地测试为 232/232 通过；后续 CI 与用户点击复验仍待完成。
+普通 Chrome profile Human Gate 在 PR #11 以 `6b38c40` 合并前，已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。该结果对当时五次启动仍然有效，但合并后的一次启动暴露出 Windows 批处理解析回归：当 `start-local.bat` 以裸 LF 换行检出并进入缺少 Python 的诊断路径时会被错误解析。专项后续分支 `fix/local-runtime-bat-crlf` 现在通过 `.gitattributes` 强制所有 `.bat` 使用 CRLF，并新增跨平台换行契约测试与真实 Windows 缺少 Python 启动器测试。使用随附 Python runtime 时，完整本地测试为 232/232 通过，PR #12 CI 通过；用户点击复验仍待完成。
 
 ## M6 综合人工验收与 UX 强化收尾
 
