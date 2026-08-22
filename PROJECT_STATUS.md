@@ -67,10 +67,10 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 
 ## Verification Status
 
-- 256 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, category registry management, empty category persistence, category rename propagation, safe category deletion contract, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
+- 259 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, category registry management, empty category persistence, category rename propagation, safe category deletion contract, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
 - **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes (Instant Feedback vs. Submit at End with explicit submit confirmations) and Special Practice information architecture (`Special Practice -> Translation`) implemented and verified (Human Gate A = **PASS**).
-- **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, and safe deletion modal implemented and verified with tests in `tests/categories.test.js`.
-- **Human Gate B Guide**: Verification journeys 1 through 6 documented in `manual-qa/human-gate-b.md` and `manual-qa/human-gate-b.zh-CN.md` are ready for evaluation.
+- **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation (Level 1 Categories → Level 2 Papers → Level 3 Questions), and safe deletion modal implemented and verified with tests in `tests/categories.test.js` (Batch B = complete and accepted).
+- **Human Gate B Acceptance**: All 7 verification journeys in `manual-qa/human-gate-b.md` and `manual-qa/human-gate-b.zh-CN.md` have been evaluated and passed by the Product Owner (Human Gate B = **PASS**).
 
 ## Agreed Question Media Policy (Batch C Scope Definition)
 
@@ -118,11 +118,10 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 
 ## Next Engineering Objective
 
-1. **Human Gate B Evaluation**: Conduct human evaluation of Batch B (Library Organization) against `manual-qa/human-gate-b.md`.
-2. **Merge Batch B**: Merge `feature/pre-freeze-scope-batch-b` into `main`.
-3. **Pre-Freeze Scope Closure · Batch C**: Implement Objective Question Media (optional image and/or audio across all 5 question types, image zoom viewing, in-question audio player bar).
-4. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and recommend entering Feature Freeze.
-5. **Milestone 7 Product Hardening**: Enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
+1. **Merge Batch B**: Merge PR #16 (`feature/pre-freeze-scope-batch-b`) into `main`.
+2. **Pre-Freeze Scope Closure · Batch C**: Implement Objective Question Media (optional image and/or audio across all 5 question types, image zoom viewing, in-question audio player bar).
+3. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and recommend entering Feature Freeze.
+4. **Milestone 7 Product Hardening**: Enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
 
 ## Repository State
 

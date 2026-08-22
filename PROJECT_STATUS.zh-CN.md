@@ -67,10 +67,10 @@ Product Hardening 是 Milestone 7，只能在 Pre-Freeze V1 Scope Closure（Batc
 
 ## 验证状态
 
-- 256 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、分类注册表规整、空分类持久化、重命名传播、安全删除契约、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
+- 259 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、分类注册表规整、空分类持久化、重命名传播、安全删除契约、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
 - **Pre-Freeze V1 Scope Closure (Batch A)**：客观做题反馈模式（即时反馈与带显式交卷确认的答完交卷）与专项练习信息架构（`专项练习 -> 双语翻译研习`）已实现并通过人工验证（Human Gate A = **PASS**）。
-- **Pre-Freeze V1 Scope Closure (Batch B)**：试卷库集合式分类组织、空分类持久化、分类作用域搜索、重命名传播、试卷归类调整及安全删除弹窗已完整实现，并通过 `tests/categories.test.js` 自动化测试。
-- **Human Gate B 验证指南**：验证旅程 1 至 6 已在 `manual-qa/human-gate-b.md` 和 `manual-qa/human-gate-b.zh-CN.md` 中就绪，等待人工验收。
+- **Pre-Freeze V1 Scope Closure (Batch B)**：试卷库集合式分类组织、空分类持久化、分类作用域搜索、重命名传播、试卷归类调整、渐进式单层导航（Level 1 分类 → Level 2 试卷 → Level 3 题目）及安全删除弹窗已完整实现，并通过 `tests/categories.test.js` 自动化测试（Batch B = 全部完成并已验收）。
+- **Human Gate B 人工验收**：7 项人工验证旅程（`manual-qa/human-gate-b.md` 与 `manual-qa/human-gate-b.zh-CN.md`）全部通过产品负责人评估并签字（Human Gate B = **PASS**）。
 
 ## 题目媒体支持规范（Batch C 范围定义）
 
@@ -118,11 +118,10 @@ Product Hardening 是 Milestone 7，只能在 Pre-Freeze V1 Scope Closure（Batc
 
 ## 下一步工程目标
 
-1. **Human Gate B 人工验收**：根据 `manual-qa/human-gate-b.zh-CN.md` 进行 Batch B 人工评估与签字。
-2. **合并 Batch B**：将 `feature/pre-freeze-scope-batch-b` 合并至 `main`。
-3. **Pre-Freeze V1 Scope Closure · Batch C**：实现客观题目媒体支持（全部 5 种客观题型可选包含图片和/或音频、图片放大查看、题目内嵌音频播放条）。
-4. **Whole-Product Feature Complete Review V3**：重新执行覆盖全产品全部工作流的功能完整性评审，并建议进入 Feature Freeze。
-5. **Milestone 7 Product Hardening**：正式进入 Feature Freeze，执行产品硬化工作（含元认知标记切换交互优化）。
+1. **合并 Batch B**：将 PR #16（`feature/pre-freeze-scope-batch-b`）合并至 `main`。
+2. **Pre-Freeze V1 Scope Closure · Batch C**：实现客观题目媒体支持（全部 5 种客观题型可选包含图片和/或音频、图片放大查看、题目内嵌音频播放条）。
+3. **Whole-Product Feature Complete Review V3**：重新执行覆盖全产品全部工作流的功能完整性评审，并建议进入 Feature Freeze。
+4. **Milestone 7 Product Hardening**：正式进入 Feature Freeze，执行产品硬化工作（含元认知标记切换交互优化）。
 
 ## 仓库状态
 
