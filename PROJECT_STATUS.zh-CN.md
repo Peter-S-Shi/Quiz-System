@@ -6,17 +6,18 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化阶段）
 
 ## 当前里程碑
 
-UI Productization: Layered Paper Study Desk（分层纸质研习台：设计规范、应用框架与工具启动台、核心做题与翻译研习纸面、教师批改台、物理动效与合成音效）— 已实现并通过全量测试；待 Human Acceptance Gate 验收
+UI Productization: Layered Paper Study Desk（分层纸质研习台：设计规范、应用框架与工具启动台、核心做题与翻译研习纸面、教师批改台、物理动效与合成音效）— 已实现并通过全量测试；Final Human Acceptance Gate = PASS
 
-本工作流在进入下一轮 Feature Complete Review 之前完成产品级 UI 收敛（包括 DESIGN.md 规范、Strong Paper 亮色、Soft Near-Black 暗色、翻页动效/音效、MCQ 墨水选择反馈、判定盖章反馈与首页 Tool Launcher 启动台）。本工作流不重新开放 M6 产品业务逻辑语义，亦非 Milestone 7 Product Hardening。
+本工作流在进入下一轮 Feature Complete Review 之前完成产品级 UI 收敛（包括 DESIGN.md 规范、Strong Paper 亮色、Soft Near-Black 暗色、翻页动效/音效、MCQ 墨水选择反馈、匹配题逐对即时纠错、判定盖章反馈、首页 Tool Launcher 启动台与可拖拽侧边栏）。本工作流不重新开放 M6 产品业务逻辑语义，亦非 Milestone 7 Product Hardening。
 
 ## Pre-Freeze UI 产品化里程碑摘要
 
 - **设计规范与系统基础**：创建 [DESIGN.md](file:///f:/CodexWorkspaces/Quiz%20System/DESIGN.md)，确立 Layered Paper Study Desk 设计 Token、字体层级、呼吸间距、自然语义墨水系统与基于 Web Audio API 的零外部依赖物理合成音效引擎。
-- **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好）。
-- **核心做题与研习纸面**：客观题练习与翻译练习重构为停靠在桌面上的连续手稿纸（Laid Paper Sheet），提供有机物理翻页动效与铅笔书写摩擦音效。
+- **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮、可拖拽侧边栏，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好、侧边栏宽度）。
+- **核心做题与研习纸面**：客观题练习与翻译练习重构为停靠在桌面上的连续手稿纸（Laid Paper Sheet），提供有机物理翻页动效、铅笔书写摩擦音效，以及匹配题逐对独立状态判定与内联正确答案提示。
 - **教师批改台**：批改工作区重构为单张连续纸面批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
 - **离线与测试闭包**：全量 238 项自动化测试（237 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败），包含 UI 偏好持久化测试、轻量偏好设置对话框与完整的 Service Worker ESM 离线预缓存闭包。
+- **Human Acceptance Gate**：Final Human Acceptance Gate 已执行并通过（PASS）。
 
 ## 验收政策（历史记录）
 
@@ -103,10 +104,11 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 主观题批改。
 - 公开 GitHub Pages 部署和最终 GitHub Release。
 - 更高级的历史分析/搜索、图形化的溯源可视化，以及历史分页/虚拟滚动层（如果未来历史规模成为实际问题，会推迟到未来版本处理）。
+- 条目级元认知标记交互优化（高亮色彩切换按钮、再次点击取消标记、单个条目支持同时多种标记、移除弹出框交互）——已记录至 post-UI 硬化/Backlog。
 
 ## 下一步工程目标
 
-Local Runtime Recovery PR #11 及其启动器换行后续修复 PR #12 均已合并。当前唯一的即时门禁是用户在合并后正常双击一次 `start-local.bat`；如仍失败，则直接返回 Local Runtime Recovery。确认通过后，生命周期才回到进入 Feature Freeze 前的全产品 Feature Complete Review。Product Hardening（M7）与 Feature Freeze 尚未开始。
+在进入 Feature Freeze 和 Milestone 7 Product Hardening 之前，重新执行覆盖全产品全部工作流的 Whole-Product Feature Complete Review V2。
 
 ## 仓库状态
 
@@ -117,4 +119,4 @@ Local Runtime Recovery PR #11 及其启动器换行后续修复 PR #12 均已合
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；PR #11 已以 `6b38c40` 合并，BAT CRLF 后续修复 PR #12 已以 `6643a1b` 合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #11（`recovery/local-runtime-contract`）已以 `6b38c40` 合并；专项后续 PR #12（`fix/local-runtime-bat-crlf`）已以 `6643a1b` 合并，并具备 232/232 本地验证与最终 CI PASS。历史 Draft PR #10（`fix/local-dev-cache-coherence`）继续保持 Closed/Superseded，仅作为取证检查点保留。
+- Pull Request 状态：PR #14（`ui/layered-paper-productization`）已完成 Pre-Freeze UI Productization 并通过 Final Human Acceptance Gate，具备 238/238 测试通过（237 项通过，1 项 Linux CI 跳过，0 项失败）与 GitHub CI PASS；等待执行 Whole-Product Feature Complete Review V2。历史 PR #11 与 PR #12 保持已合并至 `main`。历史 Draft PR #10 保持 Closed/Superseded。

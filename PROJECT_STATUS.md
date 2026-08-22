@@ -6,17 +6,18 @@ Pre-Freeze UI Productization
 
 ## Current Milestone
 
-UI Productization: Layered Paper Study Desk (Design Foundation, App Shell & Tool Launcher, Core Learning Surfaces, Teacher Marking Desk, Synthesized Motion & Audio) — complete and verified; pending Human Acceptance Gate
+UI Productization: Layered Paper Study Desk (Design Foundation, App Shell & Tool Launcher, Core Learning Surfaces, Teacher Marking Desk, Synthesized Motion & Audio) — complete and verified; Final Human Acceptance Gate = PASS
 
-This workstream establishes product-level UI convergence (DESIGN.md, Strong Paper light mode, Soft Near-Black dark mode, page-turn motion/sound, MCQ ink selection, rubber stamp feedback, Tool Launcher home) before the next Feature Complete Review. It does not reopen M6 product semantics and is not Milestone 7 Product Hardening.
+This workstream establishes product-level UI convergence (DESIGN.md, Strong Paper light mode, Soft Near-Black dark mode, page-turn motion/sound, MCQ ink selection, per-pair matching feedback, rubber stamp feedback, Tool Launcher home, resizable sidebars) before the next Feature Complete Review. It does not reopen M6 product semantics and is not Milestone 7 Product Hardening.
 
 ## Pre-Freeze UI Productization Milestone Summary
 
 - **Design System Foundation**: Created `DESIGN.md` establishing the Layered Paper Study Desk design tokens, typography, spacing, natural semantic inks, and zero-dependency synthesized audio engine.
-- **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, and persistent UI preferences (theme, sound effects, motion preference).
-- **Core Learning Surfaces**: Rebuilt Objective Quiz and Translation Practice into continuous laid paper sheets resting on the study desk, with organic page-turn transitions and pencil stroke sounds.
+- **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, resizable sidebars, and persistent UI preferences (theme, sound effects, motion preference, sidebar width).
+- **Core Learning Surfaces**: Rebuilt Objective Quiz and Translation Practice into continuous laid paper sheets resting on the study desk, with organic page-turn transitions, pencil stroke sounds, and granular per-pair matching feedback with inline correction hints.
 - **Teacher Marking Desk**: Rebuilt Correction Workspace into a continuous paper manuscript with pen marking tray, live projection, and tactile rubber stamp feedback with stamp thud audio.
 - **Offline & Verification Closure**: 238 total tests (237 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed), including UI preferences persistence, lightweight preferences dialog, and complete Service Worker ESM precache closure.
+- **Human Acceptance Gate**: Final Human Acceptance Gate has been executed and passed (PASS).
 
 ## Acceptance Policy (Historical Record)
 
@@ -103,10 +104,11 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 and U
 - Subjective question grading.
 - Public GitHub Pages deployment and final GitHub Release.
 - Advanced history analytics/search, graph-style lineage visualization, and a History pagination/virtualization layer (deferred to a future version if History size becomes a practical problem).
+- Item-level metacognitive marking interaction refinement (active-color toggle buttons, click-again-to-remove, multiple simultaneous marks per item, and removal of popup-style box) — recorded for post-UI hardening / backlog.
 
 ## Next Engineering Objective
 
-Local Runtime Recovery PR #11 and its launcher line-ending follow-up PR #12 are merged. The remaining immediate gate is a normal post-merge user double-click launch of `start-local.bat`; any failure returns directly to Local Runtime Recovery. After that confirmation, the lifecycle returns to the whole-product Feature Complete Review before Feature Freeze. Product Hardening (M7) and Feature Freeze have not started.
+Conduct the Whole-Product Feature Complete Review V2 across all user workflows before entering Feature Freeze and Milestone 7 Product Hardening.
 
 ## Repository State
 
@@ -117,4 +119,4 @@ Local Runtime Recovery PR #11 and its launcher line-ending follow-up PR #12 are 
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; PR #11 merged as `6b38c40`, and the BAT CRLF follow-up PR #12 merged as `6643a1b`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #11 (`recovery/local-runtime-contract`) is Merged at `6b38c40`; focused follow-up PR #12 (`fix/local-runtime-bat-crlf`) is Merged at `6643a1b` with 232/232 local verification and passing final CI. Historical Draft PR #10 (`fix/local-dev-cache-coherence`) remains Closed/Superseded and is retained only as a forensic checkpoint.
+- Pull request status: PR #14 (`ui/layered-paper-productization`) has completed Pre-Freeze UI Productization and passed the Final Human Acceptance Gate with 238/238 test pass (237 passed, 1 skipped on Linux CI, 0 failed) and passing GitHub CI; awaits Whole-Product Feature Complete Review V2. Historical PR #11 and PR #12 remain merged on `main`. Historical Draft PR #10 remains Closed/Superseded.
