@@ -18,7 +18,7 @@ M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进
 
 修正分支 `recovery/local-runtime-contract` 已从干净的 `main` 基线 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47` 完成重建。它只修改 Windows/本地运行边界；不会重新打开已经验收的 M6 产品行为，也不是 Milestone 7 Product Hardening。
 
-普通 Chrome profile Human Gate 已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。随后执行的延后双轴 code review 发现两个 Standards hard violations（启动/恢复文字双语与过期门禁状态）、两个 material Spec gaps（规范 hostname readiness 与浏览器启动失败诊断），以及一个低优先级重复配置 smell。所有 material findings 与 smell 均已在 Local Runtime Recovery 边界内修复；完整本地测试为 230/230 通过。仍需最终 PR CI 重新运行并获得明确合并批准。
+普通 Chrome profile Human Gate 已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。随后执行的延后双轴 code review 发现两个 Standards hard violations（启动/恢复文字双语与过期门禁状态）、两个 material Spec gaps（规范 hostname readiness 与浏览器启动失败诊断），以及一个低优先级重复配置 smell。所有 material findings 与 smell 均已在 Local Runtime Recovery 边界内修复；最终 Standards 与 Spec review 均为 PASS，完整本地测试为 230/230 通过，review-fix 提交 `c156166` 的 PR CI 通过。仍需取得明确合并批准。
 
 ## M6 综合人工验收与 UX 强化收尾
 
@@ -113,7 +113,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-Local Runtime Recovery 的实现、Human Gate（5/5 PASS）、延后双轴 code review、finding 修复与完整本地重新验证均已完成。最终 PR CI 通过后，PR #11 将达到 merge-ready，但仍必须取得用户明确批准，禁止自主合并。之后生命周期才回到进入 Feature Freeze 前的全产品 Feature Complete Review。Product Hardening（M7）与 Feature Freeze 尚未开始。
+Local Runtime Recovery 的实现、Human Gate（5/5 PASS）、延后双轴 code review、finding 修复、完整本地重新验证与 PR CI 均已完成。PR #11 现为 Ready/Open 且达到 merge-ready，但仍必须取得用户明确批准，禁止自主合并。之后生命周期才回到进入 Feature Freeze 前的全产品 Feature Complete Review。Product Hardening（M7）与 Feature Freeze 尚未开始。
 
 ## 仓库状态
 
@@ -124,4 +124,4 @@ Local Runtime Recovery 的实现、Human Gate（5/5 PASS）、延后双轴 code 
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；当前工作位于 `recovery/local-runtime-contract`
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：替代 PR #11（`recovery/local-runtime-contract`）已包含 5/5 Human Gate 与 reviewed/fixed 状态；仍需最终 CI 重新运行并获得明确合并批准。历史 Draft PR #10（`fix/local-dev-cache-coherence`）已被 supersede，在远端对账前只保留为取证检查点。两个 PR 均未获得合并授权。
+- Pull Request 状态：替代 PR #11（`recovery/local-runtime-contract`）现为 Ready/Open，包含 5/5 Human Gate、最终 Standards/Spec PASS、230/230 本地验证与通过的 CI。合并前仍必须取得用户明确批准。历史 Draft PR #10（`fix/local-dev-cache-coherence`）现为 Closed/Superseded，只保留为取证检查点；禁止合并或作为实现基线。

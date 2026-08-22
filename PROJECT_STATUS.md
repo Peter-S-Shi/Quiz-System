@@ -18,7 +18,7 @@ Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 compre
 
 The corrective `recovery/local-runtime-contract` workstream was rebuilt from the clean `main` baseline `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`. It changes only the Windows/local runtime boundary; it does not reopen accepted M6 product behavior and is not Milestone 7 Product Hardening.
 
-The normal-profile Chrome Human Gate passed 5/5 at the preserved `http://localhost:8000` origin: existing user data remained intact, current M6 behavior was visible and functional, cold/restart/already-open-browser cases succeeded, and no cache clearing or DevTools intervention was required. The deferred two-axis code review then found two Standards hard violations (bilingual startup/recovery text and stale gate status), two material Spec gaps (canonical-host readiness and browser-launch failure diagnostics), and one low-priority duplicated-configuration smell. All material findings and the smell were repaired within the Local Runtime Recovery boundary; the complete local suite passes 230/230. Final PR CI rerun and explicit merge approval remain required.
+The normal-profile Chrome Human Gate passed 5/5 at the preserved `http://localhost:8000` origin: existing user data remained intact, current M6 behavior was visible and functional, cold/restart/already-open-browser cases succeeded, and no cache clearing or DevTools intervention was required. The deferred two-axis code review then found two Standards hard violations (bilingual startup/recovery text and stale gate status), two material Spec gaps (canonical-host readiness and browser-launch failure diagnostics), and one low-priority duplicated-configuration smell. All material findings and the smell were repaired within the Local Runtime Recovery boundary; final Standards and Spec reviews both pass, the complete local suite passes 230/230, and review-fix commit `c156166` passed PR CI. Explicit merge approval remains required.
 
 ## M6 Comprehensive Acceptance and Hardening Closure
 
@@ -113,7 +113,7 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 
 ## Next Engineering Objective
 
-Local Runtime Recovery implementation, Human Gate (5/5 PASS), deferred two-axis code review, finding repair, and complete local reverification are complete. After final PR CI passes, PR #11 is merge-ready subject to explicit user approval; it must not be merged autonomously. The lifecycle then returns to the whole-product Feature Complete Review before Feature Freeze. Product Hardening (M7) and Feature Freeze have not started.
+Local Runtime Recovery implementation, Human Gate (5/5 PASS), deferred two-axis code review, finding repair, complete local reverification, and PR CI are complete. PR #11 is Ready/Open and merge-ready subject to explicit user approval; it must not be merged autonomously. The lifecycle then returns to the whole-product Feature Complete Review before Feature Freeze. Product Hardening (M7) and Feature Freeze have not started.
 
 ## Repository State
 
@@ -124,4 +124,4 @@ Local Runtime Recovery implementation, Human Gate (5/5 PASS), deferred two-axis 
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; current work is on `recovery/local-runtime-contract`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: replacement PR #11 (`recovery/local-runtime-contract`) contains the 5/5 Human Gate and reviewed/fixed state; final CI rerun and explicit merge approval remain required. Historical Draft PR #10 (`fix/local-dev-cache-coherence`) is superseded and retained only as a forensic checkpoint until remote reconciliation. Neither PR is authorized for merge.
+- Pull request status: replacement PR #11 (`recovery/local-runtime-contract`) is Ready/Open with the 5/5 Human Gate, final Standards/Spec PASS, 230/230 local verification, and passing CI. Explicit user approval is still required before merge. Historical Draft PR #10 (`fix/local-dev-cache-coherence`) is Closed/Superseded and retained only as a forensic checkpoint; it must not be merged or used as the implementation base.
