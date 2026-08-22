@@ -357,12 +357,19 @@ button {
   transition: all 0.2s ease;
   text-align: left;
   cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  width: 100%;
 }
 
-.launcher-card:hover {
+.launcher-card:hover,
+.launcher-card:focus-visible {
   border-color: var(--brand-blue);
   transform: translateY(-2px);
   box-shadow: var(--shadow-floating);
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 2px;
 }
 
 .launcher-card-icon {

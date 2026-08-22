@@ -1226,6 +1226,7 @@ function renderChrome() {
   }
   if (closePreferencesDialog) {
     closePreferencesDialog.setAttribute("aria-label", t("aria.close"));
+    closePreferencesDialog.title = t("aria.close");
   }
   if (preferencesTitle) preferencesTitle.textContent = t("preferences.title");
   if (prefSoundLabel) prefSoundLabel.textContent = t("preferences.soundLabel");
@@ -1287,38 +1288,38 @@ function renderHomeLauncher() {
       <p>${t("home.tagline")}</p>
     </div>
     <div class="launcher-grid">
-      <div class="launcher-card" id="launchQuiz">
+      <button type="button" class="launcher-card" id="launchQuiz">
         <div>
           <div class="launcher-card-icon">📝</div>
           <h3>${t("home.quizTitle")}</h3>
           <p>${t("home.quizDesc")}</p>
         </div>
         <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
-      </div>
-      <div class="launcher-card" id="launchTranslation">
+      </button>
+      <button type="button" class="launcher-card" id="launchTranslation">
         <div>
           <div class="launcher-card-icon">📖</div>
           <h3>${t("home.translationTitle")}</h3>
           <p>${t("home.translationDesc")}</p>
         </div>
         <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
-      </div>
-      <div class="launcher-card" id="launchEditor">
+      </button>
+      <button type="button" class="launcher-card" id="launchEditor">
         <div>
           <div class="launcher-card-icon">✏️</div>
           <h3>${t("home.editorTitle")}</h3>
           <p>${t("home.editorDesc")}</p>
         </div>
         <div class="launcher-card-cta">${t("home.manage")} &rarr;</div>
-      </div>
-      <div class="launcher-card" id="launchHistory">
+      </button>
+      <button type="button" class="launcher-card" id="launchHistory">
         <div>
           <div class="launcher-card-icon">📜</div>
           <h3>${t("home.historyTitle")}</h3>
           <p>${t("home.historyDesc")}</p>
         </div>
         <div class="launcher-card-cta">${t("home.view")} &rarr;</div>
-      </div>
+      </button>
     </div>
   `;
 
