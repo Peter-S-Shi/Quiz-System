@@ -6,6 +6,8 @@ On Windows, double-click `start-local.bat` from the project folder. It opens the
 
 If port `8000` is already occupied, the launcher stops and identifies the listener where Windows permits it. Close that listener and retry; do not switch ports or clear browser site data, because existing Quiz Studio data is tied to `localhost:8000`. The launcher retires legacy Quiz Studio Service Worker/cache state while preserving localStorage.
 
+If the browser does not open automatically, leave the server window running and open the recovery URL printed by its bilingual diagnostic.
+
 ## Create And Manage Papers
 
 - Use the local quiz library to create, duplicate, rename, delete, search, categorize, and tag papers.

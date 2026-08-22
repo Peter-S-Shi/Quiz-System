@@ -177,6 +177,7 @@ test("occupied canonical port fails clearly without drifting origin", () => {
   if (process.platform === "win32") {
     assert.match(output, /PID\s+\d+/i, "Windows collision diagnostics should identify the listener");
   }
+  assert.match(output, /端口 8000 必须保持可用/);
 });
 
 test("runtime rejects caller-supplied port drift", () => {
@@ -195,6 +196,7 @@ test("recovery entry retires only Quiz Studio SW/cache state and preserves local
   const { response, body } = await requestLocalhost(4, "/__runtime__/recover");
   assert.equal(response.statusCode, 200);
   assert.match(response.headers["content-type"] ?? "", /text\/html/);
+  assert.match(body, /本地运行恢复/);
 
   const script = body.match(/<script>([\s\S]*?)<\/script>/)?.[1];
   assert.ok(script, "recovery response should contain an executable migration script");
@@ -252,4 +254,26 @@ test("recovery entry retires only Quiz Studio SW/cache state and preserves local
   assert.deepEqual(unregistered, ["quiz-studio"]);
   assert.deepEqual(deletedCaches, ["quiz-studio-v3"]);
   assert.equal(redirectedTo, "/?local-runtime=recovered=1");
+});
+
+test("browser launch failure keeps the runtime diagnosable in both languages", () => {
+  const python = findPython();
+  const probeCode = [
+    "import importlib.util, sys",
+    "spec = importlib.util.spec_from_file_location('quiz_runtime', sys.argv[1])",
+    "module = importlib.util.module_from_spec(spec)",
+    "spec.loader.exec_module(module)",
+    "opened = module.launch_browser(lambda _url: False)",
+    "raise SystemExit(1 if opened else 0)",
+  ].join("; ");
+  const probe = spawnSync(
+    python.command,
+    [...python.prefixArgs, "-c", probeCode, serverScript],
+    { cwd: rootDir, encoding: "utf8", windowsHide: true, timeout: 5000 }
+  );
+  const output = `${probe.stdout ?? ""}${probe.stderr ?? ""}`;
+  assert.equal(probe.status, 0, output);
+  assert.match(output, /browser launch failed/i);
+  assert.match(output, /浏览器启动失败/);
+  assert.match(output, /http:\/\/localhost:8000\/__runtime__\/recover/);
 });

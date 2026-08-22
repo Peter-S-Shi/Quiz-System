@@ -18,20 +18,33 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 
+def configure_output_encoding() -> None:
+    """Keep bilingual diagnostics readable in Windows consoles and captured pipes."""
+
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            reconfigure(encoding="utf-8", errors="backslashreplace")
+
+
+configure_output_encoding()
+
+
 CANONICAL_HOST = "localhost"
 CANONICAL_PORT = 8000
 CANONICAL_URL = f"http://{CANONICAL_HOST}:{CANONICAL_PORT}"
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 RECOVERY_PATH = "/__runtime__/recover"
+RECOVERY_URL = f"{CANONICAL_URL}{RECOVERY_PATH}"
 RECOVERY_HTML = """<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quiz Studio local runtime recovery</title>
+  <title>Quiz Studio local runtime recovery / 本地运行恢复</title>
 </head>
 <body>
-  <p id="status">Preparing the current Quiz Studio working tree...</p>
+  <p id="status">Preparing the current Quiz Studio working tree... / <span lang="zh-CN">正在准备当前 Quiz Studio 工作树……</span></p>
   <script>
   (async () => {
     if ("serviceWorker" in navigator) {
@@ -54,7 +67,8 @@ RECOVERY_HTML = """<!doctype html>
     location.replace("/?local-runtime=recovered=1");
   })().catch((error) => {
     document.getElementById("status").textContent =
-      `Local runtime recovery failed: ${error.message}. Close this tab and run start-local.bat again.`;
+      `Local runtime recovery failed: ${error.message}. Close this tab and run start-local.bat again. / ` +
+      `本地运行恢复失败：${error.message}。请关闭此标签页，然后重新运行 start-local.bat。`;
   });
   </script>
 </body>
@@ -98,8 +112,7 @@ class LocalRuntimeHandler(SimpleHTTPRequestHandler):
         sys.stderr.write(f"[runtime] {self.address_string()} {format % args}\n")
 
 
-class IPv4RuntimeServer(ThreadingHTTPServer):
-    address_family = socket.AF_INET
+class ExclusiveRuntimeServer(ThreadingHTTPServer):
     allow_reuse_address = False
     daemon_threads = True
 
@@ -109,14 +122,14 @@ class IPv4RuntimeServer(ThreadingHTTPServer):
         super().server_bind()
 
 
-class IPv6RuntimeServer(ThreadingHTTPServer):
+class IPv4RuntimeServer(ExclusiveRuntimeServer):
+    address_family = socket.AF_INET
+
+
+class IPv6RuntimeServer(ExclusiveRuntimeServer):
     address_family = socket.AF_INET6
-    allow_reuse_address = False
-    daemon_threads = True
 
     def server_bind(self) -> None:
-        if sys.platform == "win32" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
-            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
         self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
         super().server_bind()
 
@@ -202,6 +215,7 @@ def verify_servers(servers: list[ThreadingHTTPServer], timeout: float = 3.0) -> 
 
     deadline = time.monotonic() + timeout
     pending = {server.server_address[0] for server in servers}
+    pending.add(CANONICAL_HOST)
     last_errors: dict[str, str] = {}
     while pending and time.monotonic() < deadline:
         for address in list(pending):
@@ -233,6 +247,21 @@ def verify_servers(servers: list[ThreadingHTTPServer], timeout: float = 3.0) -> 
         raise RuntimeError(f"browser-facing health verification failed ({details})")
 
 
+def launch_browser(opener=webbrowser.open) -> bool:
+    """Open the supported recovery entry or emit a bilingual manual fallback."""
+
+    try:
+        if opener(RECOVERY_URL):
+            return True
+        detail = "the operating system did not accept the browser request"
+    except Exception as error:  # Browser integration is an external system boundary.
+        detail = str(error)
+    print(f"Error: browser launch failed: {detail}", file=sys.stderr, flush=True)
+    print(f"错误：浏览器启动失败：{detail}", file=sys.stderr, flush=True)
+    print(f"Open it manually / 请手动打开: {RECOVERY_URL}", file=sys.stderr, flush=True)
+    return False
+
+
 def run(*, open_browser: bool = True) -> int:
     try:
         servers = create_servers()
@@ -242,15 +271,19 @@ def run(*, open_browser: bool = True) -> int:
             file=sys.stderr,
             flush=True,
         )
+        print(f"错误：无法在规范地址 {CANONICAL_URL}/ 启动 Quiz Studio：{error}", file=sys.stderr, flush=True)
         print(
             "Port 8000 must remain available because changing it would change the browser data origin.",
             file=sys.stderr,
             flush=True,
         )
+        print("端口 8000 必须保持可用；更换端口会改变浏览器数据所属的 origin。", file=sys.stderr, flush=True)
         owners = windows_port_owners()
         if owners:
             print(f"Current port 8000 listener(s): {', '.join(owners)}", file=sys.stderr, flush=True)
+            print(f"当前端口 8000 监听进程：{', '.join(owners)}", file=sys.stderr, flush=True)
             print("Close the existing listener, then run start-local.bat again.", file=sys.stderr, flush=True)
+            print("请关闭现有监听进程，然后重新运行 start-local.bat。", file=sys.stderr, flush=True)
         return 1
 
     threads = [threading.Thread(target=server.serve_forever, daemon=True) for server in servers]
@@ -261,6 +294,7 @@ def run(*, open_browser: bool = True) -> int:
         verify_servers(servers)
     except RuntimeError as error:
         print(f"Error: {error}", file=sys.stderr, flush=True)
+        print(f"错误：{error}", file=sys.stderr, flush=True)
         for server in servers:
             server.shutdown()
             server.server_close()
@@ -269,15 +303,15 @@ def run(*, open_browser: bool = True) -> int:
         return 1
 
     family_names = "IPv4 + IPv6" if len(servers) == 2 else "IPv4 (system has no IPv6 localhost)"
-    print(f"Local runtime ready: {CANONICAL_URL}/ [{family_names}]", flush=True)
+    print(f"Local runtime ready / 本地运行已就绪: {CANONICAL_URL}/ [{family_names}]", flush=True)
     if open_browser:
-        webbrowser.open(f"{CANONICAL_URL}{RECOVERY_PATH}")
+        launch_browser()
 
     try:
         while all(thread.is_alive() for thread in threads):
             time.sleep(0.25)
     except KeyboardInterrupt:
-        print("\nStopping Quiz Studio local runtime...", flush=True)
+        print("\nStopping Quiz Studio local runtime... / 正在停止 Quiz Studio 本地运行服务……", flush=True)
     finally:
         for server in servers:
             server.shutdown()

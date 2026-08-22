@@ -122,7 +122,7 @@ M1-M6 引入的每一个持久化 key，为 M6.7 生命周期收尾而逐一复�
 
 ## 本地运行契约
 
-`start-local.bat` 是 `scripts/dev-server.py` 的 Windows 薄包装。Python 是唯一的 runtime owner：它绑定严格固定的规范 origin `http://localhost:8000`，以 `Cache-Control: no-store` 提供当前工作树，针对操作系统公布的全部 IPv4/IPv6 localhost 地址族验证健康端点，打开浏览器并负责关闭生命周期。它绝不会漂移到其他端口；在 Windows 上发生端口冲突时，诊断会在可用时包含监听进程的 PID。
+`start-local.bat` 是 `scripts/dev-server.py` 的 Windows 薄包装。Python 是唯一的 runtime owner：它绑定严格固定的规范 origin `http://localhost:8000`，以 `Cache-Control: no-store` 提供当前工作树，同时通过规范 `localhost` hostname 与操作系统公布的全部 IPv4/IPv6 localhost 地址族验证健康端点，打开浏览器并负责关闭生命周期。它绝不会漂移到其他端口；在 Windows 上发生端口冲突时，诊断会在可用时包含监听进程的 PID。如果操作系统浏览器 opener 失败或拒绝请求，服务器仍保持运行，并以双语提示输出可手动打开的准确恢复 URL。
 
 受支持的浏览器入口会先访问服务器拥有的 `/__runtime__/recover` 页面。这个有明确边界的迁移只注销同 origin、脚本路径为 `/sw.js` 的 Quiz Studio 注册，只删除名称以 `quiz-studio-` 开头的 Cache Storage，随后重定向到普通的 `index.html -> src/app.js` bootstrap。它绝不会读取、清空或迁移 localStorage。`src/core/service-worker-policy.js` 禁止 loopback origin 注册生产 Service Worker，而非 loopback 的托管部署仍保留 `sw.js` 的生产 PWA 路径。
 
