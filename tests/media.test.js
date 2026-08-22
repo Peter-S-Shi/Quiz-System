@@ -24,6 +24,9 @@ import {
   collectReferencedMediaIds,
   findOrphanedMediaIds,
   cleanupOrphanedMedia,
+  validateMediaAssetsMap,
+  validateItemsMediaIntegrity,
+  isValidBase64TransportString,
 } from "../src/core/media-references.js";
 import {
   createPortablePaperPackage,
@@ -414,19 +417,47 @@ test("single-paper portability packages self-contained media assets and validate
   };
   assert.throws(() => parsePortablePaperPackage(missingAssetPkg), /missing-img-999/);
 
-  // Reject malformed/empty payload asset
-  const emptyPayloadPkg = {
+  // Reject missing payload asset (neither data nor blob exists)
+  const noPayloadPkg = {
     documentType: "quiz-studio.quiz-paper",
     paper: {
       questions: [
-        { id: "q-empty", type: "single", prompt: "Look", image: { id: "empty-img-01" } },
+        { id: "q-no-payload", type: "single", prompt: "Look", image: { id: "img-no-payload" } },
       ],
     },
     assets: [
-      { id: "empty-img-01", mimeType: "image/png", name: "empty.png", size: 0, data: "" },
+      { id: "img-no-payload", mimeType: "image/png", name: "missing-payload.png" },
     ],
   };
-  assert.throws(() => parsePortablePaperPackage(emptyPayloadPkg), /empty/i);
+  assert.throws(() => parsePortablePaperPackage(noPayloadPkg), /missing payload/i);
+
+  // Reject malformed data payload type (e.g. number instead of string/buffer)
+  const malformedTypePkg = {
+    documentType: "quiz-studio.quiz-paper",
+    paper: {
+      questions: [
+        { id: "q-bad-type", type: "single", prompt: "Look", image: { id: "img-bad-type" } },
+      ],
+    },
+    assets: [
+      { id: "img-bad-type", mimeType: "image/png", name: "bad.png", data: 12345 },
+    ],
+  };
+  assert.throws(() => parsePortablePaperPackage(malformedTypePkg), /unsupported data payload type/i);
+
+  // Reject non-base64 invalid transport payload
+  const invalidB64Pkg = {
+    documentType: "quiz-studio.quiz-paper",
+    paper: {
+      questions: [
+        { id: "q-bad-b64", type: "single", prompt: "Look", image: { id: "img-bad-b64" } },
+      ],
+    },
+    assets: [
+      { id: "img-bad-b64", mimeType: "image/png", name: "bad.png", data: "!!!not-valid-base64!!!" },
+    ],
+  };
+  assert.throws(() => parsePortablePaperPackage(invalidB64Pkg), /invalid or empty transport data/i);
 
   // Reject conflicting duplicate asset IDs
   const conflictingDuplicatePkg = {
@@ -455,7 +486,21 @@ test("single-paper portability packages self-contained media assets and validate
       { id: "bad-mime-id", mimeType: "application/pdf", name: "doc.pdf", size: 100, data: "JVBERi0xLjQK" },
     ],
   };
-  assert.throws(() => parsePortablePaperPackage(badMimePkg), /invalid|unsupported/i);
+  assert.throws(() => parsePortablePaperPackage(badMimePkg), /unsupported mimeType/i);
+
+  // Reject image reference backed by audio MIME
+  const imageWithAudioMimePkg = {
+    documentType: "quiz-studio.quiz-paper",
+    paper: {
+      questions: [
+        { id: "q-audio-img", type: "single", prompt: "Look", image: { id: "aud-asset-as-img" } },
+      ],
+    },
+    assets: [
+      { id: "aud-asset-as-img", mimeType: "audio/mpeg", name: "song.mp3", data: "SUQzBAAAAA==" },
+    ],
+  };
+  assert.throws(() => parsePortablePaperPackage(imageWithAudioMimePkg), /incompatible image MIME/i);
 });
 
 test("full library backup enforces media referential integrity and restores safely", () => {
@@ -483,7 +528,7 @@ test("full library backup enforces media referential integrity and restores safe
       mimeType: "image/png",
       name: "test.png",
       size: 100,
-      data: "iVBORw0KGgo==",
+      data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
     },
   ];
 
@@ -514,7 +559,7 @@ test("full library backup enforces media referential integrity and restores safe
   assert.equal(restoredLegacy.library.papers[0].title, "Legacy");
   assert.deepEqual(restoredLegacy.mediaAssets, []);
 
-  // Reject backup with missing referenced media asset
+  // Reject backup with missing referenced media asset in paper
   const brokenBackup = {
     schemaVersion: 2,
     documentType: "quiz-studio.library-backup",
@@ -524,6 +569,88 @@ test("full library backup enforces media referential integrity and restores safe
     mediaAssets: [],
   };
   assert.throws(() => parseLibraryBackup(brokenBackup), /missing-img/);
+
+  // Reject backup with missing payload in asset
+  const missingPayloadBackup = {
+    schemaVersion: 2,
+    documentType: "quiz-studio.library-backup",
+    library: {
+      papers: [{ id: "bp2", title: "Broken", questions: [{ id: "bq2", type: "single", prompt: "Prompt", image: { id: "img-empty-payload" } }] }],
+    },
+    mediaAssets: [
+      { id: "img-empty-payload", mimeType: "image/png", name: "bad.png" },
+    ],
+  };
+  assert.throws(() => parseLibraryBackup(missingPayloadBackup), /missing payload/i);
+
+  // Reject backup with conflicting duplicate asset IDs in mediaAssets
+  const duplicateIdBackup = {
+    schemaVersion: 2,
+    documentType: "quiz-studio.library-backup",
+    library: {
+      papers: [{ id: "bp3", title: "Broken", questions: [{ id: "bq3", type: "single", prompt: "Prompt", image: { id: "dup-id" } }] }],
+    },
+    mediaAssets: [
+      { id: "dup-id", mimeType: "image/png", name: "a.png", data: "AAAA" },
+      { id: "dup-id", mimeType: "image/jpeg", name: "b.jpg", data: "BBBB" },
+    ],
+  };
+  assert.throws(() => parseLibraryBackup(duplicateIdBackup), /duplicate/i);
+
+  // Reject backup with image reference backed by audio MIME
+  const audioAsImgBackup = {
+    schemaVersion: 2,
+    documentType: "quiz-studio.library-backup",
+    library: {
+      papers: [{ id: "bp4", title: "Broken", questions: [{ id: "bq4", type: "single", prompt: "Prompt", image: { id: "aud-as-img" } }] }],
+    },
+    mediaAssets: [
+      { id: "aud-as-img", mimeType: "audio/mpeg", name: "song.mp3", data: "SUQzBAAAAA==" },
+    ],
+  };
+  assert.throws(() => parseLibraryBackup(audioAsImgBackup), /incompatible image MIME/i);
+
+  // Reject backup with finalized learner response snapshot referencing missing media
+  const brokenHistoryBackup = {
+    schemaVersion: 2,
+    documentType: "quiz-studio.library-backup",
+    library: {
+      papers: [{ id: "p-ok", title: "Clean", questions: [{ id: "q-ok", type: "truefalse", prompt: "OK?", answer: true }] }],
+    },
+    learnerResponses: [
+      {
+        id: "resp-broken-media",
+        documentType: "quiz-studio.learner-response",
+        finalizedAt: "2026-08-22T10:00:00.000Z",
+        material: {
+          type: "quiz-paper",
+          id: "p-historical",
+          title: "Historical Paper",
+          snapshot: {
+            items: [
+              { id: "item-1", type: "truefalse", prompt: "Historical Q", answer: true, image: { id: "missing-historical-img" } },
+            ],
+          },
+        },
+        session: {
+          id: "sess-hist-1",
+          startedAt: "2026-08-22T09:50:00.000Z",
+          completedAt: "2026-08-22T10:00:00.000Z",
+        },
+        responses: [
+          { itemId: "item-1", answer: true, result: { correct: true } },
+        ],
+        summary: {
+          itemCount: 1,
+          answeredCount: 1,
+          correctCount: 1,
+          percent: 100,
+        },
+      },
+    ],
+    mediaAssets: [],
+  };
+  assert.throws(() => parseLibraryBackup(brokenHistoryBackup), /missing-historical-img/);
 });
 
 test("question and paper duplication preserves media references safely", () => {

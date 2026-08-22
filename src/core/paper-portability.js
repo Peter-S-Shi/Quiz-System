@@ -1,5 +1,5 @@
 import { normalizePaper } from "./migrations.js";
-import { isSupportedAudioMime, isSupportedImageMime } from "./media-types.js";
+import { validateItemsMediaIntegrity, validateMediaAssetsMap } from "./media-references.js";
 
 export const PORTABLE_PAPER_SCHEMA_VERSION = 2;
 export const PORTABLE_PAPER_DOCUMENT_TYPE = "quiz-studio.quiz-paper";
@@ -11,64 +11,9 @@ export function validatePaperMediaIntegrity(paper, assets = []) {
   if (!paper || typeof paper !== "object" || !Array.isArray(paper.questions)) {
     throw new TypeError("Invalid paper structure: expected questions array.");
   }
-  if (!Array.isArray(assets)) {
-    throw new TypeError("Invalid assets structure: expected an array.");
-  }
 
-  const assetMap = new Map();
-  for (const asset of assets) {
-    if (!asset || typeof asset !== "object" || typeof asset.id !== "string" || !asset.id.trim()) {
-      throw new TypeError("Invalid media asset: missing or empty asset ID.");
-    }
-    const assetId = asset.id.trim();
-
-    if (assetMap.has(assetId)) {
-      const existing = assetMap.get(assetId);
-      if (existing.mimeType !== asset.mimeType || existing.data !== asset.data) {
-        throw new TypeError(`Conflicting duplicate asset ID "${assetId}" found with different metadata or payload.`);
-      }
-    }
-
-    if (typeof asset.mimeType !== "string" || !asset.mimeType.trim()) {
-      throw new TypeError(`Media asset "${assetId}" is missing a valid mimeType.`);
-    }
-
-    if (asset.data !== undefined) {
-      if (typeof asset.data === "string" && !asset.data.trim()) {
-        throw new TypeError(`Media asset "${assetId}" has an empty payload.`);
-      }
-    } else if (asset.blob !== undefined) {
-      if (asset.blob.size === 0 || asset.blob.byteLength === 0) {
-        throw new TypeError(`Media asset "${assetId}" has an empty blob.`);
-      }
-    }
-
-    assetMap.set(assetId, asset);
-  }
-
-  for (const question of paper.questions) {
-    if (question.image?.id) {
-      const imageId = question.image.id.trim();
-      const asset = assetMap.get(imageId);
-      if (!asset) {
-        throw new TypeError(`Referenced image asset "${imageId}" on Question "${question.id || question.prompt}" is missing from the package.`);
-      }
-      if (!isSupportedImageMime(asset.mimeType)) {
-        throw new TypeError(`Referenced image asset "${imageId}" has invalid or unsupported image MIME type "${asset.mimeType}".`);
-      }
-    }
-
-    if (question.audio?.id) {
-      const audioId = question.audio.id.trim();
-      const asset = assetMap.get(audioId);
-      if (!asset) {
-        throw new TypeError(`Referenced audio asset "${audioId}" on Question "${question.id || question.prompt}" is missing from the package.`);
-      }
-      if (!isSupportedAudioMime(asset.mimeType)) {
-        throw new TypeError(`Referenced audio asset "${audioId}" has invalid or unsupported audio MIME type "${asset.mimeType}".`);
-      }
-    }
-  }
+  const assetMap = validateMediaAssetsMap(assets);
+  validateItemsMediaIntegrity(paper.questions, assetMap, `Question in paper "${paper.title || paper.id || "untitled"}"`);
 
   return { valid: true };
 }
