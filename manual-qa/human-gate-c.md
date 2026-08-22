@@ -1,7 +1,7 @@
 # Human Gate C Verification Guide — Objective Question Media (Image & Audio)
 
 **Scope**: Pre-Freeze V1 Scope Closure · Batch C  
-**Status**: PENDING EVALUATION  
+**Status**: PASS  
 **Evaluator**: Human Reviewer / Product Owner  
 
 ---
@@ -171,12 +171,12 @@ Verify that active practice sessions and finalized Learner Responses retain inde
 
 | Journey | Focus | Result | Notes |
 | :--- | :--- | :---: | :--- |
-| **Journey 1** | Authoring across all 5 question types | **[ ] PASS / [ ] FAIL** | |
-| **Journey 2** | Local IndexedDB Blob Media Asset Store | **[ ] PASS / [ ] FAIL** | |
-| **Journey 3** | Practice mode inline rendering & audio solving | **[ ] PASS / [ ] FAIL** | |
-| **Journey 4** | Image Viewer modal & keyboard zoom | **[ ] PASS / [ ] FAIL** | |
-| **Journey 5** | Single-paper portability & referential integrity | **[ ] PASS / [ ] FAIL** | |
-| **Journey 6** | Full backup / restore with media assets | **[ ] PASS / [ ] FAIL** | |
-| **Journey 7** | Evidence immutability & reference-aware cleanup | **[ ] PASS / [ ] FAIL** | |
+| **Journey 1** | Authoring across all 5 question types | **[x] PASS** | Validated image & audio upload/replace/remove and MIME checking across all 5 types. |
+| **Journey 2** | Local IndexedDB Blob Media Asset Store | **[x] PASS** | Verified native Blob storage in `quiz-studio-media-db` with zero network calls and reload persistence. |
+| **Journey 3** | Practice mode inline rendering & audio solving | **[x] PASS** | Verified responsive inline rendering, unrestricted audio player, and audio-dependent solving on Q2 (`mystery-pitch-sequence.wav`). |
+| **Journey 4** | Image Viewer modal & keyboard zoom | **[x] PASS** | Verified modal dialog, click-to-zoom, toolbar zoom scaling (25% to 400%), reset, and keyboard shortcuts (`+`, `-`, `0`, `Esc`). |
+| **Journey 5** | Single-paper portability & referential integrity | **[x] PASS** | Verified self-contained v2 portability export/import, strict integrity validation on missing/malformed payloads, and legacy fallback. |
+| **Journey 6** | Full backup / restore with media assets | **[x] PASS** | Verified `mediaAssets` inclusion in backup, clean IndexedDB restoration, and missing-asset rejection across papers & history. |
+| **Journey 7** | Evidence immutability & reference-aware cleanup | **[x] PASS** | Verified active session / finalized evidence media retention and conservative orphan cleanup. |
 
-**Final Verdict**: **PENDING HUMAN EVALUATION**
+**Final Verdict**: **PASS** (7/7 journeys evaluated and accepted by Product Owner)
