@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { gradeQuestion } from "../src/core/grading.js";
+import { gradeQuestion, formatAnswer } from "../src/core/grading.js";
 import { createQuestion, isAnswerComplete, isQuestionReady, normalizeQuestion } from "../src/core/question-registry.js";
 import { normalizeLibrary, normalizePaper } from "../src/core/migrations.js";
 
@@ -42,19 +42,34 @@ test("blank questions respect case-insensitive answers by default", () => {
   assert.equal(gradeQuestion(question, "quiz", labels).correct, true);
 });
 
-test("matching answers must map every left item to the right id", () => {
+test("matching answers must map every left item to the right id and format pairs cleanly", () => {
   const question = {
     id: "q3",
     type: "matching",
     prompt: "Match",
     pairs: [
-      { id: "p1", left: "A", right: "One", rightId: "p1" },
-      { id: "p2", left: "B", right: "Two", rightId: "p2" },
+      { id: "p1", left: "Alpha", right: "One", rightId: "r1" },
+      { id: "p2", left: "Beta", right: "Two", rightId: "r2" },
+    ],
+    rightOptions: [
+      { id: "r1", text: "One" },
+      { id: "r2", text: "Two" },
     ],
   };
 
-  assert.equal(gradeQuestion(question, { p1: "p1", p2: "p2" }, labels).correct, true);
-  assert.equal(gradeQuestion(question, { p1: "p2", p2: "p1" }, labels).correct, false);
+  assert.equal(gradeQuestion(question, { p1: "r1", p2: "r2" }, labels).correct, true);
+  assert.equal(gradeQuestion(question, { p1: "r2", p2: "r1" }, labels).correct, false);
+
+  // Verify per-pair correctness derivation
+  const answers = { p1: "r1", p2: "r1" };
+  const p1Correct = answers[question.pairs[0].id] === question.pairs[0].rightId;
+  const p2Correct = answers[question.pairs[1].id] === question.pairs[1].rightId;
+  assert.equal(p1Correct, true);
+  assert.equal(p2Correct, false);
+
+  // Verify formatAnswer
+  const formatted = formatAnswer(question, { p1: "r1", p2: "r2" }, labels);
+  assert.equal(formatted, "Alpha = One; Beta = Two");
 });
 
 test("question readiness and answer completeness are separated", () => {

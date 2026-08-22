@@ -2033,15 +2033,40 @@ function renderQuizAnswer(question) {
   }
 
   return question.pairs
-    .map((pair) => `
-      <label class="match-line">
-        <span>${escapeHtml(pair.left)}</span>
-        <select data-match-answer="${pair.id}" ${session.submitted ? "disabled" : ""}>
-          <option value="">${t("question.choose")}</option>
-          ${question.rightOptions.map((right) => `<option value="${right.id}" ${answer?.[pair.id] === right.id ? "selected" : ""}>${escapeHtml(right.text)}</option>`).join("")}
-        </select>
-      </label>
-    `)
+    .map((pair) => {
+      const selectedId = answer?.[pair.id];
+      const isSubmitted = session.submitted;
+      const isPairCorrect = isSubmitted && selectedId === pair.rightId;
+      const isPairWrong = isSubmitted && !isPairCorrect;
+      const correctOptionText = question.rightOptions.find((opt) => opt.id === pair.rightId)?.text || "";
+
+      return `
+        <div class="match-item ${isSubmitted ? (isPairCorrect ? "match-correct" : "match-wrong") : ""}">
+          <div class="match-line ${isSubmitted ? (isPairCorrect ? "line-correct" : "line-wrong") : ""}">
+            <div class="match-left">
+              ${isSubmitted ? `
+                <span class="match-pair-status ${isPairCorrect ? "status-correct" : "status-wrong"}" aria-label="${isPairCorrect ? t("result.correct") : t("result.wrong")}">
+                  ${isPairCorrect ? "✓" : "✕"}
+                </span>
+              ` : ""}
+              <span class="match-term">${escapeHtml(pair.left)}</span>
+            </div>
+            <div class="match-right">
+              <select data-match-answer="${pair.id}" ${session.submitted ? "disabled" : ""}>
+                <option value="">${t("question.choose")}</option>
+                ${question.rightOptions.map((right) => `<option value="${right.id}" ${selectedId === right.id ? "selected" : ""}>${escapeHtml(right.text)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          ${isPairWrong ? `
+            <div class="match-correction-hint">
+              <span class="match-hint-label">${t("result.correctAnswer")}:</span>
+              <span class="match-hint-val">${escapeHtml(correctOptionText)}</span>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    })
     .join("");
 }
 
@@ -2202,14 +2227,39 @@ function renderResults() {
               </div>
               <strong class="review-question-prompt">${index + 1}. ${escapeHtml(question.prompt)}</strong>
               <div class="answer-compare">
-                <div class="answer-row learner-answer-row">
-                  <span class="answer-label">${t("result.yourAnswer")}:</span>
-                  <span class="learner-answer-val">${escapeHtml(formatAnswer(question, session.answers[question.id], getGradeLabels()) || t("result.noAnswer"))}</span>
-                </div>
-                <div class="answer-row correct-answer-row">
-                  <span class="answer-label">${result.correctLabel}:</span>
-                  <span class="correct-answer-val">${escapeHtml(result.correctAnswer)}</span>
-                </div>
+                ${question.type === "matching" ? `
+                  <div class="matching-review-list">
+                    ${question.pairs.map((pair) => {
+                      const selId = session.answers[question.id]?.[pair.id];
+                      const isCorrect = selId === pair.rightId;
+                      const selText = question.rightOptions.find((opt) => opt.id === selId)?.text || t("result.noAnswer");
+                      const corText = question.rightOptions.find((opt) => opt.id === pair.rightId)?.text || "";
+                      return `
+                        <div class="matching-review-row ${isCorrect ? "correct" : "wrong"}">
+                          <div class="matching-review-pair">
+                            <span class="review-status-pill ${isCorrect ? "status-correct" : "status-wrong"}">${isCorrect ? "✓" : "✕"}</span>
+                            <strong>${escapeHtml(pair.left)}</strong> &rarr; <span class="learner-answer-val">${escapeHtml(selText)}</span>
+                          </div>
+                          ${!isCorrect ? `
+                            <div class="matching-review-correct">
+                              <span class="answer-label">${t("result.correctAnswer")}:</span>
+                              <span class="correct-answer-val">${escapeHtml(corText)}</span>
+                            </div>
+                          ` : ""}
+                        </div>
+                      `;
+                    }).join("")}
+                  </div>
+                ` : `
+                  <div class="answer-row learner-answer-row">
+                    <span class="answer-label">${t("result.yourAnswer")}:</span>
+                    <span class="learner-answer-val">${escapeHtml(formatAnswer(question, session.answers[question.id], getGradeLabels()) || t("result.noAnswer"))}</span>
+                  </div>
+                  <div class="answer-row correct-answer-row">
+                    <span class="answer-label">${result.correctLabel}:</span>
+                    <span class="correct-answer-val">${escapeHtml(result.correctAnswer)}</span>
+                  </div>
+                `}
               </div>
             </div>
           `;
@@ -2540,11 +2590,9 @@ function renderTranslationLibraryPanel() {
       <strong>${t("translation.title")}</strong>
       <span>${translationLibrary.documents.length}</span>
     </div>
-    <div class="library-actions single-action">
-      <button class="small-button" type="button" id="newTranslationFolder">${t("translation.newFolder")}</button>
-    </div>
-    <div class="library-actions single-action">
-      <button class="small-button" type="button" id="openTranslationHistory">${t("history.title")}</button>
+    <div class="library-toolbar">
+      <button class="small-button" type="button" id="newTranslationFolder">+ ${t("translation.newFolder")}</button>
+      <button class="small-button" type="button" id="openTranslationHistory">📜 ${t("history.title")}</button>
     </div>
     <div class="library-list">
       ${translationLibrary.folders.length
@@ -2553,7 +2601,9 @@ function renderTranslationLibraryPanel() {
     </div>
     <div class="translation-import">
       <div class="library-heading"><strong>${t("translation.importSection")}</strong></div>
-      ${renderImportForms()}
+      <div class="import-details-group">
+        ${renderImportForms()}
+      </div>
     </div>
   `;
 
