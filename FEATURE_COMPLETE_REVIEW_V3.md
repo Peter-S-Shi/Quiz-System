@@ -109,8 +109,8 @@ Cross-functional inspection confirms robust contract alignment across features:
    - *Detail*: Layout spacing for Translation History checkboxes and multi-button action rows on narrow touch screens should receive responsive polish during Milestone 7.
 3. **[B3] Bespoke Modal Replacements for Browser Dialogs**:
    - *Detail*: Replace native `window.prompt()` / `window.confirm()` calls (for category creation, rename, paper deletion, and rich correction text input) with custom Layered Paper Study Desk modals during Milestone 7.
-4. **[B4] Translation History Performance Optimization**:
-   - *Detail*: If accumulated history records grow very large, evaluate adding a lightweight pagination or virtualization layer.
+4. **[B4] Translation History Performance Characterization & Defensive Hardening**:
+   - *Detail*: Conduct performance characterization and regression testing under realistically accumulated history records. If an actual performance bottleneck is demonstrated, apply low-risk non-structural performance hardening during Milestone 7. Feature-level additions such as pagination, virtualization, or new history navigation capabilities remain deferred to future versions unless a genuine release-blocking defect discovered during Hardening requires Product Owner escalation.
 
 ---
 
@@ -128,11 +128,11 @@ Cross-functional inspection confirms robust contract alignment across features:
 
 ### Category D — Documentation & Governance Drift (1 Finding)
 1. **[D1] Status File Next Step Synchronization**:
-   - *Detail*: `PROJECT_STATUS.md` and `PROJECT_STATUS.zh-CN.md` lower sections mention "1. Merge Batch C: Merge PR #17 into main", which was completed at commit `a3f2c2d`. This drift will be synchronized upon entering the next milestone.
+   - *Detail*: Post-merge lifecycle/status synchronization drift, including stale references to merging PR #17 in `PROJECT_STATUS.md` and `PROJECT_STATUS.zh-CN.md`. This drift will be synchronized upon entering the next milestone.
 
 ---
 
-### Category E — Deferred Future Scope (7 Items)
+### Category E — Deferred Future Scope (8 Items)
 1. **[E1]** AI-assisted question and document generation (V2).
 2. **[E2]** Desktop application packaging (Electron / Tauri) (V2).
 3. **[E3]** Cloud synchronization and user account management (V2).
@@ -140,6 +140,7 @@ Cross-functional inspection confirms robust contract alignment across features:
 5. **[E5]** Subjective question grading automation (V2).
 6. **[E6]** Public GitHub Pages deployment and formal GitHub Release (V2).
 7. **[E7]** Per-paper audio playback restrictions (seek lockout, max replay counts, exam mode constraints) (V2).
+8. **[E8]** Translation History pagination, virtualization, and advanced history graph visualization (V2).
 
 ---
 
@@ -184,14 +185,18 @@ Upon Product Owner acceptance of this Review V3, the repository should formally 
    - Refine item selection checkboxes and action toolbars on touch viewports.
 3. **Native Dialog Replacements**:
    - Replace remaining `window.prompt()` / `window.confirm()` calls with bespoke Study Desk modals.
-4. **Comprehensive Whole-Product Verification**:
+4. **Translation History Performance Characterization**:
+   - Profile and regression test performance under realistically accumulated evidence.
+   - Implement low-risk performance hardening only if an actual defect is demonstrated, keeping pagination/virtualization deferred.
+5. **Comprehensive Whole-Product Verification**:
    - Execute verification gaps C1–C4 across representative environments.
 
 ---
 
 ## 10. Exact Next Lifecycle Action
 
-1. Product Owner reviews this report (`FEATURE_COMPLETE_REVIEW_V3.md`).
-2. Product Owner formally declares **Feature Complete** and authorizes entering **Feature Freeze**.
-3. Merge PR #18 into `main`.
-4. Initialize **Milestone 7 Product Hardening**.
+1. Product Owner accepts Whole-Product Feature Complete Review V3 = PASS.
+2. Merge PR #18 so the accepted lifecycle review becomes part of `main`.
+3. Formally declare V1 Feature Complete in governance.
+4. Product Owner explicitly authorizes and records entry into Feature Freeze.
+5. Initialize Milestone 7 Product Hardening under the frozen V1 scope.
