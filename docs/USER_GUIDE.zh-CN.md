@@ -2,7 +2,9 @@
 
 Quiz Studio 在浏览器中本地运行。它会把试卷、练习进度、答题历史和 finalized Learner Response 保存在浏览器本地存储中。
 
-在 Windows 上，可以在项目文件夹中双击 `start-local.bat`，它会启动本地服务器并打开应用。
+在 Windows 上，在项目文件夹中双击 `start-local.bat`。它会打开规范 origin `http://localhost:8000`，并让服务器继续运行在同一个控制台窗口中。使用应用期间请保持该窗口打开；按 Ctrl+C 可停止服务。
+
+如果端口 `8000` 已被占用，启动器会停止，并在 Windows 允许时指出监听进程。请关闭该监听进程后重试；不要切换端口，也不要清除浏览器站点数据，因为现有 Quiz Studio 数据绑定于 `localhost:8000`。启动器会退休旧的 Quiz Studio Service Worker/cache 状态，同时保留 localStorage。
 
 ## 创建和管理试卷
 

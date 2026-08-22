@@ -120,6 +120,14 @@ M1-M6 引入的每一个持久化 key，为 M6.7 生命周期收尾而逐一复�
 
 本次复查未发现重复真源：Translation 历史（M6.7）和 Quiz 成绩摘要历史都是建立在规范集合之上的派生/展示层，而不是另一个规范存储。复查过程中直接修复（而非推迟）了两个会影响备份原子性的完整性缺口：`parseLearnerResponseCollection()`/`parseTeacherReviewCollection()` 现在会拒绝同一集合中出现两条相同稳定 ID 的记录（此前只有实时的 `upsert*()` 写入路径会做这项检查，批量/备份解析路径并没有）；`parseLibraryBackup()` 现在会在替换任何状态之前，把每一份补救翻译文档的 `provenance` 与同一份备份中的 Learner Response/Teacher Review 集合做交叉校验，复用 `review-transport.js` 中的 `validateRemediationProvenance()`。其余部分——"规范链接必须可解析 vs. 历史引用可能已缺失"的区分、无静默上限，以及完整的备份覆盖——在 M6.6 时就已经正确，此次无需改动。
 
+## 本地运行契约
+
+`start-local.bat` 是 `scripts/dev-server.py` 的 Windows 薄包装。Python 是唯一的 runtime owner：它绑定严格固定的规范 origin `http://localhost:8000`，以 `Cache-Control: no-store` 提供当前工作树，针对操作系统公布的全部 IPv4/IPv6 localhost 地址族验证健康端点，打开浏览器并负责关闭生命周期。它绝不会漂移到其他端口；在 Windows 上发生端口冲突时，诊断会在可用时包含监听进程的 PID。
+
+受支持的浏览器入口会先访问服务器拥有的 `/__runtime__/recover` 页面。这个有明确边界的迁移只注销同 origin、脚本路径为 `/sw.js` 的 Quiz Studio 注册，只删除名称以 `quiz-studio-` 开头的 Cache Storage，随后重定向到普通的 `index.html -> src/app.js` bootstrap。它绝不会读取、清空或迁移 localStorage。`src/core/service-worker-policy.js` 禁止 loopback origin 注册生产 Service Worker，而非 loopback 的托管部署仍保留 `sw.js` 的生产 PWA 路径。
+
+运行回归测试通过真实 HTTP 边界覆盖：独占端口 `8000`、冲突诊断/禁止漂移、IPv4 与 IPv6 localhost 可达性、规范健康响应、no-store headers、当前工作树 ESM 图一致性、精确限定的旧状态恢复、localStorage 不访问、薄启动器契约，以及生产/本地 Service Worker 策略。
+
 ## 验证
 
 ```bash

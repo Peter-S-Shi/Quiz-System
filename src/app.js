@@ -1,4 +1,5 @@
 import { formatAnswer, gradeQuestion } from "./core/grading.js";
+import { shouldRegisterProductionServiceWorker } from "./core/service-worker-policy.js";
 import { createLibraryBackup, parseLibraryBackup } from "./core/backup.js";
 import {
   CORRECTION_COLORS,
@@ -4331,6 +4332,7 @@ function showToast(message) {
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
+  if (!shouldRegisterProductionServiceWorker(window.location)) return;
 
   const hasController = Boolean(navigator.serviceWorker.controller);
   let refreshing = false;

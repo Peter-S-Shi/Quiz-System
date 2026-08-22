@@ -16,6 +16,7 @@ const APP_SHELL = [
   "./src/core/question-registry.js",
   "./src/core/review-records.js",
   "./src/core/review-transport.js",
+  "./src/core/service-worker-policy.js",
   "./src/core/translation-annotations.js",
   "./src/core/translation-domain.js",
   "./src/core/translation-history.js",

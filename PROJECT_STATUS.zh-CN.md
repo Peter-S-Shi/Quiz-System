@@ -14,6 +14,12 @@ M6.7 是 M6 功能开发阶段的最后一个子里程碑。M6 的功能开发�
 
 M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）现已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。
 
+## Hardening 前本地运行恢复
+
+修正分支 `recovery/local-runtime-contract` 已从干净的 `main` 基线 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47` 达到自动化测试就绪状态。它只重建 Windows/本地运行边界；不会重新打开已经验收的 M6 产品行为，也不是 Milestone 7 Product Hardening。
+
+剩余门禁是在保留的 `http://localhost:8000` origin 上，使用普通 Chrome profile 做重复验证（目标约五次连续通过受支持启动器启动，包括冷启动、关闭重启、浏览器已打开等情形，并确认现有用户数据完整）。最终 code review 与合并准备工作要等该人工门禁通过后才开始。
+
 ## M6 综合人工验收与 UX 强化收尾
 
 - **M6 综合人工验收 Journeys 01–10**：PASS（全部通过）。
@@ -54,13 +60,13 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 219 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw-closure 自动测试通过。覆盖条目级元认知标记、Schema/运行时校验、needs-work 派生、导航边界以及备份即时刷新。历史 `comment` 和 `strikethrough` 校验继续通过；此前全部 M6.0-M6.7 覆盖保持通过。
+- 229 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw/runtime 自动测试通过。覆盖条目级元认知标记、Schema/运行时校验、needs-work 派生、导航边界、备份即时刷新以及新的本地运行契约。历史 `comment` 和 `strikethrough` 校验继续通过；此前全部 M6.0-M6.7 覆盖保持通过。
 - **删除完整性收尾补丁**：CI 通过后的复查发现 `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` 忽略了实时补救翻译文档，导致删除 Learner Response 或 Teacher Review 可能让 Translation Library 中仍然存在的补救文档留下无法解析的 provenance——这与 `parseLibraryBackup()` 的要求不一致（后者在每次恢复时都要求实时补救文档的 provenance 必须可解析）。修复方式是明确区分 finalized response 自身的（可以安全无法解析的）历史 provenance，与一份*实时*补救文档的规范性声明：两个分析函数现在都接受 `translationDocuments` 参数，并报告 `dependentRemediationDocumentIds`/`hasBlockingDependents`；只要存在这样的实时依赖，`app.js` 中的删除流程就会直接拒绝删除（弹出提示，不出现确认对话框），而不是级联穿过它。补救文档绝不会作为副作用被自动删除。新增 7 个测试，其中包括一个证明补丁修复前的操作序列会产生无法恢复的备份的回归防护测试，以及一个证明先删除补救文档后再执行的许可删除仍能正常完整备份/恢复的测试。
-- **本地启动脚本端口冲突与验证修复 (M6 验收支持)**：修复了 `start-local.bat`，使其能够动态查找从 `8000` 开始的空闲 TCP 端口，通过运行临时 Python 脚本向 `http://127.0.0.1:%PORT%/` 发送 HTTP 请求并检查响应体中是否包含 'Quiz Studio' 字符来验证服务器是否已成功启动且服务于正确的应用（最多尝试 5 次，使用安全的非交互式 ping 延迟），然后才使用正确的 URL 启动浏览器。同时，将 `sw.js` 升级为 Network-First（v4）策略，实现了 install/activate 事件中的立即客户端接管（`skipWaiting`/`claim`）与旧缓存清除时的客户端自动重定向导航，并将应用依赖闭包中的全部 19 个 ESM 模块完整加入预缓存列表。已在空闲端口、占用端口、重复启动、错误服务器拦截、离线 ESM 依赖闭包以及 M6 UI 场景中完成验证。
+- **Hardening 前本地运行恢复（自动化测试就绪；人工门禁待完成）**：`start-local.bat` 现在是单一 Python runtime owner `scripts/dev-server.py` 的薄包装。runtime 会在 Windows 公布的全部 IPv4/IPv6 localhost 地址族上独占严格固定的端口 `8000`，通过 `/__runtime__/health` 验证浏览器实际使用的 Host 契约，以 `no-store` 提供当前工作树，在可用时报告占用端口的 PID，并且绝不漂移 origin。服务器拥有的恢复入口只注销同 origin 的 Quiz Studio `/sw.js` 注册，只删除 `quiz-studio-*` Cache Storage，且不访问 localStorage。loopback 开发环境不再注册生产 Service Worker；托管生产环境的 PWA 行为与完整 ESM 离线闭包仍然保留。
 - CI workflow 已存在；已在 `milestone/6.7-history-retry-integration` 分支上通过（PR #6），删除完整性收尾补丁提交后同样通过。
 - 本地浏览器 smoke test 使用预置的真实场景数据（一条带有两条评判相互冲突的批改的作答记录）完整走过了 M6.7 的流程：浏览并按来源/状态/排序筛选 Translation 历史；打开历史详情，确认条目级证据、学习者标记和两条关联批改均可访问；执行一次真实的"针对需要加强的条目重新练习"，确认新的 session 只包含被标记的条目、带有 `materialProvenance.purpose: "retry"`，完成后确认 finalized response 携带重新练习 provenance（`sourceResponseId`/`sourceMaterialId`），而原始记录未受影响；执行"选择条目重新练习"并取消勾选一个条目，确认只有被选中的条目被带入新的练习；从原始记录正向跟随溯源到重新练习记录、再反向跟随回去；删除一条被某个重新练习记录的 `sourceReviewId` 引用的 Teacher Review，确认溯源视图随后正确显示为不可用，而不是崩溃；删除一份带有依赖 finalized 作答记录的翻译文档，确认确认提示中说明了依赖数量，且该记录之后依然可以在历史中完整浏览和重新练习；触发作答记录删除的级联确认，确认提示中正确说明了依赖批改和派生记录的数量，确认后正确地把该记录连同其批改一起删除，同时保留了由它派生出的重新练习记录。同一批流程也抽查确认了英文界面的一致性。
 - 在本次 smoke test 中，发现并修复了一处真实缺陷（未被单元测试捕获，因为它存在于 `app.js` 的 UI glue 代码中而非核心模块）：`deleteLearnerResponseConfirm()` 最初会先写入更新后的 Learner Response 集合，之后才再次读取 `loadTeacherReviews()`；而 `loadTeacherReviews()` 每次调用都会把全部批改重新对照*当前*的作答记录集合做校验——于是它看到了刚刚变成孤儿的批改并抛出异常。修复方式是提前对两个集合都做快照。修复后通过一次独立的干净复现重新验证。
-- **Service Worker 缓存策略升级**：最初 Service Worker 使用 Cache-First 策略，开发迭代或部署更新时需要手动清除浏览器缓存。现已升级：`sw.js` 升级为 Network-First (v4) 策略，并结合 `skipWaiting`/`claim` 实现了立即的客户端接管，从而在服务器运行时页面刷新即可立即获取并使用最新版资源。
+- **Service Worker 分离**：托管生产环境继续使用 Network-First v4 PWA 路径、立即接管与完整 ESM 预缓存。loopback 开发环境被明确分离：不注册生产 SW，响应使用 no-store，并由本地 runtime 提供精确限定的旧 SW/cache 退休入口。
 - 浏览器测试工具无法驱动原生的 `window.confirm()`/`window.prompt()` 对话框；删除和重新练习相关的确认是通过给 `window.confirm` 打补丁来捕获确切的提示文字、并以编程方式接受/拒绝来测试的，这能验证真实的确认逻辑和提示内容，但不能验证原生对话框界面本身。这是延续自此前里程碑的已知测试工具局限，不是产品缺陷。
 - M6 综合人工验收 Journeys 01–10 已在缩减 Comment 范围及完成强化批次后全部通过（PASS）。全项目全里程碑人工验收仍待完成。
 - 尚未执行干净 clone 验证。
@@ -85,6 +91,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 真实浏览器关闭后重新打开（而非仅刷新）时 Translation Practice session（包括重新练习 session）的恢复情况（已验证基于刷新的恢复，未单独验证完整关闭重开）。
 - 删除试卷、清空历史等针对翻译题库/批改之外的破坏性工作流。
 - PWA 安装、离线行为和缓存升级在主要浏览器中的表现。
+- 恢复后的 `localhost:8000` runtime 尚待普通 Chrome profile 重复验收（目标约五次连续启动，并确认现有用户数据保留）。
 - 代表性设备上的可访问性和响应式行为，包括新增的 Translation 历史浏览器和重新练习条目选择清单。
 - 干净环境重新 clone 并运行项目。
 - 在触屏/移动端视口下进行标记、历史浏览和重新练习条目选择操作，这些场景的文本选择和多选框交互与桌面端指针/键盘操作存在差异。
@@ -107,7 +114,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 下一步工程目标
 
-M6.0–M6.7 功能实现、综合人工验收（Journeys 01–10：PASS）以及 UX 强化收尾批次均已完成。下一个生命周期门禁是重新执行全产品 Feature Complete Review，之后再进入 Feature Freeze。Product Hardening（M7）与 Feature Freeze 尚未开始。
+先完成 Local Runtime Recovery 的 Chrome 人工门禁，再执行延后的最终 code review、修复与重新验证。只有该恢复达到可合并状态后，生命周期才回到进入 Feature Freeze 前的全产品 Feature Complete Review。Product Hardening（M7）与 Feature Freeze 尚未开始。
 
 ## 仓库状态
 
@@ -116,6 +123,6 @@ M6.0–M6.7 功能实现、综合人工验收（Journeys 01–10：PASS）以及
 - M6.7 开始前已验证的基线：`61cd16f Record M6.6 merge into main`（`main`）
 - M6.7 合并提交：`d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)`（`main`）——由主体实现、PR/CI 状态更新和删除完整性收尾补丁 squash 而成
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
-- 恢复基线：远端 `main` 精确提交 `242f2291df1b2ca2fcaa094308f8581a5579df57`；当前工作位于 `recovery/m6-comment-scope-rollback`
+- Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；当前工作位于 `recovery/local-runtime-contract`
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：历史 Draft PR #8 与 `recovery/m6-acceptance-closure` 作为备份保留，禁止合并。新的恢复分支未获得任何合并授权。
+- Pull Request 状态：历史 Draft PR #10（`fix/local-dev-cache-coherence`）保留为未合并的取证检查点，禁止作为实现基线。当前恢复分支的替代 Draft PR 尚待创建；未获得任何合并授权。

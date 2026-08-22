@@ -49,19 +49,15 @@ The current version is a static ES module web application. It runs in a browser 
 
 ## Getting Started
 
-Serve the repository with a local static server, then open `index.html` through that server.
+No build step is required. On Windows, double-click `start-local.bat`; it delegates to the canonical Python runtime, verifies both advertised localhost address families, and opens `http://localhost:8000`.
 
-No build step is required.
+Port `8000` is strict because browser-resident Quiz Studio data belongs to that origin. If the port is occupied, startup fails with diagnostics instead of silently selecting another port. The supported launcher also retires legacy Quiz Studio Service Worker/cache state without reading, clearing, or migrating localStorage. Production-hosted PWA behavior remains separate and available.
 
-Example:
+The equivalent foreground command is:
 
 ```bash
-python -m http.server 8000
+python -u scripts/dev-server.py
 ```
-
-Then open `http://localhost:8000`.
-
-On Windows, you can also double-click `start-local.bat`. It starts a local server on port `8000` (or another available port if `8000` is occupied) and opens the app in your browser.
 
 ## Validation
 
@@ -98,6 +94,7 @@ Quiz System/
   index.html        Application shell
   styles.css        Interface styling and responsive layout
   start-local.bat   Windows local launcher
+  scripts/          Canonical Python local runtime
   src/app.js        Quiz library, editor, quiz session flow, and localization
   src/core/         Question registry, validation, grading, and migrations
   src/storage/      Browser storage boundary
