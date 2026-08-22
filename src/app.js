@@ -104,6 +104,19 @@ import {
   isQuestionReady,
   prepareQuizQuestion,
 } from "./core/question-registry.js";
+import {
+  ALL_PAPERS_CATEGORY,
+  UNCATEGORIZED_CATEGORY,
+  createCategory,
+  deleteCategoryAndPapers,
+  deleteCategoryOnly,
+  filterPapersByCategory,
+  getCategoryCounts,
+  isReservedCategoryName,
+  normalizeCategoryList,
+  reassignPaperCategory,
+  renameCategory,
+} from "./core/categories.js";
 import { makeId, parseTags, safeFileName } from "./core/utils.js";
 import { STORAGE_KEYS, loadJson, removeStoredValue, saveJson } from "./storage/local-storage.js";
 
@@ -175,6 +188,29 @@ const locales = {
       manage: "管理试卷",
       view: "查看历史",
     },
+    category: {
+      title: "分类",
+      libraryTitle: "试卷库",
+      allPapers: "所有试卷",
+      uncategorized: "未分类",
+      newCategory: "新建分类",
+      newCategoryPrompt: "请输入新分类名称：",
+      renameCategory: "重命名分类",
+      renameCategoryPrompt: "请输入分类新名称：",
+      deleteCategory: "删除分类",
+      deleteCategoryTitle: "删除分类",
+      deleteEmptyConfirm: "确定要删除空分类 “{name}” 吗？",
+      deleteChoicePrompt: "分类 “{name}” 下包含 {count} 份试卷。请选择删除方式：",
+      deleteOnlyTitle: "仅删除分类",
+      deleteOnlyDesc: "保留该分类下的所有试卷并将其设为“未分类”。试卷内容、题目与作答历史均完好保存。",
+      deleteWithPapersTitle: "删除分类及所有试卷",
+      deleteWithPapersDesc: "永久删除该分类以及其中的全部试卷与题目。此操作无法撤销！",
+      deleteOnly: "仅删除分类",
+      deleteWithPapers: "删除分类及试卷 ({count} 份)",
+      deleteWithPapersFinalConfirm: "【危险操作】确定要删除分类 “{name}” 及该分类下的全部 {count} 份试卷吗？此操作无法撤销！",
+      backToCategories: "← 返回分类列表",
+      backToPapers: "← 返回试卷列表",
+    },
     library: {
       title: "本地试卷库",
       search: "搜索标题、分类或标签",
@@ -186,7 +222,6 @@ const locales = {
       exportBackup: "备份",
       importBackup: "导入备份",
       active: "当前",
-      category: "分类",
       tags: "标签",
       recent: "最近打开",
       updated: "更新",
@@ -229,6 +264,7 @@ const locales = {
       retry: "再做一次",
       clearHistory: "清空记录",
       exportResponse: "导出作答记录",
+      cancel: "取消",
     },
     practice: {
       setupTitle: "练习设置",
@@ -258,7 +294,6 @@ const locales = {
     question: {
       listTitle: "题目",
       emptyList: "还没有题目",
-      emptyListHint: "从上方添加一种题型开始",
       chooseOne: "请选择或添加一道题目",
       unnamed: "未命名题目",
       prompt: "题目内容",
@@ -318,6 +353,11 @@ const locales = {
       paperDuplicated: "已复制试卷",
       paperRenamed: "已重命名试卷",
       paperDeleted: "已删除试卷",
+      categoryCreated: "分类已创建",
+      categoryRenamed: "分类已重命名",
+      categoryDeleted: "分类已删除",
+      categoryExists: "该分类名称已存在",
+      categoryReserved: "该分类名称为系统保留字，请使用其他名称",
       importSuccess: "导入成功",
       importFail: "导入失败，请选择正确的 JSON 试卷文件。",
       unsupportedLanguage: "暂不支持该语言。",
@@ -650,6 +690,29 @@ const locales = {
       manage: "Manage Papers",
       view: "View History",
     },
+    category: {
+      title: "Categories",
+      libraryTitle: "Quiz Library",
+      allPapers: "All Papers",
+      uncategorized: "Uncategorized",
+      newCategory: "New Category",
+      newCategoryPrompt: "Enter new category name:",
+      renameCategory: "Rename Category",
+      renameCategoryPrompt: "Enter new category name:",
+      deleteCategory: "Delete Category",
+      deleteCategoryTitle: "Delete Category",
+      deleteEmptyConfirm: "Are you sure you want to delete the empty category '{name}'?",
+      deleteChoicePrompt: "Category '{name}' contains {count} paper(s). Choose deletion option:",
+      deleteOnlyTitle: "Delete Category Only",
+      deleteOnlyDesc: "Keep all papers in the library and set them as 'Uncategorized'. No questions or records will be lost.",
+      deleteWithPapersTitle: "Delete Category + Papers",
+      deleteWithPapersDesc: "Permanently delete this category and all {count} paper(s) in it. This action cannot be undone!",
+      deleteOnly: "Delete Category Only",
+      deleteWithPapers: "Delete Category + Papers ({count} papers)",
+      deleteWithPapersFinalConfirm: "[CAUTION] Are you sure you want to delete category '{name}' AND all {count} paper(s) in it? This action cannot be undone!",
+      backToCategories: "← Back to Categories",
+      backToPapers: "← Back to Papers",
+    },
     library: {
       title: "Local quiz library",
       search: "Search title, category, or tags",
@@ -661,7 +724,6 @@ const locales = {
       exportBackup: "Backup",
       importBackup: "Import backup",
       active: "Current",
-      category: "Category",
       tags: "Tags",
       recent: "Recent",
       updated: "Updated",
@@ -704,6 +766,7 @@ const locales = {
       retry: "Try again",
       clearHistory: "Clear history",
       exportResponse: "Export response",
+      cancel: "Cancel",
     },
     practice: {
       setupTitle: "Practice setup",
@@ -793,6 +856,11 @@ const locales = {
       paperDuplicated: "Paper duplicated",
       paperRenamed: "Paper renamed",
       paperDeleted: "Paper deleted",
+      categoryCreated: "Category created",
+      categoryRenamed: "Category renamed",
+      categoryDeleted: "Category deleted",
+      categoryExists: "Category already exists",
+      categoryReserved: "This category name is reserved. Please use a different name",
       importSuccess: "Import complete",
       importFail: "Import failed. Please choose a valid JSON paper file.",
       unsupportedLanguage: "This language is not supported yet.",
@@ -1103,6 +1171,9 @@ let translationHistoryOpen = false;
 let translationHistoryFilters = { purpose: "all", status: "all", sort: "newest" };
 let translationHistoryDetailId = null;
 let retrySelectionDraft = null;
+let editSidebarLevel = "questions"; // "categories" | "papers" | "questions"
+let selectedCategory = ALL_PAPERS_CATEGORY;
+let pendingDeleteCategoryName = null;
 
 const homeView = document.getElementById("homeView");
 const homeModeButton = document.getElementById("homeModeButton");
@@ -1121,6 +1192,18 @@ const prefMotionStandard = document.getElementById("prefMotionStandard");
 const prefMotionReduced = document.getElementById("prefMotionReduced");
 const prefMotionHint = document.getElementById("prefMotionHint");
 
+const categoryDeleteDialog = document.getElementById("categoryDeleteDialog");
+const closeCategoryDeleteDialog = document.getElementById("closeCategoryDeleteDialog");
+const categoryDeleteTitle = document.getElementById("categoryDeleteTitle");
+const categoryDeleteMessage = document.getElementById("categoryDeleteMessage");
+const deleteOnlyTitle = document.getElementById("deleteOnlyTitle");
+const deleteOnlyDescription = document.getElementById("deleteOnlyDescription");
+const deleteWithPapersTitle = document.getElementById("deleteWithPapersTitle");
+const deleteWithPapersDescription = document.getElementById("deleteWithPapersDescription");
+const btnDeleteCategoryOnly = document.getElementById("btnDeleteCategoryOnly");
+const btnDeleteCategoryWithPapers = document.getElementById("btnDeleteCategoryWithPapers");
+const btnCancelCategoryDelete = document.getElementById("btnCancelCategoryDelete");
+
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
 const specialPracticeView = document.getElementById("specialPracticeView");
@@ -1135,9 +1218,13 @@ const quizModeButton = document.getElementById("quizModeButton");
 const themeToggle = document.getElementById("themeToggle");
 const languageSelect = document.getElementById("languageSelect");
 const libraryPanel = document.getElementById("libraryPanel");
+const paperQuestionSection = document.getElementById("paperQuestionSection");
+const sidebarBackToPapers = document.getElementById("sidebarBackToPapers");
+const sidebarPaperTitle = document.getElementById("sidebarPaperTitle");
+const sidebarPaperCategoryBadge = document.getElementById("sidebarPaperCategoryBadge");
 const paperTitle = document.getElementById("paperTitle");
 const paperDescription = document.getElementById("paperDescription");
-const paperCategory = document.getElementById("paperCategory");
+const paperCategorySelect = document.getElementById("paperCategorySelect");
 const paperTags = document.getElementById("paperTags");
 const questionCount = document.getElementById("questionCount");
 const questionListTitle = document.getElementById("questionListTitle");
@@ -1264,8 +1351,14 @@ function bindGlobalEvents() {
 
   languageSelect.addEventListener("change", (event) => setLanguage(event.target.value));
 
+  sidebarBackToPapers?.addEventListener("click", () => {
+    editSidebarLevel = "papers";
+    renderLibraryPanel();
+  });
+
   paperTitle.addEventListener("input", () => {
     paper.title = paperTitle.value;
+    if (sidebarPaperTitle) sidebarPaperTitle.textContent = paper.title || t("library.untitled");
     savePaper({ clearSession: false });
     renderLibraryPanel();
   });
@@ -1275,10 +1368,87 @@ function bindGlobalEvents() {
     savePaper({ clearSession: false });
   });
 
-  paperCategory.addEventListener("input", () => {
-    paper.category = paperCategory.value;
+  paperCategorySelect?.addEventListener("change", (e) => {
+    if (e.target.value === "__NEW_CATEGORY__") {
+      const name = window.prompt(t("category.newCategoryPrompt"), "");
+      if (name && name.trim()) {
+        const trimmed = name.trim();
+        if (isReservedCategoryName(trimmed)) {
+          showToast(t("toast.categoryReserved"));
+          renderPaperCategorySelect();
+          return;
+        }
+        if (!library.categories.includes(trimmed)) {
+          library.categories = createCategory(library.categories, trimmed);
+          showToast(t("toast.categoryCreated"));
+        }
+        paper.category = trimmed;
+        selectedCategory = trimmed;
+        if (sidebarPaperCategoryBadge) sidebarPaperCategoryBadge.textContent = trimmed || t("category.uncategorized");
+        savePaper({ clearSession: false });
+        renderAll();
+      } else {
+        renderPaperCategorySelect();
+      }
+      return;
+    }
+    paper.category = e.target.value;
+    if (sidebarPaperCategoryBadge) sidebarPaperCategoryBadge.textContent = paper.category || t("category.uncategorized");
     savePaper({ clearSession: false });
     renderLibraryPanel();
+  });
+
+  closeCategoryDeleteDialog?.addEventListener("click", () => {
+    categoryDeleteDialog?.close();
+    pendingDeleteCategoryName = null;
+  });
+  btnCancelCategoryDelete?.addEventListener("click", () => {
+    categoryDeleteDialog?.close();
+    pendingDeleteCategoryName = null;
+  });
+  categoryDeleteDialog?.addEventListener("click", (event) => {
+    if (event.target === categoryDeleteDialog) {
+      categoryDeleteDialog.close();
+      pendingDeleteCategoryName = null;
+    }
+  });
+  btnDeleteCategoryOnly?.addEventListener("click", () => {
+    if (!pendingDeleteCategoryName) return;
+    const cat = pendingDeleteCategoryName;
+    pendingDeleteCategoryName = null;
+    categoryDeleteDialog?.close();
+    const result = deleteCategoryOnly(library.categories, cat, library.papers);
+    library.categories = result.categoryList;
+    library.papers = result.papers;
+    if (selectedCategory === cat) selectedCategory = ALL_PAPERS_CATEGORY;
+    paper = getActivePaper();
+    saveLibrary();
+    renderAll();
+    showToast(t("toast.categoryDeleted"));
+  });
+  btnDeleteCategoryWithPapers?.addEventListener("click", () => {
+    if (!pendingDeleteCategoryName) return;
+    const cat = pendingDeleteCategoryName;
+    const count = library.papers.filter((p) => p.category === cat).length;
+    if (!window.confirm(t("category.deleteWithPapersFinalConfirm", { name: cat, count }))) {
+      return;
+    }
+    pendingDeleteCategoryName = null;
+    categoryDeleteDialog?.close();
+    const result = deleteCategoryAndPapers(library.categories, cat, library.papers);
+    library.categories = result.categoryList;
+    library.papers = result.keptPapers.length ? result.keptPapers : [normalizePaper(createDefaultPaper())];
+    if (result.deletedPaperIds.includes(activePaperId)) {
+      activePaperId = library.papers[0].id;
+      localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+      clearActiveSession();
+    }
+    if (selectedCategory === cat) selectedCategory = ALL_PAPERS_CATEGORY;
+    paper = getActivePaper();
+    selectedQuestionId = paper.questions[0]?.id ?? null;
+    saveLibrary();
+    renderAll();
+    showToast(t("toast.categoryDeleted"));
   });
 
   paperTags.addEventListener("input", () => {
@@ -1302,7 +1472,7 @@ function renderAll() {
   renderLibraryPanel();
   paperTitle.value = paper.title;
   paperDescription.value = paper.description;
-  paperCategory.value = paper.category || "";
+  renderPaperCategorySelect();
   paperTags.value = (paper.tags || []).join(", ");
   renderQuestionList();
   renderQuestionEditor();
@@ -1507,21 +1677,147 @@ function setLanguage(nextLanguage) {
   renderAll();
 }
 
+function getCategoryDisplayName(cat) {
+  if (cat === ALL_PAPERS_CATEGORY) return t("category.allPapers");
+  if (cat === UNCATEGORIZED_CATEGORY) return t("category.uncategorized");
+  return cat;
+}
+
+function getCategoryIcon(cat) {
+  if (cat === ALL_PAPERS_CATEGORY) return "📋";
+  if (cat === UNCATEGORIZED_CATEGORY) return "📄";
+  return "📁";
+}
+
 function renderLibraryPanel() {
+  const counts = getCategoryCounts(library.categories, library.papers);
+
+  if (
+    selectedCategory !== ALL_PAPERS_CATEGORY &&
+    selectedCategory !== UNCATEGORIZED_CATEGORY &&
+    !library.categories.includes(selectedCategory)
+  ) {
+    selectedCategory = ALL_PAPERS_CATEGORY;
+  }
+
+  // Manage progressive visibility between Levels 1 & 2 (libraryPanel) and Level 3 (paperQuestionSection)
+  if (editSidebarLevel === "questions") {
+    libraryPanel.classList.add("hidden");
+    paperQuestionSection?.classList.remove("hidden");
+    if (sidebarPaperTitle) sidebarPaperTitle.textContent = paper.title || t("library.untitled");
+    if (sidebarPaperCategoryBadge) sidebarPaperCategoryBadge.textContent = paper.category || t("category.uncategorized");
+    if (sidebarBackToPapers) sidebarBackToPapers.textContent = t("category.backToPapers");
+    renderPaperCategorySelect();
+    renderQuestionList();
+    renderQuestionEditor();
+    return;
+  }
+
+  libraryPanel.classList.remove("hidden");
+  paperQuestionSection?.classList.add("hidden");
+
+  if (editSidebarLevel === "categories") {
+    // -------------------------------------------------------------
+    // LEVEL 1: CATEGORIES
+    // -------------------------------------------------------------
+    libraryPanel.innerHTML = `
+      <div class="library-heading">
+        <strong>${t("category.libraryTitle")}</strong>
+        <span>${counts.allCount}</span>
+      </div>
+      <div class="category-nav-list" role="navigation" aria-label="${t("category.title")}">
+        <div class="category-nav-row ${selectedCategory === ALL_PAPERS_CATEGORY ? "active" : ""}">
+          <button class="category-nav-item" type="button" data-enter-category="${ALL_PAPERS_CATEGORY}" aria-label="${t("category.allPapers")} (${counts.allCount})">
+            <span class="category-nav-label">📋 ${t("category.allPapers")}</span>
+            <span class="category-nav-count">${counts.allCount}</span>
+          </button>
+        </div>
+        ${library.categories.map((cat) => `
+          <div class="category-nav-row ${selectedCategory === cat ? "active" : ""}">
+            <button class="category-nav-item" type="button" data-enter-category="${escapeHtml(cat)}" aria-label="${escapeHtml(cat)} (${counts.categoryCounts[cat] || 0})">
+              <span class="category-nav-label">📁 ${escapeHtml(cat)}</span>
+              <span class="category-nav-count">${counts.categoryCounts[cat] || 0}</span>
+            </button>
+            <span class="category-item-actions">
+              <button type="button" class="category-action-btn" data-rename-category="${escapeHtml(cat)}" title="${t("category.renameCategory")}" aria-label="${t("category.renameCategory")}: ${escapeHtml(cat)}">✎</button>
+              <button type="button" class="category-action-btn danger-action" data-delete-category="${escapeHtml(cat)}" title="${t("category.deleteCategory")}" aria-label="${t("category.deleteCategory")}: ${escapeHtml(cat)}">🗑</button>
+            </span>
+          </div>
+        `).join("")}
+        <div class="category-nav-row ${selectedCategory === UNCATEGORIZED_CATEGORY ? "active" : ""}">
+          <button class="category-nav-item" type="button" data-enter-category="${UNCATEGORIZED_CATEGORY}" aria-label="${t("category.uncategorized")} (${counts.uncategorizedCount})">
+            <span class="category-nav-label">📄 ${t("category.uncategorized")}</span>
+            <span class="category-nav-count">${counts.uncategorizedCount}</span>
+          </button>
+        </div>
+      </div>
+      <div class="category-manage-actions">
+        <button class="secondary-button small-button" type="button" id="newCategoryBtn">+ ${t("category.newCategory")}</button>
+      </div>
+      <div class="utility-row">
+        <button class="secondary-button" id="exportBackup" type="button">${t("library.exportBackup")}</button>
+        <label class="secondary-button file-label">
+          <span>${t("library.importBackup")}</span>
+          <input id="backupInput" type="file" accept="application/json,.json">
+        </label>
+      </div>
+    `;
+
+    document.getElementById("newCategoryBtn")?.addEventListener("click", promptCreateCategory);
+    libraryPanel.querySelectorAll("[data-enter-category]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        selectedCategory = btn.dataset.enterCategory;
+        editSidebarLevel = "papers";
+        renderLibraryPanel();
+      });
+    });
+    libraryPanel.querySelectorAll("[data-rename-category]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        promptRenameCategory(btn.dataset.renameCategory);
+      });
+    });
+    libraryPanel.querySelectorAll("[data-delete-category]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        promptDeleteCategory(btn.dataset.deleteCategory);
+      });
+    });
+    document.getElementById("exportBackup")?.addEventListener("click", exportLibraryBackup);
+    document.getElementById("backupInput")?.addEventListener("change", importLibraryBackup);
+    return;
+  }
+
+  // -------------------------------------------------------------
+  // LEVEL 2: PAPERS
+  // -------------------------------------------------------------
   const query = librarySearch.trim().toLowerCase();
-  const papers = [...library.papers]
+  const categoryFiltered = filterPapersByCategory(library.papers, selectedCategory);
+  const papers = categoryFiltered
     .sort((first, second) => new Date(second.lastOpenedAt || second.updatedAt) - new Date(first.lastOpenedAt || first.updatedAt))
     .filter((item) => {
       const haystack = [item.title, item.category, ...(item.tags || [])].join(" ").toLowerCase();
       return !query || haystack.includes(query);
     });
 
+  const searchPlaceholder = selectedCategory === ALL_PAPERS_CATEGORY
+    ? t("library.search")
+    : selectedCategory === UNCATEGORIZED_CATEGORY
+      ? `${t("library.search")} (${t("category.uncategorized")})`
+      : `${t("library.search")} (${escapeHtml(selectedCategory)})`;
+
   libraryPanel.innerHTML = `
-    <div class="library-heading">
-      <strong>${t("library.title")}</strong>
-      <span>${library.papers.length}</span>
+    <div class="sidebar-breadcrumb">
+      <button type="button" class="back-link-btn" id="sidebarBackToCategories">${t("category.backToCategories")}</button>
     </div>
-    <input id="librarySearch" type="search" value="${escapeHtml(librarySearch)}" placeholder="${t("library.search")}">
+    <div class="category-current-header">
+      <div class="category-header-title">
+        <span>${getCategoryIcon(selectedCategory)}</span>
+        <span>${escapeHtml(getCategoryDisplayName(selectedCategory))}</span>
+      </div>
+      <span class="category-badge">${categoryFiltered.length}</span>
+    </div>
+    <input id="librarySearch" type="search" value="${escapeHtml(librarySearch)}" placeholder="${escapeHtml(searchPlaceholder)}">
     <div class="library-actions">
       <button class="small-button" type="button" id="newPaper">${t("library.newPaper")}</button>
       <button class="small-button" type="button" id="duplicatePaper">${t("library.duplicatePaper")}</button>
@@ -1531,29 +1827,121 @@ function renderLibraryPanel() {
     <div class="library-list">
       ${papers.length ? papers.map(renderLibraryItem).join("") : `<div class="library-empty">${t("library.empty")}</div>`}
     </div>
-    <div class="utility-row">
-      <button class="secondary-button" id="exportBackup" type="button">${t("library.exportBackup")}</button>
-      <label class="secondary-button file-label">
-        <span>${t("library.importBackup")}</span>
-        <input id="backupInput" type="file" accept="application/json,.json">
-      </label>
-    </div>
   `;
 
-  document.getElementById("librarySearch").addEventListener("input", (event) => {
+  document.getElementById("sidebarBackToCategories")?.addEventListener("click", () => {
+    editSidebarLevel = "categories";
+    renderLibraryPanel();
+  });
+  document.getElementById("librarySearch")?.addEventListener("input", (event) => {
     librarySearch = event.target.value;
     renderLibraryPanel();
   });
-  document.getElementById("newPaper").addEventListener("click", createLibraryPaper);
-  document.getElementById("duplicatePaper").addEventListener("click", duplicateLibraryPaper);
-  document.getElementById("renamePaper").addEventListener("click", renameLibraryPaper);
-  document.getElementById("deletePaper").addEventListener("click", deleteLibraryPaper);
-  document.getElementById("exportBackup").addEventListener("click", exportLibraryBackup);
-  document.getElementById("backupInput").addEventListener("change", importLibraryBackup);
+  document.getElementById("newPaper")?.addEventListener("click", createLibraryPaper);
+  document.getElementById("duplicatePaper")?.addEventListener("click", duplicateLibraryPaper);
+  document.getElementById("renamePaper")?.addEventListener("click", renameLibraryPaper);
+  document.getElementById("deletePaper")?.addEventListener("click", deleteLibraryPaper);
 
   libraryPanel.querySelectorAll("[data-open-paper]").forEach((button) => {
-    button.addEventListener("click", () => openLibraryPaper(button.dataset.openPaper));
+    button.addEventListener("click", () => {
+      openLibraryPaper(button.dataset.openPaper);
+    });
   });
+}
+
+function promptCreateCategory() {
+  const name = window.prompt(t("category.newCategoryPrompt"), "");
+  if (!name || !name.trim()) return;
+  const trimmed = name.trim();
+  if (isReservedCategoryName(trimmed)) {
+    showToast(t("toast.categoryReserved"));
+    return;
+  }
+  if (library.categories.includes(trimmed)) {
+    showToast(t("toast.categoryExists"));
+    selectedCategory = trimmed;
+    editSidebarLevel = "papers";
+    renderLibraryPanel();
+    return;
+  }
+  library.categories = createCategory(library.categories, trimmed);
+  selectedCategory = trimmed;
+  editSidebarLevel = "papers";
+  saveLibrary();
+  renderAll();
+  showToast(t("toast.categoryCreated"));
+}
+
+function promptRenameCategory(oldName) {
+  const newName = window.prompt(t("category.renameCategoryPrompt"), oldName);
+  if (!newName || !newName.trim() || newName.trim() === oldName) return;
+  const trimmedNew = newName.trim();
+  if (isReservedCategoryName(trimmedNew)) {
+    showToast(t("toast.categoryReserved"));
+    return;
+  }
+  if (library.categories.includes(trimmedNew)) {
+    showToast(t("toast.categoryExists"));
+    return;
+  }
+  const result = renameCategory(library.categories, oldName, trimmedNew, library.papers);
+  if (!result.success) {
+    if (result.reason === "RESERVED") {
+      showToast(t("toast.categoryReserved"));
+    } else if (result.reason === "COLLISION") {
+      showToast(t("toast.categoryExists"));
+    }
+    return;
+  }
+  library.categories = result.categoryList;
+  library.papers = result.papers;
+  if (selectedCategory === oldName) {
+    selectedCategory = trimmedNew;
+  }
+  paper = getActivePaper();
+  saveLibrary();
+  renderAll();
+  showToast(t("toast.categoryRenamed"));
+}
+
+function promptDeleteCategory(categoryName) {
+  const matchingPapers = library.papers.filter((p) => p.category === categoryName);
+  if (matchingPapers.length === 0) {
+    if (!window.confirm(t("category.deleteEmptyConfirm", { name: categoryName }))) return;
+    const result = deleteCategoryOnly(library.categories, categoryName, library.papers);
+    library.categories = result.categoryList;
+    if (selectedCategory === categoryName) selectedCategory = ALL_PAPERS_CATEGORY;
+    saveLibrary();
+    renderAll();
+    showToast(t("toast.categoryDeleted"));
+    return;
+  }
+
+  pendingDeleteCategoryName = categoryName;
+  if (categoryDeleteTitle) categoryDeleteTitle.textContent = t("category.deleteCategoryTitle");
+  if (categoryDeleteMessage) categoryDeleteMessage.textContent = t("category.deleteChoicePrompt", { name: categoryName, count: matchingPapers.length });
+  if (deleteOnlyTitle) deleteOnlyTitle.textContent = t("category.deleteOnlyTitle");
+  if (deleteOnlyDescription) deleteOnlyDescription.textContent = t("category.deleteOnlyDesc");
+  if (btnDeleteCategoryOnly) btnDeleteCategoryOnly.textContent = t("category.deleteOnly");
+  if (deleteWithPapersTitle) deleteWithPapersTitle.textContent = t("category.deleteWithPapersTitle");
+  if (deleteWithPapersDescription) deleteWithPapersDescription.textContent = t("category.deleteWithPapersDesc", { count: matchingPapers.length });
+  if (btnDeleteCategoryWithPapers) btnDeleteCategoryWithPapers.textContent = t("category.deleteWithPapers", { count: matchingPapers.length });
+  if (btnCancelCategoryDelete) btnCancelCategoryDelete.textContent = t("actions.cancel");
+  categoryDeleteDialog?.showModal();
+}
+
+function renderPaperCategorySelect() {
+  if (!paperCategorySelect) return;
+  const currentCategory = paper.category || "";
+  const options = [
+    `<option value="">${t("category.uncategorized")}</option>`,
+    ...library.categories.map((cat) => `<option value="${escapeHtml(cat)}" ${cat === currentCategory ? "selected" : ""}>${escapeHtml(cat)}</option>`),
+    `<option value="__NEW_CATEGORY__">+ ${t("category.newCategory")}...</option>`
+  ];
+  if (currentCategory && !library.categories.includes(currentCategory)) {
+    options.splice(1, 0, `<option value="${escapeHtml(currentCategory)}" selected>${escapeHtml(currentCategory)}</option>`);
+  }
+  paperCategorySelect.innerHTML = options.join("");
 }
 
 function renderLibraryItem(item) {
@@ -1563,7 +1951,7 @@ function renderLibraryItem(item) {
     <button class="library-item ${isActive ? "active" : ""}" type="button" data-open-paper="${item.id}">
       <span>
         <strong>${escapeHtml(item.title || t("library.untitled"))}</strong>
-        <small>${escapeHtml(item.category || t("library.defaultCategory"))} · ${t("library.updated")} ${formatDate(item.updatedAt)}</small>
+        <small>${escapeHtml(item.category || t("category.uncategorized"))} · ${t("library.updated")} ${formatDate(item.updatedAt)}</small>
       </span>
       <span class="library-tags">${tags}${isActive ? `<span>${t("library.active")}</span>` : ""}</span>
     </button>
@@ -1571,11 +1959,14 @@ function renderLibraryItem(item) {
 }
 
 function createLibraryPaper() {
+  const initialCategory = (selectedCategory !== ALL_PAPERS_CATEGORY && selectedCategory !== UNCATEGORIZED_CATEGORY)
+    ? selectedCategory
+    : "";
   const nextPaper = normalizePaper({
     id: makeId(),
     title: t("library.untitled"),
     description: "",
-    category: "",
+    category: initialCategory,
     tags: [],
     questions: [],
   });
@@ -1583,6 +1974,7 @@ function createLibraryPaper() {
   activePaperId = nextPaper.id;
   localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
   selectedQuestionId = null;
+  editSidebarLevel = "questions";
   clearActiveSession();
   saveLibrary();
   renderAll();
@@ -1596,6 +1988,7 @@ function duplicateLibraryPaper() {
   activePaperId = copy.id;
   localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
   selectedQuestionId = copy.questions[0]?.id ?? null;
+  editSidebarLevel = "questions";
   clearActiveSession();
   saveLibrary();
   renderAll();
@@ -1626,14 +2019,16 @@ function deleteLibraryPaper() {
 }
 
 function openLibraryPaper(id) {
-  if (id === activePaperId) return;
-  activePaperId = id;
-  localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
-  paper = getActivePaper();
-  paper.lastOpenedAt = new Date().toISOString();
-  selectedQuestionId = paper.questions[0]?.id ?? null;
-  session = loadActiveSession();
-  saveLibrary();
+  if (id !== activePaperId) {
+    activePaperId = id;
+    localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+    paper = getActivePaper();
+    paper.lastOpenedAt = new Date().toISOString();
+    selectedQuestionId = paper.questions[0]?.id ?? null;
+    session = loadActiveSession();
+    saveLibrary();
+  }
+  editSidebarLevel = "questions";
   renderAll();
 }
 

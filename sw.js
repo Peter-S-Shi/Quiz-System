@@ -8,6 +8,7 @@ const APP_SHELL = [
   "./src/app.js",
   "./src/core/audio-engine.js",
   "./src/core/backup.js",
+  "./src/core/categories.js",
   "./src/core/corrections.js",
   "./src/core/deletion-policy.js",
   "./src/core/grading.js",

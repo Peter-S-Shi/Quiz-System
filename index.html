@@ -45,46 +45,59 @@
           <aside class="side-panel">
             <section class="library-panel" id="libraryPanel"></section>
 
-            <div class="paper-fields">
-              <label>
-                <span data-label="paper-title">试卷名称</span>
-                <input id="paperTitle" type="text" maxlength="80">
-              </label>
-              <label>
-                <span data-label="paper-description">说明</span>
-                <textarea id="paperDescription" rows="3" maxlength="240"></textarea>
-              </label>
-              <label>
-                <span data-label="paper-category">分类</span>
-                <input id="paperCategory" type="text" maxlength="60">
-              </label>
-              <label>
-                <span data-label="paper-tags">标签</span>
-                <input id="paperTags" type="text" maxlength="160">
-              </label>
-            </div>
+            <section class="paper-question-section hidden" id="paperQuestionSection">
+              <div class="sidebar-breadcrumb">
+                <button type="button" class="back-link-btn" id="sidebarBackToPapers">← 返回试卷列表</button>
+              </div>
 
-            <div class="add-strip">
-              <button type="button" data-add-type="single">单选</button>
-              <button type="button" data-add-type="multiple">多选</button>
-              <button type="button" data-add-type="blank">填空</button>
-              <button type="button" data-add-type="truefalse">判断</button>
-              <button type="button" data-add-type="matching">匹配</button>
-            </div>
+              <div class="paper-summary-card">
+                <div class="paper-summary-header">
+                  <strong id="sidebarPaperTitle">未命名试卷</strong>
+                  <span id="sidebarPaperCategoryBadge" class="category-badge">未分类</span>
+                </div>
+              </div>
 
-            <div class="question-list-header">
-              <strong id="questionListTitle">题目</strong>
-              <span id="questionCount">0</span>
-            </div>
-            <div class="question-list" id="questionList"></div>
+              <div class="paper-fields">
+                <label>
+                  <span data-label="paper-title">试卷名称</span>
+                  <input id="paperTitle" type="text" maxlength="80">
+                </label>
+                <label>
+                  <span data-label="paper-description">说明</span>
+                  <textarea id="paperDescription" rows="3" maxlength="240"></textarea>
+                </label>
+                <label>
+                  <span data-label="paper-category">分类</span>
+                  <select id="paperCategorySelect"></select>
+                </label>
+                <label>
+                  <span data-label="paper-tags">标签</span>
+                  <input id="paperTags" type="text" maxlength="160">
+                </label>
+              </div>
 
-            <div class="utility-row">
-              <button class="secondary-button" id="exportButton" type="button">导出</button>
-              <label class="secondary-button file-label">
-                <span id="importLabelText">导入</span>
-                <input id="importInput" type="file" accept="application/json,.json">
-              </label>
-            </div>
+              <div class="add-strip">
+                <button type="button" data-add-type="single">单选</button>
+                <button type="button" data-add-type="multiple">多选</button>
+                <button type="button" data-add-type="blank">填空</button>
+                <button type="button" data-add-type="truefalse">判断</button>
+                <button type="button" data-add-type="matching">匹配</button>
+              </div>
+
+              <div class="question-list-header">
+                <strong id="questionListTitle">题目</strong>
+                <span id="questionCount">0</span>
+              </div>
+              <div class="question-list" id="questionList"></div>
+
+              <div class="utility-row">
+                <button class="secondary-button" id="exportButton" type="button">导出</button>
+                <label class="secondary-button file-label">
+                  <span id="importLabelText">导入</span>
+                  <input id="importInput" type="file" accept="application/json,.json">
+                </label>
+              </div>
+            </section>
           </aside>
 
           <div class="sidebar-resizer" id="editorSidebarResizer" role="separator" aria-orientation="vertical" tabindex="0" title="调整侧边栏宽度" aria-label="调整侧边栏宽度"></div>
@@ -133,6 +146,40 @@
               </select>
             </label>
             <small class="meta-text" id="prefMotionHint">遵循系统 prefers-reduced-motion，亦可在此主动减弱纸张翻动与盖章动效</small>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="categoryDeleteDialog" class="preferences-dialog category-delete-dialog">
+      <div class="preferences-content">
+        <div class="preferences-header">
+          <h3 id="categoryDeleteTitle">删除分类</h3>
+          <button class="icon-button close-button" id="closeCategoryDeleteDialog" type="button" aria-label="关闭" title="关闭">&times;</button>
+        </div>
+        <div class="preferences-body category-delete-body">
+          <p id="categoryDeleteMessage" class="category-delete-prompt"></p>
+          
+          <div class="category-delete-options">
+            <div class="category-delete-card safe-card">
+              <div class="delete-card-info">
+                <strong id="deleteOnlyTitle">仅删除分类</strong>
+                <p id="deleteOnlyDescription" class="option-desc">保留该分类下的所有试卷并将其设为“未分类”。试卷内容、题目与作答历史均完好保存。</p>
+              </div>
+              <button class="secondary-button delete-card-btn" id="btnDeleteCategoryOnly" type="button">仅删除分类</button>
+            </div>
+
+            <div class="category-delete-card danger-card">
+              <div class="delete-card-info">
+                <strong id="deleteWithPapersTitle" class="danger-text">删除分类及所有试卷</strong>
+                <p id="deleteWithPapersDescription" class="danger-text-muted">永久删除该分类以及其中的全部试卷与题目。此操作无法撤销！</p>
+              </div>
+              <button class="danger-button delete-card-btn" id="btnDeleteCategoryWithPapers" type="button">删除分类及试卷</button>
+            </div>
+          </div>
+
+          <div class="category-dialog-footer">
+            <button class="secondary-button" id="btnCancelCategoryDelete" type="button">取消</button>
           </div>
         </div>
       </div>
