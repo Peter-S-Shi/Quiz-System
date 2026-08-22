@@ -49,19 +49,15 @@ Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可�
 
 ## 开始使用
 
-用本地静态服务器启动仓库，然后通过该服务器打开 `index.html`。
+不需要构建步骤。在 Windows 上直接双击 `start-local.bat`；它会把运行责任交给规范的 Python runtime，验证系统公布的全部 localhost 地址族，然后打开 `http://localhost:8000`。
 
-不需要构建步骤。
+端口 `8000` 是严格固定的，因为浏览器内的 Quiz Studio 数据属于这个 origin。如果端口被占用，启动会给出诊断并失败，而不会静默改用其他端口。受支持的启动器还会在不读取、不清空、不迁移 localStorage 的前提下退休旧的 Quiz Studio Service Worker/cache 状态。生产托管环境中的 PWA 行为仍然独立保留。
 
-示例：
+等价的前台命令为：
 
 ```bash
-python -m http.server 8000
+python -u scripts/dev-server.py
 ```
-
-然后打开 `http://localhost:8000`。
-
-在 Windows 上，也可以直接双击 `start-local.bat`。它会在 `8000` 端口（如果 `8000` 端口被占用，则会自动选择其他可用端口）启动本地服务器，并自动用浏览器打开应用。
 
 ## 验证
 
@@ -98,6 +94,7 @@ Quiz System/
   index.html        应用页面结构
   styles.css        界面样式和响应式布局
   start-local.bat   Windows 本地启动器
+  scripts/          规范 Python 本地 runtime
   src/app.js        试卷库、试卷编辑、练习流程和多语言支持
   src/core/         题型注册、校验、判分和迁移
   src/storage/      浏览器存储边界

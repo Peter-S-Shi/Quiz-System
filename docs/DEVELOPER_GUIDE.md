@@ -120,6 +120,14 @@ Every persistent key introduced through M1-M6, reviewed for M6.7 lifecycle closu
 
 No duplicate source of truth was found: Translation History (M6.7) and the Quiz score-summary history are both derived/display layers over canonical collections, not separate canonical stores. Two integrity gaps were closed as part of this review rather than deferred, since they affect backup atomicity directly: `parseLearnerResponseCollection()`/`parseTeacherReviewCollection()` now reject a collection containing two records with the same stable ID (previously only the live `upsert*()` write paths enforced this, not bulk/backup parsing), and `parseLibraryBackup()` now cross-validates every remediation Translation Document's `provenance` against that same backup's Learner Response/Teacher Review collections before any state is replaced, reusing `validateRemediationProvenance()` from `review-transport.js`. Everything else — the canonical-must-resolve vs. historical-may-be-missing distinction, no silent cap, and full backup coverage — was already correct as of M6.6 and required no change.
 
+## Local Runtime Contract
+
+`start-local.bat` is a thin Windows wrapper around `scripts/dev-server.py`. Python is the single runtime owner: it binds the strict canonical origin `http://localhost:8000`, serves the current working tree with `Cache-Control: no-store`, verifies the health endpoint through the canonical `localhost` hostname and every IPv4/IPv6 localhost family advertised by the operating system, opens the browser, and owns shutdown. It never drifts to another port; on Windows, a collision report includes the listening PID when available. If the OS browser opener fails or rejects the request, the server remains active and prints the exact recovery URL with bilingual manual-open guidance.
+
+The supported browser entry first visits the server-owned `/__runtime__/recover` page. That bounded migration unregisters only same-origin `/sw.js` Quiz Studio registrations and deletes only Cache Storage names beginning with `quiz-studio-`, then redirects to the ordinary `index.html -> src/app.js` bootstrap. It never reads, clears, or migrates localStorage. `src/core/service-worker-policy.js` prevents production Service Worker registration on loopback origins, while non-loopback hosted deployments retain the production PWA path in `sw.js`.
+
+Runtime regression coverage exercises the real HTTP boundary: exclusive port `8000`, collision diagnostics/no drift, IPv4 and IPv6 localhost reachability, canonical health response, no-store headers, current-working-tree ESM graph coherence, scoped legacy recovery, localStorage non-access, the thin launcher contract, and the production/local Service Worker policy.
+
 ## Validation
 
 ```bash
