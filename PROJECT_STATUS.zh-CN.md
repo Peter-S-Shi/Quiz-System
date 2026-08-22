@@ -18,7 +18,7 @@ M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进
 
 修正分支 `recovery/local-runtime-contract` 已从干净的 `main` 基线 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47` 完成重建。它只修改 Windows/本地运行边界；不会重新打开已经验收的 M6 产品行为，也不是 Milestone 7 Product Hardening。
 
-普通 Chrome profile Human Gate 已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。随后执行的延后双轴 code review 发现两个 Standards hard violations（启动/恢复文字双语与过期门禁状态）、两个 material Spec gaps（规范 hostname readiness 与浏览器启动失败诊断），以及一个低优先级重复配置 smell。所有 material findings 与 smell 均已在 Local Runtime Recovery 边界内修复；最终 Standards 与 Spec review 均为 PASS，完整本地测试为 230/230 通过，review-fix 提交 `c156166` 的 PR CI 通过。仍需取得明确合并批准。
+普通 Chrome profile Human Gate 在 PR #11 以 `6b38c40` 合并前，已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。该结果对当时五次启动仍然有效，但合并后的一次启动暴露出 Windows 批处理解析回归：当 `start-local.bat` 以裸 LF 换行检出并进入缺少 Python 的诊断路径时会被错误解析。专项后续分支 `fix/local-runtime-bat-crlf` 现在通过 `.gitattributes` 强制所有 `.bat` 使用 CRLF，并新增跨平台换行契约测试与真实 Windows 缺少 Python 启动器测试。使用随附 Python runtime 时，完整本地测试为 232/232 通过，PR #12 CI 通过；用户点击复验仍待完成。
 
 ## M6 综合人工验收与 UX 强化收尾
 
@@ -60,7 +60,7 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 
 ## 验证状态
 
-- 230 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw/runtime 自动测试通过。覆盖条目级元认知标记、Schema/运行时校验、needs-work 派生、导航边界、备份即时刷新、本地运行契约以及浏览器启动失败的双语诊断。历史 `comment` 和 `strikethrough` 校验继续通过；此前全部 M6.0-M6.7 覆盖保持通过。
+- 232 项 core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw/runtime 自动测试通过。除条目级元认知标记、Schema/运行时校验、needs-work 派生、导航边界、备份即时刷新、本地运行契约以及浏览器启动失败双语诊断外，覆盖现已包括 `.bat` 的 CRLF 检出契约与真实 Windows 缺少 Python 诊断执行。历史 `comment` 和 `strikethrough` 校验继续通过；此前全部 M6.0-M6.7 覆盖保持通过。
 - **删除完整性收尾补丁**：CI 通过后的复查发现 `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` 忽略了实时补救翻译文档，导致删除 Learner Response 或 Teacher Review 可能让 Translation Library 中仍然存在的补救文档留下无法解析的 provenance——这与 `parseLibraryBackup()` 的要求不一致（后者在每次恢复时都要求实时补救文档的 provenance 必须可解析）。修复方式是明确区分 finalized response 自身的（可以安全无法解析的）历史 provenance，与一份*实时*补救文档的规范性声明：两个分析函数现在都接受 `translationDocuments` 参数，并报告 `dependentRemediationDocumentIds`/`hasBlockingDependents`；只要存在这样的实时依赖，`app.js` 中的删除流程就会直接拒绝删除（弹出提示，不出现确认对话框），而不是级联穿过它。补救文档绝不会作为副作用被自动删除。新增 7 个测试，其中包括一个证明补丁修复前的操作序列会产生无法恢复的备份的回归防护测试，以及一个证明先删除补救文档后再执行的许可删除仍能正常完整备份/恢复的测试。
 - **Hardening 前本地运行恢复（Human Gate 5/5 PASS；reviewed/fixed）**：`start-local.bat` 现在是单一 Python runtime owner `scripts/dev-server.py` 的薄包装。runtime 会在 Windows 公布的全部 IPv4/IPv6 localhost 地址族上独占严格固定的端口 `8000`，同时通过规范 `localhost` hostname 与每个绑定 listener 验证 `/__runtime__/health`，以 `no-store` 提供当前工作树，在可用时报告占用端口的 PID，并且绝不漂移 origin。服务器拥有的恢复入口只注销同 origin 的 Quiz Studio `/sw.js` 注册，只删除 `quiz-studio-*` Cache Storage，且不访问 localStorage。浏览器启动失败时服务器保持运行，并输出准确的双语手动打开 URL。loopback 开发环境不再注册生产 Service Worker；托管生产环境的 PWA 行为与完整 ESM 离线闭包仍然保留。
 - CI workflow 已存在；已在 `milestone/6.7-history-retry-integration` 分支上通过（PR #6），删除完整性收尾补丁提交后同样通过。
