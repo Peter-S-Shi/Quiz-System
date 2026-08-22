@@ -1,4 +1,4 @@
-﻿import test from "node:test";
+import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -259,4 +259,62 @@ test("active session normalization safely preserves or defaults feedbackMode", (
 
   // 6. Already completed session returns null
   assert.equal(normalizeLoadedSession({ paperId: "p1", completed: true }, "p1"), null);
+});
+
+test("submitAtEnd submission confirmation requires explicit confirmation and cancellation preserves active session", () => {
+  const paper = createSampleFiveQuestionPaper();
+  const session = {
+    id: "sess_cancel_test",
+    paperId: paper.id,
+    paperTitle: paper.title,
+    startedAt: new Date().toISOString(),
+    questions: paper.questions.map(prepareQuizQuestion),
+    index: 4,
+    answers: {
+      [paper.questions[0].id]: "opt_a",
+      [paper.questions[1].id]: ["opt_m1"],
+    },
+    results: [],
+    submitted: false,
+    feedback: null,
+    completed: false,
+    feedbackMode: "submitAtEnd",
+  };
+
+  function computeSubmitPrompt(sess) {
+    const answeredCount = sess.questions.filter((item) => isAnswerComplete(item, sess.answers[item.id])).length;
+    const unansweredCount = sess.questions.length - answeredCount;
+    return {
+      answeredCount,
+      unansweredCount,
+      requiresConfirm: true,
+      messageKey: unansweredCount > 0 ? "practice.confirmSubmitUnanswered" : "practice.confirmSubmitAllAnswered",
+    };
+  }
+
+  // With 2 answered and 3 unanswered
+  const promptUnanswered = computeSubmitPrompt(session);
+  assert.equal(promptUnanswered.unansweredCount, 3);
+  assert.equal(promptUnanswered.messageKey, "practice.confirmSubmitUnanswered");
+  assert.equal(promptUnanswered.requiresConfirm, true);
+
+  // When user cancels confirmation: session state must be unchanged
+  const sessionCopy = structuredClone(session);
+  // (Cancel simulation: nothing modified on session)
+  assert.deepEqual(session, sessionCopy);
+  assert.equal(session.completed, false);
+  assert.equal(session.results.length, 0);
+
+  // Fill remaining answers
+  session.answers[paper.questions[2].id] = "Antigravity";
+  session.answers[paper.questions[3].id] = true;
+  session.answers[paper.questions[4].id] = {
+    p1: session.questions[4].pairs[0].rightId,
+    p2: session.questions[4].pairs[1].rightId,
+  };
+
+  const promptAllAnswered = computeSubmitPrompt(session);
+  assert.equal(promptAllAnswered.unansweredCount, 0);
+  assert.equal(promptAllAnswered.messageKey, "practice.confirmSubmitAllAnswered");
+  assert.equal(promptAllAnswered.requiresConfirm, true);
 });

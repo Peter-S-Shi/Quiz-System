@@ -1,4 +1,4 @@
-﻿# Human Gate A Verification Guide — Practice Feedback Modes & Special Practice IA
+# Human Gate A Verification Guide — Practice Feedback Modes & Special Practice IA
 
 **Scope**: Pre-Freeze V1 Scope Closure · Batch A  
 **Status**: Ready for Human Evaluation (DO NOT mark PASS autonomously)  
@@ -58,10 +58,17 @@ Verify that the new `Submit at End` practice mode allows learners to answer ques
 6. Refresh the browser while on Question 2:
    - Click **Resume Progress** (继续上次进度).
    - Verify that the session resumes in `Submit at End` mode with all answers preserved and zero feedback displayed.
-7. Navigate to the last question:
-   - Verify that the primary action button is **Submit Paper** (提交试卷).
-   - If any questions are unanswered, verify that clicking Submit Paper shows a confirmation dialog indicating the number of unanswered questions.
-   - Confirm submission: verify that stamp audio plays, all questions are graded, score is computed, Learner Response is finalized, and the comprehensive Results screen is displayed.
+7. Test Final Submit Confirmation & Cancel Safety:
+   - Navigate to the last question while leaving at least one question unanswered:
+     - Click **Submit Paper** (提交试卷).
+     - Verify that a confirmation dialog appears stating the count of unanswered questions and warning that answers can no longer be changed after submission.
+     - Click **Cancel** on the dialog.
+     - Verify that the active session remains completely untouched: no grading performed, no results leaked, answers preserved, session not finalized.
+   - Navigate to the unanswered question(s) and complete all answers.
+   - Return to the last question and click **Submit Paper** (提交试卷):
+     - Verify that a confirmation dialog appears confirming that submission will finalize grading and answers cannot be changed.
+     - Confirm submission (click **OK**).
+     - Verify that stamp audio plays, all questions are graded, score is computed, Learner Response is finalized, and the comprehensive Results screen is displayed.
 8. Verify that **Export Response** (导出作答记录) produces a valid JSON Learner Response containing all graded items.
 
 ---

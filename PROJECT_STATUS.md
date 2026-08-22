@@ -54,22 +54,23 @@ Feature Freeze will begin only after Pre-Freeze V1 Scope Closure batches pass hu
 
 Not started.
 
-Product Hardening is Milestone 7 and will begin only after all Milestone 6 and UI Productization work passes review and Feature Freeze is explicitly entered.
+Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope Closure (Batch A & Batch B) passes human acceptance gates, Whole-Product Feature Complete Review V3 is accepted, and Feature Freeze is explicitly entered.
+
+### Milestone 7 Product Hardening Scope (Mandatory V1)
+- **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction) is classified as a mandatory V1 Milestone 7 Product Hardening item (not deferred).
+- **Mobile/Touch Ergonomics & Native Dialog Polish**: Responsive layout adjustments for history checklists, multi-button rows, and confirmation workflows on touch viewports.
+- **Whole-Product Verification**: Legacy migration safety tests and clean clone environment checks.
 
 ## Verification Status
 
-- 232 automated core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw/runtime tests pass. Coverage now includes the `.bat` CRLF checkout contract and a real Windows missing-Python diagnostic execution in addition to item-level metacognitive marking, schema/runtime validation, needs-work derivation, navigation boundaries, backup state refresh, the local runtime contract, and bilingual browser-launch failure diagnostics. Historical `comment` and `strikethrough` validation remains green; all earlier M6.0-M6.7 coverage continues to pass.
-- **Deletion-integrity closure patch**: a post-approval review found that `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` ignored live remediation Translation Documents, so deleting a Learner Response or Teacher Review could leave a still-live remediation document in the Translation Library with unresolvable provenance — inconsistent with `parseLibraryBackup()`, which correctly requires a live remediation document's provenance to resolve on every restore. Fixed by distinguishing a finalized response's own (safely-unresolvable) historical provenance from a *live* remediation document's canonical claim: both analysis functions now accept `translationDocuments` and report `dependentRemediationDocumentIds`/`hasBlockingDependents`, and the delete flows in `app.js` refuse the deletion outright (a toast warning, no confirmation dialog) while such a live dependency exists, rather than cascading through it. Remediation documents are never auto-deleted as a side effect. Added 7 tests, including a regression guard proving the pre-patch sequence would have produced an unrestorable backup, and a full backup round trip proving a permitted deletion (remediation document removed first) still restores cleanly.
-- **Pre-hardening local runtime recovery (Human Gate 5/5 PASS; reviewed/fixed)**: `start-local.bat` is now a thin wrapper over the single Python runtime owner in `scripts/dev-server.py`. The runtime exclusively binds strict port `8000` on every IPv4/IPv6 localhost family advertised by Windows, verifies `/__runtime__/health` through both the canonical `localhost` hostname and each bound listener, serves the current working tree with `no-store`, reports the occupying PID on port collision where available, and never drifts origin. Its server-owned recovery entry unregisters only same-origin Quiz Studio `/sw.js` registrations and deletes only `quiz-studio-*` Cache Storage without accessing localStorage. Browser-launch failure retains the active server and prints an exact bilingual manual-open URL. Loopback development no longer registers the production Service Worker; hosted production PWA behavior and the complete ESM offline closure remain available.
-- CI workflow exists; it passed on the `milestone/6.7-history-retry-integration` branch (PR #6), including after the deletion-integrity closure patch.
-- A local browser smoke test exercised the complete M6.7 journey live using seeded fixtures (a response with two reviews carrying conflicting judgments): browsed and filtered Translation History by origin/status/sort; opened a history detail view and confirmed item-level evidence, learner marks, and both linked reviews were reachable; ran a real **Retry needs-work items** action and confirmed the new session contained only the flagged item with `materialProvenance.purpose: "retry"`, then finished it and confirmed the finalized response carried retry provenance (`sourceResponseId`/`sourceMaterialId`) while the original response was untouched; ran **Retry selected items** with one item unchecked and confirmed only the selected item carried over; followed lineage forward from the original response to the retry response and back; deleted a Teacher Review referenced by a retry response's `sourceReviewId` and confirmed the lineage view then showed it as unavailable rather than crashing; deleted a Translation Document with a dependent finalized response and confirmed the confirmation named the dependent count and the response remained fully browsable/retriable from History afterward; and triggered the response-deletion cascade confirmation, which correctly named the dependent review/derived-record counts before deleting the response together with its reviews while leaving the derived retry response in place. English-locale parity was spot-checked on the same flows.
-- During this smoke test, found and fixed one real bug (not caught by unit tests, since it lives in `app.js` UI glue rather than a core module): `deleteLearnerResponseConfirm()` originally wrote the updated Learner Response collection before reading `loadTeacherReviews()` again, and `loadTeacherReviews()` re-validates every review against the *current* response collection on every call — so it saw the just-orphaned reviews and threw. Fixed by snapshotting both collections up front. Re-verified after the fix with a clean isolated reproduction.
-- **Service Worker separation**: Hosted production remains on the Network-First v4 PWA path with immediate takeover and a complete ESM precache. Loopback development is deliberately separate: no production SW registration, no-store responses, and a narrowly scoped legacy SW/cache retirement entry owned by the local runtime.
-- The browser harness cannot drive native `window.confirm()`/`window.prompt()` dialogs; deletion and retry confirmations were smoke-tested by monkey-patching `window.confirm` to capture the exact message text and to accept/decline programmatically, which exercises the real confirmation logic and message content but not the native dialog UI itself. This is a known automation-harness limitation carried over from earlier milestones, not a product defect.
-- Comprehensive M6 human acceptance Journeys 01–10 have been completed (PASS) under the reduced comment scope and hardening batch. Full v1 project-wide manual acceptance across all milestones remains open.
-- Clean clone verification has not been performed.
-- GitHub Pages deployment is manual-only and deferred.
-- M6.0–M6.7 are implementation complete and verified through comprehensive human acceptance.
+- 243 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
+- **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes (Instant Feedback vs. Submit at End with explicit submit confirmations) and Special Practice information architecture (`Special Practice -> Translation`) implemented and verified with new tests in `tests/practice-modes.test.js`.
+- **Human Gate A Guide**: Verification journeys A, B, and C documented in `manual-qa/human-gate-a.md` and `manual-qa/human-gate-a.zh-CN.md` (ready for human execution; AI does not self-certify).
+
+## Agreed Question Media Policy (Batch B Scope Definition)
+
+- **V1 In-Scope (Pre-Freeze Batch B)**: All five Objective Quiz question types (`single`, `multiple`, `blank`, `truefalse`, `matching`) may optionally contain image and/or audio simultaneously; images support enlarged/zoom viewing; audio renders as an in-question playback bar.
+- **V2 Deferred Scope**: Per-paper audio playback restrictions (e.g., seeking/scrubbing controls, maximum replay count permissions, and strict exam-lockout policies).
 
 ## Known Risks
 
@@ -108,11 +109,14 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 and U
 - Subjective question grading.
 - Public GitHub Pages deployment and final GitHub Release.
 - Advanced history analytics/search, graph-style lineage visualization, and a History pagination/virtualization layer (deferred to a future version if History size becomes a practical problem).
-- Item-level metacognitive marking interaction refinement (active-color toggle buttons, click-again-to-remove, multiple simultaneous marks per item, and removal of popup-style box) — recorded for post-UI hardening / backlog.
+- Per-paper audio playback policies, seeking/scrubbing restrictions, and replay limits (V2 deferred).
 
 ## Next Engineering Objective
 
-Conduct the Whole-Product Feature Complete Review V2 across all user workflows before entering Feature Freeze and Milestone 7 Product Hardening.
+1. **Human Gate A Evaluation**: User executes manual verification journeys per [manual-qa/human-gate-a.md](file:///F:/CodexWorkspaces/Quiz%20System/manual-qa/human-gate-a.md).
+2. **Pre-Freeze Scope Closure · Batch B**: Implement Objective Question Media (optional image and/or audio across all 5 question types, image zoom viewing, in-question audio player bar).
+3. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and recommend entering Feature Freeze.
+4. **Milestone 7 Product Hardening**: Enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
 
 ## Repository State
 

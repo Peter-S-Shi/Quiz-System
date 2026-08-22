@@ -237,7 +237,8 @@ const locales = {
       modeInstantDesc: "答完每题即时查看正误与解析",
       modeSubmitAtEnd: "答完交卷",
       modeSubmitAtEndDesc: "模拟考试流程，全部答完统一提交评分，过程中可自由切换修改答案",
-      confirmSubmitUnanswered: "试卷中尚有 {count} 道题目未作答，确定现在提交吗？",
+      confirmSubmitAllAnswered: "确定要提交试卷吗？交卷后将完成评分并生成作答记录，无法再修改答案。",
+      confirmSubmitUnanswered: "试卷中尚有 {count} 道题目未作答，确定现在提交吗？交卷后将完成评分，无法再修改答案。",
       typeFilter: "题型筛选",
       randomCount: "随机抽题数量",
       randomHint: "留空或 0 表示使用全部符合条件的题目",
@@ -711,7 +712,8 @@ const locales = {
       modeInstantDesc: "Check correctness and feedback immediately after each question",
       modeSubmitAtEnd: "Submit at End",
       modeSubmitAtEndDesc: "Exam-style workflow; navigate and change answers freely before final submission",
-      confirmSubmitUnanswered: "You still have {count} unanswered question(s). Submit now anyway?",
+      confirmSubmitAllAnswered: "Submit the paper now? Grading will be finalized and answers can no longer be changed.",
+      confirmSubmitUnanswered: "You still have {count} unanswered question(s). Submit now anyway? Answers can no longer be changed after submission.",
       typeFilter: "Question type filter",
       randomCount: "Random question count",
       randomHint: "Leave blank or 0 to use all matching questions",
@@ -2321,10 +2323,12 @@ function goNextQuestion() {
 function submitQuizAtEnd() {
   const answeredCount = session.questions.filter((item) => isAnswerComplete(item, session.answers[item.id])).length;
   const unansweredCount = session.questions.length - answeredCount;
-  if (unansweredCount > 0) {
-    if (!window.confirm(t("practice.confirmSubmitUnanswered", { count: unansweredCount }))) {
-      return;
-    }
+  const confirmMessage = unansweredCount > 0
+    ? t("practice.confirmSubmitUnanswered", { count: unansweredCount })
+    : t("practice.confirmSubmitAllAnswered");
+
+  if (!window.confirm(confirmMessage)) {
+    return;
   }
   studioAudio.playStampThud();
   renderResults();
