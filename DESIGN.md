@@ -94,18 +94,19 @@ All sound effects are synthesized dynamically via the Web Audio API with zero ex
 - **Pencil / Ink Scratch**: High-Q bandpass noise burst (2.8kHz &rarr; 3.6kHz) over 90ms.
 - **Rubber Stamp Thud**: Low-frequency resonant sine oscillator (140Hz &rarr; 45Hz) combined with a short impact transient click (750Hz) over 120ms.
 
-### Sound Preferences
-- **Default State**: Enabled (`soundEnabled = true`).
+### Sound & Motion Preferences
+- **Default State**: Sound enabled (`soundEnabled = true`), Motion standard (`motionPreference = "standard"`).
 - **Persistence**: Persisted in `localStorage` (`quiz_studio_ui_preferences`, with backward-compatible synchronization to `quiz_studio_sound_enabled` and `quiz-studio-theme`).
-- **Accessibility**: Toggleable via global header audio button, completely silent when disabled with no effect on business logic.
+- **Preferences Dialog**: Dedicated lightweight settings dialog accessible via topbar `⚙️` button, allowing explicit user configuration of Physical Sound Effects (On/Off) and Motion (Standard / Reduced, while continuing to honor system `prefers-reduced-motion`).
+- **Quick Controls**: Global header audio button (`🔊`/`🔇`) provides instant 1-click sound toggling.
 
 ---
 
 ## 5. Surface Architecture
 
 ### 1. Application Shell & Tool Launcher
-- Top bar acts as the studio mantelpiece: brand mark, active workflow indicator, language toggle, theme toggle, and audio switch.
-- Home screen serves as a clean **Tool Launcher** providing instant entry into Quiz Practice, Translation Studio, and History without dashboard clutter.
+- Top bar acts as the studio mantelpiece: brand mark, active workflow navigation tabs, language select, audio quick toggle, lightweight settings entry (`⚙️`), and theme switch.
+- Home screen serves as the canonical initial product entry surface (**Tool Launcher**), providing instant entry into Quiz Practice, Translation Studio, Authoring, and Review History without dashboard clutter.
 
 ### 2. Practice Workspaces (Objective Quiz & Translation)
 - Central continuous Paper Sheet resting on the study desk.

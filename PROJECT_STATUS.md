@@ -16,7 +16,7 @@ This workstream establishes product-level UI convergence (DESIGN.md, Strong Pape
 - **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, and persistent UI preferences (theme, sound effects, motion preference).
 - **Core Learning Surfaces**: Rebuilt Objective Quiz and Translation Practice into continuous laid paper sheets resting on the study desk, with organic page-turn transitions and pencil stroke sounds.
 - **Teacher Marking Desk**: Rebuilt Correction Workspace into a continuous paper manuscript with pen marking tray, live projection, and tactile rubber stamp feedback with stamp thud audio.
-- **Offline & Verification Closure**: 237 automated unit and integration tests pass, including UI preferences persistence and complete Service Worker ESM precache closure.
+- **Offline & Verification Closure**: 238 total tests (237 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed), including UI preferences persistence, lightweight preferences dialog, and complete Service Worker ESM precache closure.
 
 ## Acceptance Policy (Historical Record)
 

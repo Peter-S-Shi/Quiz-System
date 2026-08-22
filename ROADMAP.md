@@ -301,7 +301,7 @@ Scope completed:
 - **Application Shell & Preferences**: Tool Launcher home view (`homeView`), persistent UI preferences (`uiPreferences` storing theme, sound enabled, and motion preference), and topbar audio toggle.
 - **Core Learning Surfaces**: Laid paper sheet presentation with organic page-turn transitions and pencil stroke feedback across Objective Quiz and Translation Practice.
 - **Teacher Marking Desk**: Dedicated continuous paper marking desk with pen tray, real-time ink projection, and rubber stamp judgment with tactile thud audio.
-- **Offline & Verification Closure**: 237 automated unit and integration tests passing, complete Service Worker offline precaching closure.
+- **Offline & Verification Closure**: 238 total tests (237 passed, 1 skipped on Linux CI, 0 failed), complete Service Worker offline precaching closure.
 
 ## Milestone 7: Product Hardening
 

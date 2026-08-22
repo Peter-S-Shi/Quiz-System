@@ -125,8 +125,19 @@ const locales = {
       mainMode: "主要模式",
       theme: "切换亮色和暗色背景",
       sound: "切换物理音效",
+      settings: "偏好设置",
       language: "界面语言",
       skip: "跳到主要内容",
+      close: "关闭",
+    },
+    preferences: {
+      title: "偏好设置",
+      soundLabel: "物理音效",
+      soundHint: "开启翻页轻响、笔触摩擦与印章钝击音效",
+      motionLabel: "动效偏好",
+      motionStandard: "标准动效",
+      motionReduced: "减弱动效",
+      motionHint: "遵循系统 prefers-reduced-motion，亦可在此主动减弱纸张翻动与盖章动效",
     },
     modes: {
       home: "首页",
@@ -571,8 +582,19 @@ const locales = {
       mainMode: "Main mode",
       theme: "Switch light and dark background",
       sound: "Toggle physical sound effects",
+      settings: "Preferences",
       language: "Interface language",
       skip: "Skip to main content",
+      close: "Close",
+    },
+    preferences: {
+      title: "Preferences",
+      soundLabel: "Physical Sound Effects",
+      soundHint: "Gentle page-turn rustle, pencil scratch, and stamp thuds",
+      motionLabel: "Motion Preference",
+      motionStandard: "Standard Motion",
+      motionReduced: "Reduced Motion",
+      motionHint: "Honors system preferences; also allows manually reducing paper animations",
     },
     modes: {
       home: "Home",
@@ -1044,6 +1066,19 @@ const homeView = document.getElementById("homeView");
 const homeModeButton = document.getElementById("homeModeButton");
 const homeLauncherPanel = document.getElementById("homeLauncherPanel");
 const soundToggle = document.getElementById("soundToggle");
+const settingsToggle = document.getElementById("settingsToggle");
+const preferencesDialog = document.getElementById("preferencesDialog");
+const closePreferencesDialog = document.getElementById("closePreferencesDialog");
+const preferencesTitle = document.getElementById("preferencesTitle");
+const prefSoundLabel = document.getElementById("prefSoundLabel");
+const prefSoundCheckbox = document.getElementById("prefSoundCheckbox");
+const prefSoundHint = document.getElementById("prefSoundHint");
+const prefMotionLabel = document.getElementById("prefMotionLabel");
+const prefMotionSelect = document.getElementById("prefMotionSelect");
+const prefMotionStandard = document.getElementById("prefMotionStandard");
+const prefMotionReduced = document.getElementById("prefMotionReduced");
+const prefMotionHint = document.getElementById("prefMotionHint");
+
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
 const translationView = document.getElementById("translationView");
@@ -1077,12 +1112,15 @@ function init() {
   document.documentElement.dataset.theme = uiPreferences.theme || "light";
   if (uiPreferences.motionPreference === "reduced") {
     document.documentElement.dataset.motion = "reduced";
+  } else {
+    delete document.documentElement.dataset.motion;
   }
   studioAudio.setEnabled(uiPreferences.soundEnabled);
   document.documentElement.lang = locales[language].code;
   bindGlobalEvents();
   registerServiceWorker();
   renderAll();
+  setMode("home");
   updateSoundToggleUi();
 }
 
@@ -1093,6 +1131,33 @@ function bindGlobalEvents() {
   translationModeButton.addEventListener("click", () => setMode("translation"));
   themeToggle.addEventListener("click", toggleTheme);
   soundToggle.addEventListener("click", toggleSound);
+  settingsToggle?.addEventListener("click", openPreferencesDialog);
+  closePreferencesDialog?.addEventListener("click", () => preferencesDialog?.close());
+  preferencesDialog?.addEventListener("click", (event) => {
+    if (event.target === preferencesDialog) preferencesDialog.close();
+  });
+
+  prefSoundCheckbox?.addEventListener("change", () => {
+    const next = prefSoundCheckbox.checked;
+    studioAudio.setEnabled(next);
+    uiPreferences.soundEnabled = next;
+    saveUiPreferences(uiPreferences);
+    updateSoundToggleUi();
+    if (next) {
+      studioAudio.playPencilStroke();
+    }
+  });
+
+  prefMotionSelect?.addEventListener("change", () => {
+    const next = prefMotionSelect.value;
+    uiPreferences.motionPreference = next;
+    if (next === "reduced") {
+      document.documentElement.dataset.motion = "reduced";
+    } else {
+      delete document.documentElement.dataset.motion;
+    }
+    saveUiPreferences(uiPreferences);
+  });
 
   languageSelect.addEventListener("change", (event) => setLanguage(event.target.value));
 
@@ -1155,6 +1220,20 @@ function renderChrome() {
   themeToggle.setAttribute("aria-label", t("aria.theme"));
   soundToggle.title = t("aria.sound");
   soundToggle.setAttribute("aria-label", t("aria.sound"));
+  if (settingsToggle) {
+    settingsToggle.title = t("aria.settings");
+    settingsToggle.setAttribute("aria-label", t("aria.settings"));
+  }
+  if (closePreferencesDialog) {
+    closePreferencesDialog.setAttribute("aria-label", t("aria.close"));
+  }
+  if (preferencesTitle) preferencesTitle.textContent = t("preferences.title");
+  if (prefSoundLabel) prefSoundLabel.textContent = t("preferences.soundLabel");
+  if (prefSoundHint) prefSoundHint.textContent = t("preferences.soundHint");
+  if (prefMotionLabel) prefMotionLabel.textContent = t("preferences.motionLabel");
+  if (prefMotionStandard) prefMotionStandard.textContent = t("preferences.motionStandard");
+  if (prefMotionReduced) prefMotionReduced.textContent = t("preferences.motionReduced");
+  if (prefMotionHint) prefMotionHint.textContent = t("preferences.motionHint");
   updateSoundToggleUi();
   languageSelect.setAttribute("aria-label", t("aria.language"));
   languageSelect.value = language;
@@ -1172,10 +1251,20 @@ function renderChrome() {
   });
 }
 
+function openPreferencesDialog() {
+  if (!preferencesDialog) return;
+  if (prefSoundCheckbox) prefSoundCheckbox.checked = uiPreferences.soundEnabled;
+  if (prefMotionSelect) prefMotionSelect.value = uiPreferences.motionPreference;
+  preferencesDialog.showModal();
+}
+
 function updateSoundToggleUi() {
   if (!soundToggle) return;
   soundToggle.textContent = studioAudio.enabled ? "🔊" : "🔇";
   soundToggle.classList.toggle("active", studioAudio.enabled);
+  if (prefSoundCheckbox) {
+    prefSoundCheckbox.checked = studioAudio.enabled;
+  }
 }
 
 function toggleSound() {

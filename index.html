@@ -20,8 +20,8 @@
           </div>
         </div>
         <nav class="mode-tabs" aria-label="主要模式">
-          <button class="tab-button" id="homeModeButton" type="button">首页</button>
-          <button class="tab-button active" id="editModeButton" type="button">编辑</button>
+          <button class="tab-button active" id="homeModeButton" type="button">首页</button>
+          <button class="tab-button" id="editModeButton" type="button">编辑</button>
           <button class="tab-button" id="quizModeButton" type="button">做题</button>
           <button class="tab-button" id="translationModeButton" type="button">翻译练习</button>
         </nav>
@@ -30,15 +30,16 @@
           <option value="en">English</option>
         </select>
         <button class="icon-button" id="soundToggle" type="button" title="切换物理音效" aria-label="切换物理音效">🔊</button>
+        <button class="icon-button" id="settingsToggle" type="button" title="偏好设置" aria-label="偏好设置">⚙️</button>
         <button class="icon-button" id="themeToggle" type="button" title="切换亮色和暗色背景" aria-label="切换亮色和暗色背景">◐</button>
       </header>
 
       <main id="mainContent" tabindex="-1">
-        <section class="workspace home-workspace hidden" id="homeView">
+        <section class="workspace home-workspace" id="homeView">
           <section class="tool-launcher-panel" id="homeLauncherPanel"></section>
         </section>
 
-        <section class="workspace edit-workspace" id="editorView">
+        <section class="workspace edit-workspace hidden" id="editorView">
           <aside class="side-panel">
             <section class="library-panel" id="libraryPanel"></section>
 
@@ -99,6 +100,34 @@
         </section>
       </main>
     </div>
+
+    <dialog id="preferencesDialog" class="preferences-dialog">
+      <div class="preferences-content">
+        <div class="preferences-header">
+          <h3 id="preferencesTitle">偏好设置</h3>
+          <button class="icon-button close-button" id="closePreferencesDialog" type="button" aria-label="关闭">&times;</button>
+        </div>
+        <div class="preferences-body">
+          <div class="preference-group">
+            <label class="preference-row">
+              <span id="prefSoundLabel">物理音效</span>
+              <input type="checkbox" id="prefSoundCheckbox">
+            </label>
+            <small class="meta-text" id="prefSoundHint">开启翻页轻响、笔触摩擦与印章钝击音效</small>
+          </div>
+          <div class="preference-group">
+            <label class="preference-row">
+              <span id="prefMotionLabel">动效偏好</span>
+              <select id="prefMotionSelect">
+                <option value="standard" id="prefMotionStandard">标准动效</option>
+                <option value="reduced" id="prefMotionReduced">减弱动效</option>
+              </select>
+            </label>
+            <small class="meta-text" id="prefMotionHint">遵循系统 prefers-reduced-motion，亦可在此主动减弱纸张翻动与盖章动效</small>
+          </div>
+        </div>
+      </div>
+    </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script type="module" src="src/app.js"></script>

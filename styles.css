@@ -1018,14 +1018,97 @@ button[disabled] {
   100% { transform: translateX(0) rotateY(0) scale(1); opacity: 1; }
 }
 
-@media (prefers-reduced-motion: reduce), [data-motion="reduced"] {
+@media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
+}
+
+[data-motion="reduced"] *,
+[data-motion="reduced"] *::before,
+[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* -------------------------------------------------------------
+   PREFERENCES DIALOG
+   ------------------------------------------------------------- */
+.preferences-dialog {
+  border: 1px solid var(--paper-border);
+  border-radius: 12px;
+  background: var(--paper-sheet);
+  color: var(--paper-text-main);
+  box-shadow: var(--paper-sheet-shadow);
+  padding: 0;
+  max-width: 440px;
+  width: calc(100% - 32px);
+  margin: auto;
+}
+
+.preferences-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.preferences-content {
+  padding: 20px 24px 24px;
+}
+
+.preferences-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--paper-line);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.preferences-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--paper-text-main);
+  margin: 0;
+}
+
+.preferences-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preference-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preference-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--paper-text-main);
+  cursor: pointer;
+}
+
+.preference-row select {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+.close-button {
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px;
 }
 
 /* -------------------------------------------------------------
