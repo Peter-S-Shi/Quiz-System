@@ -117,6 +117,17 @@ import {
   reassignPaperCategory,
   renameCategory,
 } from "./core/categories.js";
+import {
+  formatFileSize,
+  isSupportedAudioMime,
+  isSupportedImageMime,
+  normalizeAudioMetadata,
+  normalizeImageMetadata,
+  validateMediaFileCandidate,
+} from "./core/media-types.js";
+import { createDefaultMediaStore } from "./core/media-store.js";
+import { collectReferencedMediaIds, findOrphanedMediaIds } from "./core/media-references.js";
+import { createPortablePaperPackage, parsePortablePaperPackage } from "./core/paper-portability.js";
 import { makeId, parseTags, safeFileName } from "./core/utils.js";
 import { STORAGE_KEYS, loadJson, removeStoredValue, saveJson } from "./storage/local-storage.js";
 
@@ -290,6 +301,30 @@ const locales = {
       allTypes: "全部题型",
       evidenceSaved: "原始作答已作为独立学习记录保存在本机。",
       clearHistoryConfirm: "确定清空这套试卷的答题历史和对应原始作答记录吗？此操作无法撤销。",
+    },
+    media: {
+      image: "图片",
+      audio: "音频",
+      imageSection: "题目配图",
+      audioSection: "题目音频",
+      uploadImage: "+ 添加图片",
+      uploadAudio: "+ 添加音频",
+      replaceImage: "替换图片",
+      replaceAudio: "替换音频",
+      removeImage: "移除图片",
+      removeAudio: "移除音频",
+      altTextLabel: "图片说明 / Alt（可选）：",
+      altTextPlaceholder: "输入便于无障碍访问的图片文字说明...",
+      zoomHint: "点击放大",
+      zoomImage: "放大查看",
+      imageViewerTitle: "图片查看器",
+      zoomIn: "放大 (+)",
+      zoomOut: "缩小 (-)",
+      resetZoom: "重置 (1:1)",
+      closeViewer: "关闭 (Esc)",
+      unsupportedImageType: "不支持的图片格式。支持 PNG、JPEG、WebP、GIF、SVG。",
+      unsupportedAudioType: "不支持的音频格式。支持 MP3、WAV、OGG、WebM、AAC、M4A、FLAC。",
+      uploadFail: "媒体文件读取失败，请重试。",
     },
     question: {
       listTitle: "题目",
@@ -793,6 +828,30 @@ const locales = {
       evidenceSaved: "The original response is stored locally as a separate learning record.",
       clearHistoryConfirm: "Clear this paper's answer history and corresponding original response records? This cannot be undone.",
     },
+    media: {
+      image: "Image",
+      audio: "Audio",
+      imageSection: "Question Image",
+      audioSection: "Question Audio",
+      uploadImage: "+ Add Image",
+      uploadAudio: "+ Add Audio",
+      replaceImage: "Replace Image",
+      replaceAudio: "Replace Audio",
+      removeImage: "Remove Image",
+      removeAudio: "Remove Audio",
+      altTextLabel: "Alt Text / Description (optional):",
+      altTextPlaceholder: "Enter accessible description of image...",
+      zoomHint: "Click to zoom",
+      zoomImage: "Zoom Image",
+      imageViewerTitle: "Image Viewer",
+      zoomIn: "Zoom In (+)",
+      zoomOut: "Zoom Out (-)",
+      resetZoom: "Reset (1:1)",
+      closeViewer: "Close (Esc)",
+      unsupportedImageType: "Unsupported image format. Supported formats: PNG, JPEG, WebP, GIF, SVG.",
+      unsupportedAudioType: "Unsupported audio format. Supported formats: MP3, WAV, OGG, WebM, AAC, M4A, FLAC.",
+      uploadFail: "Failed to read media file, please try again.",
+    },
     question: {
       listTitle: "Questions",
       emptyList: "No questions yet",
@@ -1236,6 +1295,54 @@ const importInput = document.getElementById("importInput");
 const importLabelText = document.getElementById("importLabelText");
 const toast = document.getElementById("toast");
 
+const mediaStore = createDefaultMediaStore();
+const mediaBlobUrlCache = new Map();
+
+async function getOrResolveMediaUrl(assetId) {
+  if (!assetId) return "";
+  if (mediaBlobUrlCache.has(assetId)) {
+    return mediaBlobUrlCache.get(assetId);
+  }
+  try {
+    const asset = await mediaStore.getMediaAsset(assetId);
+    if (!asset || !asset.blob) return "";
+    const url = URL.createObjectURL(asset.blob);
+    mediaBlobUrlCache.set(assetId, url);
+    return url;
+  } catch {
+    return "";
+  }
+}
+
+const imageViewerDialog = document.getElementById("imageViewerDialog");
+const closeImageViewerDialog = document.getElementById("closeImageViewerDialog");
+const imageViewerTitle = document.getElementById("imageViewerTitle");
+const imageViewerZoomLevel = document.getElementById("imageViewerZoomLevel");
+const imageViewerZoomIn = document.getElementById("imageViewerZoomIn");
+const imageViewerZoomOut = document.getElementById("imageViewerZoomOut");
+const imageViewerResetZoom = document.getElementById("imageViewerResetZoom");
+const imageViewerImg = document.getElementById("imageViewerImg");
+
+let currentViewerZoom = 1.0;
+
+function openImageViewer(src, alt = "") {
+  if (!imageViewerDialog || !imageViewerImg) return;
+  currentViewerZoom = 1.0;
+  imageViewerImg.src = src;
+  imageViewerImg.alt = alt || "Enlarged question image";
+  imageViewerImg.style.transform = `scale(${currentViewerZoom})`;
+  if (imageViewerZoomLevel) imageViewerZoomLevel.textContent = "100%";
+  if (imageViewerTitle) imageViewerTitle.textContent = t("media.imageViewerTitle");
+  imageViewerDialog.showModal();
+}
+
+function setViewerZoom(zoom) {
+  const clamped = Math.max(0.25, Math.min(4.0, Math.round(zoom * 100) / 100));
+  currentViewerZoom = clamped;
+  if (imageViewerImg) imageViewerImg.style.transform = `scale(${currentViewerZoom})`;
+  if (imageViewerZoomLevel) imageViewerZoomLevel.textContent = `${Math.round(currentViewerZoom * 100)}%`;
+}
+
 init();
 
 function init() {
@@ -1459,6 +1566,29 @@ function bindGlobalEvents() {
 
   document.querySelectorAll("[data-add-type]").forEach((button) => {
     button.addEventListener("click", () => addQuestion(button.dataset.addType));
+  });
+
+  imageViewerZoomIn?.addEventListener("click", () => setViewerZoom(currentViewerZoom + 0.25));
+  imageViewerZoomOut?.addEventListener("click", () => setViewerZoom(currentViewerZoom - 0.25));
+  imageViewerResetZoom?.addEventListener("click", () => setViewerZoom(1.0));
+  closeImageViewerDialog?.addEventListener("click", () => imageViewerDialog?.close());
+  imageViewerDialog?.addEventListener("click", (event) => {
+    if (event.target === imageViewerDialog) imageViewerDialog.close();
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (imageViewerDialog && imageViewerDialog.open) {
+      if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        setViewerZoom(currentViewerZoom + 0.25);
+      } else if (e.key === "-" || e.key === "_") {
+        e.preventDefault();
+        setViewerZoom(currentViewerZoom - 0.25);
+      } else if (e.key === "0") {
+        e.preventDefault();
+        setViewerZoom(1.0);
+      }
+    }
   });
 
   exportButton.addEventListener("click", exportPaper);
@@ -2099,6 +2229,7 @@ function renderQuestionEditor() {
           </label>
         </div>
       </div>
+      ${renderQuestionMediaEditor(question)}
       <div class="answer-section" id="answerEditor">
         ${renderAnswerEditor(question)}
       </div>
@@ -2118,7 +2249,216 @@ function renderQuestionEditor() {
 
   document.getElementById("duplicateQuestion").addEventListener("click", () => duplicateQuestion(question.id));
   document.getElementById("deleteQuestion").addEventListener("click", () => deleteQuestion(question.id));
+  bindQuestionMediaEditor(question);
   bindAnswerEditor(question);
+}
+
+function renderQuestionMediaEditor(question) {
+  const hasImage = Boolean(question.image?.id);
+  const hasAudio = Boolean(question.audio?.id);
+
+  return `
+    <div class="question-media-section">
+      <!-- Image Box -->
+      <div class="media-box" id="imageMediaBox">
+        <div class="media-box-header">
+          <span class="media-box-title">🖼 ${t("media.imageSection")}</span>
+          ${hasImage ? `
+            <div class="media-actions-row">
+              <label class="small-button secondary-button media-upload-btn" title="${t("media.replaceImage")}">
+                <span>${t("media.replaceImage")}</span>
+                <input type="file" id="replaceQuestionImageInput" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml">
+              </label>
+              <button class="small-button danger-button" type="button" id="removeQuestionImage">${t("media.removeImage")}</button>
+            </div>
+          ` : ""}
+        </div>
+        ${hasImage ? `
+          <div class="media-preview-container">
+            <div class="media-img-preview-wrapper">
+              <img id="questionImagePreview" class="media-preview-img" src="" alt="${escapeHtml(question.image.alt || question.image.name)}">
+            </div>
+            <div class="media-info-row">
+              <span class="media-file-name" title="${escapeHtml(question.image.name)}">${escapeHtml(question.image.name)}</span>
+              <span>${formatFileSize(question.image.size)}</span>
+            </div>
+            <label>
+              <span class="meta-text">${t("media.altTextLabel")}</span>
+              <input type="text" id="questionImageAltInput" class="media-alt-input" value="${escapeHtml(question.image.alt || "")}" placeholder="${t("media.altTextPlaceholder")}">
+            </label>
+          </div>
+        ` : `
+          <div class="media-empty-state">
+            <label class="secondary-button media-upload-btn">
+              <span>${t("media.uploadImage")}</span>
+              <input type="file" id="uploadQuestionImageInput" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml">
+            </label>
+          </div>
+        `}
+      </div>
+
+      <!-- Audio Box -->
+      <div class="media-box" id="audioMediaBox">
+        <div class="media-box-header">
+          <span class="media-box-title">🎵 ${t("media.audioSection")}</span>
+          ${hasAudio ? `
+            <div class="media-actions-row">
+              <label class="small-button secondary-button media-upload-btn" title="${t("media.replaceAudio")}">
+                <span>${t("media.replaceAudio")}</span>
+                <input type="file" id="replaceQuestionAudioInput" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm,audio/aac,audio/m4a,audio/flac">
+              </label>
+              <button class="small-button danger-button" type="button" id="removeQuestionAudio">${t("media.removeAudio")}</button>
+            </div>
+          ` : ""}
+        </div>
+        ${hasAudio ? `
+          <div class="media-preview-container">
+            <audio id="questionAudioPreview" controls preload="metadata" style="width:100%; height:36px;"></audio>
+            <div class="media-info-row">
+              <span class="media-file-name" title="${escapeHtml(question.audio.name)}">${escapeHtml(question.audio.name)}</span>
+              <span>${formatFileSize(question.audio.size)}</span>
+            </div>
+          </div>
+        ` : `
+          <div class="media-empty-state">
+            <label class="secondary-button media-upload-btn">
+              <span>${t("media.uploadAudio")}</span>
+              <input type="file" id="uploadQuestionAudioInput" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm,audio/aac,audio/m4a,audio/flac">
+            </label>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function bindQuestionMediaEditor(question) {
+  if (question.image?.id) {
+    getOrResolveMediaUrl(question.image.id).then((url) => {
+      const preview = document.getElementById("questionImagePreview");
+      if (preview && url) preview.src = url;
+    });
+
+    const altInput = document.getElementById("questionImageAltInput");
+    altInput?.addEventListener("input", (e) => {
+      if (question.image) {
+        question.image.alt = e.target.value;
+        savePaper({ clearSession: false });
+      }
+    });
+
+    const removeImgBtn = document.getElementById("removeQuestionImage");
+    removeImgBtn?.addEventListener("click", () => {
+      delete question.image;
+      savePaper({ clearSession: false });
+      renderQuestionEditor();
+    });
+
+    const replaceImgInput = document.getElementById("replaceQuestionImageInput");
+    replaceImgInput?.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleQuestionImageUpload(question, file);
+    });
+  } else {
+    const uploadImgInput = document.getElementById("uploadQuestionImageInput");
+    uploadImgInput?.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleQuestionImageUpload(question, file);
+    });
+  }
+
+  if (question.audio?.id) {
+    getOrResolveMediaUrl(question.audio.id).then((url) => {
+      const preview = document.getElementById("questionAudioPreview");
+      if (preview && url) preview.src = url;
+    });
+
+    const removeAudBtn = document.getElementById("removeQuestionAudio");
+    removeAudBtn?.addEventListener("click", () => {
+      delete question.audio;
+      savePaper({ clearSession: false });
+      renderQuestionEditor();
+    });
+
+    const replaceAudInput = document.getElementById("replaceQuestionAudioInput");
+    replaceAudInput?.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleQuestionAudioUpload(question, file);
+    });
+  } else {
+    const uploadAudInput = document.getElementById("uploadQuestionAudioInput");
+    uploadAudInput?.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleQuestionAudioUpload(question, file);
+    });
+  }
+}
+
+async function handleQuestionImageUpload(question, file) {
+  if (!file) return;
+  const validation = validateMediaFileCandidate(file, "image");
+  if (!validation.valid) {
+    showToast(t(validation.error || "media.unsupportedImageType"));
+    return;
+  }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const assetId = `img-${makeId()}`;
+    await mediaStore.saveMediaAsset({
+      id: assetId,
+      mimeType: validation.normalizedMime || file.type || "image/png",
+      name: file.name || "image.png",
+      size: file.size || arrayBuffer.byteLength,
+      data: arrayBuffer,
+    });
+
+    question.image = {
+      id: assetId,
+      mimeType: validation.normalizedMime || file.type || "image/png",
+      name: file.name || "image.png",
+      size: file.size || arrayBuffer.byteLength,
+      alt: question.image?.alt || "",
+    };
+
+    savePaper({ clearSession: false });
+    renderQuestionEditor();
+  } catch {
+    showToast(t("media.uploadFail"));
+  }
+}
+
+async function handleQuestionAudioUpload(question, file) {
+  if (!file) return;
+  const validation = validateMediaFileCandidate(file, "audio");
+  if (!validation.valid) {
+    showToast(t(validation.error || "media.unsupportedAudioType"));
+    return;
+  }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const assetId = `aud-${makeId()}`;
+    await mediaStore.saveMediaAsset({
+      id: assetId,
+      mimeType: validation.normalizedMime || file.type || "audio/mpeg",
+      name: file.name || "audio.mp3",
+      size: file.size || arrayBuffer.byteLength,
+      data: arrayBuffer,
+    });
+
+    question.audio = {
+      id: assetId,
+      mimeType: validation.normalizedMime || file.type || "audio/mpeg",
+      name: file.name || "audio.mp3",
+      size: file.size || arrayBuffer.byteLength,
+    };
+
+    savePaper({ clearSession: false });
+    renderQuestionEditor();
+  } catch {
+    showToast(t("media.uploadFail"));
+  }
 }
 
 function renderAnswerEditor(question) {
@@ -2474,6 +2814,7 @@ function renderCurrentQuestion() {
         <span class="type-pill">${typeLabel(question.type)}</span>
         <h2>${escapeHtml(question.prompt || t("question.unnamed"))}</h2>
       </div>
+      ${renderQuestionMediaView(question)}
       ${!isSubmitAtEnd && session.feedback ? renderFeedback(session.feedback) : ""}
       <div class="answer-list">
         ${renderQuizAnswer(question)}
@@ -2494,6 +2835,7 @@ function renderCurrentQuestion() {
     </div>
   `;
 
+  bindQuestionMediaView(question);
   bindQuizAnswer(question);
   document.getElementById("quitQuiz").addEventListener("click", () => {
     persistSession();
@@ -2513,6 +2855,58 @@ function renderCurrentQuestion() {
     } else {
       document.getElementById("submitAnswer").addEventListener("click", submitCurrentAnswer);
     }
+  }
+}
+
+function renderQuestionMediaView(question) {
+  const hasImage = Boolean(question.image?.id);
+  const hasAudio = Boolean(question.audio?.id);
+  if (!hasImage && !hasAudio) return "";
+
+  return `
+    <div class="question-media-stack">
+      ${hasImage ? `
+        <div class="question-image-box">
+          <div class="question-image-wrapper" id="quizQuestionImageWrapper" role="button" tabindex="0" title="${t("media.zoomHint")}" aria-label="${escapeHtml(question.image.alt || t("media.zoomImage"))}">
+            <img id="quizQuestionImage" class="question-image" src="" alt="${escapeHtml(question.image.alt || question.image.name)}">
+            <span class="image-zoom-badge">🔍 ${t("media.zoomHint")}</span>
+          </div>
+          ${question.image.alt ? `<span class="question-image-alt">${escapeHtml(question.image.alt)}</span>` : ""}
+        </div>
+      ` : ""}
+      ${hasAudio ? `
+        <div class="question-audio-box">
+          <audio id="quizQuestionAudio" class="question-audio-player" controls preload="auto"></audio>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function bindQuestionMediaView(question) {
+  if (question.image?.id) {
+    getOrResolveMediaUrl(question.image.id).then((url) => {
+      const img = document.getElementById("quizQuestionImage");
+      if (img && url) {
+        img.src = url;
+        const wrapper = document.getElementById("quizQuestionImageWrapper");
+        const onOpen = () => openImageViewer(url, question.image.alt || question.image.name);
+        wrapper?.addEventListener("click", onOpen);
+        wrapper?.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen();
+          }
+        });
+      }
+    });
+  }
+
+  if (question.audio?.id) {
+    getOrResolveMediaUrl(question.audio.id).then((url) => {
+      const audio = document.getElementById("quizQuestionAudio");
+      if (audio && url) audio.src = url;
+    });
   }
 }
 
@@ -2783,6 +3177,12 @@ function renderResults() {
                 <span class="type-pill">${typeLabel(question.type)}</span>
               </div>
               <strong class="review-question-prompt">${index + 1}. ${escapeHtml(question.prompt)}</strong>
+              ${(question.image || question.audio) ? `
+                <div class="review-media-preview" data-review-media="${question.id}">
+                  ${question.image ? `<img class="review-thumb-img" data-review-zoom="${question.image.id}" data-review-alt="${escapeHtml(question.image.alt || question.image.name)}" src="" alt="${escapeHtml(question.image.alt || question.image.name)}" title="${t("media.zoomHint")}">` : ""}
+                  ${question.audio ? `<audio class="review-audio-inline" controls data-review-audio="${question.audio.id}" preload="none"></audio>` : ""}
+                </div>
+              ` : ""}
               <div class="answer-compare">
                 ${question.type === "matching" ? `
                   <div class="matching-review-list">
@@ -2830,6 +3230,24 @@ function renderResults() {
       </div>
     </div>
   `;
+
+  quizPanel.querySelectorAll("[data-review-zoom]").forEach((img) => {
+    const assetId = img.dataset.reviewZoom;
+    const alt = img.dataset.reviewAlt;
+    getOrResolveMediaUrl(assetId).then((url) => {
+      if (url) {
+        img.src = url;
+        img.addEventListener("click", () => openImageViewer(url, alt));
+      }
+    });
+  });
+
+  quizPanel.querySelectorAll("[data-review-audio]").forEach((aud) => {
+    const assetId = aud.dataset.reviewAudio;
+    getOrResolveMediaUrl(assetId).then((url) => {
+      if (url) aud.src = url;
+    });
+  });
 
   document.getElementById("backToEditorAfterResult").addEventListener("click", () => setMode("edit"));
   document.getElementById("exportResponseAfterResult").addEventListener("click", () => exportLearnerResponse(learnerResponse.id));
@@ -2983,38 +3401,68 @@ function createDefaultPaper() {
   };
 }
 
-function exportPaper() {
-  downloadJson(normalizePaper(paper), `${safeFileName(paper.title || "quiz-paper")}.json`);
+async function exportPaper() {
+  try {
+    const normalized = normalizePaper(paper);
+    const assetIds = collectReferencedMediaIds({ activePaper: normalized });
+    const assets = await mediaStore.exportMediaAssets(Array.from(assetIds));
+    const pkg = createPortablePaperPackage(normalized, assets);
+    downloadJson(pkg, `${safeFileName(paper.title || "quiz-paper")}.json`);
+  } catch (err) {
+    showToast(t("toast.exportFail") || "Export failed");
+  }
 }
 
 function importPaper(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  readJsonFile(file, (imported) => {
-    if (!Array.isArray(imported.questions)) throw new Error("Invalid paper");
-    const nextPaper = normalizePaper({ ...imported, id: makeId(), createdAt: undefined, updatedAt: undefined, lastOpenedAt: undefined });
-    library.papers.push(nextPaper);
-    activePaperId = nextPaper.id;
-    localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
-    selectedQuestionId = nextPaper.questions[0]?.id ?? null;
-    clearActiveSession();
-    saveLibrary();
-    renderAll();
-    showToast(t("library.paperImported"));
+  readJsonFile(file, async (imported) => {
+    try {
+      const { paper: parsedPaper, assets } = parsePortablePaperPackage(imported);
+      if (assets.length) {
+        await mediaStore.importMediaAssets(assets);
+      }
+      const nextPaper = normalizePaper({
+        ...parsedPaper,
+        id: makeId(),
+        createdAt: undefined,
+        updatedAt: undefined,
+        lastOpenedAt: undefined,
+      });
+      library.papers.push(nextPaper);
+      activePaperId = nextPaper.id;
+      localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+      selectedQuestionId = nextPaper.questions[0]?.id ?? null;
+      editSidebarLevel = "questions";
+      clearActiveSession();
+      saveLibrary();
+      renderAll();
+      showToast(t("library.paperImported"));
+    } catch {
+      showToast(t("toast.importFail"));
+    }
   }, () => showToast(t("toast.importFail")));
 
   event.target.value = "";
 }
 
-function exportLibraryBackup() {
+async function exportLibraryBackup() {
   try {
+    const referencedIds = collectReferencedMediaIds({
+      library,
+      learnerResponses: loadLearnerResponses(),
+      session: loadActiveSession(),
+    });
+    const mediaAssets = await mediaStore.exportMediaAssets(Array.from(referencedIds));
+
     const backup = createLibraryBackup({
       library,
       history: loadHistory(),
       learnerResponses: loadLearnerResponses(),
       teacherReviews: loadTeacherReviews(),
       translationLibrary: loadTranslationLibrary(),
+      mediaAssets,
     });
     downloadJson(backup, `quiz-studio-backup-${new Date().toISOString().slice(0, 10)}.json`);
   } catch {
@@ -3026,37 +3474,48 @@ function importLibraryBackup(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  readJsonFile(file, (imported) => {
-    if (imported.library?.papers?.length) {
-      const restored = parseLibraryBackup(imported, { createDefaultPaper });
-      if (restored.hasLearnerResponses) saveJson(LEARNER_RESPONSES_KEY, restored.learnerResponses);
-      if (restored.hasTeacherReviews) saveJson(TEACHER_REVIEWS_KEY, restored.teacherReviews);
-      if (restored.hasTranslationLibrary) {
-        saveJson(TRANSLATION_LIBRARY_KEY, restored.translationLibrary);
-        translationLibrary = restored.translationLibrary;
-        if (!translationLibrary.documents.some((doc) => doc.id === selectedTranslationDocumentId)) {
-          selectedTranslationDocumentId = translationLibrary.documents[0]?.id || null;
+  readJsonFile(file, async (imported) => {
+    try {
+      if (imported.library?.papers?.length) {
+        const restored = parseLibraryBackup(imported, { createDefaultPaper });
+        if (restored.mediaAssets?.length) {
+          await mediaStore.importMediaAssets(restored.mediaAssets);
         }
+        if (restored.hasLearnerResponses) saveJson(LEARNER_RESPONSES_KEY, restored.learnerResponses);
+        if (restored.hasTeacherReviews) saveJson(TEACHER_REVIEWS_KEY, restored.teacherReviews);
+        if (restored.hasTranslationLibrary) {
+          saveJson(TRANSLATION_LIBRARY_KEY, restored.translationLibrary);
+          translationLibrary = restored.translationLibrary;
+          if (!translationLibrary.documents.some((doc) => doc.id === selectedTranslationDocumentId)) {
+            selectedTranslationDocumentId = translationLibrary.documents[0]?.id || null;
+          }
+        }
+        saveJson(HISTORY_KEY, restored.history);
+        library = restored.library;
+        activePaperId = library.papers[0].id;
+        localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+        showToast(t("library.backupImported"));
+      } else if (Array.isArray(imported.questions) || (imported.documentType === "quiz-studio.quiz-paper" && imported.paper)) {
+        const { paper: parsedPaper, assets } = parsePortablePaperPackage(imported);
+        if (assets.length) {
+          await mediaStore.importMediaAssets(assets);
+        }
+        const nextPaper = normalizePaper({ ...parsedPaper, id: makeId() });
+        library.papers.push(nextPaper);
+        activePaperId = nextPaper.id;
+        localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
+        showToast(t("library.paperImported"));
+      } else {
+        throw new Error("Invalid backup");
       }
-      saveJson(HISTORY_KEY, restored.history);
-      library = restored.library;
-      activePaperId = library.papers[0].id;
-      localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
-      showToast(t("library.backupImported"));
-    } else if (Array.isArray(imported.questions)) {
-      const nextPaper = normalizePaper({ ...imported, id: makeId() });
-      library.papers.push(nextPaper);
-      activePaperId = nextPaper.id;
-      localStorage.setItem(ACTIVE_PAPER_KEY, activePaperId);
-      showToast(t("library.paperImported"));
-    } else {
-      throw new Error("Invalid backup");
+      paper = getActivePaper();
+      selectedQuestionId = paper.questions[0]?.id ?? null;
+      clearActiveSession();
+      saveLibrary();
+      renderAll();
+    } catch {
+      showToast(t("library.backupImportFail"));
     }
-    paper = getActivePaper();
-    selectedQuestionId = paper.questions[0]?.id ?? null;
-    clearActiveSession();
-    saveLibrary();
-    renderAll();
   }, () => showToast(t("library.backupImportFail")));
 
   event.target.value = "";

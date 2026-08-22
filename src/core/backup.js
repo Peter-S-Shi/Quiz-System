@@ -10,6 +10,7 @@ export function createLibraryBackup({
   learnerResponses,
   teacherReviews,
   translationLibrary,
+  mediaAssets = [],
   exportedAt = new Date().toISOString(),
 }) {
   const parsedLearnerResponses = parseLearnerResponseCollection(learnerResponses);
@@ -22,6 +23,7 @@ export function createLibraryBackup({
     learnerResponses: parsedLearnerResponses,
     teacherReviews: parseTeacherReviewCollection(teacherReviews, { learnerResponses: parsedLearnerResponses }),
     translationLibrary: parseTranslationLibrary(translationLibrary),
+    mediaAssets: Array.isArray(mediaAssets) ? structuredClone(mediaAssets) : [],
   };
 }
 
@@ -39,6 +41,7 @@ export function parseLibraryBackup(value, options = {}) {
   const learnerResponses = hasLearnerResponses ? parseLearnerResponseCollection(value.learnerResponses) : [];
   const teacherReviews = hasTeacherReviews ? parseTeacherReviewCollection(value.teacherReviews, { learnerResponses }) : [];
   const translationLibrary = hasTranslationLibrary ? parseTranslationLibrary(value.translationLibrary) : parseTranslationLibrary(null);
+  const mediaAssets = Array.isArray(value.mediaAssets) ? structuredClone(value.mediaAssets) : (Array.isArray(value.assets) ? structuredClone(value.assets) : []);
 
   // Cross-record integrity check: a remediation Translation Document's provenance must resolve
   // against this same backup's Learner Response/Teacher Review collections before any state is
@@ -61,5 +64,6 @@ export function parseLibraryBackup(value, options = {}) {
     teacherReviews,
     hasTranslationLibrary,
     translationLibrary,
+    mediaAssets,
   };
 }

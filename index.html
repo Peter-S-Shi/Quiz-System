@@ -185,6 +185,26 @@
       </div>
     </dialog>
 
+    <dialog id="imageViewerDialog" class="image-viewer-dialog">
+      <div class="image-viewer-content">
+        <div class="image-viewer-toolbar">
+          <div class="image-viewer-title-group">
+            <span class="image-viewer-title" id="imageViewerTitle">图片查看器</span>
+            <span class="image-viewer-zoom-level" id="imageViewerZoomLevel">100%</span>
+          </div>
+          <div class="image-viewer-actions">
+            <button class="icon-button zoom-btn" id="imageViewerZoomOut" type="button" title="缩小 (-)" aria-label="缩小">−</button>
+            <button class="icon-button zoom-btn" id="imageViewerResetZoom" type="button" title="重置缩放 (0)" aria-label="重置缩放">1:1</button>
+            <button class="icon-button zoom-btn" id="imageViewerZoomIn" type="button" title="放大 (+)" aria-label="放大">+</button>
+            <button class="icon-button close-button" id="closeImageViewerDialog" type="button" title="关闭 (Esc)" aria-label="关闭">&times;</button>
+          </div>
+        </div>
+        <div class="image-viewer-stage" id="imageViewerStage">
+          <img id="imageViewerImg" src="" alt="Enlarged question image" class="image-viewer-image">
+        </div>
+      </div>
+    </dialog>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script type="module" src="src/app.js"></script>
   </body>

@@ -6,17 +6,19 @@ Pre-Freeze V1 Scope Closure
 
 ## Current Milestone
 
-Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style Categories & Progressive Navigation) — completed and accepted (Human Gate B = PASS). Next step: merge PR #16, then begin Pre-Freeze V1 Scope Closure · Batch C (Objective Question Media).
+Pre-Freeze V1 Scope Closure · Batch C: Objective Question Media (Image & Audio) — implemented and ready for Human Gate C evaluation.
 
-This workstream delivers the second pre-freeze scope closure package:
-1. **Progressive Single-Level Sidebar Navigation**: Refactors the Edit sidebar into a clean progressive single-level model (Level 1 Categories → Level 2 Papers → Level 3 Questions) with breadcrumb back-navigation, reducing cognitive load.
-2. **Library Organization & Category Navigation**: Collection-style Category navigation in the Quiz Library sidebar (All Papers with total count, user-created Categories with counts and rename/delete actions, Uncategorized with count, and `+ New Category`).
-3. **Category Management & Scoped Search**: Supports creating categories, reserved name protection (`__ALL__`, `__UNCATEGORIZED__`, `__NEW_CATEGORY__`), collision-safe renaming without merging, empty category persistence across reloads/backups, search queries scoped to the selected category, and category-aware paper reassignment.
-4. **Polished Deletion Modal & Safe Contract**: Implements single confirmation for empty categories, polished Study Desk design system 3-way modal selection for populated categories (Cancel / Delete Category Only / Delete Category + Papers with explicit destructive confirmation), and safe active paper fallback.
-5. **Data & Backup Compatibility**: Seamlessly incorporates legacy category strings, preserves categories in full backup JSON, and maintains tag independence.
-6. **Human Gate B Acceptance**: 7 verification journeys evaluated and passed by Product Owner (Human Gate B = PASS). Automated tests: 259 passing (0 failed, 0 skipped).
+This workstream delivers the third pre-freeze scope closure package:
+1. **Objective Question Media Support across all 5 Types**: Single Choice, Multiple Choice, Fill-in-the-Blank, True/False, and Matching question types all support optional Image, Audio, or dual Image + Audio attachments.
+2. **Local-Only Media Storage Architecture**: Uses an IndexedDB-backed binary Media Asset Store (`quiz-studio-media-db` / `media_assets` object store) linked with stable UUID references in Question JSON, ensuring zero network calls and full offline capability.
+3. **Image Authoring, Preview, and Accessibility**: Local image upload (PNG, JPEG, WebP, GIF, SVG), thumbnail preview, replace, remove, and accessible Alt text description editing in the Question Editor.
+4. **Interactive Image Viewer & Modal Zoom Controls**: Responsive modal viewer (`#imageViewerDialog`) with Zoom In (`+`), Zoom Out (`-`), Reset (`1:1`), Close (`✕`), and keyboard navigation (`+`, `-`, `0`, `Esc`).
+5. **Audio Authoring and Practice Player**: Local audio upload (MP3, WAV, OGG, WebM, AAC, M4A, FLAC), in-editor preview, and in-question player with play/pause, seek/scrub, and unlimited replay (V1 unrestricted; per-paper playback restrictions remain V2 deferred).
+6. **Single-Paper Portability & Full Backup/Restore**: Self-contained export/import envelopes (`quiz-studio.quiz-paper` v2) with bundled base64 media payloads, IndexedDB synchronization on import, full library backup with `mediaAssets`, and seamless backward compatibility with legacy text-only JSON.
+7. **Evidence Immutability & Historical Snapshot Safety**: Active session snapshots, finalized Learner Response snapshots, and review screen thumbnail rendering with click-to-zoom.
+8. **Permanent QA Sample Paper & Bilingual Human Gate Guides**: Verified sample package in `manual-qa/media-sample/` and 7-journey bilingual verification guides in `manual-qa/human-gate-c.md` and `manual-qa/human-gate-c.zh-CN.md`.
 
-It follows Batch A (Practice Feedback Modes & Special Practice IA, Human Gate A = PASS) and precedes Batch C (Question Media: image/audio) and the subsequent Whole-Product Feature Complete Review V3.
+It follows Batch A (Practice Feedback Modes & Special Practice IA, Human Gate A = PASS) and Batch B (Library Organization & Progressive Navigation, Human Gate B = PASS) and precedes the subsequent Whole-Product Feature Complete Review V3.
 
 ## Pre-Freeze UI Productization Milestone Summary (Historical Baseline)
 
@@ -24,12 +26,12 @@ It follows Batch A (Practice Feedback Modes & Special Practice IA, Human Gate A 
 - **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, resizable sidebars, and persistent UI preferences (theme, sound effects, motion preference, sidebar width).
 - **Core Learning Surfaces**: Rebuilt Objective Quiz and Translation Practice into continuous laid paper sheets resting on the study desk, with organic page-turn transitions, pencil stroke sounds, and granular per-pair matching feedback with inline correction hints.
 - **Teacher Marking Desk**: Rebuilt Correction Workspace into a continuous paper manuscript with pen marking tray, live projection, and tactile rubber stamp feedback with stamp thud audio.
-- **Offline & Verification Closure**: 239 total tests (238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed), including UI preferences persistence, lightweight preferences dialog, and complete Service Worker ESM precache closure.
-- **Human Acceptance Gate**: Final Human Acceptance Gate has been executed and passed (PASS).
+- **Offline & Verification Closure**: Complete Service Worker ESM precache closure covering all runtime modules and schemas.
+- **Human Acceptance Gates**: Human Acceptance Gate for UI Productization (PASS), Batch A Human Gate A (PASS), and Batch B Human Gate B (PASS).
 
 ## Acceptance Policy (Historical Record)
 
-Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) has now been executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06) and Batch B Human Gate B (Journeys 01–07) have both been formally evaluated and passed (PASS).
+Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) has now been executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06) and Batch B Human Gate B (Journeys 01–07) have both been formally evaluated and passed (PASS). Batch C Human Gate C (Journeys 01–07) is now pending evaluation.
 
 ## Current Release Scope
 
@@ -67,10 +69,10 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 
 ## Verification Status
 
-- 259 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, category registry management, empty category persistence, category rename propagation, safe category deletion contract, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
-- **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes (Instant Feedback vs. Submit at End with explicit submit confirmations) and Special Practice information architecture (`Special Practice -> Translation`) implemented and verified (Human Gate A = **PASS**).
-- **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation (Level 1 Categories → Level 2 Papers → Level 3 Questions), and safe deletion modal implemented and verified with tests in `tests/categories.test.js` (Batch B = complete and accepted).
-- **Human Gate B Acceptance**: All 7 verification journeys in `manual-qa/human-gate-b.md` and `manual-qa/human-gate-b.zh-CN.md` have been evaluated and passed by the Product Owner (Human Gate B = **PASS**).
+- 269 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, category registry management, empty category persistence, category rename propagation, safe category deletion contract, media types validation, Media Asset Store operations, reference collection & orphan detection, single-paper portability packaging, media-aware backup/restore, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
+- **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes and Special Practice information architecture implemented and verified (Human Gate A = **PASS**).
+- **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation, and safe deletion modal implemented and verified (Human Gate B = **PASS**).
+- **Pre-Freeze V1 Scope Closure (Batch C)**: Objective Question Media (Image & Audio across all 5 types, IndexedDB store, Image Viewer modal, in-question player, portability, backup/restore, evidence preservation) implemented and ready for evaluation (Human Gate C = **PENDING EVALUATION**).
 
 ## Agreed Question Media Policy (Batch C Scope Definition)
 
@@ -118,8 +120,8 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 
 ## Next Engineering Objective
 
-1. **Merge Batch B**: Merge PR #16 (`feature/pre-freeze-scope-batch-b`) into `main`.
-2. **Pre-Freeze Scope Closure · Batch C**: Implement Objective Question Media (optional image and/or audio across all 5 question types, image zoom viewing, in-question audio player bar).
+1. **Human Gate C Evaluation**: Human verification of Objective Question Media capabilities using `manual-qa/human-gate-c.md` and `manual-qa/human-gate-c.zh-CN.md`.
+2. **Batch C Closure & PR #17 Merge**: Record Human Gate C verdict in governance files, verify checks, and merge PR #17 (`feature/pre-freeze-scope-batch-c`) into `main`.
 3. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and recommend entering Feature Freeze.
 4. **Milestone 7 Product Hardening**: Enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
 
@@ -127,9 +129,8 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline before M6.7: `61cd16f Record M6.6 merge into main` (`main`)
-- M6.7 merge commit: `d6a5327 M6.7: History, Retry, Portability, and Whole-Product Integration (#6)` (`main`) — squash of the main implementation, the PR/CI status update, and the deletion-integrity closure patch
+- Verified baseline before Batch C: `fb9ff72 Merge pull request #16 from codex/feature/pre-freeze-scope-batch-b` (`main`)
+- Current working branch: `feature/pre-freeze-scope-batch-c` for Batch C
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
-- Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; PR #11 merged as `6b38c40`, and the BAT CRLF follow-up PR #12 merged as `6643a1b`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #15 (`feature/pre-freeze-scope-batch-a`) merged into `main`. Current working branch is `feature/pre-freeze-scope-batch-b` for Batch B.
+- Pull request status: PR #16 merged into `main`. PR #17 to be opened for `feature/pre-freeze-scope-batch-c`.
