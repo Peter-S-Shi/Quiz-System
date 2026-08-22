@@ -6,7 +6,7 @@ Pre-Freeze V1 Scope Closure
 
 ## Current Milestone
 
-Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style Categories & Progressive Navigation) — implemented and verified; ready for Human Gate B evaluation
+Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style Categories & Progressive Navigation) — completed and accepted (Human Gate B = PASS). Next step: merge PR #16, then begin Pre-Freeze V1 Scope Closure · Batch C (Objective Question Media).
 
 This workstream delivers the second pre-freeze scope closure package:
 1. **Progressive Single-Level Sidebar Navigation**: Refactors the Edit sidebar into a clean progressive single-level model (Level 1 Categories → Level 2 Papers → Level 3 Questions) with breadcrumb back-navigation, reducing cognitive load.
@@ -14,7 +14,7 @@ This workstream delivers the second pre-freeze scope closure package:
 3. **Category Management & Scoped Search**: Supports creating categories, reserved name protection (`__ALL__`, `__UNCATEGORIZED__`, `__NEW_CATEGORY__`), collision-safe renaming without merging, empty category persistence across reloads/backups, search queries scoped to the selected category, and category-aware paper reassignment.
 4. **Polished Deletion Modal & Safe Contract**: Implements single confirmation for empty categories, polished Study Desk design system 3-way modal selection for populated categories (Cancel / Delete Category Only / Delete Category + Papers with explicit destructive confirmation), and safe active paper fallback.
 5. **Data & Backup Compatibility**: Seamlessly incorporates legacy category strings, preserves categories in full backup JSON, and maintains tag independence.
-6. **Human Gate B**: Verification guide updated in `manual-qa/human-gate-b.md` and `manual-qa/human-gate-b.zh-CN.md`.
+6. **Human Gate B Acceptance**: 7 verification journeys evaluated and passed by Product Owner (Human Gate B = PASS). Automated tests: 259 passing (0 failed, 0 skipped).
 
 It follows Batch A (Practice Feedback Modes & Special Practice IA, Human Gate A = PASS) and precedes Batch C (Question Media: image/audio) and the subsequent Whole-Product Feature Complete Review V3.
 
@@ -29,7 +29,7 @@ It follows Batch A (Practice Feedback Modes & Special Practice IA, Human Gate A 
 
 ## Acceptance Policy (Historical Record)
 
-Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) has now been executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A has also been formally evaluated and passed (PASS).
+Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) has now been executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06) and Batch B Human Gate B (Journeys 01–07) have both been formally evaluated and passed (PASS).
 
 ## Current Release Scope
 

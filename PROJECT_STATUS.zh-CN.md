@@ -6,7 +6,7 @@ Pre-Freeze V1 Scope Closure — 功能冻结前 V1 范围收尾
 
 ## 当前里程碑
 
-Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style Categories & Progressive Navigation)（试卷库集合式分类组织与渐进式层级导航）— 实现完成并通过验证；等待 Human Gate B 人工验收
+Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style Categories & Progressive Navigation)（试卷库集合式分类组织与渐进式层级导航）— 已完成并通过人工验收 (Human Gate B = PASS)。后续行动：合并 PR #16，随后开始 Pre-Freeze V1 Scope Closure · Batch C（客观题媒体支持：图片/音频）。
 
 本工作流为功能冻结前的第二批范围收尾：
 1. **侧边栏渐进式单层导航模型**：将编辑侧边栏重构为清晰的单层渐进式模型（Level 1 分类层 → Level 2 试卷层 → Level 3 题目层），具备直观的面包屑返回导航，大幅降低认知负荷与视觉杂乱感。
@@ -14,7 +14,7 @@ Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style C
 3. **分类管理与作用域搜索**：支持创建分类、系统保留名称校验（`__ALL__`、`__UNCATEGORIZED__`、`__NEW_CATEGORY__`）、防静默合并碰撞重命名拦截、空分类在刷新与备份中的稳定持久化保留、搜索框限定当前选中分类，以及在试卷属性栏通过分类感知下拉框调整归属。
 4. **精细化删除弹窗与安全契约**：实现空分类单次确认删除；基于 Study Desk 设计系统的三向选项卡弹窗（取消 / 仅删除分类保留试卷 / 删除分类及全部试卷二次破坏性确认），以及活动试卷安全回退保障。
 5. **数据与备份兼容性**：平滑兼容既有试卷的 category 字符串，全量备份 JSON 完整保留分类注册表，并保持与标签的独立性。
-6. **Human Gate B 验证指南**：在 `manual-qa/human-gate-b.md` 与 `manual-qa/human-gate-b.zh-CN.md` 中完整就绪。
+6. **Human Gate B 人工验收**：7 项人工验证旅程全部通过产品负责人评估并签字（Human Gate B = PASS）。自动化测试：259 项全量通过（0 失败，0 跳过）。
 
 它紧随 Batch A（练习反馈模式与专项练习信息架构，Human Gate A = PASS），并在 Batch C（题目媒体支持：图片/音频）与全产品 Feature Complete Review V3 之前执行。
 
@@ -24,12 +24,12 @@ Pre-Freeze V1 Scope Closure · Batch B: Library Organization (Collection-Style C
 - **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮、可拖拽侧边栏，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好、侧边栏宽度）。
 - **核心做题与研习纸面**：客观题练习与翻译练习重构为停靠在桌面上的连续手稿纸（Laid Paper Sheet），提供有机物理翻页动效、铅笔书写摩擦音效，以及匹配题逐对独立状态判定与内联正确答案提示。
 - **教师批改台**：批改工作区重构为单张连续纸面批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
-- **离线与测试闭包**：全量 256 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、分类注册表与安全删除、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
+- **离线与测试闭包**：全量 259 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、分类注册表与安全删除、分类无障碍与保留字拦截、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
 - **Human Acceptance Gate**：Final Human Acceptance Gate 已执行并通过（PASS）。
 
 ## 验收政策（历史记录）
 
-M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）现已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。Batch A Human Gate A 也已正式通过人工验收（PASS）。
+M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）现已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。Batch A Human Gate A (Journeys 01–06) 与 Batch B Human Gate B (Journeys 01–07) 均已正式通过人工验收（PASS）。
 
 ## 当前发布范围
 
