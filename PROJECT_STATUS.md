@@ -2,23 +2,20 @@
 
 ## Current Phase
 
-Pre-Freeze V1 Scope Closure
+Feature Freeze / Product Hardening Preparation
 
 ## Current Milestone
 
-Pre-Freeze V1 Scope Closure · Batch C: Objective Question Media (Image & Audio) — complete and accepted (Human Gate C = PASS). Next step: merge PR #17, then proceed to Whole-Product Feature Complete Review V3.
+Milestone 7 Preparation (Feature Freeze Active / V1 Feature Complete Declared)
 
-This workstream delivers the third pre-freeze scope closure package:
-1. **Objective Question Media Support across all 5 Types**: Single Choice, Multiple Choice, Fill-in-the-Blank, True/False, and Matching question types all support optional Image, Audio, or dual Image + Audio attachments.
-2. **Local-Only Media Storage Architecture**: Uses an IndexedDB-backed binary Media Asset Store (`quiz-studio-media-db` / `media_assets` object store) storing native binary Blobs, linked with stable UUID references in Question JSON, ensuring zero network calls and full offline capability.
-3. **Image Authoring, Preview, and Accessibility**: Local image upload (PNG, JPEG, WebP, GIF, SVG), thumbnail preview, replace, remove, and accessible Alt text description editing in the Question Editor.
-4. **Interactive Image Viewer & Modal Zoom Controls**: Responsive modal viewer (`#imageViewerDialog`) with Zoom In (`+`), Zoom Out (`-`), Reset (`1:1`), Close (`✕`), and keyboard navigation (`+`, `-`, `0`, `Esc`).
-5. **Audio Authoring and Practice Player**: Local audio upload (MP3, WAV, OGG, WebM, AAC, M4A, FLAC), in-editor preview, and in-question player with play/pause, seek/scrub, and unlimited replay (V1 unrestricted; per-paper playback restrictions remain V2 deferred).
-6. **Single-Paper Portability & Full Backup/Restore with Strict Referential Integrity**: Self-contained export/import envelopes (`quiz-studio.quiz-paper` v2) with bundled base64 media payloads, strict validation on missing/empty/malformed payloads and incompatible MIME types, IndexedDB synchronization on import, full library backup with `mediaAssets`, and seamless backward compatibility with legacy text-only JSON.
-7. **Evidence Immutability & Reference-Aware Conservative Cleanup**: Active session snapshots, finalized Learner Response snapshots, review screen thumbnail rendering with click-to-zoom, and safe asset retention across live mutations.
-8. **Permanent QA Sample Paper & Bilingual Human Gate Acceptance**: Verified sample package in `manual-qa/media-sample/` including audio-dependent tone sequence solving, and 7-journey bilingual verification guides in `manual-qa/human-gate-c.md` and `manual-qa/human-gate-c.zh-CN.md` all signed off as PASS.
+The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
-All three Pre-Freeze V1 Scope Closure packages (Batch A: Feedback Modes & Special Practice IA; Batch B: Library Organization & Progressive Navigation; Batch C: Objective Question Media) are now complete and human-accepted.
+### Pre-Freeze V1 Scope Closure Milestone Summary (Historical Baseline)
+
+- **Batch A (Practice Feedback Modes & Special Practice IA)**: Instant Feedback and Submit at End feedback modes with explicit submit confirmation, zero pre-submit answer/score leakage, and dedicated Tool Launcher surface (Human Gate A = **PASS**).
+- **Batch B (Library Organization & Progressive Navigation)**: Collection-style Categories (`All Papers`, `Uncategorized`, user categories), empty category persistence, category-scoped search, progressive 3-level sidebar navigation (Category → Paper → Question), and polished safe deletion modal (Human Gate B = **PASS**).
+- **Batch C (Objective Question Media — Image & Audio)**: Image & Audio attachments across all 5 Objective Question types (`single`, `multiple`, `blank`, `truefalse`, `matching`), native Blob persistence in IndexedDB (`quiz-studio-media-db`), modal Image Viewer dialog (`#imageViewerDialog`) with zoom controls, in-question audio player, self-contained single-paper portability (v2), media-aware backup/restore with strict referential integrity validation, conservative reference-aware cleanup, and audio-dependent QA sample package (Human Gate C = **PASS**).
+- **Whole-Product Feature Complete Review V3**: Comprehensive read-only lifecycle gate review across all 10 V1 scope areas, cross-milestone integration, and 270 automated tests, with 0 Category A blockers and unanimous PASS verdict (merged into `main` at `22d9aee`).
 
 ## Pre-Freeze UI Productization Milestone Summary (Historical Baseline)
 
@@ -27,52 +24,85 @@ All three Pre-Freeze V1 Scope Closure packages (Batch A: Feedback Modes & Specia
 - **Core Learning Surfaces**: Rebuilt Objective Quiz and Translation Practice into continuous laid paper sheets resting on the study desk, with organic page-turn transitions, pencil stroke sounds, and granular per-pair matching feedback with inline correction hints.
 - **Teacher Marking Desk**: Rebuilt Correction Workspace into a continuous paper manuscript with pen marking tray, live projection, and tactile rubber stamp feedback with stamp thud audio.
 - **Offline & Verification Closure**: Complete Service Worker ESM precache closure covering all runtime modules and schemas.
-- **Human Acceptance Gates**: Human Acceptance Gate for UI Productization (PASS), Batch A Human Gate A (PASS), Batch B Human Gate B (PASS), and Batch C Human Gate C (PASS).
+- **Human Acceptance Gates**: Human Acceptance Gate for UI Productization (PASS), Batch A Human Gate A (PASS), Batch B Human Gate B (PASS), Batch C Human Gate C (PASS), and Review V3 (PASS).
 
 ## Acceptance Policy (Historical Record)
 
-Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) has now been executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06), Batch B Human Gate B (Journeys 01–07), and Batch C Human Gate C (Journeys 01–07) have all been formally evaluated and passed (PASS).
+Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) was executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06), Batch B Human Gate B (Journeys 01–07), and Batch C Human Gate C (Journeys 01–07) were formally evaluated and passed (PASS). Whole-Product Feature Complete Review V3 was formally evaluated, accepted as PASS, and merged into `main`.
 
 ## Current Release Scope
 
-The current-version scope includes the Milestone 1-5 baseline, the approved Milestone 6 line, the Pre-Freeze UI Productization design system, and the Pre-Freeze V1 Scope Closure workstream (Batch A: Feedback Modes & Special Practice IA; Batch B: Library Organization; Batch C: Question Media). Translation Practice is housed within Special Practice. All operations remain local-first without requiring external network access or paid AI inference.
+The current-version scope includes the Milestone 1–5 baseline, the approved Milestone 6 line, the Pre-Freeze UI Productization design system, and the Pre-Freeze V1 Scope Closure workstreams (Batch A, Batch B, Batch C). Translation Practice is housed within Special Practice. All operations remain local-first without requiring external network access or paid AI inference.
 
 ## Feature Complete Status
 
-Temporarily deferred.
+**DECLARED — V1 Feature Complete**
 
-All three Pre-Freeze V1 Scope Closure batches (A, B, and C) are complete and accepted. Feature Complete declaration will be performed via Whole-Product Feature Complete Review V3.
+Basis for declaration:
+- Whole-Product Feature Complete Review V3 = **PASS** (merged at `22d9aee`).
+- Category A Feature Complete blockers = **0**.
+- Pre-Freeze Scope Closure Batches A, B, and C are complete and human-accepted.
+- **270 automated unit/integration tests passing** at the accepted baseline.
+- Core local-first, offline, and schema contracts are intact and verified.
 
 ## Feature Freeze Status
 
-Not entered (inactive).
+**ACTIVE**
 
-Feature Freeze will begin only after Whole-Product Review V3 is formally accepted and the user explicitly authorizes entering Feature Freeze.
+The Product Owner has explicitly authorized entry into **Feature Freeze**.
+
+From this point forward, the V1 product scope is frozen:
+- No ordinary new features, new question types, new practice branches, or functional scope expansions may enter V1 during Milestone 7.
+- If product hardening reveals that a genuine release-blocking defect requires material V1 scope expansion, it must be treated as a **Product Owner Hard Gate** rather than expanding scope autonomously.
+
+## Frozen-Scope Hardening Rules
+
+Milestone 7 Product Hardening may include:
+- Defect correction and reliability hardening;
+- Data-integrity protection and defensive error handling;
+- UX refinement of existing capabilities (specifically including the mandatory learner metacognitive marking toggle UX polish);
+- Touch / mobile ergonomics and responsive layout adjustments;
+- Accessibility improvements and keyboard navigation polish;
+- Performance characterization and low-risk defensive optimization under realistically accumulated records;
+- Legacy data migration safety verification across real multi-version storage;
+- Browser process restart active-session recovery verification;
+- Clean-environment clone and execution verification;
+- Documentation and governance synchronization.
+
+Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
+- New question types or new Special Practice branches;
+- Translation History pagination, virtualization, or new navigation features;
+- Per-paper audio playback policies, seek lockouts, or replay limits;
+- AI question or document generation;
+- Cloud synchronization, user accounts, or in-app teacher administration;
+- Desktop application packaging;
+- Public GitHub Pages deployment and formal GitHub Release.
 
 ## Open Release Blockers
 
-- Full project-wide manual acceptance across all milestones (M1–M5 baseline + whole product) has not been completed.
+- Product Hardening (Milestone 7) has not yet been executed under Feature Freeze.
 - Legacy single-paper migration across representative old localStorage states and full browser-close/restart active-session recovery have not received dedicated verification.
-- Public Pages deployment remains deferred while the repository is private.
 - A release candidate and final clean-environment verification do not yet exist.
 
 ## Hardening Progress
 
-Not started.
+**Not started.**
 
-Product Hardening is Milestone 7 and will begin only after Whole-Product Feature Complete Review V3 is accepted and Feature Freeze is explicitly entered.
+Milestone 7 Product Hardening will begin only after the formal Milestone 7 Skill & Loop Preflight and authorization envelope.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
-- **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction) is classified as a mandatory V1 Milestone 7 Product Hardening item (not deferred).
-- **Mobile/Touch Ergonomics & Native Dialog Polish**: Responsive layout adjustments for history checklists, multi-button rows, and confirmation workflows on touch viewports.
-- **Whole-Product Verification**: Legacy migration safety tests and clean clone environment checks.
+- **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
+- **Mobile/Touch Ergonomics & Native Dialog Polish**: Responsive layout adjustments for history checklists, multi-button rows, and bespoke modal replacements for remaining `window.prompt()` / `window.confirm()` calls.
+- **Translation History Performance Characterization**: Performance profiling and regression testing under realistically accumulated evidence.
+- **Whole-Product Verification**: Resolution of Review V3 verification gaps C1–C4 (legacy migration safety, browser process restart recovery, authentic external reviewer round trip, clean multi-OS clone verification).
 
 ## Verification Status
 
-- 270 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, category registry management, empty category persistence, category rename propagation, safe category deletion contract, media types validation, IndexedDB native Blob Media Asset Store operations, portability referential integrity validation, reference collection & conservative orphan cleanup, single-paper portability packaging, media-aware backup/restore, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
-- **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes and Special Practice information architecture implemented and verified (Human Gate A = **PASS**).
-- **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation, and safe deletion modal implemented and verified (Human Gate B = **PASS**).
-- **Pre-Freeze V1 Scope Closure (Batch C)**: Objective Question Media (Image & Audio across all 5 types, native Blob IndexedDB store, Image Viewer modal, in-question player, portability referential integrity, backup/restore, evidence preservation, and conservative reference-aware cleanup) implemented and verified (Human Gate C = **PASS**).
+- **270 automated unit/integration tests pass** (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, category registry management, empty category persistence, category rename propagation, safe category deletion contract, media types validation, IndexedDB native Blob Media Asset Store operations, portability referential integrity validation, reference collection & conservative orphan cleanup, single-paper portability packaging, media-aware backup/restore, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
+- **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes and Special Practice information architecture verified (Human Gate A = **PASS**).
+- **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation, and safe deletion modal verified (Human Gate B = **PASS**).
+- **Pre-Freeze V1 Scope Closure (Batch C)**: Objective Question Media (Image & Audio across all 5 types, native Blob IndexedDB store, Image Viewer modal, in-question player, portability referential integrity, backup/restore, evidence preservation, and conservative reference-aware cleanup) verified (Human Gate C = **PASS**).
+- **Whole-Product Feature Complete Review V3**: Complete product review verified with 0 Category A blockers (Review V3 = **PASS**).
 
 ## Agreed Question Media Policy (Batch C Scope Definition)
 
@@ -93,19 +123,19 @@ Product Hardening is Milestone 7 and will begin only after Whole-Product Feature
 ## Unknown Or Unverified
 
 - Full backup export and import round trip with large-scale long-term history accumulation.
-- Legacy single-paper migration behavior across representative old localStorage states.
-- Translation Practice session recovery across a genuine browser restart (refresh-based recovery was verified; full browser-close/reopen was not separately tested), including a retry session.
+- Legacy single-paper migration behavior across representative old localStorage states (Review V3 Gap C1).
+- Translation Practice session recovery across a genuine browser process restart (Review V3 Gap C2).
 - Destructive workflows such as paper delete and history clear outside of Translation Document / Review deletion.
 - PWA install, offline behavior, and cache upgrade behavior across major browsers.
 - Accessibility and responsive behavior across representative devices, including the new Translation History browser and retry item-selection checklist.
-- Clean-environment clone and run process.
-- Learner annotation marking, review, removal, History browsing, and retry item-selection on touch/mobile viewports, where text-selection and multi-checkbox ergonomics differ from desktop pointer/keyboard interaction.
+- Clean-environment clone and run process across multiple OS environments (Review V3 Gap C4).
+- Learner annotation marking, review, removal, History browsing, and retry item-selection on touch/mobile viewports.
 - In-scope rich correction authoring (style/insert/replace/delete and the color picker) on touch/mobile viewports.
 - Manual inspection of a real browser's native `window.prompt()`/`window.confirm()` dialogs for Insert/Replace text entry and for retry/deletion confirmations.
-- A real end-to-end round trip using an actual external human reviewer or a real AI assistant/LLM session (not a synthetic fixture) to produce a Teacher Review or remediation Translation Document from an exported request file.
-- Native OS file-picker behavior for the Teacher Review and remediation-document file inputs (the automated smoke test dispatched a synthetic `File`/`change` event rather than driving a real picker dialog).
-- Very large review-request/remediation-request export files (many items, many corrections) have not been tested for practical file size or the target external tool's context/input limits.
-- Translation History performance with a very large number of accumulated responses/reviews (no pagination is implemented; the list renders every filtered entry at once).
+- A real end-to-end round trip using an actual external human reviewer or a real AI assistant/LLM session from an exported request file (Review V3 Gap C3).
+- Native OS file-picker behavior for the Teacher Review and remediation-document file inputs.
+- Very large review-request/remediation-request export files (many items, many corrections) practical file size.
+- Translation History performance characterization with a very large number of accumulated responses/reviews.
 
 ## Deferred Features
 
@@ -115,21 +145,21 @@ Product Hardening is Milestone 7 and will begin only after Whole-Product Feature
 - Sharing, collaboration, and in-app teacher account/administration workflows.
 - Subjective question grading.
 - Public GitHub Pages deployment and final GitHub Release.
-- Advanced history analytics/search, graph-style lineage visualization, and a History pagination/virtualization layer (deferred to a future version if History size becomes a practical problem).
+- Translation History pagination, virtualization, and advanced history graph visualization (V2 deferred).
 - Per-paper audio playback policies, seeking/scrubbing restrictions, and replay limits (V2 deferred).
 
 ## Next Engineering Objective
 
-1. **Merge Batch C**: Merge PR #17 (`feature/pre-freeze-scope-batch-c`) into `main`.
-2. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and evaluate readiness for Feature Complete / Feature Freeze.
-3. **Milestone 7 Product Hardening**: Formally enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
+**Milestone 7 — Product Hardening**
+
+*Note: Milestone 7 has not yet started in this governance closure. A separate Milestone 7 Skill & Loop Preflight and authorization envelope will precede implementation.*
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline before Batch C: `fb9ff72 Merge pull request #16 from codex/feature/pre-freeze-scope-batch-b` (`main`)
-- Current working branch: `feature/pre-freeze-scope-batch-c` for Batch C
+- Verified baseline: `22d9aee Merge pull request #18 from Peter-S-Shi/audit/whole-product-feature-complete-review-v3` (`main`)
+- Current working branch: `governance/v1-feature-freeze-closure`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #16 merged into `main`. Current working branch PR #17 for `feature/pre-freeze-scope-batch-c` ready for merge.
+- Pull request status: PR #17 and PR #18 merged into `main`. Current branch `governance/v1-feature-freeze-closure` for Feature Freeze closure.
