@@ -5,10 +5,10 @@ chcp 65001 >nul
 cd /d "%~dp0"
 
 where py >nul 2>nul
-if %ERRORLEVEL%==0 goto run_py
+if not errorlevel 1 goto run_py
 
 where python >nul 2>nul
-if %ERRORLEVEL%==0 goto run_python
+if not errorlevel 1 goto run_python
 
 echo Error: Python 3 was not found.
 echo Install Python 3, ensure either "py" or "python" is on PATH, and run start-local.bat again.
