@@ -56,7 +56,7 @@
               </label>
               <label>
                 <span data-label="paper-category">分类</span>
-                <input id="paperCategory" type="text" maxlength="60">
+                <select id="paperCategorySelect"></select>
               </label>
               <label>
                 <span data-label="paper-tags">标签</span>
@@ -133,6 +133,23 @@
               </select>
             </label>
             <small class="meta-text" id="prefMotionHint">遵循系统 prefers-reduced-motion，亦可在此主动减弱纸张翻动与盖章动效</small>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="categoryDeleteDialog" class="study-desk-dialog preferences-dialog">
+      <div class="preferences-dialog-sheet">
+        <div class="preferences-dialog-header">
+          <h3 id="categoryDeleteTitle">删除分类</h3>
+          <button class="icon-button dialog-close-button" id="closeCategoryDeleteDialog" type="button" aria-label="关闭" title="关闭">✕</button>
+        </div>
+        <div class="preferences-dialog-body">
+          <p id="categoryDeleteMessage" class="meta-text"></p>
+          <div class="category-delete-actions">
+            <button class="secondary-button" id="btnDeleteCategoryOnly" type="button">仅删除分类（保留试卷为未分类）</button>
+            <button class="danger-button secondary-button" id="btnDeleteCategoryWithPapers" type="button">删除分类及所有试卷</button>
+            <button class="secondary-button" id="btnCancelCategoryDelete" type="button">取消</button>
           </div>
         </div>
       </div>
