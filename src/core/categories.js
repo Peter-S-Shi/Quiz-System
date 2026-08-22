@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Category domain module for Quiz Studio paper library organization.
  * Provides collection-style Category registry, filtering, renaming, and safe deletion.
  */
@@ -6,9 +6,31 @@
 export const ALL_PAPERS_CATEGORY = "__ALL__";
 export const UNCATEGORIZED_CATEGORY = "";
 
+export const RESERVED_CATEGORY_NAMES = new Set([
+  "__ALL__",
+  "__UNCATEGORIZED__",
+  "__NEW_CATEGORY__",
+  "__NEW__",
+]);
+
+/**
+ * Checks if a string matches any internal sentinel or reserved category name (case-insensitive and trimmed).
+ *
+ * @param {string} name
+ * @returns {boolean}
+ */
+export function isReservedCategoryName(name = "") {
+  if (typeof name !== "string") return false;
+  const trimmedUpper = name.trim().toUpperCase();
+  for (const reserved of RESERVED_CATEGORY_NAMES) {
+    if (trimmedUpper === reserved.toUpperCase()) return true;
+  }
+  return false;
+}
+
 /**
  * Normalizes a list of category names, deduplicating, trimming whitespace,
- * filtering empty strings, and incorporating any non-empty category strings from papers.
+ * filtering empty strings/reserved names, and incorporating any non-empty category strings from papers.
  *
  * @param {Array<string>} [categoryList=[]]
  * @param {Array<{ category?: string }>} [papers=[]]
@@ -21,7 +43,7 @@ export function normalizeCategoryList(categoryList = [], papers = []) {
   function add(name) {
     if (typeof name !== "string") return;
     const trimmed = name.trim();
-    if (!trimmed) return;
+    if (!trimmed || isReservedCategoryName(trimmed)) return;
     if (seen.has(trimmed)) return;
     seen.add(trimmed);
     result.push(trimmed);
@@ -43,7 +65,7 @@ export function normalizeCategoryList(categoryList = [], papers = []) {
 }
 
 /**
- * Appends a new category name to the category list if valid and not already present.
+ * Appends a new category name to the category list if valid and not already present or reserved.
  *
  * @param {Array<string>} [categoryList=[]]
  * @param {string} name
@@ -51,7 +73,7 @@ export function normalizeCategoryList(categoryList = [], papers = []) {
  */
 export function createCategory(categoryList = [], name = "") {
   const trimmed = typeof name === "string" ? name.trim() : "";
-  if (!trimmed) return [...(categoryList || [])];
+  if (!trimmed || isReservedCategoryName(trimmed)) return [...(categoryList || [])];
   const list = normalizeCategoryList(categoryList);
   if (list.includes(trimmed)) return list;
   return [...list, trimmed];
@@ -59,36 +81,41 @@ export function createCategory(categoryList = [], name = "") {
 
 /**
  * Renames an existing category across the category list and all matching papers.
+ * Rejects rename if the new name is invalid, reserved, or collides with an existing category.
  *
  * @param {Array<string>} [categoryList=[]]
  * @param {string} oldName
  * @param {string} newName
  * @param {Array<object>} [papers=[]]
- * @returns {{ categoryList: Array<string>, papers: Array<object>, affectedPaperCount: number }}
+ * @returns {{ categoryList: Array<string>, papers: Array<object>, affectedPaperCount: number, success: boolean, reason?: string }}
  */
 export function renameCategory(categoryList = [], oldName = "", newName = "", papers = []) {
   const trimmedOld = typeof oldName === "string" ? oldName.trim() : "";
   const trimmedNew = typeof newName === "string" ? newName.trim() : "";
+  const currentList = normalizeCategoryList(categoryList, papers);
 
-  if (!trimmedOld || !trimmedNew || trimmedOld === trimmedNew) {
+  if (!trimmedOld || !trimmedNew || trimmedOld === trimmedNew || isReservedCategoryName(trimmedNew)) {
     return {
-      categoryList: normalizeCategoryList(categoryList, papers),
+      categoryList: currentList,
       papers: Array.isArray(papers) ? [...papers] : [],
       affectedPaperCount: 0,
+      success: false,
+      reason: isReservedCategoryName(trimmedNew) ? "RESERVED" : "INVALID_NAME",
     };
   }
 
-  const list = normalizeCategoryList(categoryList, papers);
-  const nextList = [];
-  const seen = new Set();
+  // Rename collision: if newName already exists (other than oldName), reject the rename safely!
+  if (currentList.includes(trimmedNew)) {
+    return {
+      categoryList: currentList,
+      papers: Array.isArray(papers) ? [...papers] : [],
+      affectedPaperCount: 0,
+      success: false,
+      reason: "COLLISION",
+    };
+  }
 
-  list.forEach((cat) => {
-    const target = cat === trimmedOld ? trimmedNew : cat;
-    if (!seen.has(target)) {
-      seen.add(target);
-      nextList.push(target);
-    }
-  });
+  const nextList = currentList.map((cat) => (cat === trimmedOld ? trimmedNew : cat));
 
   let affectedPaperCount = 0;
   const nextPapers = (papers || []).map((paper) => {
@@ -103,6 +130,7 @@ export function renameCategory(categoryList = [], oldName = "", newName = "", pa
     categoryList: nextList,
     papers: nextPapers,
     affectedPaperCount,
+    success: true,
   };
 }
 

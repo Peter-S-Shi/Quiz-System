@@ -112,6 +112,7 @@ import {
   deleteCategoryOnly,
   filterPapersByCategory,
   getCategoryCounts,
+  isReservedCategoryName,
   normalizeCategoryList,
   reassignPaperCategory,
   renameCategory,
@@ -286,9 +287,9 @@ const locales = {
     question: {
       listTitle: "题目",
       emptyList: "还没有题目",
-      chooseOne: "在左侧选择或添加一道题目开始编辑",
+      chooseOne: "请选择或添加一道题目",
       unnamed: "未命名题目",
-      prompt: "题干",
+      prompt: "题目内容",
       type: "题型",
       option: "选项 {letter}",
       markCorrect: "标记为正确答案",
@@ -345,6 +346,11 @@ const locales = {
       paperDuplicated: "已复制试卷",
       paperRenamed: "已重命名试卷",
       paperDeleted: "已删除试卷",
+      categoryCreated: "分类已创建",
+      categoryRenamed: "分类已重命名",
+      categoryDeleted: "分类已删除",
+      categoryExists: "该分类名称已存在",
+      categoryReserved: "该分类名称为系统保留字，请使用其他名称",
       importSuccess: "导入成功",
       importFail: "导入失败，请选择正确的 JSON 试卷文件。",
       unsupportedLanguage: "暂不支持该语言。",
@@ -840,6 +846,7 @@ const locales = {
       categoryRenamed: "Category renamed",
       categoryDeleted: "Category deleted",
       categoryExists: "Category already exists",
+      categoryReserved: "This category name is reserved. Please use a different name",
       importSuccess: "Import complete",
       importFail: "Import failed. Please choose a valid JSON paper file.",
       unsupportedLanguage: "This language is not supported yet.",
@@ -1337,11 +1344,19 @@ function bindGlobalEvents() {
       const name = window.prompt(t("category.newCategoryPrompt"), "");
       if (name && name.trim()) {
         const trimmed = name.trim();
-        library.categories = createCategory(library.categories, trimmed);
+        if (isReservedCategoryName(trimmed)) {
+          showToast(t("toast.categoryReserved"));
+          renderPaperCategorySelect();
+          return;
+        }
+        if (!library.categories.includes(trimmed)) {
+          library.categories = createCategory(library.categories, trimmed);
+          showToast(t("toast.categoryCreated"));
+        }
         paper.category = trimmed;
+        selectedCategory = trimmed;
         savePaper({ clearSession: false });
         renderAll();
-        showToast(t("toast.categoryCreated"));
       } else {
         renderPaperCategorySelect();
       }
@@ -1667,25 +1682,31 @@ function renderLibraryPanel() {
         <span>${t("category.title")}</span>
         <button class="small-button" type="button" id="newCategoryBtn">+ ${t("category.newCategory")}</button>
       </div>
-      <div class="category-nav-list">
-        <button class="category-nav-item ${selectedCategory === ALL_PAPERS_CATEGORY ? "active" : ""}" type="button" data-select-category="${ALL_PAPERS_CATEGORY}">
-          <span class="category-nav-label">📋 ${t("category.allPapers")}</span>
-          <span class="category-nav-count">${counts.allCount}</span>
-        </button>
+      <div class="category-nav-list" role="navigation" aria-label="${t("category.title")}">
+        <div class="category-nav-row ${selectedCategory === ALL_PAPERS_CATEGORY ? "active" : ""}">
+          <button class="category-nav-item" type="button" data-select-category="${ALL_PAPERS_CATEGORY}" aria-label="${t("category.allPapers")} (${counts.allCount})">
+            <span class="category-nav-label">📋 ${t("category.allPapers")}</span>
+            <span class="category-nav-count">${counts.allCount}</span>
+          </button>
+        </div>
         ${library.categories.map((cat) => `
-          <div class="category-nav-item ${selectedCategory === cat ? "active" : ""}" data-select-category="${escapeHtml(cat)}">
-            <span class="category-nav-label">📁 ${escapeHtml(cat)}</span>
-            <span class="category-nav-count">${counts.categoryCounts[cat] || 0}</span>
+          <div class="category-nav-row ${selectedCategory === cat ? "active" : ""}">
+            <button class="category-nav-item" type="button" data-select-category="${escapeHtml(cat)}" aria-label="${escapeHtml(cat)} (${counts.categoryCounts[cat] || 0})">
+              <span class="category-nav-label">📁 ${escapeHtml(cat)}</span>
+              <span class="category-nav-count">${counts.categoryCounts[cat] || 0}</span>
+            </button>
             <span class="category-item-actions">
-              <button type="button" class="category-action-btn" data-rename-category="${escapeHtml(cat)}" title="${t("category.renameCategory")}">✎</button>
-              <button type="button" class="category-action-btn danger-action" data-delete-category="${escapeHtml(cat)}" title="${t("category.deleteCategory")}">🗑</button>
+              <button type="button" class="category-action-btn" data-rename-category="${escapeHtml(cat)}" title="${t("category.renameCategory")}" aria-label="${t("category.renameCategory")}: ${escapeHtml(cat)}">✎</button>
+              <button type="button" class="category-action-btn danger-action" data-delete-category="${escapeHtml(cat)}" title="${t("category.deleteCategory")}" aria-label="${t("category.deleteCategory")}: ${escapeHtml(cat)}">🗑</button>
             </span>
           </div>
         `).join("")}
-        <button class="category-nav-item ${selectedCategory === UNCATEGORIZED_CATEGORY ? "active" : ""}" type="button" data-select-category="${UNCATEGORIZED_CATEGORY}">
-          <span class="category-nav-label">📄 ${t("category.uncategorized")}</span>
-          <span class="category-nav-count">${counts.uncategorizedCount}</span>
-        </button>
+        <div class="category-nav-row ${selectedCategory === UNCATEGORIZED_CATEGORY ? "active" : ""}">
+          <button class="category-nav-item" type="button" data-select-category="${UNCATEGORIZED_CATEGORY}" aria-label="${t("category.uncategorized")} (${counts.uncategorizedCount})">
+            <span class="category-nav-label">📄 ${t("category.uncategorized")}</span>
+            <span class="category-nav-count">${counts.uncategorizedCount}</span>
+          </button>
+        </div>
       </div>
     </div>
     <input id="librarySearch" type="search" value="${escapeHtml(librarySearch)}" placeholder="${escapeHtml(searchPlaceholder)}">
@@ -1709,8 +1730,7 @@ function renderLibraryPanel() {
 
   document.getElementById("newCategoryBtn")?.addEventListener("click", promptCreateCategory);
   libraryPanel.querySelectorAll("[data-select-category]").forEach((elem) => {
-    elem.addEventListener("click", (e) => {
-      if (e.target.closest(".category-item-actions")) return;
+    elem.addEventListener("click", () => {
       selectedCategory = elem.dataset.selectCategory;
       renderLibraryPanel();
     });
@@ -1748,6 +1768,10 @@ function promptCreateCategory() {
   const name = window.prompt(t("category.newCategoryPrompt"), "");
   if (!name || !name.trim()) return;
   const trimmed = name.trim();
+  if (isReservedCategoryName(trimmed)) {
+    showToast(t("toast.categoryReserved"));
+    return;
+  }
   if (library.categories.includes(trimmed)) {
     showToast(t("toast.categoryExists"));
     selectedCategory = trimmed;
@@ -1765,7 +1789,23 @@ function promptRenameCategory(oldName) {
   const newName = window.prompt(t("category.renameCategoryPrompt"), oldName);
   if (!newName || !newName.trim() || newName.trim() === oldName) return;
   const trimmedNew = newName.trim();
+  if (isReservedCategoryName(trimmedNew)) {
+    showToast(t("toast.categoryReserved"));
+    return;
+  }
+  if (library.categories.includes(trimmedNew)) {
+    showToast(t("toast.categoryExists"));
+    return;
+  }
   const result = renameCategory(library.categories, oldName, trimmedNew, library.papers);
+  if (!result.success) {
+    if (result.reason === "RESERVED") {
+      showToast(t("toast.categoryReserved"));
+    } else if (result.reason === "COLLISION") {
+      showToast(t("toast.categoryExists"));
+    }
+    return;
+  }
   library.categories = result.categoryList;
   library.papers = result.papers;
   if (selectedCategory === oldName) {

@@ -9,19 +9,19 @@
 ## Overview
 
 This guide provides step-by-step verification journeys for the Library Organization capabilities introduced in Pre-Freeze V1 Scope Closure Batch B:
-1. **Category Navigation & Filtering**: Navigation list displaying All Papers, user-created Categories with counts, Uncategorized with counts, and `+ New Category`.
-2. **Category Creation & Persistence**: Creating categories, empty category persistence across reloads/backups, and scoped search.
-3. **Category Renaming**: Registry update with automatic propagation to all assigned papers.
-4. **Paper Reassignment**: Moving papers between categories or Uncategorized via the category-aware selector, and creating new categories directly from paper settings.
+1. **Category Navigation, Accessibility & Creation**: Focusable & activatable category list items, keyboard navigation, creating categories, reserved name protection (`__ALL__`, `__UNCATEGORIZED__`, `__NEW_CATEGORY__`), empty category persistence across reloads/backups, and scoped search.
+2. **Category Creation & Scoped Search**: Assigning papers to categories, new paper category inheritance, and category-scoped search queries.
+3. **Paper Category Reassignment & Inline Category Creation**: Moving papers between categories or Uncategorized via the category-aware selector, and creating new categories directly from paper settings.
+4. **Category Renaming & Collision Safety**: Registry update with automatic propagation to assigned papers, reserved name protection, and safe rejection of rename collisions (preventing silent category merges).
 5. **Category Deletion Contract & Safety**: Empty deletion confirmation, non-empty 3-way choice (Cancel / Delete Category Only / Delete Category + Papers), destructive confirmation, and active paper fallback safety.
-6. **Backup & Restore Compatibility**: Preserving user-defined categories in full backup JSON and seamlessly recovering legacy backups.
+6. **Backup & Restore Compatibility**: Preserving user-defined categories in full backup JSON, seamlessly recovering legacy backups, and bilingual localization.
 
 ---
 
-## Verification Journey 1: Category Navigation & Creation
+## Verification Journey 1: Category Navigation, Accessibility & Creation
 
 ### Objective
-Verify that the Category navigation panel displays accurate paper counts, supports creating new categories, and correctly filters the library.
+Verify that the Category navigation panel is fully keyboard-accessible (no invalid nested button markup), displays accurate paper counts, prevents reserved internal names, supports creating new categories, and persists empty categories.
 
 ### Steps
 1. Launch Quiz Studio (`start-local.bat` or `python scripts/dev-server.py`).
@@ -31,12 +31,22 @@ Verify that the Category navigation panel displays accurate paper counts, suppor
    - Confirm **All Papers** (所有试卷) is present and selected by default, displaying the total count of papers.
    - Confirm **Uncategorized** (未分类) is present, displaying the count of papers without a category.
    - Confirm the `+ New Category` (+ 新建分类) button is visible.
-4. Click `+ New Category` (+ 新建分类):
+4. Test Keyboard Accessibility:
+   - Using the `Tab` key on your keyboard, navigate through the Category navigation list:
+     - Verify each category entry (All Papers, user categories, Uncategorized) receives clear visible focus.
+     - Press `Enter` or `Space` on an entry to select and filter the library.
+     - Verify Rename (`✎`) and Delete (`🗑`) buttons are reachable as separate tab stops and can be activated via keyboard without conflicting with category selection.
+5. Test Reserved Name Protection:
+   - Click `+ New Category` (+ 新建分类).
+   - Enter `"__ALL__"` or `"__NEW_CATEGORY__"` or `"__UNCATEGORIZED__"`:
+     - Verify toast `"This category name is reserved. Please use a different name"` (该分类名称为系统保留字，请使用其他名称) appears.
+     - Verify no category is created.
+6. Click `+ New Category` (+ 新建分类) with a valid name:
    - In the prompt dialog, enter `"Mathematics"` (数学) and confirm.
    - Verify that `"Mathematics"` appears in the category list with count `0`.
    - Verify toast notification `"Category created"` (分类已创建).
    - Refresh the page and confirm the empty category `"Mathematics"` remains in the list.
-5. Create a second category `"Languages"` (语言):
+7. Create a second category `"Languages"` (语言):
    - Confirm `"Languages"` appears with count `0`.
 
 ---
@@ -78,6 +88,7 @@ Verify that existing papers can be moved between categories, unassigned, or assi
    - Verify the paper's category is updated to `"Languages"`.
    - Verify the sidebar count for `"Languages"` increases to `1`.
 4. Select `"+ New Category..."` (+ 新建分类...) from the dropdown:
+   - Test reserved name check: enter `"__NEW_CATEGORY__"` -> verify toast `"This category name is reserved. Please use a different name"`.
    - In the prompt, enter `"Science"` (科学) and confirm.
    - Verify toast `"Category created"` appears.
    - Verify the paper's category is set to `"Science"`.
@@ -88,18 +99,24 @@ Verify that existing papers can be moved between categories, unassigned, or assi
 
 ---
 
-## Verification Journey 4: Category Renaming & Propagation
+## Verification Journey 4: Category Renaming & Collision Safety
 
 ### Objective
-Verify that renaming a category updates the registry and automatically propagates the new name to all assigned papers without data loss.
+Verify that renaming a category updates the registry and automatically propagates the new name to all assigned papers without data loss, and that renaming to an existing category or reserved name is safely rejected without merging.
 
 ### Steps
 1. Assign at least two papers to the `"Mathematics"` category.
-2. In the Category navigation list, hover over `"Mathematics"`:
-   - Verify the edit/rename icon (`✎`) and delete icon (`🗑`) are accessible.
-3. Click the rename icon (`✎`):
+2. Test Collision Safety:
+   - Click the rename icon (`✎`) on `"Mathematics"`.
+   - Enter `"Languages"` (which already exists):
+     - Verify toast `"Category already exists"` (该分类名称已存在) appears.
+     - Verify rename is rejected: `"Mathematics"` and `"Languages"` remain two separate categories, and paper counts/assignments are untouched (no silent merge).
+3. Test Reserved Name Rejection on Rename:
+   - Click the rename icon (`✎`) on `"Mathematics"`.
+   - Enter `"__ALL__"` -> verify toast `"This category name is reserved. Please use a different name"`.
+4. Perform Valid Rename:
+   - Click rename icon (`✎`) on `"Mathematics"`.
    - In the prompt dialog, change `"Mathematics"` to `"Advanced Mathematics"` and confirm.
-4. Verify results:
    - Verify toast `"Category renamed"` (分类已重命名).
    - Verify the category navigation list now shows `"Advanced Mathematics"` with count `2`.
    - Open each of the two papers and verify their Category field reflects `"Advanced Mathematics"`.
@@ -173,10 +190,10 @@ Verify that user-created categories (including empty categories) survive backup 
 
 | Journey | Description | Result |
 |---|---|---|
-| **Journey 1** | Category Navigation & Creation (Empty persistence) | `[PASS / FAIL]` |
+| **Journey 1** | Category Navigation, Accessibility & Creation (Reserved name protection & Empty persistence) | `[PASS / FAIL]` |
 | **Journey 2** | Paper Categorization & Scoped Search | `[PASS / FAIL]` |
 | **Journey 3** | Paper Category Reassignment & Inline Category Creation | `[PASS / FAIL]` |
-| **Journey 4** | Category Renaming & Automatic Propagation | `[PASS / FAIL]` |
+| **Journey 4** | Category Renaming & Collision Safety (No silent merge) | `[PASS / FAIL]` |
 | **Journey 5** | Category Deletion Contract (Empty / Cancel / Delete Only / Delete with Papers) | `[PASS / FAIL]` |
 | **Journey 6** | Backup & Restore Compatibility & Bilingual Localization | `[PASS / FAIL]` |
 

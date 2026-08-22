@@ -9,6 +9,7 @@ import {
   filterPapersByCategory,
   getCategoryCounts,
   reassignPaperCategory,
+  isReservedCategoryName,
   ALL_PAPERS_CATEGORY,
   UNCATEGORIZED_CATEGORY,
 } from "../src/core/categories.js";
@@ -193,18 +194,52 @@ test("normalizeLibrary and library backup preserve categories and restore legacy
   assert.deepEqual(legacyRestored.library.categories, ["French"]);
 });
 
-test("renameCategory handles unicode, whitespace trimming, and duplicate target merges", () => {
+test("isReservedCategoryName identifies internal sentinel values case-insensitively", () => {
+  assert.equal(isReservedCategoryName("__ALL__"), true);
+  assert.equal(isReservedCategoryName("__all__"), true);
+  assert.equal(isReservedCategoryName(" __UNCATEGORIZED__ "), true);
+  assert.equal(isReservedCategoryName("__NEW_CATEGORY__"), true);
+  assert.equal(isReservedCategoryName("__new__"), true);
+  assert.equal(isReservedCategoryName("Mathematics"), false);
+  assert.equal(isReservedCategoryName(""), false);
+});
+
+test("createCategory rejects reserved internal category names", () => {
+  const list = ["English"];
+  assert.deepEqual(createCategory(list, "__ALL__"), ["English"]);
+  assert.deepEqual(createCategory(list, "__new_category__"), ["English"]);
+  assert.deepEqual(createCategory(list, " __UNCATEGORIZED__ "), ["English"]);
+});
+
+test("renameCategory rejects reserved internal category names safely", () => {
+  const list = ["English", "Math"];
+  const papers = [{ id: "p1", category: "English" }];
+
+  const res1 = renameCategory(list, "English", "__ALL__", papers);
+  assert.equal(res1.success, false);
+  assert.equal(res1.reason, "RESERVED");
+  assert.deepEqual(res1.categoryList, ["English", "Math"]);
+  assert.equal(res1.papers[0].category, "English");
+
+  const res2 = renameCategory(list, "English", "__NEW_CATEGORY__", papers);
+  assert.equal(res2.success, false);
+  assert.equal(res2.reason, "RESERVED");
+});
+
+test("renameCategory rejects collision with existing category and leaves categories and papers unchanged", () => {
   const categoryList = ["数学", "英语", "物理"];
   const papers = [
     { id: "p1", category: "数学" },
     { id: "p2", category: "英语" },
   ];
 
-  // Rename to existing category merges them cleanly
+  // Renaming "数学" to already-existing "英语" must NOT silently merge
   const result = renameCategory(categoryList, "数学", "英语", papers);
-  assert.deepEqual(result.categoryList, ["英语", "物理"]);
-  assert.equal(result.affectedPaperCount, 1);
-  assert.equal(result.papers[0].category, "英语");
+  assert.equal(result.success, false);
+  assert.equal(result.reason, "COLLISION");
+  assert.deepEqual(result.categoryList, ["数学", "英语", "物理"]);
+  assert.equal(result.affectedPaperCount, 0);
+  assert.equal(result.papers[0].category, "数学");
   assert.equal(result.papers[1].category, "英语");
 });
 
