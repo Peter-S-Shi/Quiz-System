@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   TRANSLATION_LIBRARY: "quiz-studio-translation-library-v1",
   THEME: "quiz-studio-theme",
   LANGUAGE: "quiz-studio-language",
+  UI_PREFERENCES: "quiz_studio_ui_preferences",
 };
 
 export function loadJson(key, fallback = null) {

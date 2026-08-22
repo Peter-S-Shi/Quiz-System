@@ -289,6 +289,20 @@ M6.7 状态：
 - 每个 M6.x 实现仍必须先经过实现评审、回归测试、CI 和范围审查，才能开始下一个子里程碑；正式的用户验收被推迟到 M6.7 之后的一次整体验收（这一推迟不追溯适用于已经验收的 M6.0 和 M6.1）。
 - 在 M6 整体验收完成前，Feature Freeze 保持未启用。
 
+## Pre-Freeze UI Productization: Layered Paper Study Desk
+
+状态：实现完成并通过全量验证；待 Human Acceptance Gate 验收
+
+Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Product Feature Complete Review V2 之前完成全站视觉与物理交互收敛。它完整保留 Milestone 1–6 的全部产品功能，并将临时探索原型升级为统一的分层研习台（Study Desk）设计系统。
+
+完成范围：
+
+- **设计规范与系统基础（[DESIGN.md](file:///f:/CodexWorkspaces/Quiz%20System/DESIGN.md)）**：建立完整的表面 Token（Strong Paper 亮色、Soft Near-Black 暗色）、中性次级标签、自然语义墨水（Oxford Blue、Vermilion、Forest、Amber、Violet）、排版阶梯、动效语言与基于 Web Audio API 的零外部依赖物理合成音效架构。
+- **应用框架与偏好设置**：工具启动台首页（`homeView`）、持久化 UI 偏好管理器（`uiPreferences` 保存主题、音效、减弱动效偏好）与顶部栏物理音效切换。
+- **核心做题与翻译研习纸面**：客观题练习与翻译练习采用停靠在研习桌面上的连续手稿纸样式，配备有机翻页动效与铅笔书写摩擦音效。
+- **教师批改台**：批改工作区重构为单张连续手稿纸批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
+- **离线与测试闭包**：237 项自动化单元与集成测试全部通过，Service Worker ESM 离线预缓存完整闭包。
+
 ## Milestone 7：Product Hardening
 
 目标：在不扩大产品范围的前提下，让现有功能成为可靠、统一、可验证的整体。

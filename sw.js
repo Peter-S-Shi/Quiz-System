@@ -6,6 +6,7 @@ const APP_SHELL = [
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./src/app.js",
+  "./src/core/audio-engine.js",
   "./src/core/backup.js",
   "./src/core/corrections.js",
   "./src/core/deletion-policy.js",
@@ -23,6 +24,7 @@ const APP_SHELL = [
   "./src/core/translation-import.js",
   "./src/core/translation-retry.js",
   "./src/core/translation-session.js",
+  "./src/core/ui-preferences.js",
   "./src/core/utils.js",
   "./src/storage/local-storage.js"
 ];

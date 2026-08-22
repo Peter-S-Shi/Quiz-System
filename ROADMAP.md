@@ -289,6 +289,20 @@ Acceptance effect:
 - Each M6.x implementation must still receive its own implementation review, regression testing, CI, and scope review before the next sub-milestone begins; individual formal user acceptance is deferred to the one comprehensive M6-wide acceptance after M6.7 (this deferral does not apply retroactively to M6.0 and M6.1, which are already accepted).
 - Feature Freeze remains inactive until the M6-wide acceptance is complete.
 
+## Pre-Freeze UI Productization: Layered Paper Study Desk
+
+Status: Implementation complete and verified; pending Human Acceptance Gate
+
+Pre-Freeze UI Productization establishes whole-product visual and physical interaction convergence before conducting the Whole-Product Feature Complete Review V2. It preserves all Milestone 1–6 functionality while replacing temporary prototype surfaces with a unified study desk design system.
+
+Scope completed:
+
+- **Design System Foundation (`DESIGN.md`)**: Complete tokens for surfaces (Light Strong Paper, Dark Soft Near-Black), neutral section labels, marking inks (Oxford Blue, Vermilion, Forest, Amber, Violet), typography scale, motion language, and synthesized audio architecture.
+- **Application Shell & Preferences**: Tool Launcher home view (`homeView`), persistent UI preferences (`uiPreferences` storing theme, sound enabled, and motion preference), and topbar audio toggle.
+- **Core Learning Surfaces**: Laid paper sheet presentation with organic page-turn transitions and pencil stroke feedback across Objective Quiz and Translation Practice.
+- **Teacher Marking Desk**: Dedicated continuous paper marking desk with pen tray, real-time ink projection, and rubber stamp judgment with tactile thud audio.
+- **Offline & Verification Closure**: 237 automated unit and integration tests passing, complete Service Worker offline precaching closure.
+
 ## Milestone 7: Product Hardening
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.

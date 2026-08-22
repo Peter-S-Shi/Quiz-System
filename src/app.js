@@ -1,6 +1,8 @@
 import { formatAnswer, gradeQuestion } from "./core/grading.js";
 import { shouldRegisterProductionServiceWorker } from "./core/service-worker-policy.js";
 import { createLibraryBackup, parseLibraryBackup } from "./core/backup.js";
+import { loadUiPreferences, saveUiPreferences } from "./core/ui-preferences.js";
+import { studioAudio } from "./core/audio-engine.js";
 import {
   CORRECTION_COLORS,
   addCorrection,
@@ -122,13 +124,30 @@ const locales = {
     aria: {
       mainMode: "主要模式",
       theme: "切换亮色和暗色背景",
+      sound: "切换物理音效",
       language: "界面语言",
       skip: "跳到主要内容",
     },
     modes: {
+      home: "首页",
       edit: "编辑",
       quiz: "做题",
       translation: "翻译练习",
+    },
+    home: {
+      title: "Quiz Studio 个人研习工作台",
+      tagline: "专注文档研读、深度作答与精细批改",
+      quizTitle: "客观做题练习",
+      quizDesc: "单选、多选、填空、判断与配对题型，即时墨水批改",
+      translationTitle: "中英翻译研习",
+      translationDesc: "双语沉浸翻译、词句元认知标记与独立证据链",
+      editorTitle: "试卷制作与题库",
+      editorDesc: "创建、管理、导入与导出本地练习试卷",
+      historyTitle: "评审历史与血缘",
+      historyDesc: "查看历史作答、教师评审记录与针对性重练",
+      start: "开始练习",
+      manage: "管理试卷",
+      view: "查看历史",
     },
     library: {
       title: "本地试卷库",
@@ -551,13 +570,30 @@ const locales = {
     aria: {
       mainMode: "Main mode",
       theme: "Switch light and dark background",
+      sound: "Toggle physical sound effects",
       language: "Interface language",
       skip: "Skip to main content",
     },
     modes: {
+      home: "Home",
       edit: "Edit",
       quiz: "Quiz",
       translation: "Translation",
+    },
+    home: {
+      title: "Quiz Studio Study Workspace",
+      tagline: "Focused reading, deliberate answering, and rich review",
+      quizTitle: "Objective Quiz Practice",
+      quizDesc: "Single, multiple, blank, true/false, and matching questions with ink feedback",
+      translationTitle: "Translation Studio",
+      translationDesc: "Bilingual translation with metacognitive marking and evidence tracking",
+      editorTitle: "Quiz Authoring & Library",
+      editorDesc: "Create, manage, import, and export practice papers",
+      historyTitle: "Review History & Lineage",
+      historyDesc: "Browse past submissions, external reviews, and retry workflows",
+      start: "Start Practice",
+      manage: "Manage Papers",
+      view: "View History",
     },
     library: {
       title: "Local quiz library",
@@ -980,7 +1016,8 @@ let library = loadLibrary();
 let activePaperId = loadActivePaperId();
 let paper = getActivePaper();
 let selectedQuestionId = paper.questions[0]?.id ?? null;
-let currentMode = "edit";
+let uiPreferences = loadUiPreferences();
+let currentMode = "home";
 let session = loadActiveSession();
 let toastTimer = null;
 let librarySearch = "";
@@ -1003,6 +1040,10 @@ let translationHistoryFilters = { purpose: "all", status: "all", sort: "newest" 
 let translationHistoryDetailId = null;
 let retrySelectionDraft = null;
 
+const homeView = document.getElementById("homeView");
+const homeModeButton = document.getElementById("homeModeButton");
+const homeLauncherPanel = document.getElementById("homeLauncherPanel");
+const soundToggle = document.getElementById("soundToggle");
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
 const translationView = document.getElementById("translationView");
@@ -1032,18 +1073,26 @@ const toast = document.getElementById("toast");
 init();
 
 function init() {
-  document.documentElement.dataset.theme = localStorage.getItem(THEME_KEY) || "light";
+  uiPreferences = loadUiPreferences();
+  document.documentElement.dataset.theme = uiPreferences.theme || "light";
+  if (uiPreferences.motionPreference === "reduced") {
+    document.documentElement.dataset.motion = "reduced";
+  }
+  studioAudio.setEnabled(uiPreferences.soundEnabled);
   document.documentElement.lang = locales[language].code;
   bindGlobalEvents();
   registerServiceWorker();
   renderAll();
+  updateSoundToggleUi();
 }
 
 function bindGlobalEvents() {
+  homeModeButton.addEventListener("click", () => setMode("home"));
   editModeButton.addEventListener("click", () => setMode("edit"));
   quizModeButton.addEventListener("click", () => setMode("quiz"));
   translationModeButton.addEventListener("click", () => setMode("translation"));
   themeToggle.addEventListener("click", toggleTheme);
+  soundToggle.addEventListener("click", toggleSound);
 
   languageSelect.addEventListener("change", (event) => setLanguage(event.target.value));
 
@@ -1081,6 +1130,7 @@ function bindGlobalEvents() {
 function renderAll() {
   paper = getActivePaper();
   renderChrome();
+  renderHomeLauncher();
   renderLibraryPanel();
   paperTitle.value = paper.title;
   paperDescription.value = paper.description;
@@ -1097,11 +1147,15 @@ function renderChrome() {
   document.querySelector(".brand p").textContent = t("tagline");
   skipLink.textContent = t("aria.skip");
   document.querySelector(".mode-tabs").setAttribute("aria-label", t("aria.mainMode"));
+  homeModeButton.textContent = t("modes.home");
   editModeButton.textContent = t("modes.edit");
   quizModeButton.textContent = t("modes.quiz");
   translationModeButton.textContent = t("modes.translation");
   themeToggle.title = t("aria.theme");
   themeToggle.setAttribute("aria-label", t("aria.theme"));
+  soundToggle.title = t("aria.sound");
+  soundToggle.setAttribute("aria-label", t("aria.sound"));
+  updateSoundToggleUi();
   languageSelect.setAttribute("aria-label", t("aria.language"));
   languageSelect.value = language;
   document.querySelector("[data-label='paper-title']").textContent = t("paper.title");
@@ -1118,14 +1172,88 @@ function renderChrome() {
   });
 }
 
+function updateSoundToggleUi() {
+  if (!soundToggle) return;
+  soundToggle.textContent = studioAudio.enabled ? "🔊" : "🔇";
+  soundToggle.classList.toggle("active", studioAudio.enabled);
+}
+
+function toggleSound() {
+  const next = !studioAudio.enabled;
+  studioAudio.setEnabled(next);
+  uiPreferences.soundEnabled = next;
+  saveUiPreferences(uiPreferences);
+  updateSoundToggleUi();
+  if (next) {
+    studioAudio.playPencilStroke();
+  }
+}
+
+function renderHomeLauncher() {
+  if (currentMode !== "home" || !homeLauncherPanel) return;
+
+  homeLauncherPanel.innerHTML = `
+    <div class="launcher-header">
+      <h2>${t("home.title")}</h2>
+      <p>${t("home.tagline")}</p>
+    </div>
+    <div class="launcher-grid">
+      <div class="launcher-card" id="launchQuiz">
+        <div>
+          <div class="launcher-card-icon">📝</div>
+          <h3>${t("home.quizTitle")}</h3>
+          <p>${t("home.quizDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
+      </div>
+      <div class="launcher-card" id="launchTranslation">
+        <div>
+          <div class="launcher-card-icon">📖</div>
+          <h3>${t("home.translationTitle")}</h3>
+          <p>${t("home.translationDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
+      </div>
+      <div class="launcher-card" id="launchEditor">
+        <div>
+          <div class="launcher-card-icon">✏️</div>
+          <h3>${t("home.editorTitle")}</h3>
+          <p>${t("home.editorDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.manage")} &rarr;</div>
+      </div>
+      <div class="launcher-card" id="launchHistory">
+        <div>
+          <div class="launcher-card-icon">📜</div>
+          <h3>${t("home.historyTitle")}</h3>
+          <p>${t("home.historyDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.view")} &rarr;</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("launchQuiz")?.addEventListener("click", () => setMode("quiz"));
+  document.getElementById("launchTranslation")?.addEventListener("click", () => setMode("translation"));
+  document.getElementById("launchEditor")?.addEventListener("click", () => setMode("edit"));
+  document.getElementById("launchHistory")?.addEventListener("click", () => {
+    setMode("translation");
+    translationHistoryOpen = true;
+    renderTranslationView();
+  });
+}
+
 function setMode(mode) {
   currentMode = mode;
+  homeView.classList.toggle("hidden", mode !== "home");
   editorView.classList.toggle("hidden", mode !== "edit");
   quizView.classList.toggle("hidden", mode !== "quiz");
   translationView.classList.toggle("hidden", mode !== "translation");
+  homeModeButton.classList.toggle("active", mode === "home");
   editModeButton.classList.toggle("active", mode === "edit");
   quizModeButton.classList.toggle("active", mode === "quiz");
   translationModeButton.classList.toggle("active", mode === "translation");
+  if (mode === "home") renderHomeLauncher();
   if (mode === "quiz") renderQuizStart();
   if (mode === "translation") renderTranslationView();
 }
@@ -1713,9 +1841,10 @@ function renderQuizAnswer(question) {
           ? answer === option.id
           : Array.isArray(answer) && answer.includes(option.id);
         return `
-          <label class="choice-line">
+          <label class="choice-line ${checked ? "selected" : ""}">
             <input type="${question.type === "single" ? "radio" : "checkbox"}" name="choiceAnswer" value="${option.id}" ${checked ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
             <span class="choice-letter">${String.fromCharCode(65 + index)}</span>
+            ${checked ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M4 10.5 L8.5 15 L16 5" stroke="var(--brand-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
             <span>${escapeHtml(option.text)}</span>
           </label>
         `;
@@ -1734,12 +1863,14 @@ function renderQuizAnswer(question) {
 
   if (question.type === "truefalse") {
     return `
-      <label class="judge-line">
+      <label class="judge-line ${answer === true ? "selected" : ""}">
         <input type="radio" name="judgeAnswer" value="true" ${answer === true ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
+        ${answer === true ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M4 10.5 L8.5 15 L16 5" stroke="var(--brand-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
         <span>${t("question.true")}</span>
       </label>
-      <label class="judge-line">
+      <label class="judge-line ${answer === false ? "selected" : ""}">
         <input type="radio" name="judgeAnswer" value="false" ${answer === false ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
+        ${answer === false ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M5 5 L15 15 M15 5 L5 15" stroke="var(--ink-vermilion)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
         <span>${t("question.false")}</span>
       </label>
     `;
@@ -1764,6 +1895,7 @@ function bindQuizAnswer(question) {
   if (question.type === "single") {
     document.querySelectorAll("input[name='choiceAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
+        studioAudio.playPencilStroke();
         session.answers[question.id] = input.value;
         persistSession();
         renderCurrentQuestion();
@@ -1775,6 +1907,7 @@ function bindQuizAnswer(question) {
   if (question.type === "multiple") {
     document.querySelectorAll("input[name='choiceAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
+        studioAudio.playPencilStroke();
         session.answers[question.id] = Array.from(document.querySelectorAll("input[name='choiceAnswer']:checked")).map((item) => item.value);
         persistSession();
         renderCurrentQuestion();
@@ -1794,6 +1927,7 @@ function bindQuizAnswer(question) {
   if (question.type === "truefalse") {
     document.querySelectorAll("input[name='judgeAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
+        studioAudio.playPencilStroke();
         session.answers[question.id] = input.value === "true";
         persistSession();
         renderCurrentQuestion();
@@ -1804,6 +1938,7 @@ function bindQuizAnswer(question) {
 
   document.querySelectorAll("[data-match-answer]").forEach((select) => {
     select.addEventListener("change", () => {
+      studioAudio.playPencilStroke();
       session.answers[question.id] ||= {};
       session.answers[question.id][select.dataset.matchAnswer] = select.value;
       persistSession();
@@ -1820,6 +1955,7 @@ function submitCurrentAnswer() {
     return;
   }
 
+  studioAudio.playStampThud();
   const result = gradeQuestion(question, answer, getGradeLabels());
   session.results[session.index] = result;
   session.submitted = true;
@@ -1830,24 +1966,36 @@ function submitCurrentAnswer() {
 
 function goPreviousQuestion() {
   if (session.index === 0) return;
+  studioAudio.playPageTurn();
   session.index -= 1;
   session.submitted = Boolean(session.results[session.index]);
   session.feedback = session.results[session.index] || null;
   persistSession();
   renderCurrentQuestion();
+  triggerPageTurnAnimation(quizPanel, "prev");
 }
 
 function goNextQuestion() {
   if (session.index >= session.questions.length - 1) {
+    studioAudio.playStampThud();
     renderResults();
     return;
   }
 
+  studioAudio.playPageTurn();
   session.index += 1;
   session.submitted = Boolean(session.results[session.index]);
   session.feedback = session.results[session.index] || null;
   persistSession();
   renderCurrentQuestion();
+  triggerPageTurnAnimation(quizPanel, "next");
+}
+
+function triggerPageTurnAnimation(element, direction) {
+  if (!element || document.documentElement.dataset.motion === "reduced") return;
+  element.classList.remove("paper-page-turning-next", "paper-page-turning-prev");
+  void element.offsetWidth;
+  element.classList.add(direction === "next" ? "paper-page-turning-next" : "paper-page-turning-prev");
 }
 
 function renderResults() {
@@ -2796,6 +2944,7 @@ function renderTranslationPracticeScreen() {
   bindAnnotationSectionEvents(item.id);
   document.querySelectorAll("[data-item-mark-kind]").forEach((button) => {
     button.addEventListener("click", () => {
+      studioAudio.playPencilStroke();
       const kind = button.dataset.itemMarkKind;
       const nextKind = currentItemMark === kind ? null : kind;
       translationSession = setTranslationItemMark(translationSession, item.id, nextKind);
@@ -2804,6 +2953,7 @@ function renderTranslationPracticeScreen() {
     });
   });
   document.querySelector("[data-clear-item-mark]")?.addEventListener("click", () => {
+    studioAudio.playPencilStroke();
     translationSession = setTranslationItemMark(translationSession, item.id, null);
     persistTranslationSession();
     renderTranslationMainPanel();
@@ -2821,17 +2971,24 @@ function renderTranslationPracticeScreen() {
   });
   document.getElementById("previousTranslationItem").addEventListener("click", () => {
     if (translationSession.index <= 0) return;
+    studioAudio.playPageTurn();
     translationSession = goToTranslationIndex(translationSession, translationSession.index - 1);
     persistTranslationSession();
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "prev");
   });
   document.getElementById("nextTranslationItem").addEventListener("click", () => {
     if (translationSession.index >= translationSession.items.length - 1) return;
+    studioAudio.playPageTurn();
     translationSession = goToTranslationIndex(translationSession, translationSession.index + 1);
     persistTranslationSession();
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "next");
   });
-  document.getElementById("finishTranslationPractice").addEventListener("click", finishTranslationPractice);
+  document.getElementById("finishTranslationPractice").addEventListener("click", () => {
+    studioAudio.playStampThud();
+    finishTranslationPractice();
+  });
 
   document.getElementById("revealTranslationReference")?.addEventListener("click", () => {
     translationSession = setTranslationRevealed(translationSession, item.id, !revealed);
@@ -3217,6 +3374,14 @@ function renderCorrectionWorkspace(responseId) {
             <option value="needs-review" ${itemReview.judgment === "needs-review" ? "selected" : ""}>${t("review.judgmentNeedsReview")}</option>
           </select>
         </label>
+        ${itemReview.judgment ? `
+          <div style="display: flex; align-items: flex-end;">
+            <span class="ink-stamp stamp-${itemReview.judgment}" id="judgmentStamp">
+              ${itemReview.judgment === "correct" ? "✓ " : itemReview.judgment === "incorrect" ? "✕ " : "✎ "}
+              ${t(`review.judgment${itemReview.judgment === "needs-review" ? "NeedsReview" : itemReview.judgment.charAt(0).toUpperCase() + itemReview.judgment.slice(1)}`)}
+            </span>
+          </div>
+        ` : ""}
       </div>
       <label><span>${t("review.itemComment")}</span><textarea id="correctionItemComment" rows="2">${escapeHtml(itemReview.comment || "")}</textarea></label>
       <label><span>${t("review.suggestedRevision")}</span><textarea id="correctionSuggestedRevision" rows="2">${escapeHtml(itemReview.suggestedRevision || "")}</textarea></label>
@@ -3313,7 +3478,15 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
     button.addEventListener("click", () => removeWorkspaceCorrection(item.id, button.dataset.removeCorrection));
   });
   document.getElementById("correctionJudgment").addEventListener("change", (event) => {
+    studioAudio.playStampThud();
     updateWorkspaceItemReview(item.id, { judgment: event.target.value || undefined });
+    renderTranslationMainPanel();
+    const stamp = document.getElementById("judgmentStamp");
+    if (stamp && document.documentElement.dataset.motion !== "reduced") {
+      stamp.classList.remove("stamping");
+      void stamp.offsetWidth;
+      stamp.classList.add("stamping");
+    }
   });
   document.getElementById("correctionItemComment").addEventListener("input", (event) => {
     updateWorkspaceItemReview(item.id, { comment: event.target.value });
@@ -3322,14 +3495,27 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
     updateWorkspaceItemReview(item.id, { suggestedRevision: event.target.value });
   });
   document.getElementById("previousCorrectionItem").addEventListener("click", () => {
+    studioAudio.playPageTurn();
     correctionItemIndex -= 1;
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "prev");
   });
   document.getElementById("nextCorrectionItem").addEventListener("click", () => {
+    studioAudio.playPageTurn();
     correctionItemIndex += 1;
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "next");
   });
-  document.getElementById("saveCorrectionReview").addEventListener("click", () => saveCorrectionReview(response));
+  document.getElementById("saveCorrectionReview").addEventListener("click", () => {
+    studioAudio.playStampThud();
+    const stamp = document.getElementById("judgmentStamp");
+    if (stamp && document.documentElement.dataset.motion !== "reduced") {
+      stamp.classList.remove("stamping");
+      void stamp.offsetWidth;
+      stamp.classList.add("stamping");
+    }
+    saveCorrectionReview(response);
+  });
 }
 
 function getWorkspaceItemReview(itemId) {
@@ -4261,7 +4447,8 @@ function clearPaperHistory() {
 function toggleTheme() {
   const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   document.documentElement.dataset.theme = next;
-  localStorage.setItem(THEME_KEY, next);
+  uiPreferences.theme = next;
+  saveUiPreferences(uiPreferences);
 }
 
 function nextLabel() {
