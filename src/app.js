@@ -149,15 +149,24 @@ const locales = {
       home: "首页",
       edit: "编辑",
       quiz: "做题",
+      specialPractice: "专项练习",
       translation: "翻译练习",
+    },
+    specialPractice: {
+      title: "专项练习工作台",
+      tagline: "系统化专项进阶训练与开放教学交换",
+      translationTitle: "双语翻译研习",
+      translationDesc: "文档分段双向翻译、元认知难点标记、教师批改与独立证据链",
+      enter: "进入练习",
+      back: "返回专项练习",
     },
     home: {
       title: "Quiz Studio 个人研习工作台",
       tagline: "专注文档研读、深度作答与精细批改",
       quizTitle: "客观做题练习",
-      quizDesc: "单选、多选、填空、判断与配对题型，即时墨水批改",
-      translationTitle: "双语翻译研习",
-      translationDesc: "双语沉浸翻译、词句元认知标记与独立证据链",
+      quizDesc: "单选、多选、填空、判断与配对题型，支持即时反馈与答完交卷",
+      specialPracticeTitle: "专项进阶练习",
+      specialPracticeDesc: "双语翻译研习、词句元认知标记与独立证据链",
       editorTitle: "试卷制作与题库",
       editorDesc: "创建、管理、导入与导出本地练习试卷",
       historyTitle: "评审历史与血缘",
@@ -213,6 +222,7 @@ const locales = {
       backToEdit: "返回编辑",
       quit: "退出",
       submitAnswer: "提交答案",
+      submitPaper: "提交试卷",
       viewResults: "查看结果",
       nextQuestion: "下一题",
       previousQuestion: "上一题",
@@ -222,6 +232,13 @@ const locales = {
     },
     practice: {
       setupTitle: "练习设置",
+      feedbackModeTitle: "答题反馈模式",
+      modeInstant: "即时反馈",
+      modeInstantDesc: "答完每题即时查看正误与解析",
+      modeSubmitAtEnd: "答完交卷",
+      modeSubmitAtEndDesc: "模拟考试流程，全部答完统一提交评分，过程中可自由切换修改答案",
+      confirmSubmitAllAnswered: "确定要提交试卷吗？交卷后将完成评分并生成作答记录，无法再修改答案。",
+      confirmSubmitUnanswered: "试卷中尚有 {count} 道题目未作答，确定现在提交吗？交卷后将完成评分，无法再修改答案。",
       typeFilter: "题型筛选",
       randomCount: "随机抽题数量",
       randomHint: "留空或 0 表示使用全部符合条件的题目",
@@ -607,15 +624,24 @@ const locales = {
       home: "Home",
       edit: "Edit",
       quiz: "Quiz",
+      specialPractice: "Special Practice",
       translation: "Translation",
+    },
+    specialPractice: {
+      title: "Special Practice Workspace",
+      tagline: "Focused specialized training and open teaching interchange",
+      translationTitle: "Translation Studio",
+      translationDesc: "Bilingual document translation, metacognitive marking, teacher reviews, and evidence tracking",
+      enter: "Enter Practice",
+      back: "Back to Special Practice",
     },
     home: {
       title: "Quiz Studio Study Workspace",
       tagline: "Focused reading, deliberate answering, and rich review",
       quizTitle: "Objective Quiz Practice",
-      quizDesc: "Single, multiple, blank, true/false, and matching questions with ink feedback",
-      translationTitle: "Translation Studio",
-      translationDesc: "Bilingual translation with metacognitive marking and evidence tracking",
+      quizDesc: "Single, multiple, blank, true/false, and matching questions with instant feedback or exam-style submission",
+      specialPracticeTitle: "Special Practice",
+      specialPracticeDesc: "Bilingual translation with metacognitive marking and evidence tracking",
       editorTitle: "Quiz Authoring & Library",
       editorDesc: "Create, manage, import, and export practice papers",
       historyTitle: "Review History & Lineage",
@@ -671,6 +697,7 @@ const locales = {
       backToEdit: "Back to edit",
       quit: "Quit",
       submitAnswer: "Submit answer",
+      submitPaper: "Submit Paper",
       viewResults: "View results",
       nextQuestion: "Next question",
       previousQuestion: "Previous",
@@ -680,6 +707,13 @@ const locales = {
     },
     practice: {
       setupTitle: "Practice setup",
+      feedbackModeTitle: "Practice Feedback Mode",
+      modeInstant: "Instant Feedback",
+      modeInstantDesc: "Check correctness and feedback immediately after each question",
+      modeSubmitAtEnd: "Submit at End",
+      modeSubmitAtEndDesc: "Exam-style workflow; navigate and change answers freely before final submission",
+      confirmSubmitAllAnswered: "Submit the paper now? Grading will be finalized and answers can no longer be changed.",
+      confirmSubmitUnanswered: "You still have {count} unanswered question(s). Submit now anyway? Answers can no longer be changed after submission.",
       typeFilter: "Question type filter",
       randomCount: "Random question count",
       randomHint: "Leave blank or 0 to use all matching questions",
@@ -1047,6 +1081,7 @@ let paper = getActivePaper();
 let selectedQuestionId = paper.questions[0]?.id ?? null;
 let uiPreferences = loadUiPreferences();
 let currentMode = "home";
+let currentFeedbackMode = "instant";
 let session = loadActiveSession();
 let toastTimer = null;
 let librarySearch = "";
@@ -1088,8 +1123,10 @@ const prefMotionHint = document.getElementById("prefMotionHint");
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
+const specialPracticeView = document.getElementById("specialPracticeView");
+const specialPracticePanel = document.getElementById("specialPracticePanel");
+const specialPracticeModeButton = document.getElementById("specialPracticeModeButton");
 const translationView = document.getElementById("translationView");
-const translationModeButton = document.getElementById("translationModeButton");
 const translationLibraryPanel = document.getElementById("translationLibraryPanel");
 const translationDocumentPanel = document.getElementById("translationDocumentPanel");
 const skipLink = document.getElementById("skipLink");
@@ -1201,7 +1238,7 @@ function bindGlobalEvents() {
   homeModeButton.addEventListener("click", () => setMode("home"));
   editModeButton.addEventListener("click", () => setMode("edit"));
   quizModeButton.addEventListener("click", () => setMode("quiz"));
-  translationModeButton.addEventListener("click", () => setMode("translation"));
+  specialPracticeModeButton?.addEventListener("click", () => setMode("specialPractice"));
   themeToggle.addEventListener("click", toggleTheme);
   soundToggle.addEventListener("click", toggleSound);
   settingsToggle?.addEventListener("click", openPreferencesDialog);
@@ -1270,6 +1307,7 @@ function renderAll() {
   renderQuestionList();
   renderQuestionEditor();
   renderQuizStart();
+  renderSpecialPracticeHub();
   renderTranslationView();
 }
 
@@ -1281,7 +1319,7 @@ function renderChrome() {
   homeModeButton.textContent = t("modes.home");
   editModeButton.textContent = t("modes.edit");
   quizModeButton.textContent = t("modes.quiz");
-  translationModeButton.textContent = t("modes.translation");
+  if (specialPracticeModeButton) specialPracticeModeButton.textContent = t("modes.specialPractice");
   themeToggle.title = t("aria.theme");
   themeToggle.setAttribute("aria-label", t("aria.theme"));
   soundToggle.title = t("aria.sound");
@@ -1376,11 +1414,11 @@ function renderHomeLauncher() {
         </div>
         <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
       </button>
-      <button type="button" class="launcher-card" id="launchTranslation">
+      <button type="button" class="launcher-card" id="launchSpecialPractice">
         <div>
-          <div class="launcher-card-icon">📖</div>
-          <h3>${t("home.translationTitle")}</h3>
-          <p>${t("home.translationDesc")}</p>
+          <div class="launcher-card-icon">🎯</div>
+          <h3>${t("home.specialPracticeTitle")}</h3>
+          <p>${t("home.specialPracticeDesc")}</p>
         </div>
         <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
       </button>
@@ -1404,7 +1442,7 @@ function renderHomeLauncher() {
   `;
 
   document.getElementById("launchQuiz")?.addEventListener("click", () => setMode("quiz"));
-  document.getElementById("launchTranslation")?.addEventListener("click", () => setMode("translation"));
+  document.getElementById("launchSpecialPractice")?.addEventListener("click", () => setMode("specialPractice"));
   document.getElementById("launchEditor")?.addEventListener("click", () => setMode("edit"));
   document.getElementById("launchHistory")?.addEventListener("click", () => {
     setMode("translation");
@@ -1413,18 +1451,47 @@ function renderHomeLauncher() {
   });
 }
 
+function renderSpecialPracticeHub() {
+  if (currentMode !== "specialPractice" || !specialPracticePanel) return;
+
+  specialPracticePanel.innerHTML = `
+    <div class="launcher-header">
+      <h2>${t("specialPractice.title")}</h2>
+      <p>${t("specialPractice.tagline")}</p>
+    </div>
+    <div class="launcher-grid">
+      <button type="button" class="launcher-card" id="launchSpecialTranslation">
+        <div>
+          <div class="launcher-card-icon">📖</div>
+          <h3>${t("specialPractice.translationTitle")}</h3>
+          <p>${t("specialPractice.translationDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("specialPractice.enter")} &rarr;</div>
+      </button>
+    </div>
+  `;
+
+  document.getElementById("launchSpecialTranslation")?.addEventListener("click", () => setMode("translation"));
+}
+
 function setMode(mode) {
   currentMode = mode;
   homeView.classList.toggle("hidden", mode !== "home");
   editorView.classList.toggle("hidden", mode !== "edit");
   quizView.classList.toggle("hidden", mode !== "quiz");
+  if (specialPracticeView) specialPracticeView.classList.toggle("hidden", mode !== "specialPractice");
   translationView.classList.toggle("hidden", mode !== "translation");
+
   homeModeButton.classList.toggle("active", mode === "home");
   editModeButton.classList.toggle("active", mode === "edit");
   quizModeButton.classList.toggle("active", mode === "quiz");
-  translationModeButton.classList.toggle("active", mode === "translation");
+  if (specialPracticeModeButton) {
+    specialPracticeModeButton.classList.toggle("active", mode === "specialPractice" || mode === "translation");
+  }
+
   if (mode === "home") renderHomeLauncher();
   if (mode === "quiz") renderQuizStart();
+  if (mode === "specialPractice") renderSpecialPracticeHub();
   if (mode === "translation") renderTranslationView();
 }
 
@@ -1856,6 +1923,25 @@ function renderQuizStart() {
       </div>
       <div class="practice-setup">
         <h3>${t("practice.setupTitle")}</h3>
+        <div class="feedback-mode-block">
+          <h4>${t("practice.feedbackModeTitle")}</h4>
+          <div class="mode-options-grid">
+            <label class="mode-option-card ${currentFeedbackMode === "instant" ? "selected" : ""}">
+              <input type="radio" name="practiceFeedbackMode" value="instant" ${currentFeedbackMode === "instant" ? "checked" : ""}>
+              <div class="mode-option-content">
+                <strong>${t("practice.modeInstant")}</strong>
+                <small>${t("practice.modeInstantDesc")}</small>
+              </div>
+            </label>
+            <label class="mode-option-card ${currentFeedbackMode === "submitAtEnd" ? "selected" : ""}">
+              <input type="radio" name="practiceFeedbackMode" value="submitAtEnd" ${currentFeedbackMode === "submitAtEnd" ? "checked" : ""}>
+              <div class="mode-option-content">
+                <strong>${t("practice.modeSubmitAtEnd")}</strong>
+                <small>${t("practice.modeSubmitAtEndDesc")}</small>
+              </div>
+            </label>
+          </div>
+        </div>
         <div class="filter-grid">
           ${QUESTION_TYPES.map((type) => `
             <label class="inline-check filter-check">
@@ -1889,6 +1975,16 @@ function renderQuizStart() {
       </div>
     </div>
   `;
+
+  document.querySelectorAll("input[name='practiceFeedbackMode']").forEach((radio) => {
+    radio.addEventListener("change", (e) => {
+      currentFeedbackMode = e.target.value;
+      document.querySelectorAll(".mode-option-card").forEach((card) => {
+        const input = card.querySelector("input[type='radio']");
+        card.classList.toggle("selected", Boolean(input && input.checked));
+      });
+    });
+  });
 
   if (hasSavedSession) {
     document.getElementById("resumeQuiz").addEventListener("click", () => {
@@ -1941,6 +2037,11 @@ function startQuiz(options = {}) {
     return;
   }
 
+  const selectedFeedbackMode = options.feedbackMode
+    || document.querySelector("input[name='practiceFeedbackMode']:checked")?.value
+    || currentFeedbackMode
+    || "instant";
+
   session = {
     id: makeId(),
     paperId: activePaperId,
@@ -1953,6 +2054,7 @@ function startQuiz(options = {}) {
     submitted: false,
     feedback: null,
     completed: false,
+    feedbackMode: selectedFeedbackMode,
   };
   persistSession();
   renderCurrentQuestion();
@@ -1963,6 +2065,8 @@ function renderCurrentQuestion() {
   const progress = Math.round((session.index / session.questions.length) * 100);
   const answeredCount = session.questions.filter((item) => isAnswerComplete(item, session.answers[item.id])).length;
   const unansweredCount = session.questions.length - answeredCount;
+  const isSubmitAtEnd = session.feedbackMode === "submitAtEnd";
+  const isLastQuestion = session.index === session.questions.length - 1;
 
   quizPanel.innerHTML = `
     <div class="quiz-question">
@@ -1975,14 +2079,22 @@ function renderCurrentQuestion() {
         <span class="type-pill">${typeLabel(question.type)}</span>
         <h2>${escapeHtml(question.prompt || t("question.unnamed"))}</h2>
       </div>
-      ${session.feedback ? renderFeedback(session.feedback) : ""}
+      ${!isSubmitAtEnd && session.feedback ? renderFeedback(session.feedback) : ""}
       <div class="answer-list">
         ${renderQuizAnswer(question)}
       </div>
       <div class="quiz-actions">
         <button class="secondary-button" type="button" id="quitQuiz">${t("actions.quit")}</button>
         <button class="secondary-button" type="button" id="previousQuestion" ${session.index === 0 ? "disabled" : ""}>${t("actions.previousQuestion")}</button>
-        <button class="primary-button" type="button" id="${session.submitted ? "nextQuestion" : "submitAnswer"}">${session.submitted ? nextLabel() : t("actions.submitAnswer")}</button>
+        ${isSubmitAtEnd ? `
+          ${isLastQuestion ? `
+            <button class="primary-button" type="button" id="submitQuizAtEnd">${t("actions.submitPaper")}</button>
+          ` : `
+            <button class="primary-button" type="button" id="nextQuestion">${t("actions.nextQuestion")}</button>
+          `}
+        ` : `
+          <button class="primary-button" type="button" id="${session.submitted ? "nextQuestion" : "submitAnswer"}">${session.submitted ? nextLabel() : t("actions.submitAnswer")}</button>
+        `}
       </div>
     </div>
   `;
@@ -1994,15 +2106,24 @@ function renderCurrentQuestion() {
   });
   document.getElementById("previousQuestion").addEventListener("click", goPreviousQuestion);
 
-  if (session.submitted) {
-    document.getElementById("nextQuestion").addEventListener("click", goNextQuestion);
+  if (isSubmitAtEnd) {
+    if (isLastQuestion) {
+      document.getElementById("submitQuizAtEnd")?.addEventListener("click", submitQuizAtEnd);
+    } else {
+      document.getElementById("nextQuestion")?.addEventListener("click", goNextQuestion);
+    }
   } else {
-    document.getElementById("submitAnswer").addEventListener("click", submitCurrentAnswer);
+    if (session.submitted) {
+      document.getElementById("nextQuestion")?.addEventListener("click", goNextQuestion);
+    } else {
+      document.getElementById("submitAnswer").addEventListener("click", submitCurrentAnswer);
+    }
   }
 }
 
 function renderQuizAnswer(question) {
   const answer = session.answers[question.id];
+  const isSubmitted = session.feedbackMode === "submitAtEnd" ? false : session.submitted;
 
   if (question.type === "single" || question.type === "multiple") {
     return question.options
@@ -2012,7 +2133,7 @@ function renderQuizAnswer(question) {
           : Array.isArray(answer) && answer.includes(option.id);
         return `
           <label class="choice-line ${checked ? "selected" : ""}">
-            <input type="${question.type === "single" ? "radio" : "checkbox"}" name="choiceAnswer" value="${option.id}" ${checked ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
+            <input type="${question.type === "single" ? "radio" : "checkbox"}" name="choiceAnswer" value="${option.id}" ${checked ? "checked" : ""} ${isSubmitted ? "disabled" : ""}>
             <span class="choice-letter">${String.fromCharCode(65 + index)}</span>
             ${checked ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M4 10.5 L8.5 15 L16 5" stroke="var(--brand-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
             <span>${escapeHtml(option.text)}</span>
@@ -2026,7 +2147,7 @@ function renderQuizAnswer(question) {
     return `
       <label>
         <span>${t("question.yourAnswer")}</span>
-        <input id="blankAnswer" type="text" value="${escapeHtml(answer || "")}" ${session.submitted ? "disabled" : ""}>
+        <input id="blankAnswer" type="text" value="${escapeHtml(answer || "")}" ${isSubmitted ? "disabled" : ""}>
       </label>
     `;
   }
@@ -2034,12 +2155,12 @@ function renderQuizAnswer(question) {
   if (question.type === "truefalse") {
     return `
       <label class="judge-line ${answer === true ? "selected" : ""}">
-        <input type="radio" name="judgeAnswer" value="true" ${answer === true ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
+        <input type="radio" name="judgeAnswer" value="true" ${answer === true ? "checked" : ""} ${isSubmitted ? "disabled" : ""}>
         ${answer === true ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M4 10.5 L8.5 15 L16 5" stroke="var(--brand-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
         <span>${t("question.true")}</span>
       </label>
       <label class="judge-line ${answer === false ? "selected" : ""}">
-        <input type="radio" name="judgeAnswer" value="false" ${answer === false ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
+        <input type="radio" name="judgeAnswer" value="false" ${answer === false ? "checked" : ""} ${isSubmitted ? "disabled" : ""}>
         ${answer === false ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M5 5 L15 15 M15 5 L5 15" stroke="var(--ink-vermilion)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
         <span>${t("question.false")}</span>
       </label>
@@ -2049,7 +2170,6 @@ function renderQuizAnswer(question) {
   return question.pairs
     .map((pair) => {
       const selectedId = answer?.[pair.id];
-      const isSubmitted = session.submitted;
       const isPairCorrect = isSubmitted && selectedId === pair.rightId;
       const isPairWrong = isSubmitted && !isPairCorrect;
       const correctOptionText = question.rightOptions.find((opt) => opt.id === pair.rightId)?.text || "";
@@ -2066,7 +2186,7 @@ function renderQuizAnswer(question) {
               <span class="match-term">${escapeHtml(pair.left)}</span>
             </div>
             <div class="match-right">
-              <select data-match-answer="${pair.id}" ${session.submitted ? "disabled" : ""}>
+              <select data-match-answer="${pair.id}" ${isSubmitted ? "disabled" : ""}>
                 <option value="">${t("question.choose")}</option>
                 ${question.rightOptions.map((right) => `<option value="${right.id}" ${selectedId === right.id ? "selected" : ""}>${escapeHtml(right.text)}</option>`).join("")}
               </select>
@@ -2085,7 +2205,7 @@ function renderQuizAnswer(question) {
 }
 
 function bindQuizAnswer(question) {
-  if (session.submitted) return;
+  if (session.feedbackMode !== "submitAtEnd" && session.submitted) return;
 
   if (question.type === "single") {
     document.querySelectorAll("input[name='choiceAnswer']").forEach((input) => {
@@ -2163,8 +2283,13 @@ function goPreviousQuestion() {
   if (session.index === 0) return;
   studioAudio.playPageTurn();
   session.index -= 1;
-  session.submitted = Boolean(session.results[session.index]);
-  session.feedback = session.results[session.index] || null;
+  if (session.feedbackMode === "submitAtEnd") {
+    session.submitted = false;
+    session.feedback = null;
+  } else {
+    session.submitted = Boolean(session.results[session.index]);
+    session.feedback = session.results[session.index] || null;
+  }
   persistSession();
   renderCurrentQuestion();
   triggerPageTurnAnimation(quizPanel, "prev");
@@ -2172,6 +2297,10 @@ function goPreviousQuestion() {
 
 function goNextQuestion() {
   if (session.index >= session.questions.length - 1) {
+    if (session.feedbackMode === "submitAtEnd") {
+      submitQuizAtEnd();
+      return;
+    }
     studioAudio.playStampThud();
     renderResults();
     return;
@@ -2179,11 +2308,30 @@ function goNextQuestion() {
 
   studioAudio.playPageTurn();
   session.index += 1;
-  session.submitted = Boolean(session.results[session.index]);
-  session.feedback = session.results[session.index] || null;
+  if (session.feedbackMode === "submitAtEnd") {
+    session.submitted = false;
+    session.feedback = null;
+  } else {
+    session.submitted = Boolean(session.results[session.index]);
+    session.feedback = session.results[session.index] || null;
+  }
   persistSession();
   renderCurrentQuestion();
   triggerPageTurnAnimation(quizPanel, "next");
+}
+
+function submitQuizAtEnd() {
+  const answeredCount = session.questions.filter((item) => isAnswerComplete(item, session.answers[item.id])).length;
+  const unansweredCount = session.questions.length - answeredCount;
+  const confirmMessage = unansweredCount > 0
+    ? t("practice.confirmSubmitUnanswered", { count: unansweredCount })
+    : t("practice.confirmSubmitAllAnswered");
+
+  if (!window.confirm(confirmMessage)) {
+    return;
+  }
+  studioAudio.playStampThud();
+  renderResults();
 }
 
 function triggerPageTurnAnimation(element, direction) {
@@ -2600,6 +2748,7 @@ function renderTranslationView() {
 
 function renderTranslationLibraryPanel() {
   translationLibraryPanel.innerHTML = `
+    <button type="button" class="back-to-hub-btn" id="backToSpecialPracticeHub">&larr; ${t("specialPractice.back")}</button>
     <div class="library-heading">
       <strong>${t("translation.title")}</strong>
       <span>${translationLibrary.documents.length}</span>
@@ -2621,6 +2770,7 @@ function renderTranslationLibraryPanel() {
     </div>
   `;
 
+  document.getElementById("backToSpecialPracticeHub")?.addEventListener("click", () => setMode("specialPractice"));
   document.getElementById("newTranslationFolder").addEventListener("click", createTranslationFolderPrompt);
   document.getElementById("openTranslationHistory").addEventListener("click", openTranslationHistory);
   bindTranslationFolderEvents();
@@ -4605,7 +4755,13 @@ function exportLearnerResponse(responseId) {
 
 function loadActiveSession() {
   const saved = loadJson(ACTIVE_SESSION_KEY);
-  return saved?.paperId === activePaperId && !saved.completed ? saved : null;
+  if (saved?.paperId === activePaperId && !saved.completed) {
+    if (!saved.feedbackMode || (saved.feedbackMode !== "instant" && saved.feedbackMode !== "submitAtEnd")) {
+      saved.feedbackMode = "instant";
+    }
+    return saved;
+  }
+  return null;
 }
 
 function clearActiveSession() {

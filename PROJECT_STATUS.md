@@ -2,15 +2,20 @@
 
 ## Current Phase
 
-Pre-Freeze UI Productization
+Pre-Freeze V1 Scope Closure
 
 ## Current Milestone
 
-UI Productization: Layered Paper Study Desk (Design Foundation, App Shell & Tool Launcher, Core Learning Surfaces, Teacher Marking Desk, Synthesized Motion & Audio) — complete and verified; Final Human Acceptance Gate = PASS
+Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practice Information Architecture — complete and verified; Human Gate A = PASS
 
-This workstream establishes product-level UI convergence (DESIGN.md, Strong Paper light mode, Soft Near-Black dark mode, page-turn motion/sound, MCQ ink selection, per-pair matching feedback, rubber stamp feedback, Tool Launcher home, resizable sidebars) before the next Feature Complete Review. It does not reopen M6 product semantics and is not Milestone 7 Product Hardening.
+This workstream delivers the first of two pre-freeze scope closure packages:
+1. **Objective Quiz Practice Feedback Modes**: Adds Instant Feedback (`instant`, default) vs. Submit at End (`submitAtEnd`) modes in practice setup, preserving full refresh recovery, supporting all 5 objective question types, and enforcing explicit user confirmation and cancel safety upon final paper submission.
+2. **Special Practice Information Architecture**: Reorganizes product hierarchy so that Translation is housed under the top-level `Special Practice` container, preserving all existing Translation workflows.
+3. **Human Gate A**: Successfully evaluated and passed (PASS).
 
-## Pre-Freeze UI Productization Milestone Summary
+It precedes Batch B (Question Media: image/audio) and the subsequent Whole-Product Feature Complete Review V3.
+
+## Pre-Freeze UI Productization Milestone Summary (Historical Baseline)
 
 - **Design System Foundation**: Created `DESIGN.md` establishing the Layered Paper Study Desk design tokens, typography, spacing, natural semantic inks, and zero-dependency synthesized audio engine.
 - **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, resizable sidebars, and persistent UI preferences (theme, sound effects, motion preference, sidebar width).
@@ -25,19 +30,19 @@ Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 compre
 
 ## Current Release Scope
 
-The current-version scope includes the Milestone 1-5 baseline, the approved Milestone 6 line, and the Pre-Freeze UI Productization design system. Translation Practice remains M6's primary new learner workflow. M6.0 Open Teaching Interchange, M6.1 Translation Domain and Persistence Foundation, and M6.2–M6.7 are verified with comprehensive manual acceptance Journeys 01–10 complete (PASS). M6 remains local-first and does not require embedded AI APIs, paid inference, or network access.
+The current-version scope includes the Milestone 1-5 baseline, the approved Milestone 6 line, the Pre-Freeze UI Productization design system, and the Pre-Freeze V1 Scope Closure workstream (Batch A: Feedback Modes & Special Practice IA; Batch B: Question Media). Translation Practice is housed within Special Practice. All operations remain local-first without requiring external network access or paid AI inference.
 
 ## Feature Complete Status
 
-Not yet declared.
+Temporarily deferred.
 
-The next lifecycle gate is the Whole-Product Feature Complete Review V2 before entering Feature Freeze.
+The repository is completing Pre-Freeze V1 Scope Closure (Batch A & Batch B). Feature Complete declaration will be performed via Whole-Product Feature Complete Review V3 upon closure of both batches.
 
 ## Feature Freeze Status
 
-Not entered.
+Not entered (inactive).
 
-Feature Freeze can begin only after the UI Productization and reopened scope pass the Whole-Product Feature Complete Review V2, Deferred Features are separated from the current version, and the user explicitly authorizes entering Feature Freeze.
+Feature Freeze will begin only after Pre-Freeze V1 Scope Closure batches pass human acceptance gates, Whole-Product Review V3 is formally accepted, and the user explicitly authorizes entering Feature Freeze.
 
 ## Open Release Blockers
 
@@ -50,22 +55,23 @@ Feature Freeze can begin only after the UI Productization and reopened scope pas
 
 Not started.
 
-Product Hardening is Milestone 7 and will begin only after all Milestone 6 and UI Productization work passes review and Feature Freeze is explicitly entered.
+Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope Closure (Batch A & Batch B) passes human acceptance gates, Whole-Product Feature Complete Review V3 is accepted, and Feature Freeze is explicitly entered.
+
+### Milestone 7 Product Hardening Scope (Mandatory V1)
+- **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction) is classified as a mandatory V1 Milestone 7 Product Hardening item (not deferred).
+- **Mobile/Touch Ergonomics & Native Dialog Polish**: Responsive layout adjustments for history checklists, multi-button rows, and confirmation workflows on touch viewports.
+- **Whole-Product Verification**: Legacy migration safety tests and clean clone environment checks.
 
 ## Verification Status
 
-- 232 automated core/interchange/translation/import/session/annotation/corrections/review/transport/history/retry/deletion/sw/runtime tests pass. Coverage now includes the `.bat` CRLF checkout contract and a real Windows missing-Python diagnostic execution in addition to item-level metacognitive marking, schema/runtime validation, needs-work derivation, navigation boundaries, backup state refresh, the local runtime contract, and bilingual browser-launch failure diagnostics. Historical `comment` and `strikethrough` validation remains green; all earlier M6.0-M6.7 coverage continues to pass.
-- **Deletion-integrity closure patch**: a post-approval review found that `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` ignored live remediation Translation Documents, so deleting a Learner Response or Teacher Review could leave a still-live remediation document in the Translation Library with unresolvable provenance — inconsistent with `parseLibraryBackup()`, which correctly requires a live remediation document's provenance to resolve on every restore. Fixed by distinguishing a finalized response's own (safely-unresolvable) historical provenance from a *live* remediation document's canonical claim: both analysis functions now accept `translationDocuments` and report `dependentRemediationDocumentIds`/`hasBlockingDependents`, and the delete flows in `app.js` refuse the deletion outright (a toast warning, no confirmation dialog) while such a live dependency exists, rather than cascading through it. Remediation documents are never auto-deleted as a side effect. Added 7 tests, including a regression guard proving the pre-patch sequence would have produced an unrestorable backup, and a full backup round trip proving a permitted deletion (remediation document removed first) still restores cleanly.
-- **Pre-hardening local runtime recovery (Human Gate 5/5 PASS; reviewed/fixed)**: `start-local.bat` is now a thin wrapper over the single Python runtime owner in `scripts/dev-server.py`. The runtime exclusively binds strict port `8000` on every IPv4/IPv6 localhost family advertised by Windows, verifies `/__runtime__/health` through both the canonical `localhost` hostname and each bound listener, serves the current working tree with `no-store`, reports the occupying PID on port collision where available, and never drifts origin. Its server-owned recovery entry unregisters only same-origin Quiz Studio `/sw.js` registrations and deletes only `quiz-studio-*` Cache Storage without accessing localStorage. Browser-launch failure retains the active server and prints an exact bilingual manual-open URL. Loopback development no longer registers the production Service Worker; hosted production PWA behavior and the complete ESM offline closure remain available.
-- CI workflow exists; it passed on the `milestone/6.7-history-retry-integration` branch (PR #6), including after the deletion-integrity closure patch.
-- A local browser smoke test exercised the complete M6.7 journey live using seeded fixtures (a response with two reviews carrying conflicting judgments): browsed and filtered Translation History by origin/status/sort; opened a history detail view and confirmed item-level evidence, learner marks, and both linked reviews were reachable; ran a real **Retry needs-work items** action and confirmed the new session contained only the flagged item with `materialProvenance.purpose: "retry"`, then finished it and confirmed the finalized response carried retry provenance (`sourceResponseId`/`sourceMaterialId`) while the original response was untouched; ran **Retry selected items** with one item unchecked and confirmed only the selected item carried over; followed lineage forward from the original response to the retry response and back; deleted a Teacher Review referenced by a retry response's `sourceReviewId` and confirmed the lineage view then showed it as unavailable rather than crashing; deleted a Translation Document with a dependent finalized response and confirmed the confirmation named the dependent count and the response remained fully browsable/retriable from History afterward; and triggered the response-deletion cascade confirmation, which correctly named the dependent review/derived-record counts before deleting the response together with its reviews while leaving the derived retry response in place. English-locale parity was spot-checked on the same flows.
-- During this smoke test, found and fixed one real bug (not caught by unit tests, since it lives in `app.js` UI glue rather than a core module): `deleteLearnerResponseConfirm()` originally wrote the updated Learner Response collection before reading `loadTeacherReviews()` again, and `loadTeacherReviews()` re-validates every review against the *current* response collection on every call — so it saw the just-orphaned reviews and threw. Fixed by snapshotting both collections up front. Re-verified after the fix with a clean isolated reproduction.
-- **Service Worker separation**: Hosted production remains on the Network-First v4 PWA path with immediate takeover and a complete ESM precache. Loopback development is deliberately separate: no production SW registration, no-store responses, and a narrowly scoped legacy SW/cache retirement entry owned by the local runtime.
-- The browser harness cannot drive native `window.confirm()`/`window.prompt()` dialogs; deletion and retry confirmations were smoke-tested by monkey-patching `window.confirm` to capture the exact message text and to accept/decline programmatically, which exercises the real confirmation logic and message content but not the native dialog UI itself. This is a known automation-harness limitation carried over from earlier milestones, not a product defect.
-- Comprehensive M6 human acceptance Journeys 01–10 have been completed (PASS) under the reduced comment scope and hardening batch. Full v1 project-wide manual acceptance across all milestones remains open.
-- Clean clone verification has not been performed.
-- GitHub Pages deployment is manual-only and deferred.
-- M6.0–M6.7 are implementation complete and verified through comprehensive human acceptance.
+- 244 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
+- **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes (Instant Feedback vs. Submit at End with explicit submit confirmations) and Special Practice information architecture (`Special Practice -> Translation`) implemented and verified with new tests in `tests/practice-modes.test.js`.
+- **Human Gate A Guide**: Verification journeys A, B, and C documented in `manual-qa/human-gate-a.md` and `manual-qa/human-gate-a.zh-CN.md` are evaluated and passed (**PASS**).
+
+## Agreed Question Media Policy (Batch B Scope Definition)
+
+- **V1 In-Scope (Pre-Freeze Batch B)**: All five Objective Quiz question types (`single`, `multiple`, `blank`, `truefalse`, `matching`) may optionally contain image and/or audio simultaneously; images support enlarged/zoom viewing; audio renders as an in-question playback bar.
+- **V2 Deferred Scope**: Per-paper audio playback restrictions (e.g., seeking/scrubbing controls, maximum replay count permissions, and strict exam-lockout policies).
 
 ## Known Risks
 
@@ -104,11 +110,13 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 and U
 - Subjective question grading.
 - Public GitHub Pages deployment and final GitHub Release.
 - Advanced history analytics/search, graph-style lineage visualization, and a History pagination/virtualization layer (deferred to a future version if History size becomes a practical problem).
-- Item-level metacognitive marking interaction refinement (active-color toggle buttons, click-again-to-remove, multiple simultaneous marks per item, and removal of popup-style box) — recorded for post-UI hardening / backlog.
+- Per-paper audio playback policies, seeking/scrubbing restrictions, and replay limits (V2 deferred).
 
 ## Next Engineering Objective
 
-Conduct the Whole-Product Feature Complete Review V2 across all user workflows before entering Feature Freeze and Milestone 7 Product Hardening.
+1. **Pre-Freeze Scope Closure · Batch B**: Implement Objective Question Media (optional image and/or audio across all 5 question types, image zoom viewing, in-question audio player bar).
+2. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and recommend entering Feature Freeze.
+3. **Milestone 7 Product Hardening**: Enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
 
 ## Repository State
 
@@ -119,4 +127,4 @@ Conduct the Whole-Product Feature Complete Review V2 across all user workflows b
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; PR #11 merged as `6b38c40`, and the BAT CRLF follow-up PR #12 merged as `6643a1b`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #14 (`ui/layered-paper-productization`) has completed Pre-Freeze UI Productization and passed the Final Human Acceptance Gate with 239 total tests: 238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed and passing GitHub CI; awaits Whole-Product Feature Complete Review V2. Historical PR #11 and PR #12 remain merged on `main`. Historical Draft PR #10 remains Closed/Superseded.
+- Pull request status: PR #15 (`feature/pre-freeze-scope-batch-a`) implements Batch A (Practice Feedback Modes & Special Practice IA), passes Human Gate A (PASS) and CI, and merges into `main`. Historical PR #14 (`ui/layered-paper-productization`) remains merged on `main`.
