@@ -2,48 +2,42 @@
 
 ## Current Phase
 
-Feature Development - Scope Reopened
+Pre-Freeze UI Productization
 
 ## Current Milestone
 
-Milestone 6.7: History, Retry, Portability, and Whole-Product Integration - complete (M6 comprehensive human acceptance Journeys 01–10: PASS; UX hardening batch complete)
+UI Productization: Layered Paper Study Desk (Design Foundation, App Shell & Tool Launcher, Core Learning Surfaces, Teacher Marking Desk, Synthesized Motion & Audio) — complete and verified; Final Human Acceptance Gate = PASS
 
-M6.7 is the last feature-development sub-milestone of M6. M6 feature-development implementation and comprehensive human acceptance are complete.
+This workstream establishes product-level UI convergence (DESIGN.md, Strong Paper light mode, Soft Near-Black dark mode, page-turn motion/sound, MCQ ink selection, per-pair matching feedback, rubber stamp feedback, Tool Launcher home, resizable sidebars) before the next Feature Complete Review. It does not reopen M6 product semantics and is not Milestone 7 Product Hardening.
+
+## Pre-Freeze UI Productization Milestone Summary
+
+- **Design System Foundation**: Created `DESIGN.md` establishing the Layered Paper Study Desk design tokens, typography, spacing, natural semantic inks, and zero-dependency synthesized audio engine.
+- **Application Shell & Tool Launcher**: Added dedicated Tool Launcher home surface, topbar sound toggle button, resizable sidebars, and persistent UI preferences (theme, sound effects, motion preference, sidebar width).
+- **Core Learning Surfaces**: Rebuilt Objective Quiz and Translation Practice into continuous laid paper sheets resting on the study desk, with organic page-turn transitions, pencil stroke sounds, and granular per-pair matching feedback with inline correction hints.
+- **Teacher Marking Desk**: Rebuilt Correction Workspace into a continuous paper manuscript with pen marking tray, live projection, and tactile rubber stamp feedback with stamp thud audio.
+- **Offline & Verification Closure**: 239 total tests (238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed), including UI preferences persistence, lightweight preferences dialog, and complete Service Worker ESM precache closure.
+- **Human Acceptance Gate**: Final Human Acceptance Gate has been executed and passed (PASS).
 
 ## Acceptance Policy (Historical Record)
 
 Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) has now been executed and passed (PASS). M6.0 and M6.1 were previously accepted individually.
 
-## Pre-Hardening Local Runtime Recovery
-
-The corrective `recovery/local-runtime-contract` workstream was rebuilt from the clean `main` baseline `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`. It changes only the Windows/local runtime boundary; it does not reopen accepted M6 product behavior and is not Milestone 7 Product Hardening.
-
-The normal-profile Chrome Human Gate passed 5/5 at the preserved `http://localhost:8000` origin before PR #11 merged as `6b38c40`: existing user data remained intact, current M6 behavior was visible and functional, cold/restart/already-open-browser cases succeeded, and no cache clearing or DevTools intervention was required. That result remains valid for those five runs, but a post-merge launch exposed a Windows batch parsing regression when `start-local.bat` was checked out with bare LF endings and entered the missing-Python diagnostic path. The focused `fix/local-runtime-bat-crlf` follow-up enforces CRLF for every `.bat` through `.gitattributes` and adds both a cross-platform line-ending contract test and a real Windows missing-Python launcher test. The complete local suite passes 232/232 with the bundled Python runtime, PR #12 CI passed, and PR #12 merged as `6643a1b`; post-merge user click-through confirmation remains required.
-
-## M6 Comprehensive Acceptance and Hardening Closure
-
-- **M6 comprehensive acceptance Journeys 01–10**: PASS.
-- Span Comment creation remains removed from the current product scope.
-- **Small UX Hardening Closure Batch**:
-  1. Item-level metacognitive marking: added first-class whole-item Unknown / Uncertain / Should know states, additive, persisted through session recovery and into finalized evidence, and reflected in needs-work derivation.
-  2. Practice navigation boundary states: previous/next question navigation controls now carry disabled styling and boundary guards at first/last items.
-  3. Backup restore immediate Translation Library refresh: in-memory `translationLibrary` and active document selection now update immediately upon backup restore without requiring an F5 browser reload.
-
 ## Current Release Scope
 
-The current-version scope includes the Milestone 1-5 baseline and the approved Milestone 6 line. Translation Practice remains M6's primary new learner workflow. M6.0 Open Teaching Interchange, M6.1 Translation Domain and Persistence Foundation, and M6.2–M6.7 are verified with comprehensive manual acceptance Journeys 01–10 complete (PASS). M6.7 turns the completed Translation/Open Teaching feature set into a durable product: Translation History browsing across every finalized response (independent of whether the source document still exists), explicit retry (entire response / selected items / needs-work items) that always produces new independent evidence, backward/forward lineage navigation, and explicit, warned deletion for Translation Documents, Learner Responses, and Teacher Reviews. M6 remains local-first and does not require embedded AI APIs, paid inference, or network access.
+The current-version scope includes the Milestone 1-5 baseline, the approved Milestone 6 line, and the Pre-Freeze UI Productization design system. Translation Practice remains M6's primary new learner workflow. M6.0 Open Teaching Interchange, M6.1 Translation Domain and Persistence Foundation, and M6.2–M6.7 are verified with comprehensive manual acceptance Journeys 01–10 complete (PASS). M6 remains local-first and does not require embedded AI APIs, paid inference, or network access.
 
 ## Feature Complete Status
 
-Previous candidate review reached; current scope reopened and no longer feature complete.
+Not yet declared.
 
-Milestone 1 is complete as the foundation baseline. Milestones 2-5 have first implementations landed, but full acceptance is pending. The Feature Complete Candidate review reached under that earlier boundary remains historical evidence. M6 comprehensive acceptance Journeys 01–10 are complete (PASS) under the reduced comment scope and hardening batch. The next lifecycle gate is the whole-product Feature Complete Review before entering Feature Freeze.
+The next lifecycle gate is the Whole-Product Feature Complete Review V2 before entering Feature Freeze.
 
 ## Feature Freeze Status
 
 Not entered.
 
-Feature Freeze can begin only after the reopened scope passes a new whole-product Feature Complete Review, Deferred Features are separated from the current version, and the user explicitly authorizes entering Feature Freeze.
+Feature Freeze can begin only after the UI Productization and reopened scope pass the Whole-Product Feature Complete Review V2, Deferred Features are separated from the current version, and the user explicitly authorizes entering Feature Freeze.
 
 ## Open Release Blockers
 
@@ -56,7 +50,7 @@ Feature Freeze can begin only after the reopened scope passes a new whole-produc
 
 Not started.
 
-Product Hardening is Milestone 7 and will begin only after all Milestone 6 work passes review and Feature Freeze is explicitly entered.
+Product Hardening is Milestone 7 and will begin only after all Milestone 6 and UI Productization work passes review and Feature Freeze is explicitly entered.
 
 ## Verification Status
 
@@ -110,10 +104,11 @@ Product Hardening is Milestone 7 and will begin only after all Milestone 6 work 
 - Subjective question grading.
 - Public GitHub Pages deployment and final GitHub Release.
 - Advanced history analytics/search, graph-style lineage visualization, and a History pagination/virtualization layer (deferred to a future version if History size becomes a practical problem).
+- Item-level metacognitive marking interaction refinement (active-color toggle buttons, click-again-to-remove, multiple simultaneous marks per item, and removal of popup-style box) — recorded for post-UI hardening / backlog.
 
 ## Next Engineering Objective
 
-Local Runtime Recovery PR #11 and its launcher line-ending follow-up PR #12 are merged. The remaining immediate gate is a normal post-merge user double-click launch of `start-local.bat`; any failure returns directly to Local Runtime Recovery. After that confirmation, the lifecycle returns to the whole-product Feature Complete Review before Feature Freeze. Product Hardening (M7) and Feature Freeze have not started.
+Conduct the Whole-Product Feature Complete Review V2 across all user workflows before entering Feature Freeze and Milestone 7 Product Hardening.
 
 ## Repository State
 
@@ -124,4 +119,4 @@ Local Runtime Recovery PR #11 and its launcher line-ending follow-up PR #12 are 
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; PR #11 merged as `6b38c40`, and the BAT CRLF follow-up PR #12 merged as `6643a1b`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #11 (`recovery/local-runtime-contract`) is Merged at `6b38c40`; focused follow-up PR #12 (`fix/local-runtime-bat-crlf`) is Merged at `6643a1b` with 232/232 local verification and passing final CI. Historical Draft PR #10 (`fix/local-dev-cache-coherence`) remains Closed/Superseded and is retained only as a forensic checkpoint.
+- Pull request status: PR #14 (`ui/layered-paper-productization`) has completed Pre-Freeze UI Productization and passed the Final Human Acceptance Gate with 239 total tests: 238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed and passing GitHub CI; awaits Whole-Product Feature Complete Review V2. Historical PR #11 and PR #12 remain merged on `main`. Historical Draft PR #10 remains Closed/Superseded.

@@ -2,6 +2,13 @@ import { formatAnswer, gradeQuestion } from "./core/grading.js";
 import { shouldRegisterProductionServiceWorker } from "./core/service-worker-policy.js";
 import { createLibraryBackup, parseLibraryBackup } from "./core/backup.js";
 import {
+  DEFAULT_SIDEBAR_WIDTH,
+  clampSidebarWidth,
+  loadUiPreferences,
+  saveUiPreferences,
+} from "./core/ui-preferences.js";
+import { studioAudio } from "./core/audio-engine.js";
+import {
   CORRECTION_COLORS,
   addCorrection,
   removeCorrection,
@@ -122,13 +129,42 @@ const locales = {
     aria: {
       mainMode: "主要模式",
       theme: "切换亮色和暗色背景",
+      sound: "切换物理音效",
+      settings: "偏好设置",
       language: "界面语言",
       skip: "跳到主要内容",
+      close: "关闭",
+      resizeSidebar: "调整侧边栏宽度",
+    },
+    preferences: {
+      title: "偏好设置",
+      soundLabel: "物理音效",
+      soundHint: "开启翻页轻响、笔触摩擦与印章钝击音效",
+      motionLabel: "动效偏好",
+      motionStandard: "标准动效",
+      motionReduced: "减弱动效",
+      motionHint: "遵循系统 prefers-reduced-motion，亦可在此主动减弱纸张翻动与盖章动效",
     },
     modes: {
+      home: "首页",
       edit: "编辑",
       quiz: "做题",
       translation: "翻译练习",
+    },
+    home: {
+      title: "Quiz Studio 个人研习工作台",
+      tagline: "专注文档研读、深度作答与精细批改",
+      quizTitle: "客观做题练习",
+      quizDesc: "单选、多选、填空、判断与配对题型，即时墨水批改",
+      translationTitle: "双语翻译研习",
+      translationDesc: "双语沉浸翻译、词句元认知标记与独立证据链",
+      editorTitle: "试卷制作与题库",
+      editorDesc: "创建、管理、导入与导出本地练习试卷",
+      historyTitle: "评审历史与血缘",
+      historyDesc: "查看历史作答、教师评审记录与针对性重练",
+      start: "开始练习",
+      manage: "管理试卷",
+      view: "查看历史",
     },
     library: {
       title: "本地试卷库",
@@ -551,13 +587,42 @@ const locales = {
     aria: {
       mainMode: "Main mode",
       theme: "Switch light and dark background",
+      sound: "Toggle physical sound effects",
+      settings: "Preferences",
       language: "Interface language",
       skip: "Skip to main content",
+      close: "Close",
+      resizeSidebar: "Resize sidebar",
+    },
+    preferences: {
+      title: "Preferences",
+      soundLabel: "Physical Sound Effects",
+      soundHint: "Gentle page-turn rustle, pencil scratch, and stamp thuds",
+      motionLabel: "Motion Preference",
+      motionStandard: "Standard Motion",
+      motionReduced: "Reduced Motion",
+      motionHint: "Honors system preferences; also allows manually reducing paper animations",
     },
     modes: {
+      home: "Home",
       edit: "Edit",
       quiz: "Quiz",
       translation: "Translation",
+    },
+    home: {
+      title: "Quiz Studio Study Workspace",
+      tagline: "Focused reading, deliberate answering, and rich review",
+      quizTitle: "Objective Quiz Practice",
+      quizDesc: "Single, multiple, blank, true/false, and matching questions with ink feedback",
+      translationTitle: "Translation Studio",
+      translationDesc: "Bilingual translation with metacognitive marking and evidence tracking",
+      editorTitle: "Quiz Authoring & Library",
+      editorDesc: "Create, manage, import, and export practice papers",
+      historyTitle: "Review History & Lineage",
+      historyDesc: "Browse past submissions, external reviews, and retry workflows",
+      start: "Start Practice",
+      manage: "Manage Papers",
+      view: "View History",
     },
     library: {
       title: "Local quiz library",
@@ -980,7 +1045,8 @@ let library = loadLibrary();
 let activePaperId = loadActivePaperId();
 let paper = getActivePaper();
 let selectedQuestionId = paper.questions[0]?.id ?? null;
-let currentMode = "edit";
+let uiPreferences = loadUiPreferences();
+let currentMode = "home";
 let session = loadActiveSession();
 let toastTimer = null;
 let librarySearch = "";
@@ -1002,6 +1068,23 @@ let translationHistoryOpen = false;
 let translationHistoryFilters = { purpose: "all", status: "all", sort: "newest" };
 let translationHistoryDetailId = null;
 let retrySelectionDraft = null;
+
+const homeView = document.getElementById("homeView");
+const homeModeButton = document.getElementById("homeModeButton");
+const homeLauncherPanel = document.getElementById("homeLauncherPanel");
+const soundToggle = document.getElementById("soundToggle");
+const settingsToggle = document.getElementById("settingsToggle");
+const preferencesDialog = document.getElementById("preferencesDialog");
+const closePreferencesDialog = document.getElementById("closePreferencesDialog");
+const preferencesTitle = document.getElementById("preferencesTitle");
+const prefSoundLabel = document.getElementById("prefSoundLabel");
+const prefSoundCheckbox = document.getElementById("prefSoundCheckbox");
+const prefSoundHint = document.getElementById("prefSoundHint");
+const prefMotionLabel = document.getElementById("prefMotionLabel");
+const prefMotionSelect = document.getElementById("prefMotionSelect");
+const prefMotionStandard = document.getElementById("prefMotionStandard");
+const prefMotionReduced = document.getElementById("prefMotionReduced");
+const prefMotionHint = document.getElementById("prefMotionHint");
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
@@ -1032,18 +1115,115 @@ const toast = document.getElementById("toast");
 init();
 
 function init() {
-  document.documentElement.dataset.theme = localStorage.getItem(THEME_KEY) || "light";
+  uiPreferences = loadUiPreferences();
+  document.documentElement.dataset.theme = uiPreferences.theme || "light";
+  if (uiPreferences.motionPreference === "reduced") {
+    document.documentElement.dataset.motion = "reduced";
+  } else {
+    delete document.documentElement.dataset.motion;
+  }
+  document.documentElement.style.setProperty("--sidebar-width", `${uiPreferences.sidebarWidth || 320}px`);
+  studioAudio.setEnabled(uiPreferences.soundEnabled);
   document.documentElement.lang = locales[language].code;
   bindGlobalEvents();
+  initSidebarResizing();
   registerServiceWorker();
   renderAll();
+  setMode("home");
+  updateSoundToggleUi();
+}
+
+function initSidebarResizing() {
+  const root = document.documentElement;
+  const initialWidth = uiPreferences.sidebarWidth || 320;
+  root.style.setProperty("--sidebar-width", `${initialWidth}px`);
+
+  const resizers = [
+    document.getElementById("editorSidebarResizer"),
+    document.getElementById("translationSidebarResizer"),
+  ].filter(Boolean);
+
+  resizers.forEach((resizer) => {
+    let startX = 0;
+    let startWidth = 0;
+
+    const onPointerMove = (e) => {
+      const currentX = e.clientX ?? e.touches?.[0]?.clientX;
+      if (currentX === undefined) return;
+      const deltaX = currentX - startX;
+      const newWidth = clampSidebarWidth(startWidth + deltaX);
+      root.style.setProperty("--sidebar-width", `${newWidth}px`);
+    };
+
+    const onPointerUp = () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("touchmove", onPointerMove);
+      window.removeEventListener("touchend", onPointerUp);
+      resizer.classList.remove("resizing");
+      document.body.classList.remove("is-resizing");
+
+      const computedWidth = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10);
+      uiPreferences.sidebarWidth = clampSidebarWidth(computedWidth);
+      saveUiPreferences(uiPreferences);
+    };
+
+    const onPointerDown = (e) => {
+      startX = e.clientX ?? e.touches?.[0]?.clientX;
+      const currentVal = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10);
+      startWidth = Number.isFinite(currentVal) ? currentVal : DEFAULT_SIDEBAR_WIDTH;
+      resizer.classList.add("resizing");
+      document.body.classList.add("is-resizing");
+
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("touchmove", onPointerMove, { passive: true });
+      window.addEventListener("touchend", onPointerUp);
+    };
+
+    resizer.addEventListener("pointerdown", onPointerDown);
+
+    resizer.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const step = e.key === "ArrowRight" ? 20 : -20;
+        const currentVal = parseInt(getComputedStyle(root).getPropertyValue("--sidebar-width"), 10);
+        const newWidth = clampSidebarWidth((Number.isFinite(currentVal) ? currentVal : DEFAULT_SIDEBAR_WIDTH) + step);
+        root.style.setProperty("--sidebar-width", `${newWidth}px`);
+        uiPreferences.sidebarWidth = newWidth;
+        saveUiPreferences(uiPreferences);
+      }
+    });
+  });
 }
 
 function bindGlobalEvents() {
+  homeModeButton.addEventListener("click", () => setMode("home"));
   editModeButton.addEventListener("click", () => setMode("edit"));
   quizModeButton.addEventListener("click", () => setMode("quiz"));
   translationModeButton.addEventListener("click", () => setMode("translation"));
   themeToggle.addEventListener("click", toggleTheme);
+  soundToggle.addEventListener("click", toggleSound);
+  settingsToggle?.addEventListener("click", openPreferencesDialog);
+  closePreferencesDialog?.addEventListener("click", () => preferencesDialog?.close());
+  preferencesDialog?.addEventListener("click", (event) => {
+    if (event.target === preferencesDialog) preferencesDialog.close();
+  });
+
+  prefSoundCheckbox?.addEventListener("change", () => {
+    setSoundEnabled(prefSoundCheckbox.checked);
+  });
+
+  prefMotionSelect?.addEventListener("change", () => {
+    const next = prefMotionSelect.value;
+    uiPreferences.motionPreference = next;
+    if (next === "reduced") {
+      document.documentElement.dataset.motion = "reduced";
+    } else {
+      delete document.documentElement.dataset.motion;
+    }
+    saveUiPreferences(uiPreferences);
+  });
 
   languageSelect.addEventListener("change", (event) => setLanguage(event.target.value));
 
@@ -1081,6 +1261,7 @@ function bindGlobalEvents() {
 function renderAll() {
   paper = getActivePaper();
   renderChrome();
+  renderHomeLauncher();
   renderLibraryPanel();
   paperTitle.value = paper.title;
   paperDescription.value = paper.description;
@@ -1097,11 +1278,40 @@ function renderChrome() {
   document.querySelector(".brand p").textContent = t("tagline");
   skipLink.textContent = t("aria.skip");
   document.querySelector(".mode-tabs").setAttribute("aria-label", t("aria.mainMode"));
+  homeModeButton.textContent = t("modes.home");
   editModeButton.textContent = t("modes.edit");
   quizModeButton.textContent = t("modes.quiz");
   translationModeButton.textContent = t("modes.translation");
   themeToggle.title = t("aria.theme");
   themeToggle.setAttribute("aria-label", t("aria.theme"));
+  soundToggle.title = t("aria.sound");
+  soundToggle.setAttribute("aria-label", t("aria.sound"));
+  if (settingsToggle) {
+    settingsToggle.title = t("aria.settings");
+    settingsToggle.setAttribute("aria-label", t("aria.settings"));
+  }
+  if (closePreferencesDialog) {
+    closePreferencesDialog.setAttribute("aria-label", t("aria.close"));
+    closePreferencesDialog.title = t("aria.close");
+  }
+  const editorResizer = document.getElementById("editorSidebarResizer");
+  const translationResizer = document.getElementById("translationSidebarResizer");
+  if (editorResizer) {
+    editorResizer.title = t("aria.resizeSidebar");
+    editorResizer.setAttribute("aria-label", t("aria.resizeSidebar"));
+  }
+  if (translationResizer) {
+    translationResizer.title = t("aria.resizeSidebar");
+    translationResizer.setAttribute("aria-label", t("aria.resizeSidebar"));
+  }
+  if (preferencesTitle) preferencesTitle.textContent = t("preferences.title");
+  if (prefSoundLabel) prefSoundLabel.textContent = t("preferences.soundLabel");
+  if (prefSoundHint) prefSoundHint.textContent = t("preferences.soundHint");
+  if (prefMotionLabel) prefMotionLabel.textContent = t("preferences.motionLabel");
+  if (prefMotionStandard) prefMotionStandard.textContent = t("preferences.motionStandard");
+  if (prefMotionReduced) prefMotionReduced.textContent = t("preferences.motionReduced");
+  if (prefMotionHint) prefMotionHint.textContent = t("preferences.motionHint");
+  updateSoundToggleUi();
   languageSelect.setAttribute("aria-label", t("aria.language"));
   languageSelect.value = language;
   document.querySelector("[data-label='paper-title']").textContent = t("paper.title");
@@ -1118,14 +1328,102 @@ function renderChrome() {
   });
 }
 
+function openPreferencesDialog() {
+  if (!preferencesDialog) return;
+  if (prefSoundCheckbox) prefSoundCheckbox.checked = uiPreferences.soundEnabled;
+  if (prefMotionSelect) prefMotionSelect.value = uiPreferences.motionPreference;
+  preferencesDialog.showModal();
+}
+
+function updateSoundToggleUi() {
+  if (!soundToggle) return;
+  soundToggle.textContent = studioAudio.enabled ? "🔊" : "🔇";
+  soundToggle.classList.toggle("active", studioAudio.enabled);
+  if (prefSoundCheckbox) {
+    prefSoundCheckbox.checked = studioAudio.enabled;
+  }
+}
+
+function setSoundEnabled(enabled) {
+  const next = Boolean(enabled);
+  studioAudio.setEnabled(next);
+  uiPreferences.soundEnabled = next;
+  saveUiPreferences(uiPreferences);
+  updateSoundToggleUi();
+  if (next) {
+    studioAudio.playPencilStroke();
+  }
+}
+
+function toggleSound() {
+  setSoundEnabled(!studioAudio.enabled);
+}
+
+function renderHomeLauncher() {
+  if (currentMode !== "home" || !homeLauncherPanel) return;
+
+  homeLauncherPanel.innerHTML = `
+    <div class="launcher-header">
+      <h2>${t("home.title")}</h2>
+      <p>${t("home.tagline")}</p>
+    </div>
+    <div class="launcher-grid">
+      <button type="button" class="launcher-card" id="launchQuiz">
+        <div>
+          <div class="launcher-card-icon">📝</div>
+          <h3>${t("home.quizTitle")}</h3>
+          <p>${t("home.quizDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
+      </button>
+      <button type="button" class="launcher-card" id="launchTranslation">
+        <div>
+          <div class="launcher-card-icon">📖</div>
+          <h3>${t("home.translationTitle")}</h3>
+          <p>${t("home.translationDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.start")} &rarr;</div>
+      </button>
+      <button type="button" class="launcher-card" id="launchEditor">
+        <div>
+          <div class="launcher-card-icon">✏️</div>
+          <h3>${t("home.editorTitle")}</h3>
+          <p>${t("home.editorDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.manage")} &rarr;</div>
+      </button>
+      <button type="button" class="launcher-card" id="launchHistory">
+        <div>
+          <div class="launcher-card-icon">📜</div>
+          <h3>${t("home.historyTitle")}</h3>
+          <p>${t("home.historyDesc")}</p>
+        </div>
+        <div class="launcher-card-cta">${t("home.view")} &rarr;</div>
+      </button>
+    </div>
+  `;
+
+  document.getElementById("launchQuiz")?.addEventListener("click", () => setMode("quiz"));
+  document.getElementById("launchTranslation")?.addEventListener("click", () => setMode("translation"));
+  document.getElementById("launchEditor")?.addEventListener("click", () => setMode("edit"));
+  document.getElementById("launchHistory")?.addEventListener("click", () => {
+    setMode("translation");
+    translationHistoryOpen = true;
+    renderTranslationView();
+  });
+}
+
 function setMode(mode) {
   currentMode = mode;
+  homeView.classList.toggle("hidden", mode !== "home");
   editorView.classList.toggle("hidden", mode !== "edit");
   quizView.classList.toggle("hidden", mode !== "quiz");
   translationView.classList.toggle("hidden", mode !== "translation");
+  homeModeButton.classList.toggle("active", mode === "home");
   editModeButton.classList.toggle("active", mode === "edit");
   quizModeButton.classList.toggle("active", mode === "quiz");
   translationModeButton.classList.toggle("active", mode === "translation");
+  if (mode === "home") renderHomeLauncher();
   if (mode === "quiz") renderQuizStart();
   if (mode === "translation") renderTranslationView();
 }
@@ -1713,9 +2011,10 @@ function renderQuizAnswer(question) {
           ? answer === option.id
           : Array.isArray(answer) && answer.includes(option.id);
         return `
-          <label class="choice-line">
+          <label class="choice-line ${checked ? "selected" : ""}">
             <input type="${question.type === "single" ? "radio" : "checkbox"}" name="choiceAnswer" value="${option.id}" ${checked ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
             <span class="choice-letter">${String.fromCharCode(65 + index)}</span>
+            ${checked ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M4 10.5 L8.5 15 L16 5" stroke="var(--brand-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
             <span>${escapeHtml(option.text)}</span>
           </label>
         `;
@@ -1734,27 +2033,54 @@ function renderQuizAnswer(question) {
 
   if (question.type === "truefalse") {
     return `
-      <label class="judge-line">
+      <label class="judge-line ${answer === true ? "selected" : ""}">
         <input type="radio" name="judgeAnswer" value="true" ${answer === true ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
+        ${answer === true ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M4 10.5 L8.5 15 L16 5" stroke="var(--brand-blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
         <span>${t("question.true")}</span>
       </label>
-      <label class="judge-line">
+      <label class="judge-line ${answer === false ? "selected" : ""}">
         <input type="radio" name="judgeAnswer" value="false" ${answer === false ? "checked" : ""} ${session.submitted ? "disabled" : ""}>
+        ${answer === false ? `<svg class="ink-mark-svg" viewBox="0 0 20 20" fill="none"><path class="ink-stroke-path drawn" d="M5 5 L15 15 M15 5 L5 15" stroke="var(--ink-vermilion)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
         <span>${t("question.false")}</span>
       </label>
     `;
   }
 
   return question.pairs
-    .map((pair) => `
-      <label class="match-line">
-        <span>${escapeHtml(pair.left)}</span>
-        <select data-match-answer="${pair.id}" ${session.submitted ? "disabled" : ""}>
-          <option value="">${t("question.choose")}</option>
-          ${question.rightOptions.map((right) => `<option value="${right.id}" ${answer?.[pair.id] === right.id ? "selected" : ""}>${escapeHtml(right.text)}</option>`).join("")}
-        </select>
-      </label>
-    `)
+    .map((pair) => {
+      const selectedId = answer?.[pair.id];
+      const isSubmitted = session.submitted;
+      const isPairCorrect = isSubmitted && selectedId === pair.rightId;
+      const isPairWrong = isSubmitted && !isPairCorrect;
+      const correctOptionText = question.rightOptions.find((opt) => opt.id === pair.rightId)?.text || "";
+
+      return `
+        <div class="match-item ${isSubmitted ? (isPairCorrect ? "match-correct" : "match-wrong") : ""}">
+          <div class="match-line ${isSubmitted ? (isPairCorrect ? "line-correct" : "line-wrong") : ""}">
+            <div class="match-left">
+              ${isSubmitted ? `
+                <span class="match-pair-status ${isPairCorrect ? "status-correct" : "status-wrong"}" aria-label="${isPairCorrect ? t("result.correct") : t("result.wrong")}">
+                  ${isPairCorrect ? "✓" : "✕"}
+                </span>
+              ` : ""}
+              <span class="match-term">${escapeHtml(pair.left)}</span>
+            </div>
+            <div class="match-right">
+              <select data-match-answer="${pair.id}" ${session.submitted ? "disabled" : ""}>
+                <option value="">${t("question.choose")}</option>
+                ${question.rightOptions.map((right) => `<option value="${right.id}" ${selectedId === right.id ? "selected" : ""}>${escapeHtml(right.text)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          ${isPairWrong ? `
+            <div class="match-correction-hint">
+              <span class="match-hint-label">${t("result.correctAnswer")}:</span>
+              <span class="match-hint-val">${escapeHtml(correctOptionText)}</span>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    })
     .join("");
 }
 
@@ -1764,6 +2090,7 @@ function bindQuizAnswer(question) {
   if (question.type === "single") {
     document.querySelectorAll("input[name='choiceAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
+        studioAudio.playPencilStroke();
         session.answers[question.id] = input.value;
         persistSession();
         renderCurrentQuestion();
@@ -1775,6 +2102,7 @@ function bindQuizAnswer(question) {
   if (question.type === "multiple") {
     document.querySelectorAll("input[name='choiceAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
+        studioAudio.playPencilStroke();
         session.answers[question.id] = Array.from(document.querySelectorAll("input[name='choiceAnswer']:checked")).map((item) => item.value);
         persistSession();
         renderCurrentQuestion();
@@ -1794,6 +2122,7 @@ function bindQuizAnswer(question) {
   if (question.type === "truefalse") {
     document.querySelectorAll("input[name='judgeAnswer']").forEach((input) => {
       input.addEventListener("change", () => {
+        studioAudio.playPencilStroke();
         session.answers[question.id] = input.value === "true";
         persistSession();
         renderCurrentQuestion();
@@ -1804,6 +2133,7 @@ function bindQuizAnswer(question) {
 
   document.querySelectorAll("[data-match-answer]").forEach((select) => {
     select.addEventListener("change", () => {
+      studioAudio.playPencilStroke();
       session.answers[question.id] ||= {};
       session.answers[question.id][select.dataset.matchAnswer] = select.value;
       persistSession();
@@ -1820,6 +2150,7 @@ function submitCurrentAnswer() {
     return;
   }
 
+  studioAudio.playStampThud();
   const result = gradeQuestion(question, answer, getGradeLabels());
   session.results[session.index] = result;
   session.submitted = true;
@@ -1830,24 +2161,36 @@ function submitCurrentAnswer() {
 
 function goPreviousQuestion() {
   if (session.index === 0) return;
+  studioAudio.playPageTurn();
   session.index -= 1;
   session.submitted = Boolean(session.results[session.index]);
   session.feedback = session.results[session.index] || null;
   persistSession();
   renderCurrentQuestion();
+  triggerPageTurnAnimation(quizPanel, "prev");
 }
 
 function goNextQuestion() {
   if (session.index >= session.questions.length - 1) {
+    studioAudio.playStampThud();
     renderResults();
     return;
   }
 
+  studioAudio.playPageTurn();
   session.index += 1;
   session.submitted = Boolean(session.results[session.index]);
   session.feedback = session.results[session.index] || null;
   persistSession();
   renderCurrentQuestion();
+  triggerPageTurnAnimation(quizPanel, "next");
+}
+
+function triggerPageTurnAnimation(element, direction) {
+  if (!element || document.documentElement.dataset.motion === "reduced") return;
+  element.classList.remove("paper-page-turning-next", "paper-page-turning-prev");
+  void element.offsetWidth;
+  element.classList.add(direction === "next" ? "paper-page-turning-next" : "paper-page-turning-prev");
 }
 
 function renderResults() {
@@ -1890,11 +2233,47 @@ function renderResults() {
           const result = session.results[index];
           return `
             <div class="review-item ${result.correct ? "correct" : "wrong"}">
-              <strong>${index + 1}. ${escapeHtml(question.prompt)}</strong>
-              <p class="meta-text">${typeLabel(question.type)} · ${result.correct ? t("result.correct") : t("result.wrong")}</p>
+              <div class="review-status-row">
+                <span class="review-status-pill ${result.correct ? "status-correct" : "status-wrong"}">
+                  ${result.correct ? "✓ " + t("result.correct") : "✕ " + t("result.wrong")}
+                </span>
+                <span class="type-pill">${typeLabel(question.type)}</span>
+              </div>
+              <strong class="review-question-prompt">${index + 1}. ${escapeHtml(question.prompt)}</strong>
               <div class="answer-compare">
-                <p><strong>${t("result.yourAnswer")}:</strong> ${escapeHtml(formatAnswer(question, session.answers[question.id], getGradeLabels()) || t("result.noAnswer"))}</p>
-                <p><strong>${result.correctLabel}:</strong> ${escapeHtml(result.correctAnswer)}</p>
+                ${question.type === "matching" ? `
+                  <div class="matching-review-list">
+                    ${question.pairs.map((pair) => {
+                      const selId = session.answers[question.id]?.[pair.id];
+                      const isCorrect = selId === pair.rightId;
+                      const selText = question.rightOptions.find((opt) => opt.id === selId)?.text || t("result.noAnswer");
+                      const corText = question.rightOptions.find((opt) => opt.id === pair.rightId)?.text || "";
+                      return `
+                        <div class="matching-review-row ${isCorrect ? "correct" : "wrong"}">
+                          <div class="matching-review-pair">
+                            <span class="review-status-pill ${isCorrect ? "status-correct" : "status-wrong"}">${isCorrect ? "✓" : "✕"}</span>
+                            <strong>${escapeHtml(pair.left)}</strong> &rarr; <span class="learner-answer-val">${escapeHtml(selText)}</span>
+                          </div>
+                          ${!isCorrect ? `
+                            <div class="matching-review-correct">
+                              <span class="answer-label">${t("result.correctAnswer")}:</span>
+                              <span class="correct-answer-val">${escapeHtml(corText)}</span>
+                            </div>
+                          ` : ""}
+                        </div>
+                      `;
+                    }).join("")}
+                  </div>
+                ` : `
+                  <div class="answer-row learner-answer-row">
+                    <span class="answer-label">${t("result.yourAnswer")}:</span>
+                    <span class="learner-answer-val">${escapeHtml(formatAnswer(question, session.answers[question.id], getGradeLabels()) || t("result.noAnswer"))}</span>
+                  </div>
+                  <div class="answer-row correct-answer-row">
+                    <span class="answer-label">${result.correctLabel}:</span>
+                    <span class="correct-answer-val">${escapeHtml(result.correctAnswer)}</span>
+                  </div>
+                `}
               </div>
             </div>
           `;
@@ -1917,11 +2296,11 @@ function renderResults() {
 
 function renderFeedback(result) {
   return `
-    <div class="feedback ${result.correct ? "correct" : "wrong"}">
-      <span class="feedback-icon">${result.correct ? "✓" : "×"}</span>
-      <div>
-        <strong>${result.correct ? t("result.correctFeedback") : t("result.wrongFeedback")}</strong>
-        <p>${escapeHtml(result.correctAnswer)}</p>
+    <div class="feedback ${result.correct ? "correct" : "wrong"}" role="status" aria-live="polite">
+      <span class="feedback-icon">${result.correct ? "✓" : "✕"}</span>
+      <div class="feedback-content">
+        <strong class="feedback-title">${result.correct ? t("result.correctFeedback") : t("result.wrongFeedback")}</strong>
+        <p class="feedback-explanation">${escapeHtml(result.correctAnswer)}</p>
       </div>
     </div>
   `;
@@ -2225,11 +2604,9 @@ function renderTranslationLibraryPanel() {
       <strong>${t("translation.title")}</strong>
       <span>${translationLibrary.documents.length}</span>
     </div>
-    <div class="library-actions single-action">
-      <button class="small-button" type="button" id="newTranslationFolder">${t("translation.newFolder")}</button>
-    </div>
-    <div class="library-actions single-action">
-      <button class="small-button" type="button" id="openTranslationHistory">${t("history.title")}</button>
+    <div class="library-toolbar">
+      <button class="small-button" type="button" id="newTranslationFolder">+ ${t("translation.newFolder")}</button>
+      <button class="small-button" type="button" id="openTranslationHistory">📜 ${t("history.title")}</button>
     </div>
     <div class="library-list">
       ${translationLibrary.folders.length
@@ -2238,7 +2615,9 @@ function renderTranslationLibraryPanel() {
     </div>
     <div class="translation-import">
       <div class="library-heading"><strong>${t("translation.importSection")}</strong></div>
-      ${renderImportForms()}
+      <div class="import-details-group">
+        ${renderImportForms()}
+      </div>
     </div>
   `;
 
@@ -2796,6 +3175,7 @@ function renderTranslationPracticeScreen() {
   bindAnnotationSectionEvents(item.id);
   document.querySelectorAll("[data-item-mark-kind]").forEach((button) => {
     button.addEventListener("click", () => {
+      studioAudio.playPencilStroke();
       const kind = button.dataset.itemMarkKind;
       const nextKind = currentItemMark === kind ? null : kind;
       translationSession = setTranslationItemMark(translationSession, item.id, nextKind);
@@ -2804,6 +3184,7 @@ function renderTranslationPracticeScreen() {
     });
   });
   document.querySelector("[data-clear-item-mark]")?.addEventListener("click", () => {
+    studioAudio.playPencilStroke();
     translationSession = setTranslationItemMark(translationSession, item.id, null);
     persistTranslationSession();
     renderTranslationMainPanel();
@@ -2821,17 +3202,24 @@ function renderTranslationPracticeScreen() {
   });
   document.getElementById("previousTranslationItem").addEventListener("click", () => {
     if (translationSession.index <= 0) return;
+    studioAudio.playPageTurn();
     translationSession = goToTranslationIndex(translationSession, translationSession.index - 1);
     persistTranslationSession();
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "prev");
   });
   document.getElementById("nextTranslationItem").addEventListener("click", () => {
     if (translationSession.index >= translationSession.items.length - 1) return;
+    studioAudio.playPageTurn();
     translationSession = goToTranslationIndex(translationSession, translationSession.index + 1);
     persistTranslationSession();
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "next");
   });
-  document.getElementById("finishTranslationPractice").addEventListener("click", finishTranslationPractice);
+  document.getElementById("finishTranslationPractice").addEventListener("click", () => {
+    studioAudio.playStampThud();
+    finishTranslationPractice();
+  });
 
   document.getElementById("revealTranslationReference")?.addEventListener("click", () => {
     translationSession = setTranslationRevealed(translationSession, item.id, !revealed);
@@ -3217,6 +3605,14 @@ function renderCorrectionWorkspace(responseId) {
             <option value="needs-review" ${itemReview.judgment === "needs-review" ? "selected" : ""}>${t("review.judgmentNeedsReview")}</option>
           </select>
         </label>
+        ${itemReview.judgment ? `
+          <div style="display: flex; align-items: flex-end;">
+            <span class="ink-stamp stamp-${itemReview.judgment}" id="judgmentStamp">
+              ${itemReview.judgment === "correct" ? "✓ " : itemReview.judgment === "incorrect" ? "✕ " : "✎ "}
+              ${t(`review.judgment${itemReview.judgment === "needs-review" ? "NeedsReview" : itemReview.judgment.charAt(0).toUpperCase() + itemReview.judgment.slice(1)}`)}
+            </span>
+          </div>
+        ` : ""}
       </div>
       <label><span>${t("review.itemComment")}</span><textarea id="correctionItemComment" rows="2">${escapeHtml(itemReview.comment || "")}</textarea></label>
       <label><span>${t("review.suggestedRevision")}</span><textarea id="correctionSuggestedRevision" rows="2">${escapeHtml(itemReview.suggestedRevision || "")}</textarea></label>
@@ -3312,8 +3708,19 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
   document.querySelectorAll("[data-remove-correction]").forEach((button) => {
     button.addEventListener("click", () => removeWorkspaceCorrection(item.id, button.dataset.removeCorrection));
   });
+function triggerStampAnimation(stamp) {
+  if (stamp && document.documentElement.dataset.motion !== "reduced") {
+    stamp.classList.remove("stamping");
+    void stamp.offsetWidth;
+    stamp.classList.add("stamping");
+  }
+}
+
   document.getElementById("correctionJudgment").addEventListener("change", (event) => {
+    studioAudio.playStampThud();
     updateWorkspaceItemReview(item.id, { judgment: event.target.value || undefined });
+    renderTranslationMainPanel();
+    triggerStampAnimation(document.getElementById("judgmentStamp"));
   });
   document.getElementById("correctionItemComment").addEventListener("input", (event) => {
     updateWorkspaceItemReview(item.id, { comment: event.target.value });
@@ -3322,14 +3729,22 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
     updateWorkspaceItemReview(item.id, { suggestedRevision: event.target.value });
   });
   document.getElementById("previousCorrectionItem").addEventListener("click", () => {
+    studioAudio.playPageTurn();
     correctionItemIndex -= 1;
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "prev");
   });
   document.getElementById("nextCorrectionItem").addEventListener("click", () => {
+    studioAudio.playPageTurn();
     correctionItemIndex += 1;
     renderTranslationMainPanel();
+    triggerPageTurnAnimation(translationDocumentPanel, "next");
   });
-  document.getElementById("saveCorrectionReview").addEventListener("click", () => saveCorrectionReview(response));
+  document.getElementById("saveCorrectionReview").addEventListener("click", () => {
+    studioAudio.playStampThud();
+    triggerStampAnimation(document.getElementById("judgmentStamp"));
+    saveCorrectionReview(response);
+  });
 }
 
 function getWorkspaceItemReview(itemId) {
@@ -4261,7 +4676,8 @@ function clearPaperHistory() {
 function toggleTheme() {
   const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   document.documentElement.dataset.theme = next;
-  localStorage.setItem(THEME_KEY, next);
+  uiPreferences.theme = next;
+  saveUiPreferences(uiPreferences);
 }
 
 function nextLabel() {

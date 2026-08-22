@@ -289,6 +289,21 @@ Acceptance effect:
 - Each M6.x implementation must still receive its own implementation review, regression testing, CI, and scope review before the next sub-milestone begins; individual formal user acceptance is deferred to the one comprehensive M6-wide acceptance after M6.7 (this deferral does not apply retroactively to M6.0 and M6.1, which are already accepted).
 - Feature Freeze remains inactive until the M6-wide acceptance is complete.
 
+## Pre-Freeze UI Productization: Layered Paper Study Desk
+
+Status: Implementation complete and verified; Final Human Acceptance Gate = PASS
+
+Pre-Freeze UI Productization establishes whole-product visual and physical interaction convergence before conducting the Whole-Product Feature Complete Review V2. It preserves all Milestone 1–6 functionality while replacing temporary prototype surfaces with a unified study desk design system.
+
+Scope completed:
+
+- **Design System Foundation (`DESIGN.md`)**: Complete tokens for surfaces (Light Strong Paper, Dark Soft Near-Black), neutral section labels, marking inks (Oxford Blue, Vermilion, Forest, Amber, Violet), typography scale, motion language, and synthesized audio architecture.
+- **Application Shell & Preferences**: Tool Launcher home view (`homeView`), persistent UI preferences (`uiPreferences` storing theme, sound enabled, motion preference, and resizable sidebar width), preferences dialog, and topbar audio toggle.
+- **Core Learning Surfaces**: Laid paper sheet presentation with organic page-turn transitions, pencil stroke feedback, and granular per-pair matching feedback with inline correction hints across Objective Quiz and Translation Practice.
+- **Teacher Marking Desk**: Dedicated continuous paper marking desk with pen tray, real-time ink projection, and rubber stamp judgment with tactile thud audio.
+- **Offline & Verification Closure**: 239 total tests: 238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed, complete Service Worker offline precaching closure.
+- **Human Acceptance Gate**: Final Human Acceptance Gate has been executed and passed (PASS).
+
 ## Milestone 7: Product Hardening
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
@@ -389,6 +404,7 @@ These remain outside the current v1 scope:
 - Cloud sync and user accounts.
 - Sharing, collaboration, and in-app teacher account/administration workflows.
 - Subjective question grading.
+- Item-level metacognitive marking interaction refinement (active-color toggle buttons, click-again-to-remove, multiple simultaneous marks per item, and removal of popup-style box) — recorded for post-UI hardening / backlog.
 
 ## Roadmap Principle
 

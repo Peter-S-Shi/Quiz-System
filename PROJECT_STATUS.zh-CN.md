@@ -2,36 +2,30 @@
 
 ## 当前阶段
 
-Feature Development - Scope Reopened（功能开发阶段，范围已重新开放）
+Pre-Freeze UI Productization（功能冻结前 UI 产品化阶段）
 
 ## 当前里程碑
 
-Milestone 6.7：History, Retry, Portability, and Whole-Product Integration - complete（已完成，M6 综合人工验收 Journeys 01–10：PASS；UX 强化收尾批次已完成）
+UI Productization: Layered Paper Study Desk（分层纸质研习台：设计规范、应用框架与工具启动台、核心做题与翻译研习纸面、教师批改台、物理动效与合成音效）— 已实现并通过全量测试；Final Human Acceptance Gate = PASS
 
-M6.7 是 M6 功能开发阶段的最后一个子里程碑。M6 的功能开发实现与综合人工验收均已完成。
+本工作流在进入下一轮 Feature Complete Review 之前完成产品级 UI 收敛（包括 DESIGN.md 规范、Strong Paper 亮色、Soft Near-Black 暗色、翻页动效/音效、MCQ 墨水选择反馈、匹配题逐对即时纠错、判定盖章反馈、首页 Tool Launcher 启动台与可拖拽侧边栏）。本工作流不重新开放 M6 产品业务逻辑语义，亦非 Milestone 7 Product Hardening。
+
+## Pre-Freeze UI 产品化里程碑摘要
+
+- **设计规范与系统基础**：创建 [DESIGN.md](file:///f:/CodexWorkspaces/Quiz%20System/DESIGN.md)，确立 Layered Paper Study Desk 设计 Token、字体层级、呼吸间距、自然语义墨水系统与基于 Web Audio API 的零外部依赖物理合成音效引擎。
+- **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮、可拖拽侧边栏，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好、侧边栏宽度）。
+- **核心做题与研习纸面**：客观题练习与翻译练习重构为停靠在桌面上的连续手稿纸（Laid Paper Sheet），提供有机物理翻页动效、铅笔书写摩擦音效，以及匹配题逐对独立状态判定与内联正确答案提示。
+- **教师批改台**：批改工作区重构为单张连续纸面批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
+- **离线与测试闭包**：全量 239 项自动化测试（238 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败），包含 UI 偏好持久化测试、轻量偏好设置对话框与完整的 Service Worker ESM 离线预缓存闭包。
+- **Human Acceptance Gate**：Final Human Acceptance Gate 已执行并通过（PASS）。
 
 ## 验收政策（历史记录）
 
 M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）现已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。
 
-## Hardening 前本地运行恢复
-
-修正分支 `recovery/local-runtime-contract` 已从干净的 `main` 基线 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47` 完成重建。它只修改 Windows/本地运行边界；不会重新打开已经验收的 M6 产品行为，也不是 Milestone 7 Product Hardening。
-
-普通 Chrome profile Human Gate 在 PR #11 以 `6b38c40` 合并前，已在保留的 `http://localhost:8000` origin 上达到 5/5 PASS：现有用户数据完整，当前 M6 行为可见且可用，冷启动、关闭重启、浏览器已打开等情形均成功，不需要清理缓存或操作 DevTools。该结果对当时五次启动仍然有效，但合并后的一次启动暴露出 Windows 批处理解析回归：当 `start-local.bat` 以裸 LF 换行检出并进入缺少 Python 的诊断路径时会被错误解析。专项后续分支 `fix/local-runtime-bat-crlf` 通过 `.gitattributes` 强制所有 `.bat` 使用 CRLF，并新增跨平台换行契约测试与真实 Windows 缺少 Python 启动器测试。使用随附 Python runtime 时，完整本地测试为 232/232 通过，PR #12 CI 通过，且 PR #12 已以 `6643a1b` 合并；合并后的用户点击复验仍待完成。
-
-## M6 综合人工验收与 UX 强化收尾
-
-- **M6 综合人工验收 Journeys 01–10**：PASS（全部通过）。
-- 片段批注（Comment）创建入口继续从当前产品范围中移除。
-- **小型 UX 强化收尾批次**：
-  1. 条目级元认知标记：为整道翻译题目新增一等公民的“不认识 / 不确定 / 应该会但想不起来”标记状态，具备可替换与可清除性，在进度恢复与最终作答证据中完整持久化，并纳入 needs-work 派生。
-  2. 练习导航边界状态：翻译练习上下题切换按钮在第一题和最后一题边界上实现真实的 `disabled` 状态、置灰样式与边界守护。
-  3. 备份恢复即时刷新翻译题库：导入完整备份成功后，内存中的 `translationLibrary` 与选中状态立即同步刷新并渲染，无需用户手动 F5 刷新页面。
-
 ## 当前发布范围
 
-当前版本范围包括 Milestone 1-5 基线和已批准的 Milestone 6 工作线。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange、M6.1 Translation Domain and Persistence Foundation 以及 M6.2–M6.7 均已完成实现并通过综合人工验收 Journeys 01–10（PASS）。M6.7 把已经完成的 Translation/Open Teaching 功能集合变成了一个持久的产品：覆盖全部 finalized 作答记录的 Translation 历史浏览（无论原始文档是否还存在）、总是产生新的独立证据的显式重新练习（整份/选定条目/需要加强条目）、双向溯源导航，以及针对翻译文档、Learner Response 和 Teacher Review 的显式带警告删除。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
+当前版本范围包括 Milestone 1-5 基线、已批准的 Milestone 6 工作线，以及 Pre-Freeze UI Productization 设计系统。Translation Practice 仍是 M6 的主要新增学习工作流。M6.0 Open Teaching Interchange、M6.1 Translation Domain and Persistence Foundation 以及 M6.2–M6.7 均已完成实现并通过综合人工验收 Journeys 01–10（PASS）。M6 保持本地优先，不要求内置 AI API、付费推理或网络连接。
 
 ## Feature Complete 状态
 
@@ -110,10 +104,11 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 主观题批改。
 - 公开 GitHub Pages 部署和最终 GitHub Release。
 - 更高级的历史分析/搜索、图形化的溯源可视化，以及历史分页/虚拟滚动层（如果未来历史规模成为实际问题，会推迟到未来版本处理）。
+- 条目级元认知标记交互优化（高亮色彩切换按钮、再次点击取消标记、单个条目支持同时多种标记、移除弹出框交互）——已记录至 post-UI 硬化/Backlog。
 
 ## 下一步工程目标
 
-Local Runtime Recovery PR #11 及其启动器换行后续修复 PR #12 均已合并。当前唯一的即时门禁是用户在合并后正常双击一次 `start-local.bat`；如仍失败，则直接返回 Local Runtime Recovery。确认通过后，生命周期才回到进入 Feature Freeze 前的全产品 Feature Complete Review。Product Hardening（M7）与 Feature Freeze 尚未开始。
+在进入 Feature Freeze 和 Milestone 7 Product Hardening 之前，重新执行覆盖全产品全部工作流的 Whole-Product Feature Complete Review V2。
 
 ## 仓库状态
 
@@ -124,4 +119,4 @@ Local Runtime Recovery PR #11 及其启动器换行后续修复 PR #12 均已合
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；PR #11 已以 `6b38c40` 合并，BAT CRLF 后续修复 PR #12 已以 `6643a1b` 合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #11（`recovery/local-runtime-contract`）已以 `6b38c40` 合并；专项后续 PR #12（`fix/local-runtime-bat-crlf`）已以 `6643a1b` 合并，并具备 232/232 本地验证与最终 CI PASS。历史 Draft PR #10（`fix/local-dev-cache-coherence`）继续保持 Closed/Superseded，仅作为取证检查点保留。
+- Pull Request 状态：PR #14（`ui/layered-paper-productization`）已完成 Pre-Freeze UI Productization 并通过 Final Human Acceptance Gate，具备全量 239 项自动化测试：238 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败与 GitHub CI PASS；等待执行 Whole-Product Feature Complete Review V2。历史 PR #11 与 PR #12 保持已合并至 `main`。历史 Draft PR #10 保持 Closed/Superseded。
