@@ -119,4 +119,4 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；PR #11 已以 `6b38c40` 合并，BAT CRLF 后续修复 PR #12 已以 `6643a1b` 合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #14（`ui/layered-paper-productization`）已完成 Pre-Freeze UI Productization 并通过 Final Human Acceptance Gate，具备 238/238 测试通过（237 项通过，1 项 Linux CI 跳过，0 项失败）与 GitHub CI PASS；等待执行 Whole-Product Feature Complete Review V2。历史 PR #11 与 PR #12 保持已合并至 `main`。历史 Draft PR #10 保持 Closed/Superseded。
+- Pull Request 状态：PR #14（`ui/layered-paper-productization`）已完成 Pre-Freeze UI Productization 并通过 Final Human Acceptance Gate，具备全量 238 项自动化测试：237 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败与 GitHub CI PASS；等待执行 Whole-Product Feature Complete Review V2。历史 PR #11 与 PR #12 保持已合并至 `main`。历史 Draft PR #10 保持 Closed/Superseded。
