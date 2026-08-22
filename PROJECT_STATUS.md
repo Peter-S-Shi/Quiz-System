@@ -2,15 +2,16 @@
 
 ## Current Phase
 
-Pre-Freeze V1 Scope Closure (Batch A)
+Pre-Freeze V1 Scope Closure
 
 ## Current Milestone
 
-Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practice Information Architecture (Implementation complete; Automated test suite: 243 total / 243 passed on Windows, 242 passed + 1 skipped on Linux CI; Human Gate A pending user evaluation)
+Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practice Information Architecture — complete and verified; Human Gate A = PASS
 
 This workstream delivers the first of two pre-freeze scope closure packages:
-1. **Objective Quiz Practice Feedback Modes**: Adds Instant Feedback (`instant`, default) vs. Submit at End (`submitAtEnd`) modes in practice setup, preserving full refresh recovery and supporting all 5 objective question types.
+1. **Objective Quiz Practice Feedback Modes**: Adds Instant Feedback (`instant`, default) vs. Submit at End (`submitAtEnd`) modes in practice setup, preserving full refresh recovery, supporting all 5 objective question types, and enforcing explicit user confirmation and cancel safety upon final paper submission.
 2. **Special Practice Information Architecture**: Reorganizes product hierarchy so that Translation is housed under the top-level `Special Practice` container, preserving all existing Translation workflows.
+3. **Human Gate A**: Successfully evaluated and passed (PASS).
 
 It precedes Batch B (Question Media: image/audio) and the subsequent Whole-Product Feature Complete Review V3.
 
@@ -63,9 +64,9 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 
 ## Verification Status
 
-- 243 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
+- 244 automated unit/integration tests pass (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
 - **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes (Instant Feedback vs. Submit at End with explicit submit confirmations) and Special Practice information architecture (`Special Practice -> Translation`) implemented and verified with new tests in `tests/practice-modes.test.js`.
-- **Human Gate A Guide**: Verification journeys A, B, and C documented in `manual-qa/human-gate-a.md` and `manual-qa/human-gate-a.zh-CN.md` (ready for human execution; AI does not self-certify).
+- **Human Gate A Guide**: Verification journeys A, B, and C documented in `manual-qa/human-gate-a.md` and `manual-qa/human-gate-a.zh-CN.md` are evaluated and passed (**PASS**).
 
 ## Agreed Question Media Policy (Batch B Scope Definition)
 
@@ -113,10 +114,9 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 
 ## Next Engineering Objective
 
-1. **Human Gate A Evaluation**: User executes manual verification journeys per [manual-qa/human-gate-a.md](file:///F:/CodexWorkspaces/Quiz%20System/manual-qa/human-gate-a.md).
-2. **Pre-Freeze Scope Closure · Batch B**: Implement Objective Question Media (optional image and/or audio across all 5 question types, image zoom viewing, in-question audio player bar).
-3. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and recommend entering Feature Freeze.
-4. **Milestone 7 Product Hardening**: Enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
+1. **Pre-Freeze Scope Closure · Batch B**: Implement Objective Question Media (optional image and/or audio across all 5 question types, image zoom viewing, in-question audio player bar).
+2. **Whole-Product Feature Complete Review V3**: Conduct comprehensive whole-product review and recommend entering Feature Freeze.
+3. **Milestone 7 Product Hardening**: Enter Feature Freeze and execute product hardening items (including metacognitive marking toggle UX polish).
 
 ## Repository State
 
@@ -127,4 +127,4 @@ Product Hardening is Milestone 7 and will begin only after Pre-Freeze V1 Scope C
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; PR #11 merged as `6b38c40`, and the BAT CRLF follow-up PR #12 merged as `6643a1b`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #14 (`ui/layered-paper-productization`) has completed Pre-Freeze UI Productization and passed the Final Human Acceptance Gate with 239 total tests: 238 passed, 1 skipped platform-specific Windows launcher test on Linux CI, 0 failed and passing GitHub CI; awaits Whole-Product Feature Complete Review V2. Historical PR #11 and PR #12 remain merged on `main`. Historical Draft PR #10 remains Closed/Superseded.
+- Pull request status: PR #15 (`feature/pre-freeze-scope-batch-a`) implements Batch A (Practice Feedback Modes & Special Practice IA), passes Human Gate A (PASS) and CI, and merges into `main`. Historical PR #14 (`ui/layered-paper-productization`) remains merged on `main`.

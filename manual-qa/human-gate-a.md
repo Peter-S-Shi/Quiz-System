@@ -1,7 +1,7 @@
 # Human Gate A Verification Guide — Practice Feedback Modes & Special Practice IA
 
 **Scope**: Pre-Freeze V1 Scope Closure · Batch A  
-**Status**: Ready for Human Evaluation (DO NOT mark PASS autonomously)  
+**Status**: PASSED (Human Gate A = PASS)  
 **Evaluator**: Human Reviewer / User  
 
 ---
@@ -101,11 +101,13 @@ Verify the new product hierarchy where Translation resides under the top-level *
 
 ## Verdict & Sign-Off
 
-- **Journey A (Instant Feedback)**: [ ] PASS / [ ] FAIL  
-- **Journey B (Submit at End)**: [ ] PASS / [ ] FAIL  
-- **Journey C (Product Hierarchy)**: [ ] PASS / [ ] FAIL  
+- **Journey A (Instant Feedback)**: [x] PASS / [ ] FAIL  
+- **Journey B (Submit at End)**: [x] PASS / [ ] FAIL  
+- **Journey C (Product Hierarchy)**: [x] PASS / [ ] FAIL  
+
+**Final Gate Outcome**: **PASS** (Human Gate A = PASS)
 
 **Human Reviewer Notes**:
 ```
-[Enter observations, feedback, or issues here]
+Human Gate A evaluated and passed: Instant Feedback, Submit at End with explicit confirmation and cancel safety, and Special Practice IA verified.
 ```

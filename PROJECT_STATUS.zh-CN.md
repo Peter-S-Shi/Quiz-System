@@ -2,15 +2,16 @@
 
 ## 当前阶段
 
-Pre-Freeze V1 Scope Closure (Batch A) — 功能冻结前 V1 范围收尾（第 A 批次）
+Pre-Freeze V1 Scope Closure — 功能冻结前 V1 范围收尾
 
 ## 当前里程碑
 
-Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practice Information Architecture（练习反馈模式与专项练习信息架构）— 实现完成；自动化测试：243 项全量通过（Windows 本地 243/243 通过，Linux CI 242 项通过 + 1 项跳过）；Human Gate A 等待用户人工评估
+Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practice Information Architecture（练习反馈模式与专项练习信息架构）— 实现完成并通过验证；Human Gate A = PASS
 
 本工作流为功能冻结前的两批范围收尾之第一批：
-1. **客观题练习反馈模式**：在做题设置中新增“即时反馈”（`instant`，默认）与“答完交卷”（`submitAtEnd`）两种模式，完整支持页面刷新进度恢复与全部 5 种客观题型。
+1. **客观题练习反馈模式**：在做题设置中新增“即时反馈”（`instant`，默认）与“答完交卷”（`submitAtEnd`）两种模式，完整支持页面刷新进度恢复与全部 5 种客观题型，并引入显式交卷二次确认与取消隔离保护。
 2. **专项练习信息架构**：调整产品层级，将“翻译练习”收纳在顶级“专项练习”产品空间下，既有全部翻译研习工作流完整保持。
+3. **Human Gate A**：人工验证旅程全部通过（PASS）。
 
 后续将进入第 B 批次（题目媒体支持：图片/音频），随后执行全产品 Feature Complete Review V3。
 
@@ -20,7 +21,7 @@ Pre-Freeze V1 Scope Closure · Batch A: Practice Feedback Modes & Special Practi
 - **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮、可拖拽侧边栏，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好、侧边栏宽度）。
 - **核心做题与研习纸面**：客观题练习与翻译练习重构为停靠在桌面上的连续手稿纸（Laid Paper Sheet），提供有机物理翻页动效、铅笔书写摩擦音效，以及匹配题逐对独立状态判定与内联正确答案提示。
 - **教师批改台**：批改工作区重构为单张连续纸面批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
-- **离线与测试闭包**：全量 239 项自动化测试（238 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败），包含 UI 偏好持久化测试、轻量偏好设置对话框与完整的 Service Worker ESM 离线预缓存闭包。
+- **离线与测试闭包**：全量 244 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
 - **Human Acceptance Gate**：Final Human Acceptance Gate 已执行并通过（PASS）。
 
 ## 验收政策（历史记录）
@@ -63,9 +64,9 @@ Product Hardening 是 Milestone 7，只能在 Pre-Freeze V1 Scope Closure（Batc
 
 ## 验证状态
 
-- 243 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
+- 244 项自动化单元/集成测试通过（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
 - **Pre-Freeze V1 Scope Closure (Batch A)**：客观做题反馈模式（即时反馈与带显式交卷确认的答完交卷）与专项练习信息架构（`专项练习 -> 双语翻译研习`）已实现，并通过 `tests/practice-modes.test.js` 自动化测试。
-- **Human Gate A 验证指南**：验证旅程 A、B、C 已在 `manual-qa/human-gate-a.md` 和 `manual-qa/human-gate-a.zh-CN.md` 中完整就绪（等待人工评估；AI 不得自主标记为通过）。
+- **Human Gate A 验证指南**：验证旅程 A、B、C 已在 `manual-qa/human-gate-a.md` 和 `manual-qa/human-gate-a.zh-CN.md` 中完整就绪并通过人工验证（**PASS**）。
 
 ## 题目媒体支持规范（Batch B 范围定义）
 
@@ -113,10 +114,9 @@ Product Hardening 是 Milestone 7，只能在 Pre-Freeze V1 Scope Closure（Batc
 
 ## 下一步工程目标
 
-1. **Human Gate A 评估**：用户按照 [manual-qa/human-gate-a.zh-CN.md](file:///F:/CodexWorkspaces/Quiz%20System/manual-qa/human-gate-a.zh-CN.md) 执行人工验证旅程。
-2. **Pre-Freeze V1 Scope Closure · Batch B**：实现客观题目媒体支持（全部 5 种客观题型可选包含图片和/或音频、图片放大查看、题目内嵌音频播放条）。
-3. **Whole-Product Feature Complete Review V3**：重新执行覆盖全产品全部工作流的功能完整性评审，并建议进入 Feature Freeze。
-4. **Milestone 7 Product Hardening**：正式进入 Feature Freeze，执行产品硬化工作（含元认知标记切换交互优化）。
+1. **Pre-Freeze V1 Scope Closure · Batch B**：实现客观题目媒体支持（全部 5 种客观题型可选包含图片和/或音频、图片放大查看、题目内嵌音频播放条）。
+2. **Whole-Product Feature Complete Review V3**：重新执行覆盖全产品全部工作流的功能完整性评审，并建议进入 Feature Freeze。
+3. **Milestone 7 Product Hardening**：正式进入 Feature Freeze，执行产品硬化工作（含元认知标记切换交互优化）。
 
 ## 仓库状态
 
@@ -127,4 +127,4 @@ Product Hardening 是 Milestone 7，只能在 Pre-Freeze V1 Scope Closure（Batc
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；PR #11 已以 `6b38c40` 合并，BAT CRLF 后续修复 PR #12 已以 `6643a1b` 合并
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：PR #14（`ui/layered-paper-productization`）已完成 Pre-Freeze UI Productization 并通过 Final Human Acceptance Gate，具备全量 239 项自动化测试：238 项通过，1 项 Linux CI 上的 Windows 启动器测试安全跳过，0 项失败与 GitHub CI PASS；等待执行 Whole-Product Feature Complete Review V2。历史 PR #11 与 PR #12 保持已合并至 `main`。历史 Draft PR #10 保持 Closed/Superseded。
+- Pull Request 状态：PR #15（`feature/pre-freeze-scope-batch-a`）实现了 Batch A（做题反馈模式与专项练习信息架构），通过 Human Gate A（PASS）及 CI 检验，并合并入 `main`。历史 PR #14（`ui/layered-paper-productization`）保持已合并至 `main`。
