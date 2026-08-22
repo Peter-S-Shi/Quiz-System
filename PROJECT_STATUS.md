@@ -82,7 +82,6 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 - Product Hardening (Milestone 7) has not yet been executed under Feature Freeze.
 - Legacy single-paper migration across representative old localStorage states and full browser-close/restart active-session recovery have not received dedicated verification.
-- Public Pages deployment remains deferred while the repository is private.
 - A release candidate and final clean-environment verification do not yet exist.
 
 ## Hardening Progress

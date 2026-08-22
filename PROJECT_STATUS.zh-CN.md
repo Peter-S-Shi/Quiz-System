@@ -82,7 +82,6 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 - 功能冻结下的 Milestone 7 产品硬化尚未执行。
 - 旧版单试卷数据在代表性旧 localStorage 状态下的迁移行为，以及真实浏览器关闭/重开后的 active session 恢复尚未获得单独专项验证。
-- 仓库保持 private 时，公开 Pages 部署继续暂缓。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
 
 ## Hardening 进度
