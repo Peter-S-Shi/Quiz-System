@@ -125,4 +125,4 @@ Complete the Local Runtime Recovery human Chrome gate, then run the deferred fin
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Local Runtime Recovery baseline: exact remote `main` commit `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`; current work is on `recovery/local-runtime-contract`
 - Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: historical Draft PR #10 (`fix/local-dev-cache-coherence`) remains an unmerged forensic checkpoint and must not be used as the implementation base. A replacement Draft PR for the current recovery branch is pending creation; no merge is authorized.
+- Pull request status: replacement Draft PR #11 (`recovery/local-runtime-contract`) is open from implementation commit `5d88568` and awaits the normal-profile Chrome Human Gate. Historical Draft PR #10 (`fix/local-dev-cache-coherence`) remains an unmerged forensic checkpoint and must not be used as the implementation base. Neither PR is authorized for merge.

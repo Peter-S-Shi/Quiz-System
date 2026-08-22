@@ -125,4 +125,4 @@ Product Hardening 是 Milestone 7，只能在全部 Milestone 6 工作通过评�
 - 当前文档修订：即包含本状态文件的 commit；其不可变标识以 Git 历史为准
 - Local Runtime Recovery 基线：远端 `main` 精确提交 `eb5b70b7e820b1bd0183b2f864ebb892c5e70b47`；当前工作位于 `recovery/local-runtime-contract`
 - private 仓库状态：基于当前项目策略和 Pages 暂缓决定，按 private 处理
-- Pull Request 状态：历史 Draft PR #10（`fix/local-dev-cache-coherence`）保留为未合并的取证检查点，禁止作为实现基线。当前恢复分支的替代 Draft PR 尚待创建；未获得任何合并授权。
+- Pull Request 状态：替代 Draft PR #11（`recovery/local-runtime-contract`）已从实现提交 `5d88568` 创建并保持 Open，等待普通 Chrome profile Human Gate。历史 Draft PR #10（`fix/local-dev-cache-coherence`）仍保留为未合并的取证检查点，禁止作为实现基线。两个 PR 均未获得合并授权。
