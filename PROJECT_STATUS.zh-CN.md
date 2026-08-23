@@ -80,6 +80,7 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 ## 当前发布阻断项
 
+- **H-01 — 规范 Quiz Library 启动覆盖风险：**损坏或不受支持的 `quiz-studio-library-v1` JSON 可能在加载失败后被立即替换为自动生成的默认 Library。M7.2 必须先保留原始值、安全失败并补充迁移/损坏回归测试，之后才可进入 RC。
 - 功能冻结下的 Milestone 7 产品硬化尚未执行。
 - 旧版单试卷数据在代表性旧 localStorage 状态下的迁移行为，以及真实浏览器关闭/重开后的 active session 恢复尚未获得单独专项验证。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
@@ -111,6 +112,7 @@ Milestone 7 已在 Feature Freeze 下获得授权。`M7_HARDENING_AUDIT.md` 是 
 
 ## 已知风险
 
+- 规范 Quiz Library 启动流程目前没有针对损坏或不受支持存储 JSON 的隔离/恢复路径；这是 M7 审计中的 H-01 发布阻断项，目标在 M7.2 关闭。
 - 由于仓库保持 private 且 Pages 部署暂缓，GitHub Pages 目前不能视为可用交付方式。
 - ES module 应用不支持通过浏览器 `file://` 直接打开；用户必须使用本地静态服务器或 `start-local.bat`。
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。Translation 历史按设计同样没有条目数量上限，继承了这一风险。

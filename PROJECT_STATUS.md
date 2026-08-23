@@ -80,6 +80,7 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 ## Open Release Blockers
 
+- **H-01 — Canonical Quiz Library bootstrap overwrite risk:** malformed or unsupported `quiz-studio-library-v1` JSON can fall through loading and be immediately replaced by a generated default library. M7.2 must preserve the raw value, fail safely, and add migration/corruption regressions before RC.
 - Product Hardening (Milestone 7) has not yet been executed under Feature Freeze.
 - Legacy single-paper migration across representative old localStorage states and full browser-close/restart active-session recovery have not received dedicated verification.
 - A release candidate and final clean-environment verification do not yet exist.
@@ -111,6 +112,7 @@ Milestone 7 is authorized under Feature Freeze. `M7_HARDENING_AUDIT.md` is the e
 
 ## Known Risks
 
+- Canonical Quiz Library bootstrap currently has no quarantine/recovery path for malformed or unsupported stored JSON; this is the M7 audit's H-01 release blocker, targeted to M7.2.
 - GitHub Pages cannot currently be treated as available because the repository remains private and Pages deployment is deferred.
 - Browser `file://` opening is not supported for the ES module app; users must use a local static server or `start-local.bat`.
 - Finalized Learner Responses use browser local storage without silent history truncation; large long-term evidence collections may eventually encounter browser storage limits. Translation History inherits this: it has no entry cap by design.

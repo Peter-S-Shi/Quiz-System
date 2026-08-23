@@ -36,9 +36,11 @@ The current three-batch structure remains appropriate:
 
 Current implementation already provides direct inline whole-item controls and click-again-to-remove (`src/app.js`, `data-item-mark-kind`; `currentItemMark === kind ? null : kind`). Core tests cover set, replace, clear, persistence, and finalization. Do not reimplement those behaviors.
 
+The buttons emit an `active` class, but the stylesheet has no applicable `.small-button.active` or marking-control selector. The required visible active state is therefore absent, not merely insufficiently semantic.
+
 Remaining M7.1 work:
 
-- give each active kind its semantic ink rather than one generic active blue;
+- add an obvious active state using each marking kind's semantic ink;
 - expose toggle state with `aria-pressed` (or an equivalent native semantic contract);
 - preserve/restore useful focus after the full-panel rerender;
 - add UI-level keyboard/touch verification for selection, toggle-off, persistence, and bilingual labels.
@@ -103,9 +105,24 @@ Historical Git evidence identifies these meaningful states:
 1. **M1 single Paper** (`a6f432a`): `quiz-studio-paper-v1`, no library, no durable session/history.
 2. **M2–M3 library** (`27d1a7c`): `quiz-studio-library-v1`, active Paper, Objective active session, bounded Objective history, theme/language, and possible simultaneous legacy Paper key.
 3. **M4–M5 modular baseline** (`88702af`): the same browser keys with normalized Paper/question contracts and schema versioning.
-4. **Additive M6 states:** absent learner/review/Translation keys, early unannotated Translation responses, pre-category libraries, and active sessions lacking later optional fields such as `feedbackMode`, annotations, or item marks.
+4. **Additive M6 states:** finalized Learner Responses (`35b7fb0`), Translation Library (`3c0ade4`/`706c737`), Translation active session (`c212f2b`), span annotations (`27461a6`), Teacher Reviews (`9952b17`), whole-item marks (`680e487`), Objective `feedbackMode` (`6e91eda`), categories (`c385e69`), and media references/IndexedDB assets (`241cfcc`). Compatibility states include an absent newer key, an older record without the later optional field, and mixed old/new keys after an interrupted upgrade.
 
-No committed real user storage is allowed. M7.2 must build synthetic fixtures from those historical commits and test: legacy-only migration, library precedence over legacy, mixed-key states, missing optional keys, malformed JSON, unsupported shapes, idempotent second load, and backup/export immediately after migration. Raw source data must not be deleted or overwritten until validation succeeds and a recoverable backup/quarantine path exists.
+Reusable automated evidence already present:
+
+- `tests/core.test.js` covers schema-less Paper/question normalization and default schema fields.
+- `tests/categories.test.js` covers pre-category library normalization and legacy backup/category restoration.
+- `tests/interchange.test.js`, `tests/translation-domain.test.js`, and `tests/teacher-review-corrections.test.js` cover additive backup compatibility when learner-response, Translation, or Teacher Review collections are absent.
+- `tests/practice-modes.test.js`, `tests/translation-session.test.js`, and `tests/ui-preferences.test.js` cover defaulting or recovery for missing later session/preference fields and older unannotated evidence.
+
+Still missing:
+
+- exact synthetic full-key bundles derived from the M1, M2–M3, and M4 historical commits;
+- an end-to-end storage/bootstrap harness that exercises `loadLibrary()` rather than only pure normalizers/parsers;
+- library-versus-legacy precedence, mixed-key/interrupted-upgrade, malformed JSON, and unsupported-shape cases;
+- proof that failed migration preserves raw source data, that a second load is idempotent, and that backup/export succeeds immediately after migration;
+- media-aware migration evidence covering a legacy Paper together with current IndexedDB state.
+
+No committed real user storage is allowed. M7.2 must add only the missing synthetic evidence and reuse the coverage above. Raw source data must not be deleted or overwritten until validation succeeds and a recoverable backup/quarantine path exists.
 
 ### C2 — Genuine browser process restart recovery
 
@@ -163,7 +180,7 @@ M7.0 synchronizes clear contradictions without rewriting history:
 | ID | Class | Severity | Finding | Target / closure |
 | --- | --- | --- | --- | --- |
 | H-01 | H | Release blocker | Malformed/unsupported `quiz-studio-library-v1` data can collapse through `loadJson()` and be immediately overwritten by a generated default library during bootstrap. | M7.2: fail safely, preserve raw data, add synthetic corruption/migration regression tests. |
-| M-01 | M | High | B1 is behaviorally partial: semantic active inks, pressed semantics, focus continuity, and UI evidence remain. | M7.1 |
+| M-01 | M | High | B1 is behaviorally partial: click-again-to-remove exists, but visible active styling, pressed semantics, focus continuity, and UI evidence remain. | M7.1 |
 | M-02 | M | High | B2 narrow/touch layouts and keyboard focus are not sufficiently designed or verified for History, retry selection, marking, and rich correction. | M7.1 |
 | M-03 | M | High | B3 has 19 native-dialog call sites that should be replaced under one bounded dialog contract. | M7.1 |
 | M-04 | M | Medium | B4 has quadratic derivation risk and no accumulated-history characterization. | M7.2 |
