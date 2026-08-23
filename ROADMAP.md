@@ -156,9 +156,9 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: Feature-development implementation complete; M6.0 and M6.1 accepted; M6.2, M6.3, M6.4, M6.5, M6.6, and M6.7 implementation complete with comprehensive M6-wide acceptance pending
+Status: Complete and accepted (comprehensive M6-wide acceptance passed; Review V3 passed; Feature Freeze active)
 
-Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7 is complete. Implementation review, regression testing, CI, and scope review still apply to every sub-milestone in the meantime. M6.0 and M6.1 were accepted before this policy took effect and remain accepted.
+Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 was deferred to one comprehensive M6-wide acceptance after M6.7 concluded. That comprehensive acceptance has been executed and passed; M6.0–M6.7 are all complete and accepted.
 
 Goal: add a dedicated, local-first workspace for document-oriented written translation practice without assuming that a reference translation is the only correct answer.
 
@@ -355,6 +355,8 @@ Exit conditions:
 - Verified local commits match the target remote branch.
 
 ## Milestone 8: Release Candidate Validation
+
+Status: Candidate preparation active (Batch A in progress; candidate `v1.0.0-rc.1` preparation; Batch B/C validation pending)
 
 Goal: validate a release candidate from clean environments without expanding the frozen V1 scope.
 

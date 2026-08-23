@@ -75,7 +75,7 @@ node --test
 
 ## Usage
 
-1. Open `index.html`.
+1. Launch Quiz Studio using `start-local.bat` (Windows) or `python -u scripts/dev-server.py`, then open `http://localhost:8000` in a supported browser (direct `file://` opening is unsupported).
 2. Use the **Edit** view to create or update a quiz paper.
 3. Add questions and mark the correct answers.
 4. Switch to the **Quiz** view.
@@ -130,11 +130,11 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-Current phase: Feature Freeze / Release Candidate Preparation.
+Current phase: Feature Freeze / Milestone 8 Release Candidate Validation.
 
-Quiz Studio is a local-first private pre-release product. The comprehensive M6 acceptance, Pre-Freeze acceptance gates, and Whole-Product Feature Complete Review V3 have passed. V1 Feature Complete is declared and Feature Freeze is active. Milestone 7 Product Hardening (M7.0–M7.3) is complete and all human acceptance gates (H-01 resolved, C1–C4 PASS) have passed.
+Quiz Studio is a local-first private pre-release product. The comprehensive M6 acceptance, Pre-Freeze acceptance gates, Whole-Product Feature Complete Review V3, and Milestone 7 Product Hardening (M7.0–M7.3) have all passed and been accepted. V1 Feature Complete is declared and Feature Freeze remains active.
 
-Milestone 8 Release Candidate validation is the next engineering objective but has not started. Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
+Milestone 8 Release Candidate Validation is active (Batch A candidate preparation for `v1.0.0-rc.1` in progress; Batch B/C validation pending). Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
 
 ## Data and Privacy
 

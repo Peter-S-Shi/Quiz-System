@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0-rc.1] - Candidate Preparation
+
+### Added
+
+- Established the Milestone 8 Release Candidate verification contract and test matrix (`manual-qa/m8-rc1-verification.md` and Chinese counterpart) covering clean Windows, Ubuntu CI, Chrome/Edge/Firefox browser matrix, hosted PWA, and accumulated data portability.
+- Aligned version metadata to `1.0.0-rc.1` across `package.json` and `package-lock.json`.
+
+### Documentation
+
+- Reconciled lifecycle roadmaps, release notes, and runtime usage instructions across `README.md`, `ROADMAP.md`, `PROJECT_STATUS.md`, `RELEASE_NOTES.md`, and `manual-qa/` manifests.
+
 ## Unreleased
 
 ### Added

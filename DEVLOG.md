@@ -2,6 +2,7 @@
 
 ## 2026-08-23
 
+- Executed Milestone 8 Batch A (RC Contract Lock & Candidate Preparation) on branch `release/m8-a-rc1-candidate-preparation` from baseline `3b26d21`. Aligned version metadata to `1.0.0-rc.1` across `package.json` and `package-lock.json`. Created bilingual Milestone 8 RC1 verification checklists (`manual-qa/m8-rc1-verification.md` and `.zh-CN.md`). Reconciled lifecycle roadmaps, release notes, and runtime usage instructions across `README.md`, `ROADMAP.md`, `PROJECT_STATUS.md`, `RELEASE_NOTES.md`, `CHANGELOG.md`, and `manual-qa/` manifests. Zero product code changed; automated test suite passes 292/292.
 - Closed Milestone 7 (Product Hardening) after the Product Owner manually verified and passed all remaining M7.3/C3/Hosted PWA/Cache Upgrade/Localhost Runtime/Bilingual & Responsive regression tests. Reconciled and updated `PROJECT_STATUS.md`, `PROJECT_STATUS.zh-CN.md`, `ROADMAP.md`, `ROADMAP.zh-CN.md`, and all four `manual-qa` checklists under `hardening/m7-3-release-readiness-verification` to record that Milestone 7 is complete and all gates are passed. No product logic modifications were made. The automated test suite remains 292/292 passing. Ready to transition to Milestone 8 (Release Candidate validation).
 
 ## 2026-08-22

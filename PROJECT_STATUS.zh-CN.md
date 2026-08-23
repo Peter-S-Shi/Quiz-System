@@ -2,11 +2,11 @@
 
 ## 当前阶段
 
-Feature Freeze / Release Candidate Preparation（功能冻结 / 候选版本准备阶段）
+Feature Freeze / Milestone 8 Release Candidate Validation（功能冻结 / Milestone 8 候选版本验证阶段）
 
 ## 当前里程碑
 
-Milestone 7 — Product Hardening Complete（产品硬化完成）
+Milestone 8 — Release Candidate 1 候选版本准备（Batch A）
 
 产品负责人已正式接受 Whole-Product Feature Complete Review V3（PASS 裁决），确认 V1 不存在任何 Category A 阻断项，正式宣布 Quiz Studio V1 为 **Feature Complete（功能完备）**，并明确授权进入 **Feature Freeze（功能冻结）**。
 
@@ -129,10 +129,15 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 未知或未验证事项
 
-- 使用超大规模积累数据进行完整备份导出和导入往返。
-- macOS 干净 clone/run 行为为 DEFERRED / NOT VERIFIED，不是 M7.3 必须退出项。
-- 针对 Teacher Review 和补救文档文件输入的操作系统原生文件选择器行为。
-- 超大评阅请求/补救请求导出文件的实用文件大小与目标外部工具的上下文限制。
+### 必须进行的 RC 验证（Batch B / C）
+- 在现实长期使用状态下的代表性累积全量备份导出与导入往返。
+- 针对 Teacher Review 导入与补救 Translation Document 导入的操作系统原生文件选择器行为。
+
+### 可接受的已记录局限性
+- 浏览器本地存储限制下的超大评阅请求/补救请求实用文件大小。
+
+### 明确延期
+- macOS 干净 clone/run 行为明确保持为 **DEFERRED / NOT VERIFIED**。
 
 ## 延迟特性
 
@@ -147,16 +152,17 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 后续工程目标
 
-**进入 Milestone 8 — 候选版本准备与验证**
+**Batch A: RC 合同锁定与候选版本准备（目标：`v1.0.0-rc.1`）**
 
-Milestone 7 产品硬化已全部完成，所有子里程碑 M7.0-M7.3 的验收已获得 Product Owner 确认（PASS）。下一阶段目标是打包并验证 Milestone 8 Release Candidate (候选版本)。
+Milestone 7 产品硬化已全部完成并通过验收。Milestone 8 候选版本验证已激活。Batch A 建立 `v1.0.0-rc.1` 的 RC 验证合同与候选元数据。Batch A 合并后，Batch B（精确候选版本验证）与 Batch C（RC 人工验收）将在不可变的候选 tag 上执行。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`6e175df53a6abb7ea75d9415ff6640801cddbb0b`（`main`，PR #23 精确合并提交）
-- 接受生命周期基线：`main`（Milestone 7 产品硬化已完成并验收）
+- 已验证基线：`3b26d21414827401ff530b9b0e3871a99c7c0f1e`（`main`，PR #24 精确合并提交）
+- 接受生命周期基线：`main`（Milestone 7 产品硬化已完成；PR #24 已合并）
+- 当前工作分支：`release/m8-a-rc1-candidate-preparation`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20、PR #21、PR #22 与 PR #23 均已合并入 `main`；Milestone 7 产品硬化全部完成并通过所有人工验证门（PASS）。
+- Pull Request 状态：PR #20、PR #21、PR #22、PR #23 与 PR #24 均已合并入 `main`；M8 Batch A Candidate Preparation PR 正在本分支推进。

@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Feature Freeze / Release Candidate Preparation
+Feature Freeze / Milestone 8 Release Candidate Validation
 
 ## Current Milestone
 
-Milestone 7 — Product Hardening Complete
+Milestone 8 — Release Candidate 1 Preparation (Batch A)
 
 The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
@@ -129,10 +129,15 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 ## Unknown Or Unverified
 
-- Full backup export and import round trip with large-scale long-term history accumulation.
-- macOS clean clone/run behavior is DEFERRED / NOT VERIFIED and is not a mandatory M7.3 exit row.
-- Native OS file-picker behavior for the Teacher Review and remediation-document file inputs.
-- Very large review-request/remediation-request export files (many items, many corrections) practical file size.
+### Mandatory RC Verification (Batch B / C)
+- Representative accumulated full-backup export and import round trip under realistic usage state.
+- Native OS file-picker behavior for Teacher Review import and remediation Translation Document import.
+
+### Acceptable Documented Limitation
+- Very large review-request / remediation-request practical file sizes under browser local storage limits.
+
+### Deferred
+- macOS clean clone/run behavior remains **DEFERRED / NOT VERIFIED**.
 
 ## Deferred Features
 
@@ -147,16 +152,17 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 ## Next Engineering Objective
 
-**Transition to Milestone 8 — Release Candidate Validation**
+**Batch A: RC Contract Lock & Candidate Preparation (Target: `v1.0.0-rc.1`)**
 
-Milestone 7 Product Hardening is complete, and all sub-milestones M7.0-M7.3 have been accepted by the Product Owner. The next objective is to package and validate the Milestone 8 Release Candidate.
+Milestone 7 Product Hardening is complete and accepted. Milestone 8 Release Candidate Validation is active. Batch A establishes the RC verification contract and candidate metadata for `v1.0.0-rc.1`. Following Batch A merge, Batch B (Exact Candidate Verification) and Batch C (RC Human Acceptance) will execute on the immutable candidate tag.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline: `6e175df53a6abb7ea75d9415ff6640801cddbb0b` (`main`, exact PR #23 merge commit)
-- Accepted lifecycle baseline: `main` (Milestone 7 Product Hardening complete and accepted)
+- Verified baseline: `3b26d21414827401ff530b9b0e3871a99c7c0f1e` (`main`, exact PR #24 merge commit)
+- Accepted lifecycle baseline: `main` (Milestone 7 Product Hardening complete; PR #24 merged)
+- Current working branch: `release/m8-a-rc1-candidate-preparation`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20, PR #21, PR #22, and PR #23 are merged into `main`; Milestone 7 Product Hardening is complete with all human verification gates passed (PASS).
+- Pull request status: PR #20, PR #21, PR #22, PR #23, and PR #24 are merged into `main`; M8 Batch A Candidate Preparation PR is in progress from this branch.

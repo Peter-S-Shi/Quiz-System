@@ -12,6 +12,7 @@
 - `m7-3-c3-external-review.zh-CN.md`、`m7-3-c3-seed-backup.json` 与通过真实 UI 导出的 `m7-3-c3-review-request.json` 组成可复现 C3 外部评阅交接（**PASS — Product Owner 已接受**）。
 - `m7-3-c4-clean-environment.zh-CN.md` 记录 Windows 与 Ubuntu 必须项的干净环境矩阵（**PASS；macOS 延期/未验证**）。
 - `m7-3-final-human-acceptance.zh-CN.md` 汇总 M7.3 Product Owner 验收门（**PASS — Product Owner 已接受；Product Hardening 完成**）。
+- `m8-rc1-verification.zh-CN.md` 建立 Release Candidate 1 (`v1.0.0-rc.1`) 全量验证合同（**PENDING — 待 Batch B/C 验证**）。
 
 ## 使用方式
 
