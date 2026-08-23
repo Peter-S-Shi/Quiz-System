@@ -12,6 +12,9 @@
 - `m7-3-c3-external-review.zh-CN.md`、`m7-3-c3-seed-backup.json` 与通过真实 UI 导出的 `m7-3-c3-review-request.json` 组成可复现 C3 外部评阅交接（**PASS — Product Owner 已接受**）。
 - `m7-3-c4-clean-environment.zh-CN.md` 记录 Windows 与 Ubuntu 必须项的干净环境矩阵（**PASS；macOS 延期/未验证**）。
 - `m7-3-final-human-acceptance.zh-CN.md` 汇总 M7.3 Product Owner 验收门（**PASS — Product Owner 已接受；Product Hardening 完成**）。
+- `m8-rc1-verification.zh-CN.md` 建立 Release Candidate 1 (`v1.0.0-rc.1`) 全量验证合同与完整矩阵（**COMPLETE / ACCEPTED**）。
+- `m8-b-exact-candidate-verification.zh-CN.md` 记录覆盖自动化套件、Ubuntu CI、运行时合同、累积备份往返与发布安全性的精确候选版本验证证据（**PASS**）。
+- `m8-c-human-acceptance.zh-CN.md` 记录覆盖干净 Windows 启动、浏览器矩阵冒烟、原生文件选择器、托管 PWA 与已知局限性的最终 Product Owner 人工验收证据（**PASS — ACCEPTED；Milestone 8 完成**）。
 
 ## 使用方式
 
@@ -25,7 +28,7 @@
 
 这份基线只用于手工验收，不改变产品功能、业务逻辑、工作流或发布状态。
 
-问卷保留了 M6.0 与 M6.2–M6.7 各里程碑增量，以及一条贯穿 M6.0–M6.7 的端到端综合旅程。这些模块覆盖 finalized evidence、Translation Library 与 Practice、学习者标记、富文本批改、外部文件交换、History、重练、溯源和破坏性工作流安全。M6 综合验收已经执行并通过；保留的增量继续作为 Milestone 7 的可复用回归证据。历史验收通过不代表新的 M7 验证合同已经关闭；这些合同记录在 `M7_HARDENING_AUDIT.md` 中。
+问卷保留了 M6.0 与 M6.2–M6.7 各里程碑增量，以及一条贯穿 M6.0–M6.7 的端到端综合旅程。这些模块覆盖 finalized evidence、Translation Library 与 Practice、学习者标记、富文本批改、外部文件交换、History、重练、溯源和破坏性工作流安全。这些保留的增量在整个 Milestone 7 期间持续作为可复用回归证据；Milestone 7 产品硬化与 Milestone 8 候选版本验证随后均已全部完成并获得正式验收。
 
 ## 隐私
 

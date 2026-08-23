@@ -2,11 +2,15 @@
 
 ## 当前阶段
 
-Feature Freeze / Release Candidate Preparation（功能冻结 / 候选版本准备阶段）
+Feature Freeze / 已接受候选版本（`v1.0.0-rc.1`）/ Maintenance Hold
 
-## 当前里程碑
+## 当前活跃里程碑
 
-Milestone 7 — Product Hardening Complete（产品硬化完成）
+无
+
+## 最近已完成里程碑
+
+Milestone 8 — Release Candidate 1 验证：COMPLETE / ACCEPTED（候选版本 `v1.0.0-rc.1` 于提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 获 Product Owner 正式人工验收通过）
 
 产品负责人已正式接受 Whole-Product Feature Complete Review V3（PASS 裁决），确认 V1 不存在任何 Category A 阻断项，正式宣布 Quiz Studio V1 为 **Feature Complete（功能完备）**，并明确授权进入 **Feature Freeze（功能冻结）**。
 
@@ -53,13 +57,13 @@ M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已
 
 产品负责人已明确授权进入 **Feature Freeze（功能冻结）**。
 
-自此节点开始，V1 产品功能范围全面冻结：
-- 在 Milestone 7 期间，不得向 V1 引入常规新功能、新题型、新练习分支或任何功能范围扩充。
-- 若产品硬化过程中发现真正阻断发布的缺陷确实需要扩大 V1 范围，必须作为 **Product Owner Hard Gate（产品负责人硬门禁）** 严格升级审批，严禁自主扩充。
+V1 产品功能范围已全面冻结：
+- 在 Feature Freeze 期间，不得向 V1 引入常规新功能、新题型、新练习分支或任何功能范围扩充。
+- 若未来维护过程中发现缺陷确实需要扩大 V1 范围，必须作为 **Product Owner Hard Gate（产品负责人硬门禁）** 严格升级审批，严禁自主扩充。
 
-## 冻结期硬化规则（Frozen-Scope Hardening Rules）
+## 冻结期策略（Frozen-Scope Policy）
 
-Milestone 7 Product Hardening 可以包含：
+在 Feature Freeze 与 maintenance hold 期间，允许的工程活动仅限于：
 - 缺陷修复与可靠性硬化；
 - 数据完整性保护与防御性错误处理；
 - 既有交互体验打磨（明确包含翻译元认知标记切换交互优化必做项）；
@@ -82,14 +86,13 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 ## 当前发布阻断项
 
-- 无。Milestone 7 产品硬化已完成，Product Owner 已手动验证并通过全部 M7.3/C3/托管 PWA/本地运行时/回归测试等验证项（PASS）。
-- 最终候选版本（Milestone 8）尚未打包和验证。
+- 无。Milestone 7 产品硬化与 Milestone 8 候选版本验证均已全部完成并获得验收通过（PASS）。全部自动化、运行时与 Product Owner 人工验收门均通过，0 发布阻断缺陷。
 
 ## Hardening 进度
 
 **M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 已完成、被 Product Owner 接受并已合并。**
 
-Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 在 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成并通过 PR #23 合并至 `6e175df53a6abb7ea75d9415ff6640801cddbb0b`。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Release Candidate 工作（Milestone 8）尚未开始。
+Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 在 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成并通过 PR #23 合并至 `6e175df53a6abb7ea75d9415ff6640801cddbb0b`。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Milestone 8 候选版本验证已全部完成并通过验收。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -110,6 +113,7 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 - **M7.2 C2**：Objective `instant`/`submitAtEnd`、Translation 普通/Retry/Remediation 自动化恢复合同均通过；Product Owner 已在 Google Chrome 151.0.7922.173（Official Build，64-bit）中接受真实浏览器进程关闭/重开与强制终止/重开验证。Human Gate = **PASS**。
 - **M7.3 C3**：隐私安全 seed backup 可在一次性 profile 中恢复精确 finalized 合成 response；随后已通过真实 Quiz Studio History UI 导出提交的请求，并保留答案、span annotation 与整题标记。独立外部新编写及 Product Owner 预览/确认/持久化/重开/再导出/拒绝验证 = **PASS**。
 - **M7.3 C4**：干净 Windows 11 clone、`npm ci`、290/290 基线测试、规范 runtime 健康/重启、全新 Chrome 151 profile 与真实合成试卷导入/导出均通过；精确基线 Ubuntu CI 通过；macOS 为 **DEFERRED / NOT VERIFIED**。C4 总结 = **PASS**。
+- **Milestone 8 RC1 验证**：在精确候选 tag `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）上通过全部 292/292 自动化测试；代表性累积全量备份往返通过；干净 Windows 启动、浏览器矩阵冒烟、原生文件对话框、托管 HTTPS PWA 与已知局限性均获 Product Owner 验收通过（Milestone 8 = **PASS — ACCEPTED**）。
 
 ## 题目媒体支持规范（Batch C 范围定义）
 
@@ -119,7 +123,7 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 ## 已知风险
 
 - Quiz Library 规范恢复刻意保持为存储层合同，没有新增迁移管理 UI；保留的原始规范数据位于专用恢复键中，供诊断/恢复。
-- 由于仓库保持 private 且 Pages 部署暂缓，GitHub Pages 目前不能视为可用交付方式。
+- GitHub Pages 部署保持延期且未激活；仓库可见性与 Pages 部署相互独立。
 - ES module 应用不支持通过浏览器 `file://` 直接打开；用户必须使用本地静态服务器或 `start-local.bat`。
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。Translation 历史按设计同样没有条目数量上限，继承了这一风险。
 - 外部 Teacher Review 与补救往返完全是手动的（导出一份文件、交给外部一方、导入他们返回的文件）；目前没有、也不计划做任何应用内 AI 集成。
@@ -129,10 +133,17 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 未知或未验证事项
 
-- 使用超大规模积累数据进行完整备份导出和导入往返。
-- macOS 干净 clone/run 行为为 DEFERRED / NOT VERIFIED，不是 M7.3 必须退出项。
-- 针对 Teacher Review 和补救文档文件输入的操作系统原生文件选择器行为。
-- 超大评阅请求/补救请求导出文件的实用文件大小与目标外部工具的上下文限制。
+### 已完成的 RC 验证（Milestone 8）
+- 在现实长期使用状态下的代表性累积全量备份导出与导入往返（**PASS**）。
+- 针对 Teacher Review 导入与补救 Translation Document 导入的操作系统原生文件选择器行为（**PASS**）。
+- 跨浏览器冒烟与干净 Windows 运行时健康/重启（**PASS**）。
+- 托管 HTTPS PWA 生命周期（**PASS**）。
+
+### 可接受的已记录局限性
+- 浏览器本地存储限制下的超大评阅请求/补救请求实用文件大小。
+
+### 明确延期
+- macOS 干净 clone/run 行为明确保持为 **DEFERRED / NOT VERIFIED**。
 
 ## 延迟特性
 
@@ -147,16 +158,19 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 后续工程目标
 
-**进入 Milestone 8 — 候选版本准备与验证**
+**维护保留状态（当前无活跃工程里程碑）**
 
-Milestone 7 产品硬化已全部完成，所有子里程碑 M7.0-M7.3 的验收已获得 Product Owner 确认（PASS）。下一阶段目标是打包并验证 Milestone 8 Release Candidate (候选版本)。
+Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPTED）。候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）已获 Product Owner 验收通过，Feature Freeze 保持激活。当前未安排任何活跃工程里程碑。
+
+未来任何工作（如发布分发、GitHub Pages 部署、正式 GitHub Release、最终 `v1.0.0`、作品集包装或下一版本规划）均保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
+
+保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`6e175df53a6abb7ea75d9415ff6640801cddbb0b`（`main`，PR #23 精确合并提交）
-- 接受生命周期基线：`main`（Milestone 7 产品硬化已完成并验收）
+- 仓库生命周期状态：Milestone 8 COMPLETE / ACCEPTED（已完成并接受）；Feature Freeze 保持激活
+- 已接受候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
+- 提交与合并追踪：请查阅 Git 历史以获取当前 `main` 提交身份与 PR 合并记录
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
-- 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20、PR #21、PR #22 与 PR #23 均已合并入 `main`；Milestone 7 产品硬化全部完成并通过所有人工验证门（PASS）。

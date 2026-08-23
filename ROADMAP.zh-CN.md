@@ -23,9 +23,9 @@ Milestone 1 建立了本地优先的 quiz 编辑与练习系统原型。
 
 ## Milestone 2：练习流程增强
 
-状态：首版实现已落地；完整验收待完成
+状态：作为历史开发基线完成（随后统一纳入 M6 / Pre-Freeze / M7 综合验证）
 
-Milestone 2 增强学习者的练习闭环，让每次做题过程可以恢复、回顾、重复练习，并且更容易筛选。
+Milestone 2 增强了学习者的练习闭环，让每次做题过程可以恢复、回顾、重复练习，并且更容易筛选。
 
 已实现范围：
 
@@ -38,14 +38,13 @@ Milestone 2 增强学习者的练习闭环，让每次做题过程可以恢复�
 - 支持按题型筛选。
 - 新增界面文案同时支持中文和英文。
 
-验收状态：
+验收状态（历史记录）：
 
-- 尚未完成项目级完整人工验收。
-- 答题恢复、答题历史、错题重练、随机抽题和题型筛选仍需正式端到端验证。
+- 本阶段暂缓了单个 M2 人工验收，随后统一纳入 M6、Pre-Freeze 与 M7/M8 综合验证。
 
 ## Milestone 3：本地试卷库
 
-状态：首版实现已落地；完整验收待完成
+状态：作为历史开发基线完成（随后在 M6 / Pre-Freeze / M7 / M8 中完成验证）
 
 Milestone 3 将 Quiz Studio 从单试卷流程推进到本地试卷库，让用户可以在同一台设备上管理多套试卷。
 
@@ -58,14 +57,13 @@ Milestone 3 将 Quiz Studio 从单试卷流程推进到本地试卷库，让用�
 - 提供更安全的导入、导出和完整本地备份流程。
 - 将旧版单试卷本地数据迁移到试卷库。
 
-验收状态：
+验收状态（历史记录）：
 
-- 删除等破坏性流程、备份往返、导入安全和旧数据迁移仍需完整人工验证。
-- 数据管理继续保持本地优先和隐私友好，但数据完整性尚未完成正式验证。
+- 破坏性操作、备份往返、导入安全性与旧数据迁移等验证在本阶段暂缓，随后在 M6、M7 与 M8 验证中全部完成。
 
 ## Milestone 4：Quiz Core 与开放数据格式
 
-状态：首版实现已落地；完整验收待完成
+状态：作为历史开发基线完成
 
 Milestone 4 将当前原型中的内部逻辑整理成更稳定的基础，把可复用 quiz 行为与界面分离。
 
@@ -79,14 +77,13 @@ Milestone 4 将当前原型中的内部逻辑整理成更稳定的基础，把�
 - 建立单元测试、格式检查和基础 CI。
 - 公开 JSON Schema 文件和合成示例 quiz 文件。
 
-验收状态：
+验收状态（历史记录）：
 
-- 核心测试已经存在并可在本地通过，但这还不能等同于发布就绪保证。
-- Schema、迁移、存储和判分行为仍需要更全面的审计和回归检查。
+- 本阶段建立了核心测试；更全面的 schema、迁移、存储和判分回归套件在后续里程碑中扩充并通过验收（292 项自动化测试全绿）。
 
 ## Milestone 5：公开发布准备基础
 
-状态：首版实现已落地；完整验收待完成
+状态：作为历史开发基线完成
 
 Milestone 5 为未来公开发布建立基础，但不代表当前版本已经发布就绪。
 
@@ -100,11 +97,10 @@ Milestone 5 为未来公开发布建立基础，但不代表当前版本已经�
 - 提供合成示例 quiz 和安全说明。
 - 添加 Windows 本地启动器。
 
-验收状态：
+验收状态（历史记录）：
 
-- 仓库保持 private 时，GitHub Pages 部署继续暂缓。
-- 尚未创建稳定公开版本 tag。
-- 完整人工 QA、Product Hardening 和 Release Candidate 验证仍待完成。
+- 当时因仓库为 private 而暂缓 Pages 部署；当前仓库可见性与 Pages 部署相互独立。
+- 完整人工 QA、Product Hardening（M7）与 Release Candidate 验证（M8）随后均已全部完成并获得验收。
 
 ## Feature Complete Review
 
@@ -133,7 +129,7 @@ Milestone 5 为未来公开发布建立基础，但不代表当前版本已经�
 - Milestone 6、Pre-Freeze UI Productization 与范围收尾 Batches A–C 随后均已实现并验收。
 - Whole-Product Feature Complete Review V3 以 0 个 Category A 阻断项通过。
 - V1 Feature Complete 已宣布，Feature Freeze 已激活。
-- 产品尚未达到 Release Candidate 就绪状态；Milestone 7 Product Hardening 与 Milestone 8 Release Candidate 验证仍待完成。
+- Milestone 7 Product Hardening（M7.0–M7.3）与 Milestone 8 Release Candidate 验证随后均已完成，候选版本 `v1.0.0-rc.1` 获得正式验收通过。
 
 ## Feature Freeze Gate
 
@@ -156,9 +152,9 @@ Freeze 规则：
 
 ## Milestone 6：Translation Practice
 
-状态：功能开发阶段实现完成；M6.0、M6.1 已验收；M6.2、M6.3、M6.4、M6.5、M6.6、M6.7 均已完成实现，整体 M6 验收待进行
+状态：已完成并验收（M6 综合验收通过；Review V3 通过；Feature Freeze 已激活）
 
-验收政策说明：M6.2 到 M6.7 不再逐个进行正式用户验收，而是推迟到 M6.7 完成后进行一次覆盖整个 M6 的综合验收。在此期间，每个子里程碑仍然需要实现评审、回归测试、CI 和范围审查。M6.0 和 M6.1 在这一政策生效前已经验收，继续保持已验收状态。
+验收政策说明：M6.2 到 M6.7 统一推迟到 M6.7 完成后进行一次覆盖整个 M6 的综合验收。该项综合验收已经执行并通过；M6.0–M6.7 全部完成并已通过验收。
 
 目标：在 Quiz Studio 中加入一个本地优先、面向文档型书面翻译训练的专用工作区，同时不假设参考译文是唯一正确答案。
 
@@ -306,7 +302,7 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 ## Milestone 7：Product Hardening
 
-状态：M7.0-M7.3 已完成并被 Product Owner 接受（PASS）；H-01 已解决；C1/B4 已完成；C2/C3/C4 PASS；Product Hardening 已完成；Release Candidate 尚未开始
+状态：已完成并验收（M7.0–M7.3 全部完成；H-01 已解决；C1–C4 PASS；Product Hardening 已完成）
 
 目标：在不扩大产品范围的前提下，让现有功能成为可靠、统一、可验证的整体。
 
@@ -356,46 +352,48 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 ## Milestone 8：Release Candidate Validation
 
+状态：已完成（候选版本 `v1.0.0-rc.1` 于提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 经验证并获 Product Owner 正式验收通过）
+
 目标：在不扩大冻结 V1 范围的前提下，从干净环境验证候选版本。
 
-必要工作：
+已执行的验证范围：
 
-- 创建 `v1.0.0-rc.1`。
-- 从干净目录重新 clone 仓库并运行。
-- 验证 Windows `start-local.bat`。
-- 验证标准本地静态服务器启动方式。
-- 验证主要浏览器。
-- 验证 PWA 安装、离线与缓存升级。
-- 使用空数据、合成示例数据和旧版数据测试。
-- 执行最终隐私与 secret 扫描。
-- 确认所有公开示例都是合成内容。
-- 更新 README、CHANGELOG 和 RELEASE_NOTES。
-- 记录已知限制。
+- 在冻结提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 上创建了不可变候选 Tag `v1.0.0-rc.1`。
+- 干净环境重新 clone 与执行检查，通过全部 292/292 自动化单元/集成测试。
+- 验证 Windows `start-local.bat` 与规范 Python 静态 runtime（规范 8000 端口绑定、干净启动/关闭/重启）。
+- 验证主流桌面浏览器矩阵（Chrome、Edge、Firefox）。
+- 验证托管 HTTPS PWA 生命周期（在线加载 → SW 注册 → 离线重新打开/做题 → 重回在线恢复）。
+- 验证具有媒体和翻译血缘完整性的代表性累积全量备份导出与导入往返。
+- 验证针对 Teacher Review 导入与补救文档导入的操作系统原生文件选择器。
+- 最终隐私、凭据与 prompt-draft 扫描全部通过。
+- 审计确认所有已提交的示例与资产均为严格合成内容。
+- 完成文档同步与已知局限性确认。
 
-公开 GitHub Pages 部署、最终 `v1.0.0` tag 与正式 GitHub Release 均延迟至冻结 V1 范围之外；RC 验收后仍需 Product Owner 单独授权。
+仓库可见性可独立切换为公开，这与公开 GitHub Pages 部署、桌面应用打包、正式 GitHub Release 以及最终 `v1.0.0` 相互独立；后者保持独立延期。
 
 RC 规则：
 
 - RC 阶段不得继续扩大功能范围。
-- 如果发现阻断问题，返回 Milestone 7 修复，并重新执行回归检查。
+- 打 Tag 后的所有提交未引入任何产品/运行时代码变更。
 
-## Current Version Complete
+## 生命周期状态与后续步骤
 
-只有在 Milestone 8 验收完成后，当前版本才可以标记为：
+Milestone 8 候选版本验证已全部完成并通过验收（候选版本 `v1.0.0-rc.1` 已被接受）。
 
-```text
-Current Version Complete / v1.0.0
-```
+- 产品仓库处于 **Accepted Release Candidate / Maintenance Hold（已接受候选版本 / 维护保留）** 状态，当前无活跃工程里程碑。
+- 接受 `v1.0.0-rc.1` 确立了经验证的候选版本质量，并不自动触发或强制要求最终 `v1.0.0`、正式 GitHub Release 或 GitHub Pages 部署。
+- 将 GitHub 仓库可见性变更为 public 已获授权，并与 Pages 部署或正式 Release 相互独立。
+- 未来任何发布分发、正式 GitHub Release、最终 `v1.0.0`、GitHub Pages 部署、作品集包装或下一版本规划均保持可选，并需经 Product Owner 另行授权。
 
-## Maintenance / Next Version
+## 维护 / 下一版本
 
-当前版本完成后，工作应聚焦于：
+经 Product Owner 另行授权后，未来工作将聚焦于：
 
 - 严重缺陷与兼容性维护。
 - 已明确选择的下一版本功能。
 - Deferred Features 的重新评估。
 
-## Deferred Features / Next Version Candidates
+## 延迟特性 / 下一版本候选
 
 这些内容不属于当前 v1 范围：
 
@@ -417,5 +415,5 @@ Current Version Complete / v1.0.0
 2. 完成并验收 Milestone 6 与 Pre-Freeze 范围。**已完成。**
 3. 通过 Review V3、宣布 V1 Feature Complete 并激活 Feature Freeze。**已完成。**
 4. 完成 Milestone 7 Product Hardening。**已完成。**
-5. 生成并验证 Milestone 8 Release Candidate。**当前阶段。**
-6. 只有 RC 验收完成后才标记 Current Version Complete；任何公开交付均需另行授权。
+5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
+6. 候选版本已接受（`v1.0.0-rc.1`）；仓库进入维护保留状态。未来可选的交付决策保持由 Product Owner 独立授权。**当前生命周期状态。**

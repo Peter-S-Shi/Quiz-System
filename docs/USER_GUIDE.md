@@ -53,8 +53,8 @@ If the browser does not open automatically, leave the server window running and 
 
 - After finishing a Translation Practice attempt, select **Open Correction Workspace** to review that response — or open it later from the same Translation Document's **Finalized responses** list.
 - Your original submitted translation is always shown read-only and cannot be edited from this screen; any metacognitive marks you made during practice are shown alongside it, also read-only.
-- Select a span of the original answer and apply **Bold**, **Italic**, **Underline**, **Strikethrough**, **Highlight**, or **Bracket** to visually annotate it — these can be combined and may overlap freely, since they only affect presentation.
-- Select a span and choose **Insert**, **Replace**, or **Delete** to record a content-changing correction, or **Add comment** to attach a note to that span. A content-changing correction that overlaps another one is rejected — remove or adjust the existing one first.
+- Select a span of the original answer and apply presentation styles via the toolbar (**Bold**, **Italic**, **Underline**, **Highlight**, **Bracket**, or reviewer **Color**) to visually annotate it — these can be combined and may overlap freely, since they only affect presentation.
+- Select a span and choose **Insert**, **Replace**, or **Delete** to record a content-changing correction. A content-changing correction that overlaps another one is rejected — remove or adjust the existing one first.
 - Pick a color for inserted or replacement text from the color selector before applying it, so your additions stay visually distinct from the learner's original text.
 - A live preview below the toolbar shows the corrected rendering: original text stays in the default color, struck-through where deleted or replaced, with your inserted or replacement text shown in your chosen color.
 - Optionally set a judgment (**Correct** / **Incorrect** / **Partial** / **Needs review**), an item-level comment, and a suggested whole-answer revision for each item — these can coexist with your span-level corrections.

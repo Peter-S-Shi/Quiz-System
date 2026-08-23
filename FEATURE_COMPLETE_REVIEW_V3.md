@@ -1,5 +1,8 @@
 # Quiz Studio — Whole-Product Feature Complete Review V3
 
+> [!NOTE]
+> **Historical Lifecycle Record**: This document records historical lifecycle evidence for the Feature Complete Review V3 audit on baseline commit `a3f2c2d`. Following this review, Milestone 7 Product Hardening (M7.0–M7.3) and Milestone 8 Release Candidate Validation completed and candidate `v1.0.0-rc.1` was accepted. `PROJECT_STATUS.md` is the current repository lifecycle authority.
+
 ## 1. Executive Summary
 
 - **Review Type**: Whole-Product Lifecycle Gate Review (Read-Only)

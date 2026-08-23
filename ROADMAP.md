@@ -23,9 +23,9 @@ Scope completed:
 
 ## Milestone 2: Practice Flow Enhancements
 
-Status: Implementation landed; full acceptance pending
+Status: Complete as historical development baseline (subsequently unified into comprehensive M6/Pre-Freeze/M7 verification)
 
-Milestone 2 improves the learner's practice loop so each quiz attempt can be recoverable, reviewable, repeatable, and easier to filter.
+Milestone 2 improved the learner's practice loop so each quiz attempt could be recoverable, reviewable, repeatable, and easier to filter.
 
 Implemented scope:
 
@@ -38,14 +38,13 @@ Implemented scope:
 - Support filtering by question type.
 - Keep new user-facing interface text available in Chinese and English.
 
-Acceptance status:
+Acceptance status (historical record):
 
-- Full project-wide manual acceptance has not been completed.
-- Active-session recovery, answer history, wrong-question retry, random selection, and type filtering still need formal end-to-end verification.
+- Individual M2 manual acceptance was deferred at this stage and subsequently unified into comprehensive M6, Pre-Freeze, and M7/M8 verification.
 
 ## Milestone 3: Local Quiz Library
 
-Status: Implementation landed; full acceptance pending
+Status: Complete as historical development baseline (subsequently verified in M6/Pre-Freeze/M7/M8)
 
 Milestone 3 moved Quiz Studio from a single-paper workflow to a local quiz library so users can manage many quiz papers on the same device.
 
@@ -58,14 +57,13 @@ Implemented scope:
 - Provide safer import, export, and full local backup workflows.
 - Migrate older single-paper local data into the quiz library.
 
-Acceptance status:
+Acceptance status (historical record):
 
-- Full manual validation of destructive workflows, backup round trips, import safety, and legacy data migration is still pending.
-- Data management remains local-first and privacy-conscious, but formal data integrity verification is not complete.
+- Manual validation of destructive workflows, backup round trips, import safety, and legacy data migration was deferred at this stage and subsequently completed in M6, M7, and M8 verification.
 
 ## Milestone 4: Quiz Core and Open Data Format
 
-Status: Implementation landed; full acceptance pending
+Status: Complete as historical development baseline
 
 Milestone 4 turned the prototype's internal logic into a more durable foundation by separating reusable quiz behavior from the interface.
 
@@ -79,14 +77,13 @@ Implemented scope:
 - Add unit tests, formatting checks, and basic CI.
 - Publish JSON Schema files and synthetic example quiz files.
 
-Acceptance status:
+Acceptance status (historical record):
 
-- Core tests exist and pass locally, but coverage is not yet a release-readiness guarantee.
-- Schema, migration, storage, and grading behavior still need broader audit and regression review.
+- Core tests were established at this stage; comprehensive schema, migration, storage, and grading regression suites were expanded and accepted in later milestones (292 automated tests green).
 
 ## Milestone 5: Public Release Preparation Foundation
 
-Status: Implementation landed; full acceptance pending
+Status: Complete as historical development baseline
 
 Milestone 5 prepared the foundation for a future public release without declaring the current version release ready.
 
@@ -100,11 +97,10 @@ Implemented scope:
 - Provide synthetic sample quizzes and safety guidance.
 - Add a Windows local launcher.
 
-Acceptance status:
+Acceptance status (historical record):
 
-- GitHub Pages deployment is deferred while the repository remains private.
-- A stable public release tag has not been created.
-- Full manual QA, Product Hardening, and Release Candidate validation remain pending.
+- GitHub Pages deployment was deferred while the repository was private; current repository visibility is independent of Pages deployment.
+- Full manual QA, Product Hardening (M7), and Release Candidate validation (M8) were subsequently completed and accepted.
 
 ## Feature Complete Review
 
@@ -132,8 +128,8 @@ Current interpretation:
 - The earlier Milestone 1–5 candidate review remains historical evidence only.
 - Milestone 6, Pre-Freeze UI Productization, and scope-closure Batches A–C were subsequently implemented and accepted.
 - Whole-Product Feature Complete Review V3 passed with zero Category A blockers.
-- V1 Feature Complete is declared and Feature Freeze is active.
-- The product is not yet Release Candidate ready; Milestone 7 Product Hardening and Milestone 8 Release Candidate validation remain.
+- V1 Feature Complete was declared and Feature Freeze was activated.
+- Milestone 7 Product Hardening (M7.0–M7.3) and Milestone 8 Release Candidate Validation subsequently completed, and candidate `v1.0.0-rc.1` was formally accepted.
 
 ## Feature Freeze Gate
 
@@ -156,9 +152,9 @@ Freeze rules:
 
 ## Milestone 6: Translation Practice
 
-Status: Feature-development implementation complete; M6.0 and M6.1 accepted; M6.2, M6.3, M6.4, M6.5, M6.6, and M6.7 implementation complete with comprehensive M6-wide acceptance pending
+Status: Complete and accepted (comprehensive M6-wide acceptance passed; Review V3 passed; Feature Freeze active)
 
-Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 is intentionally deferred to one comprehensive M6-wide acceptance after M6.7 is complete. Implementation review, regression testing, CI, and scope review still apply to every sub-milestone in the meantime. M6.0 and M6.1 were accepted before this policy took effect and remain accepted.
+Acceptance policy note: individual formal user acceptance for M6.2 through M6.7 was deferred to one comprehensive M6-wide acceptance after M6.7 concluded. That comprehensive acceptance has been executed and passed; M6.0–M6.7 are all complete and accepted.
 
 Goal: add a dedicated, local-first workspace for document-oriented written translation practice without assuming that a reference translation is the only correct answer.
 
@@ -306,7 +302,7 @@ Scope completed:
 
 ## Milestone 7: Product Hardening
 
-Status: M7.0-M7.3 complete and Product Owner accepted (PASS); H-01 resolved; C1/B4 complete; C2/C3/C4 PASS; Product Hardening complete; Release Candidate not started
+Status: Complete and accepted (M7.0–M7.3 complete; H-01 resolved; C1–C4 PASS; Product Hardening complete)
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 
@@ -356,42 +352,42 @@ Exit conditions:
 
 ## Milestone 8: Release Candidate Validation
 
+Status: Complete (Candidate `v1.0.0-rc.1` at `f33bafcfe42ac8dd521466026c343102dc18897a` verified and formally accepted by Product Owner)
+
 Goal: validate a release candidate from clean environments without expanding the frozen V1 scope.
 
-Required work:
+Executed verification scope:
 
-- Create `v1.0.0-rc.1`.
-- Clone the repository into a clean directory and run it.
-- Verify Windows `start-local.bat`.
-- Verify standard local static server startup.
-- Verify major browsers.
-- Verify PWA installation, offline use, and cache upgrades.
-- Test empty data, synthetic sample data, and legacy data.
-- Run final privacy and secret scans.
-- Confirm all public examples are synthetic.
-- Update README, CHANGELOG, and RELEASE_NOTES.
-- Record known limitations.
+- Created immutable candidate tag `v1.0.0-rc.1` on frozen commit `f33bafcfe42ac8dd521466026c343102dc18897a`.
+- Clean clone and execution check with 292/292 automated unit/integration tests passing.
+- Verified Windows `start-local.bat` and canonical Python static runtime (port 8000 binding, clean startup/shutdown/restart).
+- Verified major desktop browsers (Chrome, Edge, Firefox).
+- Verified hosted HTTPS PWA lifecycle (online load → SW registration → offline reopen/use → online reconnection).
+- Verified representative accumulated full-backup export and import round-trip with media and translation lineage integrity.
+- Verified native OS file dialog imports for Teacher Review and remediation documents.
+- Final privacy, credential, and prompt-draft tracking scans passed.
+- Audited all committed fixtures and examples as strictly synthetic.
+- Reconciled documentation and accepted documented known limitations.
 
-Public GitHub Pages deployment, a final `v1.0.0` tag, and a formal GitHub Release are deferred outside the frozen V1 scope. They require separate Product Owner authorization after RC acceptance.
+Repository visibility may be changed to public independently of optional GitHub Pages deployment, desktop application packaging, a formal GitHub Release, or final `v1.0.0`, which remain separately deferred.
 
 RC rules:
 
 - The RC phase must not expand functional scope.
-- If a blocking issue is found, return to Milestone 7, fix it, and rerun regression checks.
+- Zero product or runtime code modifications were introduced post-tag.
 
-## Current Version Complete
+## Lifecycle State & Next Steps
 
-The current version can be marked as:
+Milestone 8 Release Candidate validation is complete and accepted (`v1.0.0-rc.1` accepted).
 
-```text
-Current Version Complete / v1.0.0
-```
-
-only after Milestone 8 acceptance is complete.
+- The product repository is in an **Accepted Release Candidate / Maintenance Hold** state with no active engineering milestone.
+- Acceptance of `v1.0.0-rc.1` establishes verified candidate quality and does not automatically trigger or require final `v1.0.0`, a formal GitHub Release, or GitHub Pages deployment.
+- Changing the GitHub repository visibility to public is authorized and independent of Pages deployment or a formal GitHub Release.
+- Any future release distribution, formal GitHub Release, final `v1.0.0`, GitHub Pages deployment, portfolio packaging, or next-version planning remains optional and requires separate Product Owner authorization.
 
 ## Maintenance / Next Version
 
-After current-version completion, work should focus on:
+Future work upon separate Product Owner authorization will focus on:
 
 - Critical defect and compatibility maintenance.
 - Explicitly selected next-version features.
@@ -419,5 +415,5 @@ The current lifecycle route is:
 2. Complete and accept Milestone 6 and the Pre-Freeze scope. **Complete.**
 3. Pass Review V3, declare V1 Feature Complete, and activate Feature Freeze. **Complete.**
 4. Complete Milestone 7 Product Hardening. **Complete.**
-5. Produce and validate the Milestone 8 Release Candidate. **Current stage.**
-6. Mark Current Version Complete only after RC acceptance; handle any public delivery under separate authorization.
+5. Produce and validate the Milestone 8 Release Candidate. **Complete.**
+6. Release Candidate accepted (`v1.0.0-rc.1`); repository in maintenance hold. Optional future delivery decisions remain under separate Product Owner authorization. **Current lifecycle state.**

@@ -96,4 +96,4 @@ Milestone 6.4 在 `src/core/translation-annotations.js` 中加入学习者对自
 
 ## 延后范围
 
-Rich correction、建议/插入式修改文本、Teacher Review 往返、remediation 生成和 AI 集成都属于后续 M6 工作。
+Rich correction、建议修订文本、Teacher Review 往返与补救材料生成随后已在 Milestone 6.5–6.7 中完整交付。内嵌式/应用内 AI 集成明确保持在 V1 产品范围之外的延期状态。

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- No post-RC product or runtime changes.
+
+## [1.0.0-rc.1] - 2026-08-23
+
+### Added
+
+- Completed Milestone 8 Release Candidate verification and acceptance on candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`).
+- Verified exact candidate across automated suite (292/292 tests pass), Ubuntu CI, Python localhost runtime contracts, and representative accumulated full backup/restore round-trip (`manual-qa/m8-b-exact-candidate-verification.md`).
+- Product Owner formally accepted all Batch C Human Gates: clean Windows launch/restart, Chrome/Edge/Firefox smoke, native file dialog imports for Teacher Review and remediation docs, hosted HTTPS PWA, and known limitations (`manual-qa/m8-c-human-acceptance.md`).
+- Aligned version metadata to `1.0.0-rc.1` across `package.json` and `package-lock.json`.
+
+### Documentation
+
+- Established bilingual Milestone 8 QA and acceptance manifests (`manual-qa/m8-rc1-verification.md`, `manual-qa/m8-b-exact-candidate-verification.md`, `manual-qa/m8-c-human-acceptance.md` and Chinese counterparts).
+- Synchronized lifecycle governance across `PROJECT_STATUS.md`, `ROADMAP.md`, `README.md`, `RELEASE_NOTES.md`, and `CHANGELOG.md`.
+
+## Pre-RC Development Baseline (Included in v1.0.0-rc.1)
+
 ### Added
 
 - Completed Milestone 7.3 Release-Readiness Verification: added reproducible external-review handoff artifacts (seed backup and UI-exported request) and multi-OS clean-environment matrix (Windows 11 and Ubuntu CI). The Product Owner accepted all remaining Human Gates (C3 authentic external review round trip, critical journey, hosted PWA, cache upgrade, and local runtime).

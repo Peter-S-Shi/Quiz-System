@@ -1,8 +1,8 @@
 # Quiz Studio
 
-Quiz Studio 是一个本地优先的 quiz 编辑与练习系统原型。它可以让用户创建可编辑的试卷、完成客观题练习、获得即时反馈，并在中文和英文界面之间切换。
+Quiz Studio 是一个本地优先的做题与练习工作区应用。它可以让用户创建可编辑的试卷、完成客观题练习、进行带元认知标记和富教师评阅的翻译练习、获得即时反馈，并在中文和英文界面之间无缝切换。
 
-当前版本是一个静态 ES module Web 应用。它需要通过本地静态服务器在浏览器中打开，并把试卷数据保存到浏览器本地存储中，因此第一版原型不需要后端数据库。
+当前版本是一个静态 ES module Web 应用。它通过本地静态服务器在浏览器中运行，并将数据保存至浏览器本地存储（localStorage 与 IndexedDB）中，提供纯正的本地优先 V1 体验，无需后端数据库或远程账户。
 
 ## 功能
 
@@ -75,7 +75,7 @@ node --test
 
 ## 使用方式
 
-1. 打开 `index.html`。
+1. 使用 `start-local.bat`（Windows）或 `python -u scripts/dev-server.py` 启动 Quiz Studio，然后在受支持的浏览器中打开 `http://localhost:8000`（不支持直接以 `file://` 协议打开）。
 2. 在 **编辑** 页面创建或更新试卷。
 3. 添加题目并标记正确答案。
 4. 切换到 **做题** 页面。
@@ -130,11 +130,11 @@ Milestone 6 Translation Practice 工作线（M6.0–M6.7）、Pre-Freeze UI Prod
 
 ## 当前状态
 
-当前阶段：Feature Freeze / Release Candidate Preparation（功能冻结 / 候选版本准备阶段）。
+当前阶段：Feature Freeze / 已接受候选版本（`v1.0.0-rc.1`）/ Maintenance Hold。
 
-Quiz Studio 是一个本地优先的 private pre-release 产品。M6 综合验收、功能冻结前各项验收门与 Whole-Product Feature Complete Review V3 均已通过；V1 Feature Complete 已宣布，Feature Freeze 已激活。Milestone 7 产品硬化（M7.0–M7.3）已全部完成，所有人工验收门（H-01 已解决，C1–C4 PASS）均已通过。
+Quiz Studio 是一个本地优先的 Web 应用。功能冻结前各项验收门、Whole-Product Feature Complete Review V3、Milestone 7 产品硬化（M7.0–M7.3）与 Milestone 8 候选版本验证均已完成并获得验收通过。候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）已获 Product Owner 正式人工验收，Feature Freeze 保持激活。
 
-Milestone 8 Release Candidate 验证是下一工程目标，尚未开始。公开 GitHub Pages 部署与正式 GitHub Release 已延迟至冻结 V1 范围之外。
+仓库可见性可独立公开，这与公开 GitHub Pages 部署、桌面应用打包、正式 GitHub Release 以及最终 `v1.0.0` 相互独立；后者保持独立延期，需要 Product Owner 另行显式授权。
 
 ## 数据和隐私
 
@@ -144,6 +144,6 @@ Milestone 8 Release Candidate 验证是下一工程目标，尚未开始。公�
 
 ## 开发说明
 
-这个项目在当前阶段刻意保持轻量，使用原生 HTML、CSS 和 JavaScript。这样可以先快速打磨产品行为，再决定是否引入更大的前端框架或后端架构。
+本项目采用刻意设计的本地优先架构，基于原生 HTML、CSS 与标准 ES modules 构建。这种设计提供了直接的浏览器可移植性、零构建步骤负担以及完全的用户数据主权，无需依赖强制性的服务器后端或庞大框架。
 
 架构和验证细节见 `docs/DEVELOPER_GUIDE.zh-CN.md`。

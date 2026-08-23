@@ -1,8 +1,8 @@
 # Quiz Studio
 
-Quiz Studio is a local-first quiz authoring and practice prototype. It lets users create editable quiz papers, answer objective questions, receive immediate feedback, and switch the interface between Chinese and English.
+Quiz Studio is a local-first study desk and practice application. It lets users create editable quiz papers, answer objective questions, practice translation with metacognitive marking and rich teacher reviews, receive immediate feedback, and switch the interface between Chinese and English.
 
-The current version is a static ES module web application. It runs in a browser through a local static server and stores paper data in local browser storage, so no backend database is required for the first prototype.
+The current version is a static ES module web application. It runs in a browser through a local static server and stores data in local browser storage (localStorage and IndexedDB), providing an entirely local-first V1 experience without requiring a backend database or remote account.
 
 ## Features
 
@@ -75,7 +75,7 @@ node --test
 
 ## Usage
 
-1. Open `index.html`.
+1. Launch Quiz Studio using `start-local.bat` (Windows) or `python -u scripts/dev-server.py`, then open `http://localhost:8000` in a supported browser (direct `file://` opening is unsupported).
 2. Use the **Edit** view to create or update a quiz paper.
 3. Add questions and mark the correct answers.
 4. Switch to the **Quiz** view.
@@ -130,11 +130,11 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-Current phase: Feature Freeze / Release Candidate Preparation.
+Current phase: Feature Freeze / Accepted Release Candidate (`v1.0.0-rc.1`) / Maintenance Hold.
 
-Quiz Studio is a local-first private pre-release product. The comprehensive M6 acceptance, Pre-Freeze acceptance gates, and Whole-Product Feature Complete Review V3 have passed. V1 Feature Complete is declared and Feature Freeze is active. Milestone 7 Product Hardening (M7.0–M7.3) is complete and all human acceptance gates (H-01 resolved, C1–C4 PASS) have passed.
+Quiz Studio is a local-first web application. Pre-Freeze acceptance gates, Whole-Product Feature Complete Review V3, Milestone 7 Product Hardening (M7.0–M7.3), and Milestone 8 Release Candidate Validation have all completed and been accepted. Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) is formally accepted by the Product Owner and Feature Freeze remains active.
 
-Milestone 8 Release Candidate validation is the next engineering objective but has not started. Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
+Repository visibility may be public independently of optional GitHub Pages deployment, desktop application packaging, a formal GitHub Release, or final `v1.0.0`, which remain separately deferred and require explicit Product Owner authorization.
 
 ## Data and Privacy
 
@@ -144,6 +144,6 @@ No data is sent to a server in the current static version.
 
 ## Development Notes
 
-This project is intentionally lightweight at this stage. It uses plain HTML, CSS, and JavaScript so the product behavior can evolve quickly before introducing a larger framework or backend architecture.
+This project uses an intentional local-first architecture built with plain HTML, CSS, and standard ES modules. This design provides direct browser portability, zero build-step overhead, and full user data sovereignty without requiring a mandatory server backend or runtime framework.
 
 See `docs/DEVELOPER_GUIDE.md` for architecture and validation details.
