@@ -6,7 +6,7 @@ Feature Freeze / Milestone 8 Release Candidate Validation（功能冻结 / Miles
 
 ## 当前里程碑
 
-Milestone 8 — Release Candidate 1 验证：COMPLETE / ACCEPTED（基于 PR #25 单一 PR 贯穿执行；候选版本 `v1.0.0-rc.1` 于提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 获 Product Owner 正式人工验收通过）
+Milestone 8 — Release Candidate 1 验证：COMPLETE / ACCEPTED（候选版本 `v1.0.0-rc.1` 于提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 获 Product Owner 正式人工验收通过）
 
 产品负责人已正式接受 Whole-Product Feature Complete Review V3（PASS 裁决），确认 V1 不存在任何 Category A 阻断项，正式宣布 Quiz Studio V1 为 **Feature Complete（功能完备）**，并明确授权进入 **Feature Freeze（功能冻结）**。
 
@@ -154,9 +154,9 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 后续工程目标
 
-**M8 结束与 PR #25 最终合并授权**
+**Post-M8 发布决策与发布复盘（Post-M8 Release Decision / Release Retrospective）**
 
-Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPTED）。候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）已通过全部自动化检查（292/292 测试全绿、CI 全绿）、运行时合同、累积数据备份往返验证，以及 Product Owner Batch C 全部人工验收门（干净 Windows 启动、多浏览器冒烟、原生文件对话框、托管 HTTPS PWA 与已知局限性确认）。PR #25 包含完整收尾证据，打 Tag 后零产品/运行时代码变更。后续动作为 Product Owner 正式审查并合并 PR #25 入 `main`。
+Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPTED）。候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）已通过全部自动化检查（292/292 测试全绿、CI 全绿）、运行时合同、累积数据备份往返验证，以及 Product Owner Batch C 全部人工验收门（干净 Windows 启动、多浏览器冒烟、原生文件对话框、托管 HTTPS PWA 与已知局限性确认），打 Tag 后零产品/运行时代码变更。下一生命周期阶段为 Post-M8 发布决策与发布复盘。
 
 延期项保持有意延期：macOS 环境（DEFERRED / NOT VERIFIED）、公开 GitHub Pages 部署、正式 GitHub Release、最终 `v1.0.0` 以及桌面应用打包。
 
@@ -164,9 +164,9 @@ Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPT
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- Milestone 8 执行载体：PR #25（分支 `release/m8-a-rc1-candidate-preparation`，Milestone 8 已全部完成并通过验收，就绪等待最终合并授权）
+- 仓库状态：Milestone 8 已完成并被接受；Feature Freeze 保持激活
 - `main` 分支已验证基线：`3b26d21414827401ff530b9b0e3871a99c7c0f1e`（PR #24 合并提交；Milestone 7 产品硬化已完成并验收）
 - 候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20–PR #24 均已合并入 `main`；PR #25 已完成全部 M8 验证与验收，就绪等待最终合并入 `main`。
+- Pull Request 状态：PR #20–PR #24 均已合并入 `main`；Milestone 8 执行与验证记录已全部完成。

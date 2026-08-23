@@ -134,7 +134,7 @@ Milestone 6 Translation Practice 工作线（M6.0–M6.7）、Pre-Freeze UI Prod
 
 Quiz Studio 是一个本地优先的 private pre-release 产品。M6 综合验收、功能冻结前各项验收门、Whole-Product Feature Complete Review V3 与 Milestone 7 产品硬化（M7.0–M7.3）均已通过并完成验收。V1 Feature Complete 已宣布，Feature Freeze 保持激活。
 
-Milestone 8 候选版本验证已全部完成并通过验收（候选版本 `v1.0.0-rc.1` 于提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 通过全部自动化、运行时与 Product Owner 人工验收门；PR #25 就绪等待最终合并）。公开 GitHub Pages 部署、桌面应用打包与正式 GitHub Release 已延迟至冻结 V1 范围之外。
+Milestone 8 候选版本验证已全部完成并通过验收（候选版本 `v1.0.0-rc.1` 于提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 通过全部自动化、运行时与 Product Owner 人工验收门）。公开 GitHub Pages 部署、桌面应用打包与正式 GitHub Release 已延迟至冻结 V1 范围之外。
 
 ## 数据和隐私
 

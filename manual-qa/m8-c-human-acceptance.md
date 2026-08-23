@@ -1,4 +1,4 @@
-﻿# Milestone 8 Batch C: Product Owner Human Acceptance Record (`v1.0.0-rc.1`)
+# Milestone 8 Batch C: Product Owner Human Acceptance Record (`v1.0.0-rc.1`)
 
 This document records the genuine Product Owner human acceptance evidence for Quiz Studio Release Candidate 1 (`v1.0.0-rc.1`).
 
@@ -34,4 +34,4 @@ This document records the genuine Product Owner human acceptance evidence for Qu
 - **Deferred Areas Preserved**:
   - macOS environment remains **DEFERRED / NOT VERIFIED**.
   - Public GitHub Pages deployment, formal GitHub Release, final `v1.0.0`, and desktop packaging remain **NOT AUTHORIZED / DEFERRED**.
-- **Final Action**: Authorize merging PR #25 into `main`.
+- **Final Action**: Milestone 8 is complete; proceed to Post-M8 Release Decision.

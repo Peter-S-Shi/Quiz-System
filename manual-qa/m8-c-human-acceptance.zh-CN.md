@@ -1,4 +1,4 @@
-﻿# Milestone 8 Batch C: Product Owner 人工验收记录 (`v1.0.0-rc.1`)
+# Milestone 8 Batch C: Product Owner 人工验收记录 (`v1.0.0-rc.1`)
 
 本文件记录 Product Owner 对 Quiz Studio Release Candidate 1 (`v1.0.0-rc.1`) 的真实人工验收证据。
 
@@ -34,4 +34,4 @@
 - **保留的延期领域**：
   - macOS 环境保持 **DEFERRED / NOT VERIFIED**。
   - 公开 GitHub Pages 部署、正式 GitHub Release、最终 `v1.0.0` 以及桌面应用打包保持 **NOT AUTHORIZED / DEFERRED**。
-- **最终操作建议**：授权将 PR #25 合并入 `main`。
+- **最终操作建议**：Milestone 8 已全部完成；进入 Post-M8 发布决策阶段。

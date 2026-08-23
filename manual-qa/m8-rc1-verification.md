@@ -1,4 +1,4 @@
-﻿# Milestone 8 — Release Candidate 1 (`v1.0.0-rc.1`) Verification Checklist
+# Milestone 8 — Release Candidate 1 (`v1.0.0-rc.1`) Verification Checklist
 
 This document establishes the completed verification and acceptance record for Quiz Studio Release Candidate 1 (`v1.0.0-rc.1`).
 
@@ -6,7 +6,7 @@ This document establishes the completed verification and acceptance record for Q
 
 - **Candidate Tag**: `v1.0.0-rc.1`
 - **Candidate Commit SHA**: `f33bafcfe42ac8dd521466026c343102dc18897a`
-- **Candidate Commit Identity**: The exact frozen product commit snapshot in PR #25 tagged as `v1.0.0-rc.1`
+- **Candidate Commit Identity**: The exact frozen product commit snapshot tagged as `v1.0.0-rc.1`
 - **Feature Freeze**: ACTIVE (0 product/runtime code modifications)
 - **Milestone 7 Product Hardening**: COMPLETE / ACCEPTED (292 tests green, H-01 resolved, C1–C4 PASS)
 - **Milestone 8 Status**: **COMPLETE / ACCEPTED** (Batch A prepared; Batch B verified; Batch C accepted by Product Owner)
@@ -42,4 +42,4 @@ Milestone 8 RC1 validation is complete and accepted:
 3. Item 11 remains honestly recorded as **DEFERRED / NOT VERIFIED** (**PASS**).
 4. Item 12 received formal Product Owner human acceptance (**PASS — ACCEPTED**).
 5. Zero product or runtime code modifications were introduced post-tag (**PASS**).
-6. Milestone 8 is **COMPLETE**; PR #25 is ready for final merge authorization into `main`.
+6. Milestone 8 is **COMPLETE / ACCEPTED**; proceed to Post-M8 Release Decision.

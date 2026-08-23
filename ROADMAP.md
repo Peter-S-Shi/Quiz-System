@@ -356,7 +356,7 @@ Exit conditions:
 
 ## Milestone 8: Release Candidate Validation
 
-Status: Complete (Single-PR execution via PR #25; Candidate `v1.0.0-rc.1` at `f33bafcfe42ac8dd521466026c343102dc18897a` verified and formally accepted by Product Owner)
+Status: Complete (Candidate `v1.0.0-rc.1` at `f33bafcfe42ac8dd521466026c343102dc18897a` verified and formally accepted by Product Owner)
 
 Goal: validate a release candidate from clean environments without expanding the frozen V1 scope.
 
@@ -422,4 +422,4 @@ The current lifecycle route is:
 3. Pass Review V3, declare V1 Feature Complete, and activate Feature Freeze. **Complete.**
 4. Complete Milestone 7 Product Hardening. **Complete.**
 5. Produce and validate the Milestone 8 Release Candidate. **Complete.**
-6. Mark Current Version Complete only after RC acceptance; handle any public delivery under separate authorization. **Current stage (PR #25 awaiting final merge authorization).**
+6. Mark Current Version Complete only after RC acceptance; handle any public delivery under separate authorization. **Next lifecycle stage (Post-M8 Release Decision / Release Retrospective).**

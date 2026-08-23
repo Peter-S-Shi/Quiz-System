@@ -6,7 +6,7 @@ Feature Freeze / Milestone 8 Release Candidate Validation
 
 ## Current Milestone
 
-Milestone 8 — Release Candidate 1 Validation: COMPLETE / ACCEPTED (Single-PR Execution via PR #25; Candidate `v1.0.0-rc.1` at `f33bafcfe42ac8dd521466026c343102dc18897a` formally accepted by Product Owner)
+Milestone 8 — Release Candidate 1 Validation: COMPLETE / ACCEPTED (Candidate `v1.0.0-rc.1` at `f33bafcfe42ac8dd521466026c343102dc18897a` formally accepted by Product Owner)
 
 The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
@@ -154,9 +154,9 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 ## Next Engineering Objective
 
-**Post-M8 PR #25 Final Merge & Release Retrospective**
+**Post-M8 Release Decision / Release Retrospective**
 
-Milestone 8 Release Candidate Validation is COMPLETE and ACCEPTED. Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) has successfully passed all automated checks (292/292 tests green, CI green), runtime contracts, accumulated backup/restore verification, and all Product Owner Batch C Human Gates (clean Windows launch, multi-browser smoke, native file dialogs, hosted HTTPS PWA, and known limitations acceptance). PR #25 contains full closure documentation with zero post-tag product/runtime code modifications. The next action is Product Owner final review and merge of PR #25 into `main`.
+Milestone 8 Release Candidate Validation is COMPLETE and ACCEPTED. Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) has successfully passed all automated checks (292/292 tests green, CI green), runtime contracts, accumulated backup/restore verification, and all Product Owner Batch C Human Gates (clean Windows launch, multi-browser smoke, native file dialogs, hosted HTTPS PWA, and known limitations acceptance) with zero post-tag product/runtime code modifications. The next lifecycle stage is Post-M8 Release Decision and Release Retrospective.
 
 Deferred items remain intentionally deferred: macOS (DEFERRED / NOT VERIFIED), public GitHub Pages deployment, formal GitHub Release, final `v1.0.0`, and desktop packaging.
 
@@ -164,9 +164,9 @@ Deferred items remain intentionally deferred: macOS (DEFERRED / NOT VERIFIED), p
 
 - Default branch: `main`
 - Remote: `origin`
-- Milestone 8 Execution Vehicle: PR #25 on branch `release/m8-a-rc1-candidate-preparation` (Milestone 8 complete and accepted; ready for final merge authorization)
+- Repository status: Milestone 8 complete and accepted; Feature Freeze remains active
 - Verified baseline on `main`: `3b26d21414827401ff530b9b0e3871a99c7c0f1e` (PR #24 merge commit; Milestone 7 complete and accepted)
 - Candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20–PR #24 are merged into `main`; PR #25 is complete and awaiting final merge into `main`.
+- Pull request status: PR #20–PR #24 are merged into `main`; Milestone 8 execution and verification records are complete.

@@ -1,4 +1,4 @@
-﻿# Milestone 8 — Release Candidate 1 (`v1.0.0-rc.1`) 验证清单
+# Milestone 8 — Release Candidate 1 (`v1.0.0-rc.1`) 验证清单
 
 本文件建立 Quiz Studio Release Candidate 1 (`v1.0.0-rc.1`) 的完整验证与验收记录。
 
@@ -6,7 +6,7 @@
 
 - **候选版本 Tag**：`v1.0.0-rc.1`
 - **候选版本提交 SHA**：`f33bafcfe42ac8dd521466026c343102dc18897a`
-- **候选版本提交身份**：PR #25 中冻结并打上 `v1.0.0-rc.1` tag 的精确产品提交快照
+- **候选版本提交身份**：冻结并打上 `v1.0.0-rc.1` tag 的精确产品提交快照
 - **Feature Freeze**：ACTIVE（0 行产品/运行时代码修改）
 - **Milestone 7 Product Hardening**：COMPLETE / ACCEPTED（292 项测试全绿，H-01 解决，C1–C4 PASS）
 - **Milestone 8 状态**：**COMPLETE / ACCEPTED（已完成并接受）**（Batch A 准备完成；Batch B 验证完成；Batch C 获 Product Owner 验收通过）
@@ -42,4 +42,4 @@ Milestone 8 RC1 验证已全部完成并通过验收：
 3. 矩阵项 11 保持诚实地记录为 **DEFERRED / NOT VERIFIED**（**PASS**）。
 4. 矩阵项 12 获得 Product Owner 的正式人工验收通过（**PASS — ACCEPTED**）。
 5. 打 Tag 后的所有提交未引入任何产品/运行时代码变更（**PASS**）。
-6. Milestone 8 已 **COMPLETE**；PR #25 就绪等待最终合并入 `main` 的授权。
+6. Milestone 8 已 **COMPLETE / ACCEPTED**；进入 Post-M8 发布决策阶段。
