@@ -160,4 +160,4 @@ H-01 remains OPEN and explicitly belongs to M7.2. M7.2 is the next engineering o
 - Current working branch: `hardening/m7-1-ux-interaction`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20 merged into `main`; PR #21 is open for M7.1 closure, Product Owner Human Acceptance is PASS, and this closure task does not merge it.
+- Pull request status: PR #20 merged into `main`; PR #21 is open and Ready for review, Product Owner Human Acceptance is PASS, and PR #21 remains unmerged.
