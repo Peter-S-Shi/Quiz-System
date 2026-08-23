@@ -5,11 +5,11 @@
 ## 候选版本元信息
 
 - **候选版本 Tag**：`v1.0.0-rc.1`
-- **候选版本提交身份**：由 `main` 分支上不可变 Git tag `v1.0.0-rc.1` 所解析的精确提交（精确提交 SHA 在打 Tag 后记录于 Batch B 执行记录中）
+- **候选版本提交身份**：PR #25 中冻结并打上 `v1.0.0-rc.1` tag 的精确产品提交快照（精确提交 SHA 在打 Tag 后记录于 Batch B 执行记录中）
 - **Feature Freeze**：ACTIVE（已激活）
 - **Milestone 7 Product Hardening**：COMPLETE / ACCEPTED（292 项测试全绿，H-01 解决，C1–C4 PASS）
-- **Milestone 8 状态**：ACTIVE（Batch A 候选版本准备已完成；Batch B/C 验证待执行）
-- **公开正式发布授权**：NOT AUTHORIZED（仅用于 RC 验证）
+- **Milestone 8 状态**：ACTIVE（基于 PR #25 统一执行；Batch A 候选版本准备已完成；Batch B 验证与 Batch C 人工验收推进中）
+- **公开正式发布授权**：NOT AUTHORIZED（仅用于 RC 验证；公开 Pages 与正式 GitHub Release 延期）
 
 ---
 
@@ -35,8 +35,9 @@
 ## Milestone 8 RC1 退出条件
 
 Milestone 8 RC1 验证只有在以下条件全部满足时方可宣布 PASS：
-1. 精确候选 tag `v1.0.0-rc.1` 已在合并至 `main` 的已接受提交上打出。
+1. 精确候选 tag `v1.0.0-rc.1` 已在 PR #25 中冻结的候选提交快照上打出。
 2. 矩阵项 1–10 均已执行并通过，附带完整记录证据。
 3. 矩阵项 11 保持诚实地记录为 **DEFERRED / NOT VERIFIED**。
 4. 矩阵项 12 获得 Product Owner 的正式人工验收。
-5. 候选版本打 Tag 后未引入任何产品实现或 runtime 代码变更（如有变更必须废弃当前候选版本并创建 `rc.2`）。
+5. PR #25 在打 Tag 后的所有后续提交仅限添加验证记录与生命周期证据，绝不包含任何产品/运行时代码变更（如有产品代码变更必须废弃当前候选版本并创建 `v1.0.0-rc.2`）。
+6. PR #25 只有在全部退出条件满足并获得 Product Owner 验收后，方可最终合并入 `main`。

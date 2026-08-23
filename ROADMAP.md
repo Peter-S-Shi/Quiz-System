@@ -356,7 +356,7 @@ Exit conditions:
 
 ## Milestone 8: Release Candidate Validation
 
-Status: Active (Batch A candidate preparation complete; Batch B exact verification and Batch C human acceptance pending)
+Status: Active (Single-PR execution via PR #25; Batch A candidate preparation complete; Batch B exact verification and Batch C human acceptance in progress)
 
 Goal: validate a release candidate from clean environments without expanding the frozen V1 scope.
 

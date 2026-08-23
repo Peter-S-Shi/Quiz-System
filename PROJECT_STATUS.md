@@ -6,7 +6,7 @@ Feature Freeze / Milestone 8 Release Candidate Validation
 
 ## Current Milestone
 
-Milestone 8 — Release Candidate 1 Validation (Batch A Candidate Preparation Complete / Batch B Verification Pending)
+Milestone 8 — Release Candidate 1 Validation (Single-PR Execution via PR #25; Batch A Candidate Preparation Complete; Batch B Verification & Batch C Human Acceptance In Progress)
 
 The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
@@ -152,16 +152,17 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 ## Next Engineering Objective
 
-**Batch B: Exact Candidate Verification (Target: `v1.0.0-rc.1`)**
+**Batch B: Exact Candidate Verification & Batch C: RC Human Acceptance (Target: `v1.0.0-rc.1`)**
 
-Milestone 7 Product Hardening is complete and accepted. Milestone 8 Release Candidate Validation is active. Batch A has established the RC verification contract, version alignment (`1.0.0-rc.1`), and candidate documentation. Following candidate cut on `main` under tag `v1.0.0-rc.1`, Batch B (Exact Candidate Verification) and Batch C (RC Human Acceptance) will execute against the immutable candidate.
+Milestone 7 Product Hardening is complete and accepted. Milestone 8 Release Candidate Validation is active under the unified execution vehicle PR #25. Batch A has established the RC verification contract, version alignment (`1.0.0-rc.1`), and candidate documentation. The accepted candidate commit snapshot is tagged as `v1.0.0-rc.1`. PR #25 remains OPEN throughout Batch B (Exact Candidate Verification) and Batch C (RC Human Acceptance); subsequent commits in PR #25 add only verification records and lifecycle evidence with zero product code modifications. Final merge to `main` occurs only after Batch B/C completion, final `/code-review`, and Product Owner acceptance.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
-- Candidate baseline: `main` at `v1.0.0-rc.1`
-- Accepted lifecycle baseline: `main` (Milestone 7 Product Hardening complete; M8 Batch A candidate preparation complete)
+- Milestone 8 Execution Vehicle: PR #25 on branch `release/m8-a-rc1-candidate-preparation` (remains open through Batch B & Batch C)
+- Verified baseline on `main`: `3b26d21414827401ff530b9b0e3871a99c7c0f1e` (PR #24 merge commit; Milestone 7 Product Hardening complete and accepted)
+- Candidate tag: `v1.0.0-rc.1` (points to the frozen candidate commit snapshot in PR #25)
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20–PR #25 merged into `main`; Milestone 8 Release Candidate 1 preparation baseline accepted.
+- Pull request status: PR #20–PR #24 are merged into `main`; PR #25 is open as the single-PR vehicle for Milestone 8 (Batches A, B, and C).

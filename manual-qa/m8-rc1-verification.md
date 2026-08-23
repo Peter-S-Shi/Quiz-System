@@ -5,11 +5,11 @@ This document establishes the exact verification contract for Quiz Studio Releas
 ## Candidate Metadata
 
 - **Candidate Tag**: `v1.0.0-rc.1`
-- **Candidate Commit Identity**: The exact commit resolved by immutable Git tag `v1.0.0-rc.1` on `main` (exact commit SHA recorded in Batch B execution records upon tag cut)
+- **Candidate Commit Identity**: The exact frozen product commit snapshot in PR #25 tagged as `v1.0.0-rc.1` (exact commit SHA recorded in Batch B execution records upon tag cut)
 - **Feature Freeze**: ACTIVE
 - **Milestone 7 Product Hardening**: COMPLETE / ACCEPTED (292 tests green, H-01 resolved, C1–C4 PASS)
-- **Milestone 8 Status**: ACTIVE (Batch A candidate preparation complete; Batch B/C verification pending)
-- **Public Release Authorization**: NOT AUTHORIZED (RC verification only)
+- **Milestone 8 Status**: ACTIVE (Unified execution via PR #25; Batch A complete; Batch B verification & Batch C human acceptance in progress)
+- **Public Release Authorization**: NOT AUTHORIZED (RC verification only; public Pages and formal GitHub Release deferred)
 
 ---
 
@@ -35,8 +35,9 @@ This document establishes the exact verification contract for Quiz Studio Releas
 ## Exit Conditions for Milestone 8 RC1
 
 Milestone 8 RC1 validation is complete only when:
-1. Exact candidate tag `v1.0.0-rc.1` is cut on the accepted merged `main` commit.
+1. Exact candidate tag `v1.0.0-rc.1` is cut on the frozen candidate commit snapshot in PR #25.
 2. Items 1–10 pass with documented evidence.
 3. Item 11 remains honestly recorded as **DEFERRED / NOT VERIFIED**.
 4. Item 12 receives formal Product Owner acceptance.
-5. No runtime or product code changes are introduced without invalidating the candidate and cutting a new RC (`rc.2`).
+5. All subsequent commits in PR #25 add only verification records and lifecycle evidence with zero product/runtime code changes (any product code change requires invalidating RC1 and creating `v1.0.0-rc.2`).
+6. Final merge of PR #25 to `main` occurs only after all exit conditions and Product Owner acceptance are complete.
