@@ -419,5 +419,5 @@ Current Version Complete / v1.0.0
 2. 完成并验收 Milestone 6 与 Pre-Freeze 范围。**已完成。**
 3. 通过 Review V3、宣布 V1 Feature Complete 并激活 Feature Freeze。**已完成。**
 4. 完成 Milestone 7 Product Hardening。**已完成。**
-5. 生成并验证 Milestone 8 Release Candidate。**当前阶段。**
-6. 只有 RC 验收完成后才标记 Current Version Complete；任何公开交付均需另行授权。
+5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
+6. 只有 RC 验收完成后才标记 Current Version Complete；任何公开交付均需另行授权。**当前阶段（PR #25 等待最终合并授权）。**

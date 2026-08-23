@@ -82,14 +82,13 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 ## Open Release Blockers
 
-- None. Milestone 7 Product Hardening is complete, and the Product Owner has manually verified and passed all M7.3/C3/Hosted PWA/local runtime/regression gates (PASS).
-- Milestone 8 Release Candidate 1 validation is active (Batch A candidate preparation complete; Batch B verification pending).
+- None. Milestone 7 Product Hardening and Milestone 8 Release Candidate Validation are both complete and accepted (PASS). All automated, runtime, and Product Owner human gates have passed with 0 release-blocking defects.
 
 ## Hardening Progress
 
 **M7.0 complete; M7.1 complete and accepted; M7.2 complete and Product Owner accepted; M7.3 complete, Product Owner accepted, and merged.**
 
-Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged at `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is complete and merged via PR #23 at `6e175df53a6abb7ea75d9415ff6640801cddbb0b`. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate are PASS, so M7.3 and Product Hardening are complete. Milestone 8 Release Candidate validation is active.
+Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged at `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is complete and merged via PR #23 at `6e175df53a6abb7ea75d9415ff6640801cddbb0b`. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate are PASS, so M7.3 and Product Hardening are complete. Milestone 8 Release Candidate Validation is complete and accepted.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -110,6 +109,7 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 - **M7.2 C2**: Objective `instant`/`submitAtEnd` and Translation normal/retry/remediation automated recovery contracts pass; genuine browser-process close/reopen and forced-termination/reopen were accepted by the Product Owner in Google Chrome 151.0.7922.173 (Official Build) (64-bit). Human Gate = **PASS**.
 - **M7.3 C3**: a privacy-safe seed backup restores the exact finalized synthetic response in a disposable profile; the committed request was then exported through the real Quiz Studio History UI and retains answers, span annotations, and whole-item marks. Independent external authorship plus Product Owner preview/confirm/persistence/reopen/re-export/rejection verification = **PASS**.
 - **M7.3 C4**: clean Windows 11 clone, `npm ci`, 290/290 baseline tests, canonical runtime health/restart, fresh Chrome 151 profile, and real synthetic paper import/export pass; exact-baseline Ubuntu CI passes; macOS is **DEFERRED / NOT VERIFIED**. Overall C4 = **PASS**.
+- **Milestone 8 RC1 Validation**: 292/292 automated tests pass on exact candidate tag `v1.0.0-rc.1` (`f33bafcfe42ac8dd521466026c343102dc18897a`); representative accumulated full backup/restore round-trip passes; clean Windows launch, browser matrix smoke, native file dialogs, hosted HTTPS PWA, and known limitations accepted by Product Owner (Milestone 8 = **PASS — ACCEPTED**).
 
 ## Agreed Question Media Policy (Batch C Scope Definition)
 
@@ -129,9 +129,11 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 ## Unknown Or Unverified
 
-### Mandatory RC Verification (Batch B / C)
-- Representative accumulated full-backup export and import round trip under realistic usage state.
-- Native OS file-picker behavior for Teacher Review import and remediation Translation Document import.
+### Completed RC Verification (Milestone 8)
+- Representative accumulated full-backup export and import round trip under realistic usage state (**PASS**).
+- Native OS file-picker behavior for Teacher Review import and remediation Translation Document import (**PASS**).
+- Cross-browser smoke and clean Windows runtime health/restart (**PASS**).
+- Hosted HTTPS PWA lifecycle (**PASS**).
 
 ### Acceptable Documented Limitation
 - Very large review-request / remediation-request practical file sizes under browser local storage limits.

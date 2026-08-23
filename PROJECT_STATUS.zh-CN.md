@@ -82,14 +82,13 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 ## 当前发布阻断项
 
-- 无。Milestone 7 产品硬化已完成，Product Owner 已手动验证并通过全部 M7.3/C3/托管 PWA/本地运行时/回归测试等验证项（PASS）。
-- Milestone 8 Release Candidate 1 验证已激活（Batch A 候选版本准备已完成；Batch B 验证待执行）。
+- 无。Milestone 7 产品硬化与 Milestone 8 候选版本验证均已全部完成并获得验收通过（PASS）。全部自动化、运行时与 Product Owner 人工验收门均通过，0 发布阻断缺陷。
 
 ## Hardening 进度
 
 **M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 已完成、被 Product Owner 接受并已合并。**
 
-Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 在 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成并通过 PR #23 合并至 `6e175df53a6abb7ea75d9415ff6640801cddbb0b`。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Milestone 8 候选版本验证已激活。
+Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 在 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成并通过 PR #23 合并至 `6e175df53a6abb7ea75d9415ff6640801cddbb0b`。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Milestone 8 候选版本验证已全部完成并通过验收。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -110,6 +109,7 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 - **M7.2 C2**：Objective `instant`/`submitAtEnd`、Translation 普通/Retry/Remediation 自动化恢复合同均通过；Product Owner 已在 Google Chrome 151.0.7922.173（Official Build，64-bit）中接受真实浏览器进程关闭/重开与强制终止/重开验证。Human Gate = **PASS**。
 - **M7.3 C3**：隐私安全 seed backup 可在一次性 profile 中恢复精确 finalized 合成 response；随后已通过真实 Quiz Studio History UI 导出提交的请求，并保留答案、span annotation 与整题标记。独立外部新编写及 Product Owner 预览/确认/持久化/重开/再导出/拒绝验证 = **PASS**。
 - **M7.3 C4**：干净 Windows 11 clone、`npm ci`、290/290 基线测试、规范 runtime 健康/重启、全新 Chrome 151 profile 与真实合成试卷导入/导出均通过；精确基线 Ubuntu CI 通过；macOS 为 **DEFERRED / NOT VERIFIED**。C4 总结 = **PASS**。
+- **Milestone 8 RC1 验证**：在精确候选 tag `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）上通过全部 292/292 自动化测试；代表性累积全量备份往返通过；干净 Windows 启动、浏览器矩阵冒烟、原生文件对话框、托管 HTTPS PWA 与已知局限性均获 Product Owner 验收通过（Milestone 8 = **PASS — ACCEPTED**）。
 
 ## 题目媒体支持规范（Batch C 范围定义）
 
@@ -129,9 +129,11 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 未知或未验证事项
 
-### 必须进行的 RC 验证（Batch B / C）
-- 在现实长期使用状态下的代表性累积全量备份导出与导入往返。
-- 针对 Teacher Review 导入与补救 Translation Document 导入的操作系统原生文件选择器行为。
+### 已完成的 RC 验证（Milestone 8）
+- 在现实长期使用状态下的代表性累积全量备份导出与导入往返（**PASS**）。
+- 针对 Teacher Review 导入与补救 Translation Document 导入的操作系统原生文件选择器行为（**PASS**）。
+- 跨浏览器冒烟与干净 Windows 运行时健康/重启（**PASS**）。
+- 托管 HTTPS PWA 生命周期（**PASS**）。
 
 ### 可接受的已记录局限性
 - 浏览器本地存储限制下的超大评阅请求/补救请求实用文件大小。

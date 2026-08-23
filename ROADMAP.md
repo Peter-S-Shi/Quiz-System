@@ -421,5 +421,5 @@ The current lifecycle route is:
 2. Complete and accept Milestone 6 and the Pre-Freeze scope. **Complete.**
 3. Pass Review V3, declare V1 Feature Complete, and activate Feature Freeze. **Complete.**
 4. Complete Milestone 7 Product Hardening. **Complete.**
-5. Produce and validate the Milestone 8 Release Candidate. **Current stage.**
-6. Mark Current Version Complete only after RC acceptance; handle any public delivery under separate authorization.
+5. Produce and validate the Milestone 8 Release Candidate. **Complete.**
+6. Mark Current Version Complete only after RC acceptance; handle any public delivery under separate authorization. **Current stage (PR #25 awaiting final merge authorization).**
