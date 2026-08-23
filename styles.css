@@ -1836,6 +1836,29 @@ button[disabled] {
   margin: 12px 0;
 }
 
+.item-mark-button.active {
+  font-weight: 800;
+  box-shadow: inset 0 -2px 0 currentColor, 0 0 0 2px color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.item-mark-unknown.active {
+  color: var(--ink-vermilion);
+  background: var(--ink-vermilion-soft);
+  border-color: var(--mark-unknown-border);
+}
+
+.item-mark-uncertain.active {
+  color: var(--ink-amber);
+  background: var(--ink-amber-soft);
+  border-color: var(--mark-uncertain-border);
+}
+
+.item-mark-should_know.active {
+  color: var(--brand-blue);
+  background: var(--brand-blue-soft);
+  border-color: var(--mark-should-know-border);
+}
+
 .annotation-list {
   display: grid;
   gap: 8px;
@@ -2079,6 +2102,62 @@ button[disabled] {
   gap: 16px;
 }
 
+.study-desk-dialog {
+  max-width: 560px;
+  max-height: min(680px, calc(100dvh - 32px));
+}
+
+.study-desk-dialog[data-tone="danger"] .preferences-header h3 {
+  color: var(--ink-vermilion);
+}
+
+.study-desk-dialog-message {
+  margin: 0;
+  line-height: 1.7;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.study-desk-dialog-input-row {
+  display: grid;
+  gap: 8px;
+}
+
+.study-desk-dialog-input-row[hidden] {
+  display: none;
+}
+
+.study-desk-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.study-desk-dialog-actions button {
+  min-width: 112px;
+}
+
+.inline-check {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--paper-line);
+  border-radius: 6px;
+  background: var(--paper-sheet-subtle);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.inline-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+
 .preference-group {
   display: flex;
   flex-direction: column;
@@ -2192,6 +2271,78 @@ button[disabled] {
   }
   .workspace {
     padding: 16px 12px 48px;
+  }
+  .small-button,
+  .row-actions .small-button,
+  .library-actions .small-button,
+  .library-toolbar .small-button,
+  .item-mark-toolbar button,
+  .annotation-toolbar button,
+  .correction-toolbar button {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .editor-actions,
+  .quiz-actions,
+  .row-actions,
+  .utility-row {
+    flex-wrap: wrap;
+  }
+  .quiz-actions > button,
+  .quiz-actions > label {
+    flex: 1 1 180px;
+  }
+  .review-item,
+  .annotation-row,
+  .correction-row,
+  .translation-source-text,
+  .meta-text {
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .workspace {
+    padding-inline: 8px;
+  }
+  .topbar {
+    padding-inline: 10px;
+  }
+  .field-grid,
+  .annotation-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .editor-actions,
+  .quiz-actions,
+  .utility-row,
+  .study-desk-dialog-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .editor-actions > *,
+  .quiz-actions > *,
+  .utility-row > *,
+  .study-desk-dialog-actions button {
+    width: 100%;
+  }
+  .quiz-actions > button,
+  .quiz-actions > label {
+    flex-basis: auto;
+  }
+  .preferences-content {
+    padding: 16px;
+  }
+  .study-desk-dialog {
+    width: calc(100% - 16px);
+  }
+  .correction-preview {
+    padding-inline: 12px;
+  }
+  .correction-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
@@ -2529,4 +2680,3 @@ button[disabled] {
   height: 32px;
   max-width: 320px;
 }
-

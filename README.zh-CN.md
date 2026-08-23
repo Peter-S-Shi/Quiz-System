@@ -132,9 +132,9 @@ Milestone 6 Translation Practice 工作线（M6.0–M6.7）、Pre-Freeze UI Prod
 
 当前阶段：Feature Freeze / Milestone 7 Product Hardening（功能冻结 / 产品硬化阶段）。
 
-Quiz Studio 是一个本地优先的 private pre-release 产品。M6 综合验收、功能冻结前各项验收门与 Whole-Product Feature Complete Review V3 均已通过；V1 Feature Complete 已宣布，Feature Freeze 已激活。Milestone 7 Product Hardening 已通过 M7.0 审计与合同锁定正式开启；当前产品尚未达到 Release Candidate 就绪状态。
+Quiz Studio 是一个本地优先的 private pre-release 产品。M6 综合验收、功能冻结前各项验收门与 Whole-Product Feature Complete Review V3 均已通过；V1 Feature Complete 已宣布，Feature Freeze 已激活。M7.0 已被接受，M7.1 UX/Interaction 实现已完成；其 Product Owner Human Acceptance 仍待执行，因此当前产品尚未达到 Release Candidate 就绪状态。
 
-Product Hardening 实施、发布就绪验证、最终人工验收与 Milestone 8 Release Candidate 验证仍待完成。公开 GitHub Pages 部署与正式 GitHub Release 已延迟至冻结 V1 范围之外。
+M7.2 数据/恢复硬化（包括仍开放的 H-01）、M7.3 发布就绪验证、M7.1/最终人工验收与 Milestone 8 Release Candidate 验证仍待完成。公开 GitHub Pages 部署与正式 GitHub Release 已延迟至冻结 V1 范围之外。
 
 ## 数据和隐私
 

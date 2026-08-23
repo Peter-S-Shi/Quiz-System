@@ -306,7 +306,7 @@ Scope completed:
 
 ## Milestone 7: Product Hardening
 
-Status: M7.0 Hardening Audit & Contract Lock in progress; product implementation awaits Product Owner review of the M7.0 Draft PR
+Status: M7.0 complete/accepted; M7.1 implementation complete with Product Owner Human Acceptance pending; M7.2 and H-01 repair not started
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 

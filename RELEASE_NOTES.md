@@ -2,7 +2,7 @@
 
 ## Pre-release Preparation
 
-Quiz Studio V1 is Feature Complete and Feature Freeze is active. The Milestone 6 Translation Practice line, Pre-Freeze UI Productization, scope-closure Batches A–C, and Whole-Product Feature Complete Review V3 are accepted. Milestone 7 Product Hardening has opened with the M7.0 audit and contract lock; hardening implementation, final manual acceptance, and Release Candidate validation are not complete.
+Quiz Studio V1 is Feature Complete and Feature Freeze is active. M7.0 is accepted, and M7.1 implements semantic metacognitive toggles, responsive/touch/keyboard hardening, one reusable Study Desk dialog contract for all 19 approved native-dialog replacements, and safeguards for high-content Question/Translation Item deletion. M7.1 Product Owner Human Acceptance, M7.2 (including H-01), M7.3, and Release Candidate validation are not complete.
 
 This is not a `v1.0.0` release.
 

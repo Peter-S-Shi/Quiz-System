@@ -6,7 +6,7 @@ Feature Freeze / Product Hardening
 
 ## Current Milestone
 
-Milestone 7.0 — Hardening Audit & Contract Lock
+Milestone 7.1 — UX & Interaction Hardening
 
 The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
@@ -29,6 +29,8 @@ The Product Owner has formally accepted Whole-Product Feature Complete Review V3
 ## Acceptance Policy (Historical Record)
 
 Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) was executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06), Batch B Human Gate B (Journeys 01–07), and Batch C Human Gate C (Journeys 01–07) were formally evaluated and passed (PASS). Whole-Product Feature Complete Review V3 was formally evaluated, accepted as PASS, and merged into `main`.
+
+M7.0 Hardening Audit & Contract Lock was accepted and merged through PR #20. M7.1 implementation is complete on its dedicated branch; its focused Product Owner Human Acceptance Gate remains pending and is not replaced by automated checks.
 
 ## Current Release Scope
 
@@ -81,15 +83,15 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 ## Open Release Blockers
 
 - **H-01 — Canonical Quiz Library bootstrap overwrite risk:** malformed or unsupported `quiz-studio-library-v1` JSON can fall through loading and be immediately replaced by a generated default library. M7.2 must preserve the raw value, fail safely, and add migration/corruption regressions before RC.
-- Product Hardening (Milestone 7) has not yet been executed under Feature Freeze.
+- M7.1 automated implementation is complete, but its Product Owner Human Acceptance Gate is pending; M7.2 and M7.3 have not started.
 - Legacy single-paper migration across representative old localStorage states and full browser-close/restart active-session recovery have not received dedicated verification.
 - A release candidate and final clean-environment verification do not yet exist.
 
 ## Hardening Progress
 
-**M7.0 audit and contract lock in progress; product implementation has not started.**
+**M7.0 complete and accepted; M7.1 implementation complete; M7.1 Human Acceptance pending.**
 
-Milestone 7 is authorized under Feature Freeze. `M7_HARDENING_AUDIT.md` is the execution contract and Product Owner review gate before M7.1 implementation.
+Milestone 7 remains under active Feature Freeze. M7.1 completed the accepted M-01, M-02, M-03, and M-05 implementation scope: semantic whole-item toggle states and focus recovery, responsive/touch/keyboard hardening, 19 approved native-dialog replacements under one Study Desk contract, and confirmation safeguards for Objective Question and Translation Item deletion. The two expressly accepted native confirmations remain. M7.2 work, including H-01, has not started.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -99,7 +101,7 @@ Milestone 7 is authorized under Feature Freeze. `M7_HARDENING_AUDIT.md` is the e
 
 ## Verification Status
 
-- **270 automated unit/integration tests pass** (Question Registry, grading calculations, JSON schema validation, active session serialization & recovery normalization for both instant and submitAtEnd feedback modes, submit confirmation and cancellation isolation, category registry management, empty category persistence, category rename propagation, safe category deletion contract, media types validation, IndexedDB native Blob Media Asset Store operations, portability referential integrity validation, reference collection & conservative orphan cleanup, single-paper portability packaging, media-aware backup/restore, metacognitive markings, rich corrections, review transport, deletion policies, UI preferences, synthesized audio engine, Python server dual-stack runtime, and Service Worker policy). Coverage includes full suite validation across both Windows and Linux CI.
+- **274 automated unit/integration tests pass** (the accepted 270-test baseline plus four M7.1 interaction-contract regressions covering the native-dialog inventory, reusable Study Desk dialog, high-content deletion confirmation ordering, and whole-item pressed semantics). Existing Question Registry, grading, schema, session, category, media, backup, marking, correction, review, deletion-policy, runtime, and Service Worker contracts remain green.
 - **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes and Special Practice information architecture verified (Human Gate A = **PASS**).
 - **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation, and safe deletion modal verified (Human Gate B = **PASS**).
 - **Pre-Freeze V1 Scope Closure (Batch C)**: Objective Question Media (Image & Audio across all 5 types, native Blob IndexedDB store, Image Viewer modal, in-question player, portability referential integrity, backup/restore, evidence preservation, and conservative reference-aware cleanup) verified (Human Gate C = **PASS**).
@@ -119,7 +121,7 @@ Milestone 7 is authorized under Feature Freeze. `M7_HARDENING_AUDIT.md` is the e
 - The external Teacher Review and remediation round trip is entirely manual (export a file, hand it to an external party, import the file they return); there is no in-app AI integration, and none is planned.
 - Whether the learner revealed a hidden reference translation is tracked only in the active session, not carried into finalized evidence; this remains true for retry and remediation-material practice as well.
 - Deleting a Learner Response cascade-deletes its Teacher Reviews; there is no separate way to keep the reviews while removing only the response. This was a deliberate M6.7 design choice (a review's `responseId` link must always resolve), not an oversight, but a user who wants to keep review content after deleting a response must export the review first.
-- Translation History, retry item-selection, and deletion confirmations have not been manually verified on touch/mobile viewports, where the item-selection checklist and multi-button action rows may need layout attention during M7 hardening.
+- M7.1 implements responsive/touch layouts and focus recovery for Translation History, retry selection, marking, Correction Workspace controls, and dialogs; Product Owner verification at 320/375/768/desktop remains pending.
 - The review-request/remediation-request "task" instruction text embedded in exported packages is a fixed, non-configurable string per locale; it is not user-editable and assumes the external reviewer/agent can follow a plain-text natural-language instruction, which is a reasonable but unverified assumption for some non-LLM external tools.
 
 ## Unknown Or Unverified
@@ -127,13 +129,13 @@ Milestone 7 is authorized under Feature Freeze. `M7_HARDENING_AUDIT.md` is the e
 - Full backup export and import round trip with large-scale long-term history accumulation.
 - Legacy single-paper migration behavior across representative old localStorage states (Review V3 Gap C1).
 - Translation Practice session recovery across a genuine browser process restart (Review V3 Gap C2).
-- Destructive workflows such as paper delete and history clear outside of Translation Document / Review deletion.
+- M7.1 custom-dialog cancellation, focus return, and high-content deletion behavior in a human browser session; automated source contracts are green, but the Product Owner gate is pending.
 - PWA install, offline behavior, and cache upgrade behavior across major browsers.
 - Accessibility and responsive behavior across representative devices, including the new Translation History browser and retry item-selection checklist.
 - Clean-environment clone and run process across multiple OS environments (Review V3 Gap C4).
 - Learner annotation marking, review, removal, History browsing, and retry item-selection on touch/mobile viewports.
 - In-scope rich correction authoring (style/insert/replace/delete and the color picker) on touch/mobile viewports.
-- Manual inspection of a real browser's native `window.prompt()`/`window.confirm()` dialogs for Insert/Replace text entry and for retry/deletion confirmations.
+- Human inspection of the unified Study Desk text-entry/destructive/progress-loss dialogs, including preserved Insert/Replace selection and bilingual focus return. Only Submit-at-End and needs-work retry intentionally remain native confirmations.
 - A real end-to-end round trip using an actual external human reviewer or a real AI assistant/LLM session from an exported request file (Review V3 Gap C3).
 - Native OS file-picker behavior for the Teacher Review and remediation-document file inputs.
 - Very large review-request/remediation-request export files (many items, many corrections) practical file size.
@@ -152,16 +154,16 @@ Milestone 7 is authorized under Feature Freeze. `M7_HARDENING_AUDIT.md` is the e
 
 ## Next Engineering Objective
 
-**Product Owner review of M7.0, then Milestone 7.1 — UX & Interaction Hardening**
+**Product Owner M7.1 Human Acceptance**
 
-M7.1 must not begin until the M7.0 Draft PR is reviewed and explicitly authorized.
+Execute `manual-qa/m7-1-human-acceptance.md`. Do not begin M7.2 until M7.1 is accepted and separately authorized.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline: `d5c78b9ba58ab24659fc6fd637024cbe0186b0d0 Merge pull request #19 from Peter-S-Shi/governance/v1-feature-freeze-closure` (`main`)
-- Current working branch: `hardening/m7-audit-contract-lock`
+- Verified baseline: `db079224263c3453097cf8c45ad36aa451282f9e Merge pull request #20 from Peter-S-Shi/hardening/m7-audit-contract-lock` (`main`)
+- Current working branch: `hardening/m7-1-ux-interaction`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #19 merged into `main`; the M7.0 delivery is a Draft PR review gate and must not be merged without Product Owner review.
+- Pull request status: PR #20 merged into `main`; M7.1 will be delivered through a Draft PR and must not be merged before Product Owner Human Acceptance.

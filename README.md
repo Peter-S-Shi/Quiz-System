@@ -132,9 +132,9 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 Current phase: Feature Freeze / Milestone 7 Product Hardening.
 
-Quiz Studio is a local-first private pre-release product. The comprehensive M6 acceptance, Pre-Freeze acceptance gates, and Whole-Product Feature Complete Review V3 have passed. V1 Feature Complete is declared and Feature Freeze is active. Milestone 7 Product Hardening has opened with the M7.0 audit and contract lock; the product is not yet Release Candidate ready.
+Quiz Studio is a local-first private pre-release product. The comprehensive M6 acceptance, Pre-Freeze acceptance gates, and Whole-Product Feature Complete Review V3 have passed. V1 Feature Complete is declared and Feature Freeze is active. M7.0 is accepted and the M7.1 UX/Interaction implementation is complete; its Product Owner Human Acceptance remains pending, so the product is not yet Release Candidate ready.
 
-Product Hardening implementation, release-readiness verification, final human acceptance, and Milestone 8 Release Candidate validation remain pending. Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
+M7.2 data/recovery hardening (including open blocker H-01), M7.3 release-readiness verification, M7.1/final human acceptance, and Milestone 8 Release Candidate validation remain pending. Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
 
 ## Data and Privacy
 

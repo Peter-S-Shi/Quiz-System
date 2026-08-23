@@ -185,6 +185,26 @@
       </div>
     </dialog>
 
+    <dialog id="studyDeskDialog" class="preferences-dialog study-desk-dialog" aria-labelledby="studyDeskDialogTitle" aria-describedby="studyDeskDialogMessage">
+      <form id="studyDeskDialogForm" class="preferences-content" method="dialog">
+        <div class="preferences-header">
+          <h3 id="studyDeskDialogTitle">请确认</h3>
+          <button class="icon-button close-button" id="closeStudyDeskDialog" type="button" aria-label="关闭" title="关闭">&times;</button>
+        </div>
+        <div class="preferences-body">
+          <p id="studyDeskDialogMessage" class="study-desk-dialog-message"></p>
+          <label id="studyDeskDialogInputRow" class="study-desk-dialog-input-row" hidden>
+            <span id="studyDeskDialogInputLabel">输入内容</span>
+            <input id="studyDeskDialogInput" type="text" autocomplete="off">
+          </label>
+          <div class="study-desk-dialog-actions">
+            <button class="secondary-button" id="cancelStudyDeskDialog" type="button">取消</button>
+            <button class="primary-button" id="confirmStudyDeskDialog" type="submit">确认</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="imageViewerDialog" class="image-viewer-dialog">
       <div class="image-viewer-content">
         <div class="image-viewer-toolbar">

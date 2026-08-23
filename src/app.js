@@ -169,6 +169,16 @@ const locales = {
       motionReduced: "减弱动效",
       motionHint: "遵循系统 prefers-reduced-motion，亦可在此主动减弱纸张翻动与盖章动效",
     },
+    dialog: {
+      confirmTitle: "请确认",
+      destructiveTitle: "确认删除",
+      progressTitle: "确认放弃当前进度",
+      textEntryTitle: "输入内容",
+      confirm: "确认",
+      delete: "删除",
+      continue: "继续",
+      cancel: "取消",
+    },
     modes: {
       home: "首页",
       edit: "编辑",
@@ -345,6 +355,7 @@ const locales = {
       true: "正确",
       false: "错误",
       progress: "第 {current} / {total} 题",
+      deleteConfirm: "删除这道题目吗？题目内容和关联媒体将从当前试卷中移除。此操作无法撤销。",
     },
     types: {
       single: "单选题",
@@ -633,6 +644,7 @@ const locales = {
       deleteDocument: "删除文档",
       deleteDocumentConfirm: "确定删除这份翻译文档吗？此操作只影响浏览器本地数据。",
       deleteDocumentConfirmWithResponses: "这份翻译文档有 {count} 份已完成的作答记录。删除文档不会删除这些作答记录（可在“翻译历史”中继续查看），但之后无法从这份文档再次开始练习。是否仍要删除？",
+      deleteItemConfirm: "删除这条翻译练习条目吗？其原文、参考译文和备注将从当前文档中移除。此操作无法撤销。",
       importSection: "导入材料",
       importSourceOnly: "仅原文批量导入",
       importSourceOnlyHint: "每行一条，仅原文，不含参考译文。",
@@ -694,6 +706,16 @@ const locales = {
       motionStandard: "Standard Motion",
       motionReduced: "Reduced Motion",
       motionHint: "Honors system preferences; also allows manually reducing paper animations",
+    },
+    dialog: {
+      confirmTitle: "Please confirm",
+      destructiveTitle: "Confirm deletion",
+      progressTitle: "Discard current progress?",
+      textEntryTitle: "Enter text",
+      confirm: "Confirm",
+      delete: "Delete",
+      continue: "Continue",
+      cancel: "Cancel",
     },
     modes: {
       home: "Home",
@@ -872,6 +894,7 @@ const locales = {
       true: "True",
       false: "False",
       progress: "Question {current} / {total}",
+      deleteConfirm: "Delete this question? Its content and referenced media will be removed from the current paper. This cannot be undone.",
     },
     types: {
       single: "Single choice",
@@ -1160,6 +1183,7 @@ const locales = {
       deleteDocument: "Delete document",
       deleteDocumentConfirm: "Delete this Translation Document? This only affects local browser data.",
       deleteDocumentConfirmWithResponses: "This Translation Document has {count} finalized response(s). Deleting the document does not delete those responses (they remain visible in Translation History), but you will no longer be able to start new practice from this document. Delete anyway?",
+      deleteItemConfirm: "Delete this Translation Item? Its source text, reference translation, and notes will be removed from the current document. This cannot be undone.",
       importSection: "Import material",
       importSourceOnly: "Source-only batch import",
       importSourceOnlyHint: "One line = one item, source text only.",
@@ -1262,6 +1286,18 @@ const deleteWithPapersDescription = document.getElementById("deleteWithPapersDes
 const btnDeleteCategoryOnly = document.getElementById("btnDeleteCategoryOnly");
 const btnDeleteCategoryWithPapers = document.getElementById("btnDeleteCategoryWithPapers");
 const btnCancelCategoryDelete = document.getElementById("btnCancelCategoryDelete");
+
+const studyDeskDialog = document.getElementById("studyDeskDialog");
+const studyDeskDialogForm = document.getElementById("studyDeskDialogForm");
+const studyDeskDialogTitle = document.getElementById("studyDeskDialogTitle");
+const studyDeskDialogMessage = document.getElementById("studyDeskDialogMessage");
+const studyDeskDialogInputRow = document.getElementById("studyDeskDialogInputRow");
+const studyDeskDialogInputLabel = document.getElementById("studyDeskDialogInputLabel");
+const studyDeskDialogInput = document.getElementById("studyDeskDialogInput");
+const closeStudyDeskDialog = document.getElementById("closeStudyDeskDialog");
+const cancelStudyDeskDialog = document.getElementById("cancelStudyDeskDialog");
+const confirmStudyDeskDialog = document.getElementById("confirmStudyDeskDialog");
+let pendingStudyDeskDialog = null;
 
 const editorView = document.getElementById("editorView");
 const quizView = document.getElementById("quizView");
@@ -1366,6 +1402,95 @@ function setViewerZoom(zoom) {
   if (imageViewerZoomLevel) imageViewerZoomLevel.textContent = `${Math.round(currentViewerZoom * 100)}%`;
 }
 
+function restoreFocusAfterDialog(opener, fallbackSelector) {
+  window.setTimeout(() => {
+    const fallback = fallbackSelector ? document.querySelector(fallbackSelector) : null;
+    const containingDialog = opener?.closest?.("dialog");
+    const openerIsUsable = opener?.isConnected && (!containingDialog || containingDialog.open);
+    const target = openerIsUsable ? opener : fallback;
+    target?.focus?.();
+  }, 0);
+}
+
+function focusAfterRerender(selector) {
+  window.queueMicrotask(() => document.querySelector(selector)?.focus?.());
+}
+
+function settleStudyDeskDialog(confirmed) {
+  if (!pendingStudyDeskDialog) return;
+  const pending = pendingStudyDeskDialog;
+  if (confirmed && pending.mode === "text" && pending.required && !studyDeskDialogInput.value.trim()) {
+    studyDeskDialogInput.reportValidity();
+    return;
+  }
+  const result = {
+    confirmed,
+    value: confirmed && pending.mode === "text" ? studyDeskDialogInput.value : null,
+  };
+  pendingStudyDeskDialog = null;
+  studyDeskDialog.close();
+  pending.resolve(result);
+  restoreFocusAfterDialog(pending.opener, pending.fallbackSelector);
+}
+
+function openStudyDeskDialog({
+  mode = "confirm",
+  title,
+  message,
+  inputLabel,
+  initialValue = "",
+  required = false,
+  confirmLabel,
+  tone = "standard",
+  fallbackSelector = "#mainContent",
+} = {}) {
+  if (pendingStudyDeskDialog) settleStudyDeskDialog(false);
+  const opener = document.activeElement;
+  studyDeskDialogTitle.textContent = title || t(mode === "text" ? "dialog.textEntryTitle" : "dialog.confirmTitle");
+  studyDeskDialogMessage.textContent = message || "";
+  const showMessage = Boolean(message) && mode !== "text";
+  studyDeskDialogMessage.hidden = !showMessage;
+  if (showMessage) {
+    studyDeskDialog.setAttribute("aria-describedby", "studyDeskDialogMessage");
+  } else {
+    studyDeskDialog.removeAttribute("aria-describedby");
+  }
+  studyDeskDialogInputRow.hidden = mode !== "text";
+  studyDeskDialogInputLabel.textContent = inputLabel || message || t("dialog.textEntryTitle");
+  studyDeskDialogInput.value = mode === "text" ? initialValue : "";
+  studyDeskDialogInput.required = mode === "text" && required;
+  cancelStudyDeskDialog.textContent = t("dialog.cancel");
+  closeStudyDeskDialog.setAttribute("aria-label", t("aria.close"));
+  closeStudyDeskDialog.title = t("aria.close");
+  confirmStudyDeskDialog.textContent = confirmLabel || t(tone === "danger" ? "dialog.delete" : "dialog.confirm");
+  confirmStudyDeskDialog.className = tone === "danger" ? "danger-button" : "primary-button";
+  studyDeskDialog.dataset.tone = tone;
+  studyDeskDialog.showModal();
+  window.queueMicrotask(() => {
+    if (mode === "text") {
+      studyDeskDialogInput.focus();
+      studyDeskDialogInput.select();
+    } else if (tone === "danger") {
+      cancelStudyDeskDialog.focus();
+    } else {
+      confirmStudyDeskDialog.focus();
+    }
+  });
+  return new Promise((resolve) => {
+    pendingStudyDeskDialog = { resolve, mode, required, opener, fallbackSelector };
+  });
+}
+
+async function confirmStudyDeskAction(options) {
+  const result = await openStudyDeskDialog({ mode: "confirm", ...options });
+  return result.confirmed;
+}
+
+async function promptStudyDeskText(options) {
+  const result = await openStudyDeskDialog({ mode: "text", required: true, ...options });
+  return result.confirmed ? result.value : null;
+}
+
 init();
 
 function init() {
@@ -1463,6 +1588,19 @@ function bindGlobalEvents() {
   preferencesDialog?.addEventListener("click", (event) => {
     if (event.target === preferencesDialog) preferencesDialog.close();
   });
+  studyDeskDialogForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    settleStudyDeskDialog(true);
+  });
+  closeStudyDeskDialog?.addEventListener("click", () => settleStudyDeskDialog(false));
+  cancelStudyDeskDialog?.addEventListener("click", () => settleStudyDeskDialog(false));
+  studyDeskDialog?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    settleStudyDeskDialog(false);
+  });
+  studyDeskDialog?.addEventListener("click", (event) => {
+    if (event.target === studyDeskDialog) settleStudyDeskDialog(false);
+  });
 
   prefSoundCheckbox?.addEventListener("change", () => {
     setSoundEnabled(prefSoundCheckbox.checked);
@@ -1498,9 +1636,13 @@ function bindGlobalEvents() {
     savePaper({ clearSession: false });
   });
 
-  paperCategorySelect?.addEventListener("change", (e) => {
+  paperCategorySelect?.addEventListener("change", async (e) => {
     if (e.target.value === "__NEW_CATEGORY__") {
-      const name = window.prompt(t("category.newCategoryPrompt"), "");
+      const name = await promptStudyDeskText({
+        title: t("category.newCategory"),
+        message: t("category.newCategoryPrompt"),
+        fallbackSelector: "#paperCategorySelect",
+      });
       if (name && name.trim()) {
         const trimmed = name.trim();
         if (isReservedCategoryName(trimmed)) {
@@ -1556,11 +1698,16 @@ function bindGlobalEvents() {
     renderAll();
     showToast(t("toast.categoryDeleted"));
   });
-  btnDeleteCategoryWithPapers?.addEventListener("click", () => {
+  btnDeleteCategoryWithPapers?.addEventListener("click", async () => {
     if (!pendingDeleteCategoryName) return;
     const cat = pendingDeleteCategoryName;
     const count = library.papers.filter((p) => p.category === cat).length;
-    if (!window.confirm(t("category.deleteWithPapersFinalConfirm", { name: cat, count }))) {
+    if (!await confirmStudyDeskAction({
+      title: t("dialog.destructiveTitle"),
+      message: t("category.deleteWithPapersFinalConfirm", { name: cat, count }),
+      tone: "danger",
+      fallbackSelector: "#mainContent",
+    })) {
       return;
     }
     pendingDeleteCategoryName = null;
@@ -2005,8 +2152,12 @@ function renderLibraryPanel() {
   });
 }
 
-function promptCreateCategory() {
-  const name = window.prompt(t("category.newCategoryPrompt"), "");
+async function promptCreateCategory() {
+  const name = await promptStudyDeskText({
+    title: t("category.newCategory"),
+    message: t("category.newCategoryPrompt"),
+    fallbackSelector: "#newCategoryBtn",
+  });
   if (!name || !name.trim()) return;
   const trimmed = name.trim();
   if (isReservedCategoryName(trimmed)) {
@@ -2028,8 +2179,13 @@ function promptCreateCategory() {
   showToast(t("toast.categoryCreated"));
 }
 
-function promptRenameCategory(oldName) {
-  const newName = window.prompt(t("category.renameCategoryPrompt"), oldName);
+async function promptRenameCategory(oldName) {
+  const newName = await promptStudyDeskText({
+    title: t("category.renameCategory"),
+    message: t("category.renameCategoryPrompt"),
+    initialValue: oldName,
+    fallbackSelector: `[data-rename-category="${CSS.escape(oldName)}"]`,
+  });
   if (!newName || !newName.trim() || newName.trim() === oldName) return;
   const trimmedNew = newName.trim();
   if (isReservedCategoryName(trimmedNew)) {
@@ -2060,10 +2216,15 @@ function promptRenameCategory(oldName) {
   showToast(t("toast.categoryRenamed"));
 }
 
-function promptDeleteCategory(categoryName) {
+async function promptDeleteCategory(categoryName) {
   const matchingPapers = library.papers.filter((p) => p.category === categoryName);
   if (matchingPapers.length === 0) {
-    if (!window.confirm(t("category.deleteEmptyConfirm", { name: categoryName }))) return;
+    if (!await confirmStudyDeskAction({
+      title: t("dialog.destructiveTitle"),
+      message: t("category.deleteEmptyConfirm", { name: categoryName }),
+      tone: "danger",
+      fallbackSelector: "#newCategoryBtn",
+    })) return;
     const result = deleteCategoryOnly(library.categories, categoryName, library.papers);
     library.categories = result.categoryList;
     if (selectedCategory === categoryName) selectedCategory = ALL_PAPERS_CATEGORY;
@@ -2151,8 +2312,13 @@ function duplicateLibraryPaper() {
   showToast(t("toast.paperDuplicated"));
 }
 
-function renameLibraryPaper() {
-  const nextTitle = window.prompt(t("library.renamePrompt"), paper.title || t("library.untitled"));
+async function renameLibraryPaper() {
+  const nextTitle = await promptStudyDeskText({
+    title: t("library.renamePaper"),
+    message: t("library.renamePrompt"),
+    initialValue: paper.title || t("library.untitled"),
+    fallbackSelector: "#renamePaper",
+  });
   if (!nextTitle) return;
   paper.title = nextTitle.trim();
   savePaper({ clearSession: false });
@@ -2160,8 +2326,13 @@ function renameLibraryPaper() {
   showToast(t("toast.paperRenamed"));
 }
 
-function deleteLibraryPaper() {
-  if (!window.confirm(t("library.deleteConfirm"))) return;
+async function deleteLibraryPaper() {
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message: t("library.deleteConfirm"),
+    tone: "danger",
+    fallbackSelector: "#deletePaper",
+  })) return;
   const target = library.papers.find((item) => item.id === activePaperId);
   const candidateIds = (target?.questions || []).flatMap((q) => [q.image?.id, q.audio?.id]).filter(Boolean);
   library.papers = library.papers.filter((item) => item.id !== activePaperId);
@@ -3323,7 +3494,13 @@ function duplicateQuestion(id) {
   showToast(t("toast.duplicated"));
 }
 
-function deleteQuestion(id) {
+async function deleteQuestion(id) {
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message: t("question.deleteConfirm"),
+    tone: "danger",
+    fallbackSelector: "[data-add-type]",
+  })) return;
   const target = paper.questions.find((question) => question.id === id);
   const candidateIds = [target?.image?.id, target?.audio?.id].filter(Boolean);
   paper.questions = paper.questions.filter((question) => question.id !== id);
@@ -3734,25 +3911,39 @@ function bindTranslationFolderEvents() {
   });
 }
 
-function createTranslationFolderPrompt() {
-  const name = window.prompt(t("translation.newFolderPrompt"), "");
+async function createTranslationFolderPrompt() {
+  const name = await promptStudyDeskText({
+    title: t("translation.newFolder"),
+    message: t("translation.newFolderPrompt"),
+    fallbackSelector: "#newTranslationFolder",
+  });
   if (!name || !name.trim()) return;
   saveTranslationLibrary(createTranslationFolder(translationLibrary, { name: name.trim() }));
   renderTranslationView();
   showToast(t("toast.translationFolderCreated"));
 }
 
-function renameTranslationFolderPrompt(folderId) {
+async function renameTranslationFolderPrompt(folderId) {
   const folder = getTranslationFolder(translationLibrary, folderId);
-  const name = window.prompt(t("translation.renameFolderPrompt"), folder?.name || "");
+  const name = await promptStudyDeskText({
+    title: t("translation.renameFolder"),
+    message: t("translation.renameFolderPrompt"),
+    initialValue: folder?.name || "",
+    fallbackSelector: `[data-rename-folder="${folderId}"]`,
+  });
   if (!name || !name.trim()) return;
   saveTranslationLibrary(updateTranslationFolder(translationLibrary, folderId, { name: name.trim() }));
   renderTranslationView();
   showToast(t("toast.translationFolderRenamed"));
 }
 
-function deleteTranslationFolderConfirm(folderId) {
-  if (!window.confirm(t("translation.deleteFolderConfirm"))) return;
+async function deleteTranslationFolderConfirm(folderId) {
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message: t("translation.deleteFolderConfirm"),
+    tone: "danger",
+    fallbackSelector: "#newTranslationFolder",
+  })) return;
   const next = deleteTranslationFolder(translationLibrary, folderId, { cascade: true });
   if (selectedTranslationDocumentId && !next.documents.some((doc) => doc.id === selectedTranslationDocumentId)) {
     selectedTranslationDocumentId = null;
@@ -4141,11 +4332,17 @@ function bindTranslationDocumentEditorEvents(doc) {
   });
 }
 
-function startTranslationPractice(documentId) {
+async function startTranslationPractice(documentId) {
   const doc = translationLibrary.documents.find((item) => item.id === documentId);
   if (!doc || !doc.items.length) return;
   if (translationSession && !translationSession.completed && translationSession.documentId !== doc.id) {
-    if (!window.confirm(t("translationPractice.overwriteConfirm"))) return;
+    if (!await confirmStudyDeskAction({
+      title: t("dialog.progressTitle"),
+      message: t("translationPractice.overwriteConfirm"),
+      confirmLabel: t("dialog.continue"),
+      tone: "danger",
+      fallbackSelector: "#startTranslationPractice",
+    })) return;
   }
   translationSession = createTranslationSession({ document: doc });
   translationPracticeActive = true;
@@ -4153,8 +4350,14 @@ function startTranslationPractice(documentId) {
   renderTranslationMainPanel();
 }
 
-function discardTranslationPractice() {
-  if (!window.confirm(t("translationPractice.discardConfirm"))) return;
+async function discardTranslationPractice() {
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.progressTitle"),
+    message: t("translationPractice.discardConfirm"),
+    confirmLabel: t("dialog.continue"),
+    tone: "danger",
+    fallbackSelector: "#discardTranslationPractice",
+  })) return;
   translationSession = null;
   translationPracticeActive = false;
   clearActiveTranslationSession();
@@ -4200,9 +4403,9 @@ function renderTranslationPracticeScreen() {
       ${item.referenceTranslation ? renderReferenceBlock(item, revealed) : ""}
       <div class="item-mark-toolbar">
         <span class="meta-text">${t("translationPractice.markItemAs")}</span>
-        <button type="button" class="small-button ${currentItemMark === "unknown" ? "active" : ""}" data-item-mark-kind="unknown">${t("translationPractice.kind.unknown")}</button>
-        <button type="button" class="small-button ${currentItemMark === "uncertain" ? "active" : ""}" data-item-mark-kind="uncertain">${t("translationPractice.kind.uncertain")}</button>
-        <button type="button" class="small-button ${currentItemMark === "should_know" ? "active" : ""}" data-item-mark-kind="should_know">${t("translationPractice.kind.should_know")}</button>
+        <button type="button" class="small-button item-mark-button item-mark-unknown ${currentItemMark === "unknown" ? "active" : ""}" data-item-mark-kind="unknown" aria-pressed="${currentItemMark === "unknown"}">${t("translationPractice.kind.unknown")}</button>
+        <button type="button" class="small-button item-mark-button item-mark-uncertain ${currentItemMark === "uncertain" ? "active" : ""}" data-item-mark-kind="uncertain" aria-pressed="${currentItemMark === "uncertain"}">${t("translationPractice.kind.uncertain")}</button>
+        <button type="button" class="small-button item-mark-button item-mark-should_know ${currentItemMark === "should_know" ? "active" : ""}" data-item-mark-kind="should_know" aria-pressed="${currentItemMark === "should_know"}">${t("translationPractice.kind.should_know")}</button>
         ${currentItemMark ? `<button type="button" class="secondary-button small-button" data-clear-item-mark="true">${t("translationPractice.clearMark")}</button>` : ""}
       </div>
       <label>
@@ -4228,6 +4431,7 @@ function renderTranslationPracticeScreen() {
       translationSession = setTranslationItemMark(translationSession, item.id, nextKind);
       persistTranslationSession();
       renderTranslationMainPanel();
+      focusAfterRerender(`[data-item-mark-kind="${kind}"]`);
     });
   });
   document.querySelector("[data-clear-item-mark]")?.addEventListener("click", () => {
@@ -4235,6 +4439,7 @@ function renderTranslationPracticeScreen() {
     translationSession = setTranslationItemMark(translationSession, item.id, null);
     persistTranslationSession();
     renderTranslationMainPanel();
+    focusAfterRerender(`[data-item-mark-kind="${currentItemMark}"]`);
   });
   document.getElementById("translationAnswerEditor").addEventListener("input", (event) => {
     const beforeCount = (translationSession.annotations[item.id] || []).length;
@@ -4272,6 +4477,7 @@ function renderTranslationPracticeScreen() {
     translationSession = setTranslationRevealed(translationSession, item.id, !revealed);
     persistTranslationSession();
     renderTranslationMainPanel();
+    focusAfterRerender("#revealTranslationReference");
   });
 }
 
@@ -4343,6 +4549,7 @@ function bindAnnotationSectionEvents(itemId) {
       translationSession = changeTranslationAnnotationKind(translationSession, itemId, select.dataset.changeAnnotationKind, event.target.value);
       persistTranslationSession();
       refreshAnnotationSection(itemId);
+      focusAfterRerender(`[data-change-annotation-kind="${select.dataset.changeAnnotationKind}"]`);
     });
   });
   document.querySelectorAll("[data-remove-annotation]").forEach((button) => {
@@ -4822,18 +5029,22 @@ function applyStyleCorrection(itemId, answerText, styleType, color) {
   applyWorkspaceCorrection(itemId, answerText, draft);
 }
 
-function applyInsertCorrection(itemId, answerText) {
+async function applyInsertCorrection(itemId, answerText) {
   const textarea = document.getElementById("correctionAnswerViewer");
   const start = textarea.selectionStart;
-  const text = window.prompt(t("review.insertPrompt"), "");
+  const color = document.getElementById("correctionColorSelect").value;
+  const text = await promptStudyDeskText({
+    title: t("review.insert"),
+    message: t("review.insertPrompt"),
+    fallbackSelector: "#applyInsertCorrection",
+  });
   if (!text) return;
   const draft = { operation: "insert", start, end: start, anchoredText: "", text };
-  const color = document.getElementById("correctionColorSelect").value;
   if (color) draft.color = color;
   applyWorkspaceCorrection(itemId, answerText, draft);
 }
 
-function applyReplaceCorrection(itemId, answerText) {
+async function applyReplaceCorrection(itemId, answerText) {
   const textarea = document.getElementById("correctionAnswerViewer");
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
@@ -4841,10 +5052,15 @@ function applyReplaceCorrection(itemId, answerText) {
     showToast(t("toast.correctionSelectionRequired"));
     return;
   }
-  const text = window.prompt(t("review.replacePrompt"), "");
-  if (!text) return;
-  const draft = { operation: "replace", start, end, anchoredText: answerText.slice(start, end), text };
+  const anchoredText = answerText.slice(start, end);
   const color = document.getElementById("correctionColorSelect").value;
+  const text = await promptStudyDeskText({
+    title: t("review.replace"),
+    message: t("review.replacePrompt"),
+    fallbackSelector: "#applyReplaceCorrection",
+  });
+  if (!text) return;
+  const draft = { operation: "replace", start, end, anchoredText, text };
   if (color) draft.color = color;
   applyWorkspaceCorrection(itemId, answerText, draft);
 }
@@ -5050,7 +5266,13 @@ function moveTranslationItem(documentId, itemId, direction) {
   renderTranslationMainPanel();
 }
 
-function deleteTranslationItem(documentId, itemId) {
+async function deleteTranslationItem(documentId, itemId) {
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message: t("translation.deleteItemConfirm"),
+    tone: "danger",
+    fallbackSelector: "#addTranslationItem",
+  })) return;
   saveTranslationLibrary(removeTranslationItem(translationLibrary, documentId, itemId));
   renderTranslationMainPanel();
   showToast(t("toast.translationItemDeleted"));
@@ -5062,12 +5284,17 @@ function addTranslationItemToDocument(documentId) {
   renderTranslationMainPanel();
 }
 
-function deleteTranslationDocumentConfirm(documentId) {
+async function deleteTranslationDocumentConfirm(documentId) {
   const analysis = analyzeTranslationDocumentDeletion(documentId, { learnerResponses: loadLearnerResponses() });
   const message = analysis.hasDependents
     ? t("translation.deleteDocumentConfirmWithResponses", { count: analysis.dependentResponseIds.length })
     : t("translation.deleteDocumentConfirm");
-  if (!window.confirm(message)) return;
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message,
+    tone: "danger",
+    fallbackSelector: "#newTranslationFolder",
+  })) return;
   const next = deleteTranslationDocument(translationLibrary, documentId);
   if (selectedTranslationDocumentId === documentId) selectedTranslationDocumentId = null;
   if (translationSession?.documentId === documentId) translationPracticeActive = false;
@@ -5320,14 +5547,17 @@ function renderHistoryBrowser() {
   document.getElementById("historyFilterPurpose").addEventListener("change", (event) => {
     translationHistoryFilters = { ...translationHistoryFilters, purpose: event.target.value };
     renderTranslationMainPanel();
+    focusAfterRerender("#historyFilterPurpose");
   });
   document.getElementById("historyFilterStatus").addEventListener("change", (event) => {
     translationHistoryFilters = { ...translationHistoryFilters, status: event.target.value };
     renderTranslationMainPanel();
+    focusAfterRerender("#historyFilterStatus");
   });
   document.getElementById("historyFilterSort").addEventListener("change", (event) => {
     translationHistoryFilters = { ...translationHistoryFilters, sort: event.target.value };
     renderTranslationMainPanel();
+    focusAfterRerender("#historyFilterSort");
   });
   document.querySelectorAll("[data-open-history-detail]").forEach((button) => {
     button.addEventListener("click", () => openHistoryDetail(button.dataset.openHistoryDetail));
@@ -5549,6 +5779,7 @@ function renderRetrySelection(response) {
         : retrySelectionDraft.selectedItemIds.filter((id) => id !== itemId);
       retrySelectionDraft = { ...retrySelectionDraft, selectedItemIds: nextIds };
       renderTranslationMainPanel();
+      focusAfterRerender(`[data-retry-item="${itemId}"]`);
     });
   });
   document.getElementById("cancelRetrySelection").addEventListener("click", () => {
@@ -5560,7 +5791,7 @@ function renderRetrySelection(response) {
   });
 }
 
-function startRetryPractice(responseId, options = {}) {
+async function startRetryPractice(responseId, options = {}) {
   const response = findLearnerResponse(loadLearnerResponses(), responseId);
   if (!response) {
     showToast(t("toast.historyResponseNotFound"));
@@ -5574,7 +5805,13 @@ function startRetryPractice(responseId, options = {}) {
     return;
   }
   if (translationSession && !translationSession.completed) {
-    if (!window.confirm(t("translationPractice.overwriteConfirm"))) return;
+    if (!await confirmStudyDeskAction({
+      title: t("dialog.progressTitle"),
+      message: t("translationPractice.overwriteConfirm"),
+      confirmLabel: t("dialog.continue"),
+      tone: "danger",
+      fallbackSelector: "#historyRetryEntire, #confirmRetrySelection",
+    })) return;
   }
   translationSession = createTranslationSession({ document: material });
   translationPracticeActive = true;
@@ -5596,7 +5833,7 @@ function startRetryNeedsWork(response) {
   startRetryPractice(response.id, { itemIds: needsWork.map((item) => item.itemId) });
 }
 
-function deleteLearnerResponseConfirm(responseId) {
+async function deleteLearnerResponseConfirm(responseId) {
   // Snapshot both collections up front: loadTeacherReviews() re-validates every review against the
   // current Learner Response collection, so it must never be called again after the response has
   // already been removed (it would see the now-dangling reviews as orphans and throw). Computing
@@ -5611,7 +5848,12 @@ function deleteLearnerResponseConfirm(responseId) {
   const message = analysis.hasDependents
     ? t("history.deleteResponseCascadeConfirm", { reviewCount: analysis.dependentReviewIds.length, derivedCount: analysis.dependentResponseIds.length })
     : t("history.deleteResponseConfirm");
-  if (!window.confirm(message)) return;
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message,
+    tone: "danger",
+    fallbackSelector: "#closeTranslationHistory",
+  })) return;
   const nextReviews = removeTeacherReviewsForResponse(teacherReviews, responseId);
   const nextResponses = removeLearnerResponse(learnerResponses, responseId);
   saveJson(TEACHER_REVIEWS_KEY, nextReviews);
@@ -5622,7 +5864,7 @@ function deleteLearnerResponseConfirm(responseId) {
   showToast(t("toast.responseDeleted"));
 }
 
-function deleteTeacherReviewConfirm(reviewId) {
+async function deleteTeacherReviewConfirm(reviewId) {
   const analysis = analyzeTeacherReviewDeletion(reviewId, { learnerResponses: loadLearnerResponses(), translationDocuments: translationLibrary.documents });
   if (analysis.hasBlockingDependents) {
     showToast(t("toast.deleteReviewBlockedByRemediation", { count: analysis.dependentRemediationDocumentIds.length }));
@@ -5631,7 +5873,12 @@ function deleteTeacherReviewConfirm(reviewId) {
   const message = analysis.hasDependents
     ? t("history.deleteReviewLineageConfirm", { count: analysis.dependentResponseIds.length })
     : t("review.deleteReviewConfirm");
-  if (!window.confirm(message)) return;
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message,
+    tone: "danger",
+    fallbackSelector: "#historyOpenReview, #backToHistoryBrowser",
+  })) return;
   saveJson(TEACHER_REVIEWS_KEY, removeTeacherReview(loadTeacherReviews(), reviewId));
   if (correctionReviewDraft?.id === reviewId) correctionReviewDraft = null;
   renderTranslationMainPanel();
@@ -5711,8 +5958,13 @@ function getWrongQuestionIds() {
   return ids;
 }
 
-function clearPaperHistory() {
-  if (!window.confirm(t("practice.clearHistoryConfirm"))) return;
+async function clearPaperHistory() {
+  if (!await confirmStudyDeskAction({
+    title: t("dialog.destructiveTitle"),
+    message: t("practice.clearHistoryConfirm"),
+    tone: "danger",
+    fallbackSelector: "#startQuiz",
+  })) return;
   const kept = loadHistory().filter((item) => item.paperId !== activePaperId);
   try {
     const keptResponses = removeLearnerResponsesForMaterial(loadLearnerResponses(), activePaperId);

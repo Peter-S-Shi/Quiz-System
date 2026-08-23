@@ -7,6 +7,7 @@
 - `manual_review_questionnaire.html` 是一个离线、双语、单文件验收问卷，可以直接用浏览器打开。
 - `samples/` 保存用于导入、备份、边界情况和失败路径测试的合成试卷文件。
 - `results/` 预留给填写后的问卷导出和截图。填写结果默认只保存在本地。
+- `m7-1-human-acceptance.zh-CN.md` 是 M7.1 UX 与交互硬化的 Product Owner 专项验收门。
 
 ## 使用方式
 

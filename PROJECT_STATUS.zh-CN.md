@@ -6,7 +6,7 @@ Feature Freeze / Product Hardening（功能冻结 / 产品硬化阶段）
 
 ## 当前里程碑
 
-Milestone 7.0 — Hardening Audit & Contract Lock（产品硬化审计与执行合同锁定）
+Milestone 7.1 — UX & Interaction Hardening（UX 与交互硬化）
 
 产品负责人已正式接受 Whole-Product Feature Complete Review V3（PASS 裁决），确认 V1 不存在任何 Category A 阻断项，正式宣布 Quiz Studio V1 为 **Feature Complete（功能完备）**，并明确授权进入 **Feature Freeze（功能冻结）**。
 
@@ -29,6 +29,8 @@ Milestone 7.0 — Hardening Audit & Contract Lock（产品硬化审计与执行�
 ## 验收政策（历史记录）
 
 M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。Batch A Human Gate A (Journeys 01–06)、Batch B Human Gate B (Journeys 01–07) 与 Batch C Human Gate C (Journeys 01–07) 均已正式通过人工验收（PASS）。Whole-Product Feature Complete Review V3 已正式完成评估并合入 `main`。
+
+M7.0 Hardening Audit & Contract Lock 已通过 PR #20 接受并合并。M7.1 已在专用分支完成实现；专项 Product Owner Human Acceptance Gate 仍为 pending，自动检查不能替代该人工门禁。
 
 ## 当前发布范围
 
@@ -81,15 +83,15 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 ## 当前发布阻断项
 
 - **H-01 — 规范 Quiz Library 启动覆盖风险：**损坏或不受支持的 `quiz-studio-library-v1` JSON 可能在加载失败后被立即替换为自动生成的默认 Library。M7.2 必须先保留原始值、安全失败并补充迁移/损坏回归测试，之后才可进入 RC。
-- 功能冻结下的 Milestone 7 产品硬化尚未执行。
+- M7.1 自动化实现已完成，但 Product Owner Human Acceptance Gate 仍待执行；M7.2 与 M7.3 尚未开始。
 - 旧版单试卷数据在代表性旧 localStorage 状态下的迁移行为，以及真实浏览器关闭/重开后的 active session 恢复尚未获得单独专项验证。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
 
 ## Hardening 进度
 
-**M7.0 审计与合同锁定进行中；产品实现尚未开始。**
+**M7.0 已完成并被接受；M7.1 实现完成；M7.1 Human Acceptance 待执行。**
 
-Milestone 7 已在 Feature Freeze 下获得授权。`M7_HARDENING_AUDIT.md` 是 M7.1 实施前的执行合同与 Product Owner 审查门。
+Milestone 7 继续处于 Feature Freeze。M7.1 已完成接受的 M-01、M-02、M-03 与 M-05 实现范围：整题标记语义活动态与焦点恢复、响应式/触屏/键盘硬化、以统一 Study Desk 合同替换 19 处批准的原生对话框，以及为客观题和 Translation Item 删除增加确认保护。两处明确允许的原生确认继续保留。包括 H-01 在内的 M7.2 工作尚未开始。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -99,7 +101,7 @@ Milestone 7 已在 Feature Freeze 下获得授权。`M7_HARDENING_AUDIT.md` 是 
 
 ## 验证状态
 
-- **270 项自动化单元/集成测试通过**（涵盖题目注册表、评分计算、JSON Schema 校验、即时反馈与答完交卷两种模式下的 active session 序列化与恢复规整、交卷确认与取消隔离保护、分类注册表规整、空分类持久化、重命名传播、安全删除契约、媒体格式校验、IndexedDB 原生 Blob Media Asset Store 读写与导入导出、便携包引用完整性校验、引用收集与保守孤儿清理、便携式单卷打包、媒体全量备份恢复、元认知标记、富文本批改、评阅传输包、删除策略、UI 偏好、合成音效引擎、Python 双栈服务器以及 Service Worker 策略）。测试覆盖包含 Windows 与 Linux CI 全量运行。
+- **274 项自动化单元/集成测试通过**（接受的 270 项基线加 4 项 M7.1 交互合同回归，覆盖原生对话框清单、统一 Study Desk 对话框、高内容删除确认顺序与整题标记 pressed 语义）。既有题目注册、评分、schema、session、分类、媒体、备份、标记、批改、评阅、删除策略、runtime 与 Service Worker 合同继续全绿。
 - **Pre-Freeze V1 Scope Closure (Batch A)**：客观做题反馈模式与专项练习信息架构已通过人工验证（Human Gate A = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch B)**：试卷库分类组织与渐进式导航已通过人工验证（Human Gate B = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch C)**：客观题多媒体支持已通过人工验证（Human Gate C = **PASS**）。
@@ -119,7 +121,7 @@ Milestone 7 已在 Feature Freeze 下获得授权。`M7_HARDENING_AUDIT.md` 是 
 - 外部 Teacher Review 与补救往返完全是手动的（导出一份文件、交给外部一方、导入他们返回的文件）；目前没有、也不计划做任何应用内 AI 集成。
 - 学习者是否显示过隐藏的参考译文只记录在 active session 中，不会带入 finalized evidence；重新练习和补救材料的练习同样如此。
 - 删除一条 Learner Response 会级联删除其 Teacher Review；目前没有单独保留批改内容、只删除作答记录的方式。这是 M6.7 的一项刻意设计选择（一条 review 的 `responseId` 链接必须始终可解析），而不是疏漏，但想要在删除作答记录后保留批改内容的用户，需要先导出该批改。
-- Translation 历史、重新练习的条目选择和删除确认尚未在触屏/移动端视口下进行人工验证，条目选择清单和多按钮操作行的布局可能需要在 M7 硬化阶段关注。
+- M7.1 已实现 Translation 历史、重新练习选择、标记、批改工作区控件和对话框的响应式/触屏布局与焦点恢复；320/375/768/桌面视口的 Product Owner 验证仍待执行。
 - 导出包内嵌的评阅请求/补救练习请求"task"指令文字是按语言固定的、用户不可编辑的字符串；它假设外部评阅者/agent 能理解一段纯文本的自然语言指令，这对某些非 LLM 的外部工具而言是一个合理但尚未验证的假设。
 
 ## 未知或未验证事项
@@ -127,13 +129,13 @@ Milestone 7 已在 Feature Freeze 下获得授权。`M7_HARDENING_AUDIT.md` 是 
 - 使用超大规模积累数据进行完整备份导出和导入往返。
 - 旧版单试卷数据在代表性旧 localStorage 状态下的迁移行为（Review V3 Gap C1）。
 - 真实浏览器关闭后重新打开（而非仅刷新）时 Translation Practice session 的恢复情况（Review V3 Gap C2）。
-- 删除试卷、清空历史等针对翻译题库/批改之外的破坏性工作流。
+- M7.1 自定义对话框的取消、焦点返回与高内容删除在真实人工浏览器会话中的表现；自动化源合同已全绿，但 Product Owner 门禁仍待执行。
 - PWA 安装、离线行为和缓存升级在主要浏览器中的表现。
 - 代表性设备上的可访问性和响应式行为，包括新增的 Translation 历史浏览器和重新练习条目选择清单。
 - 干净环境重新 clone 并运行项目（Review V3 Gap C4）。
 - 在触屏/移动端视口下进行标记、历史浏览和重新练习条目选择操作。
 - 在触屏/移动端视口下进行范围内的富文本批改（样式/插入/替换/删除与颜色选择器）。
-- 对插入/替换文本输入与重新练习/删除确认的原生浏览器 `window.prompt()`/`window.confirm()` 进行人工检查。
+- 人工检查统一 Study Desk 文本输入/破坏性/进度丢失对话框，包括 Insert/Replace 选择范围保持和双语焦点返回。只有“答完交卷”和“只重练需要加强条目”按合同继续保留原生确认。
 - 使用真实的外部人类评阅者或真实的外部 AI assistant/LLM 会话从导出的请求文件生成 Teacher Review 或补救 Translation Document 的真实端到端往返（Review V3 Gap C3）。
 - 针对 Teacher Review 和补救文档文件输入的操作系统原生文件选择器行为。
 - 超大评阅请求/补救请求导出文件的实用文件大小与目标外部工具的上下文限制。
@@ -152,16 +154,16 @@ Milestone 7 已在 Feature Freeze 下获得授权。`M7_HARDENING_AUDIT.md` 是 
 
 ## 后续工程目标
 
-**Product Owner 审查 M7.0，随后进入 Milestone 7.1 — UX & Interaction Hardening**
+**Product Owner 执行 M7.1 Human Acceptance**
 
-在 M7.0 Draft PR 获得审查并被明确授权前，不得开始 M7.1。
+执行 `manual-qa/m7-1-human-acceptance.zh-CN.md`。在 M7.1 被接受并获得单独授权前，不得开始 M7.2。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`d5c78b9ba58ab24659fc6fd637024cbe0186b0d0 Merge pull request #19 from Peter-S-Shi/governance/v1-feature-freeze-closure` (`main`)
-- 当前工作分支：`hardening/m7-audit-contract-lock`
+- 已验证基线：`db079224263c3453097cf8c45ad36aa451282f9e Merge pull request #20 from Peter-S-Shi/hardening/m7-audit-contract-lock` (`main`)
+- 当前工作分支：`hardening/m7-1-ux-interaction`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #19 已合并入 `main`；M7.0 将以 Draft PR 作为审查门，未经 Product Owner 审查不得合并。
+- Pull Request 状态：PR #20 已合并入 `main`；M7.1 将通过 Draft PR 交付，在 Product Owner Human Acceptance 前不得合并。

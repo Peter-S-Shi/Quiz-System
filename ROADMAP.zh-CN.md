@@ -306,7 +306,7 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 ## Milestone 7：Product Hardening
 
-状态：M7.0 Hardening Audit & Contract Lock 进行中；产品实现等待 Product Owner 审查 M7.0 Draft PR
+状态：M7.0 已完成并被接受；M7.1 实现完成，Product Owner Human Acceptance 待执行；M7.2 与 H-01 修复尚未开始
 
 目标：在不扩大产品范围的前提下，让现有功能成为可靠、统一、可验证的整体。
 
