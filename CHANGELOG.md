@@ -4,6 +4,9 @@
 
 ### Added
 
+- Added a non-destructive canonical Quiz Library bootstrap recovery contract plus representative M1–M6 migration, precedence, interrupted-upgrade, idempotence, recovery-failure, and post-migration backup/export regressions.
+- Added locked-tier Translation History characterization at 100/500/1,000/2,500 synthetic responses and a deterministic linear-traversal performance contract.
+- Added Objective and Translation process-restart serialization regressions plus a bilingual genuine browser-process-restart Human Acceptance checklist; the Product Owner subsequently accepted the C2 Human Gate with PASS and no issues found in Google Chrome 151.0.7922.173.
 - Added M7.1 UX & Interaction hardening: semantic whole-item mark toggle states and pressed semantics, unified Study Desk text/confirm dialogs for the 19 approved native-dialog replacements, high-content Objective Question and Translation Item deletion safeguards, responsive/touch action layouts, and focused keyboard recovery after dynamic rerenders.
 - Added a bilingual focused M7.1 Product Owner Human Acceptance checklist and five interaction-contract regressions; the Product Owner gate subsequently passed with no issues found.
 - Added M6.7 History, Retry, Portability, and Whole-Product Integration, the last feature-development sub-milestone of M6: durable Translation History browsing across all finalized responses (independent of whether the source document still exists), retry-entire/retry-selected/retry-needs-work workflows that always produce new independent evidence, backward/forward lineage navigation, and explicit, warned deletion for Translation Documents, Learner Responses, and Teacher Reviews.

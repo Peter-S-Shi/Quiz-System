@@ -52,9 +52,13 @@ export function deriveNeedsWorkItemIds(response, teacherReviews = []) {
 // here is persisted; it is safe to recompute on every render.
 export function buildHistoryEntry(response, { teacherReviews = [], learnerResponses = [] } = {}) {
   const reviews = (Array.isArray(teacherReviews) ? teacherReviews : []).filter((review) => review.responseId === response.id);
-  const needsWork = deriveNeedsWorkItemIds(response, teacherReviews);
   const derived = (Array.isArray(learnerResponses) ? learnerResponses : [])
     .filter((item) => item.provenance?.sourceResponseId === response.id);
+  return buildHistoryEntryFromCollections(response, reviews, derived);
+}
+
+function buildHistoryEntryFromCollections(response, reviews, derived) {
+  const needsWork = deriveNeedsWorkItemIds(response, reviews);
   const purpose = response.provenance?.purpose || "practice";
   const hasRemediationChild = derived.some((item) => item.provenance?.purpose === "remediation");
   const hasRetryChild = derived.some((item) => item.provenance?.purpose === "retry");
@@ -84,8 +88,24 @@ export function buildHistoryEntry(response, { teacherReviews = [], learnerRespon
 
 export function buildHistoryIndex(learnerResponses = [], teacherReviews = []) {
   const translationResponses = (Array.isArray(learnerResponses) ? learnerResponses : []).filter(isTranslationLearnerResponse);
+  const reviewsByResponseId = new Map();
+  (Array.isArray(teacherReviews) ? teacherReviews : []).forEach((review) => {
+    if (!reviewsByResponseId.has(review?.responseId)) reviewsByResponseId.set(review?.responseId, []);
+    reviewsByResponseId.get(review?.responseId).push(review);
+  });
+  const derivedBySourceResponseId = new Map();
+  translationResponses.forEach((response) => {
+    const sourceResponseId = response.provenance?.sourceResponseId;
+    if (!sourceResponseId) return;
+    if (!derivedBySourceResponseId.has(sourceResponseId)) derivedBySourceResponseId.set(sourceResponseId, []);
+    derivedBySourceResponseId.get(sourceResponseId).push(response);
+  });
   return translationResponses
-    .map((response) => buildHistoryEntry(response, { teacherReviews, learnerResponses: translationResponses }))
+    .map((response) => buildHistoryEntryFromCollections(
+      response,
+      reviewsByResponseId.get(response.id) || [],
+      derivedBySourceResponseId.get(response.id) || [],
+    ))
     .sort((left, right) => new Date(right.completedAt) - new Date(left.completedAt));
 }
 

@@ -8,6 +8,7 @@
 - `samples/` 保存用于导入、备份、边界情况和失败路径测试的合成试卷文件。
 - `results/` 预留给填写后的问卷导出和截图。填写结果默认只保存在本地。
 - `m7-1-human-acceptance.zh-CN.md` 是 M7.1 UX 与交互硬化的 Product Owner 专项验收门（**PASS — 未发现问题**）。
+- `m7-2-process-restart-acceptance.zh-CN.md` 是 M7.2 C2 浏览器真实进程重启专项验收门（**PASS — Product Owner 已接受，未发现问题**）。
 
 ## 使用方式
 

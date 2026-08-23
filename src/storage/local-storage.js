@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   LEGACY_PAPER: "quiz-studio-paper-v1",
   LIBRARY: "quiz-studio-library-v1",
+  LIBRARY_RECOVERY: "quiz-studio-library-recovery-v1",
   ACTIVE_PAPER: "quiz-studio-active-paper",
   ACTIVE_SESSION: "quiz-studio-active-session-v1",
   TRANSLATION_ACTIVE_SESSION: "quiz-studio-translation-active-session-v1",

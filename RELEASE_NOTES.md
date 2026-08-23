@@ -2,7 +2,7 @@
 
 ## Pre-release Preparation
 
-Quiz Studio V1 is Feature Complete and Feature Freeze is active. M7.0 is accepted. M7.1 implements semantic metacognitive toggles, responsive/touch/keyboard hardening, one reusable Study Desk dialog contract for all 19 approved native-dialog replacements, and safeguards for high-content Question/Translation Item deletion; focused Product Owner Human Acceptance passed with no issues found, so M7.1 is complete. M7.2 is next but has not started, H-01 remains open within M7.2, and M7.3 and Release Candidate validation are not complete.
+Quiz Studio V1 is Feature Complete and Feature Freeze is active. M7.0, M7.1, and M7.2 are complete and accepted. Canonical Library bootstrap now preserves malformed/unsupported raw data before any replacement, representative legacy migrations pass, Translation History has locked-tier characterization plus a bounded one-pass-map optimization, and Objective/Translation serialization recovery contracts pass. H-01 is resolved. The Product Owner accepted the C2 genuine browser-process-restart Human Gate in Google Chrome 151.0.7922.173 with no issues found. M7.3 is next but has not started; Product Hardening and Release Candidate validation are not complete.
 
 This is not a `v1.0.0` release.
 

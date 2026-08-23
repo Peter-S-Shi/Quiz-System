@@ -57,8 +57,10 @@ import {
   filterHistoryEntries,
   resolveResponseLineage,
 } from "./core/translation-history.js";
+import { normalizeObjectiveSession } from "./core/objective-session.js";
 import { buildRetryMaterial } from "./core/translation-retry.js";
-import { CURRENT_SCHEMA_VERSION, normalizeLibrary, normalizePaper } from "./core/migrations.js";
+import { bootstrapQuizLibrary } from "./core/library-bootstrap.js";
+import { normalizePaper } from "./core/migrations.js";
 import {
   addTranslationItem,
   createTranslationDocument,
@@ -132,7 +134,6 @@ import { makeId, parseTags, safeFileName } from "./core/utils.js";
 import { STORAGE_KEYS, loadJson, removeStoredValue, saveJson } from "./storage/local-storage.js";
 
 const {
-  LEGACY_PAPER: LEGACY_STORAGE_KEY,
   LIBRARY: LIBRARY_KEY,
   ACTIVE_PAPER: ACTIVE_PAPER_KEY,
   ACTIVE_SESSION: ACTIVE_SESSION_KEY,
@@ -1226,6 +1227,7 @@ const locales = {
 };
 
 let language = loadLanguage();
+let libraryBootstrapState = null;
 let library = loadLibrary();
 let activePaperId = loadActivePaperId();
 let paper = getActivePaper();
@@ -3530,19 +3532,8 @@ function savePaper(options = {}) {
 }
 
 function loadLibrary() {
-  const savedLibrary = loadJson(LIBRARY_KEY);
-  if (savedLibrary?.papers?.length) return normalizeAndSaveLibrary(savedLibrary);
-
-  const legacyPaper = loadJson(LEGACY_STORAGE_KEY);
-  if (legacyPaper?.questions) return normalizeAndSaveLibrary({ schemaVersion: CURRENT_SCHEMA_VERSION, papers: [legacyPaper] });
-
-  return normalizeAndSaveLibrary({ schemaVersion: CURRENT_SCHEMA_VERSION, papers: [createDefaultPaper()] });
-}
-
-function normalizeAndSaveLibrary(value) {
-  const normalized = normalizeLibrary(value, { createDefaultPaper });
-  saveJson(LIBRARY_KEY, normalized);
-  return normalized;
+  libraryBootstrapState = bootstrapQuizLibrary({ storage: localStorage, createDefaultPaper });
+  return libraryBootstrapState.library;
 }
 
 function loadActivePaperId() {
@@ -3557,7 +3548,9 @@ function getActivePaper() {
 }
 
 function saveLibrary() {
+  if (libraryBootstrapState?.canPersist === false) return false;
   saveJson(LIBRARY_KEY, library);
+  return true;
 }
 
 function createDefaultPaper() {
@@ -5908,14 +5901,7 @@ function exportLearnerResponse(responseId) {
 }
 
 function loadActiveSession() {
-  const saved = loadJson(ACTIVE_SESSION_KEY);
-  if (saved?.paperId === activePaperId && !saved.completed) {
-    if (!saved.feedbackMode || (saved.feedbackMode !== "instant" && saved.feedbackMode !== "submitAtEnd")) {
-      saved.feedbackMode = "instant";
-    }
-    return saved;
-  }
-  return null;
+  return normalizeObjectiveSession(loadJson(ACTIVE_SESSION_KEY), activePaperId);
 }
 
 function clearActiveSession() {
