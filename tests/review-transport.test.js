@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import Ajv2020 from "ajv/dist/2020.js";
 
+import { parseLibraryBackup } from "../src/core/backup.js";
 import {
   createTranslationDocument,
   createTranslationFolder,
@@ -88,6 +89,16 @@ test("createReviewRequestPackage embeds a faithful portable Learner Response and
   assert.equal(pkg.requestedOutput.documentType, DOCUMENT_TYPES.TEACHER_REVIEW);
   assert.equal(typeof pkg.requestedOutput.schemaVersion, "number");
   assert.deepEqual(validateReviewRequestPackage(pkg), { valid: true, errors: [] });
+});
+
+test("review request export preserves whole-item learner marks without rewriting the response", () => {
+  const response = {
+    ...makeTranslationResponse(),
+    learnerItemMarks: [{ itemId: "item-2", kind: "uncertain" }],
+  };
+  const pkg = createReviewRequestPackage({ id: "request-marked", learnerResponse: response, exportedAt: CREATED_AT });
+
+  assert.deepEqual(pkg.learnerResponse, response);
 });
 
 test("a review request package survives a JSON round trip", () => {
@@ -619,6 +630,16 @@ test("the sample review-request fixture passes the runtime and public schema bou
   const schema = JSON.parse(await readFile(new URL("../schemas/review-request.schema.json", import.meta.url), "utf8"));
   const validateSchema = new Ajv2020({ strict: false }).compile(schema);
   assert.equal(validateSchema(pkg), true, JSON.stringify(validateSchema.errors));
+});
+
+test("the M7.3 C3 seed backup restores the exact response embedded by the real UI-exported request", async () => {
+  const backup = JSON.parse(await readFile(new URL("../manual-qa/m7-3-c3-seed-backup.json", import.meta.url), "utf8"));
+  const request = JSON.parse(await readFile(new URL("../manual-qa/m7-3-c3-review-request.json", import.meta.url), "utf8"));
+  const restored = parseLibraryBackup(backup);
+  const response = restored.learnerResponses.find((item) => item.id === request.learnerResponse.id);
+
+  assert.deepEqual(response, request.learnerResponse);
+  assert.deepEqual(validateReviewRequestPackage(request), { valid: true, errors: [] });
 });
 
 test("the sample remediation-request fixture passes the runtime and public schema boundary", async () => {

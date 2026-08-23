@@ -230,6 +230,14 @@ export function normalizeLearnerResponse(value = {}) {
         })),
       }
       : {}),
+    ...(Array.isArray(value.learnerItemMarks) && value.learnerItemMarks.length
+      ? {
+        learnerItemMarks: value.learnerItemMarks.map((item) => ({
+          itemId: String(item?.itemId || ""),
+          kind: String(item?.kind || ""),
+        })),
+      }
+      : {}),
     ...(isPlainObject(value.extensions) ? { extensions: cloneValue(value.extensions) } : {}),
   };
 }

@@ -9,6 +9,9 @@
 - `results/` 预留给填写后的问卷导出和截图。填写结果默认只保存在本地。
 - `m7-1-human-acceptance.zh-CN.md` 是 M7.1 UX 与交互硬化的 Product Owner 专项验收门（**PASS — 未发现问题**）。
 - `m7-2-process-restart-acceptance.zh-CN.md` 是 M7.2 C2 浏览器真实进程重启专项验收门（**PASS — Product Owner 已接受，未发现问题**）。
+- `m7-3-c3-external-review.zh-CN.md`、`m7-3-c3-seed-backup.json` 与通过真实 UI 导出的 `m7-3-c3-review-request.json` 组成可复现 C3 外部评阅交接（**PASS — Product Owner 已接受**）。
+- `m7-3-c4-clean-environment.zh-CN.md` 记录 Windows 与 Ubuntu 必须项的干净环境矩阵（**PASS；macOS 延期/未验证**）。
+- `m7-3-final-human-acceptance.zh-CN.md` 汇总 M7.3 Product Owner 验收门（**PASS — Product Owner 已接受；Product Hardening 完成**）。
 
 ## 使用方式
 

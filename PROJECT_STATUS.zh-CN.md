@@ -2,11 +2,11 @@
 
 ## 当前阶段
 
-Feature Freeze / Product Hardening（功能冻结 / 产品硬化阶段）
+Feature Freeze / Release Candidate Preparation（功能冻结 / 候选版本准备阶段）
 
 ## 当前里程碑
 
-Milestone 7.2 — Data / Recovery / Robustness Hardening（数据 / 恢复 / 鲁棒性硬化）
+Milestone 7 — Product Hardening Complete（产品硬化完成）
 
 产品负责人已正式接受 Whole-Product Feature Complete Review V3（PASS 裁决），确认 V1 不存在任何 Category A 阻断项，正式宣布 Quiz Studio V1 为 **Feature Complete（功能完备）**，并明确授权进入 **Feature Freeze（功能冻结）**。
 
@@ -19,7 +19,7 @@ Milestone 7.2 — Data / Recovery / Robustness Hardening（数据 / 恢复 / 鲁
 
 ## Pre-Freeze UI 产品化里程碑摘要（历史基线）
 
-- **设计规范与系统基础**：创建 [DESIGN.md](file:///f:/CodexWorkspaces/Quiz%20System/DESIGN.md)，确立 Layered Paper Study Desk 设计 Token、字体层级、呼吸间距、自然语义墨水系统与基于 Web Audio API 的零外部依赖物理合成音效引擎。
+- **设计规范与系统基础**：创建 [DESIGN.md](DESIGN.md)，确立 Layered Paper Study Desk 设计 Token、字体层级、呼吸间距、自然语义墨水系统与基于 Web Audio API 的零外部依赖物理合成音效引擎。
 - **应用框架与工具启动台**：新增独立 Tool Launcher 首页启动台、顶部栏音效切换按钮、可拖拽侧边栏，以及持久化 UI 偏好设置（主题模式、音效开关、减弱动效偏好、侧边栏宽度）。
 - **核心做题与研习纸面**：客观题练习与翻译练习重构为停靠在桌面上的连续手稿纸（Laid Paper Sheet），提供有机物理翻页动效、铅笔书写摩擦音效，以及匹配题逐对独立状态判定与内联正确答案提示。
 - **教师批改台**：批改工作区重构为单张连续纸面批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
@@ -30,7 +30,7 @@ Milestone 7.2 — Data / Recovery / Robustness Hardening（数据 / 恢复 / 鲁
 
 M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。Batch A Human Gate A (Journeys 01–06)、Batch B Human Gate B (Journeys 01–07) 与 Batch C Human Gate C (Journeys 01–07) 均已正式通过人工验收（PASS）。Whole-Product Feature Complete Review V3 已正式完成评估并合入 `main`。
 
-M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已完成，并通过 PR #21 合并。H-01 已解决，C1 与 B4 已完成；Product Owner 已完成 C2 浏览器真实进程重启 Human Gate，结果为 PASS，未发现问题。M7.2 已完成并被 Product Owner 接受。
+M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已完成，并通过 PR #21 合并。H-01 已解决，C1 与 B4 已完成；Product Owner 已完成 C2 浏览器真实进程重启 Human Gate，结果为 PASS，未发现问题。M7.2 已完成、被 Product Owner 接受，并通过 PR #22 合并。M7.3 已完成且所有验证门（C3、C4、最终人工验收门）结果均为 PASS；产品硬化已全部完成。
 
 ## 当前发布范围
 
@@ -82,14 +82,14 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 ## 当前发布阻断项
 
-- **M7.3 发布就绪验证：**M7.2 已完成，但在单独授权的 M7.3 范围关闭前，Product Hardening 仍未完成。
-- 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
+- 无。Milestone 7 产品硬化已完成，Product Owner 已手动验证并通过全部 M7.3/C3/托管 PWA/本地运行时/回归测试等验证项（PASS）。
+- 最终候选版本（Milestone 8）尚未打包和验证。
 
 ## Hardening 进度
 
-**M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 尚未开始。**
+**M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 已完成并被 Product Owner 接受。**
 
-Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢复合同修复 H-01，完成代表性 C1 历史状态验证，完成四个锁定 B4 层级的性能取证并以受限的一次性 Map 消除重复扫描，同时增强 C2 会话序列化/恢复合同。H-01 已 **RESOLVED**。Product Owner 于 2026-08-22 完成真实 Chrome 进程关闭/重开与强制终止/重开验证，结果为 PASS，未发现问题，因此 C2 与 M7.2 均已完成并被接受。M7.3 是下一工程目标但尚未开始；Product Hardening 与 Release Candidate 工作均未完成。
+Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 已在精确 `main` 基线 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Release Candidate 工作（Milestone 8）尚未开始。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -99,7 +99,7 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 
 ## 验证状态
 
-- **290 项自动化单元/集成测试通过**（M7.1 接受的 275 项，加 15 项 M7.2 数据安全、迁移、History 线性遍历、四档精确一致性与重启恢复回归）。既有题目注册、评分、schema、分类、媒体、备份、标记、批改、评阅、删除策略、runtime 与 Service Worker 合同继续全绿。
+- **292 项自动化单元/集成测试通过**（M7.2 接受基线 290 项，加 M7.3 review-request 保真与可复现 seed/request 回归）。既有题目注册、评分、schema、分类、媒体、备份、标记、批改、评阅、删除策略、runtime 与 Service Worker 合同继续全绿。
 - **Pre-Freeze V1 Scope Closure (Batch A)**：客观做题反馈模式与专项练习信息架构已通过人工验证（Human Gate A = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch B)**：试卷库分类组织与渐进式导航已通过人工验证（Human Gate B = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch C)**：客观题多媒体支持已通过人工验证（Human Gate C = **PASS**）。
@@ -108,6 +108,8 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 - **M7.2 H-01 / C1**：损坏或不受支持的规范数据保持逐字节可恢复；恢复写入失败时阻止后续规范写入；优先级、中断升级、幂等、迁移后备份/导出及 M1–M6 代表性兼容均通过。
 - **M7.2 B4**：记录的参考运行中，2,500 条响应索引由 173.47 / 181.46 ms 降至 6.05 / 6.39 ms（中位数/最差），仅使用一次性内存 Map；每层正确性一致。
 - **M7.2 C2**：Objective `instant`/`submitAtEnd`、Translation 普通/Retry/Remediation 自动化恢复合同均通过；Product Owner 已在 Google Chrome 151.0.7922.173（Official Build，64-bit）中接受真实浏览器进程关闭/重开与强制终止/重开验证。Human Gate = **PASS**。
+- **M7.3 C3**：隐私安全 seed backup 可在一次性 profile 中恢复精确 finalized 合成 response；随后已通过真实 Quiz Studio History UI 导出提交的请求，并保留答案、span annotation 与整题标记。独立外部新编写及 Product Owner 预览/确认/持久化/重开/再导出/拒绝验证 = **PASS**。
+- **M7.3 C4**：干净 Windows 11 clone、`npm ci`、290/290 基线测试、规范 runtime 健康/重启、全新 Chrome 151 profile 与真实合成试卷导入/导出均通过；精确基线 Ubuntu CI 通过；macOS 为 **DEFERRED / NOT VERIFIED**。C4 总结 = **PASS**。
 
 ## 题目媒体支持规范（Batch C 范围定义）
 
@@ -128,9 +130,7 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 ## 未知或未验证事项
 
 - 使用超大规模积累数据进行完整备份导出和导入往返。
-- PWA 安装、离线行为和缓存升级在主要浏览器中的表现。
-- 干净环境重新 clone 并运行项目（Review V3 Gap C4）。
-- 使用真实的外部人类评阅者或真实的外部 AI assistant/LLM 会话从导出的请求文件生成 Teacher Review 或补救 Translation Document 的真实端到端往返（Review V3 Gap C3）。
+- macOS 干净 clone/run 行为为 DEFERRED / NOT VERIFIED，不是 M7.3 必须退出项。
 - 针对 Teacher Review 和补救文档文件输入的操作系统原生文件选择器行为。
 - 超大评阅请求/补救请求导出文件的实用文件大小与目标外部工具的上下文限制。
 
@@ -147,16 +147,16 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 
 ## 后续工程目标
 
-**M7.3 发布就绪验证**
+**进入 Milestone 8 — 候选版本准备与验证**
 
-M7.2 已完成并被 Product Owner 接受。M7.3 是下一目标但尚未开始；仅在 Product Owner 单独指令下启动。不得开始 Release Candidate 工作。
+Milestone 7 产品硬化已全部完成，所有子里程碑 M7.0-M7.3 的验收已获得 Product Owner 确认（PASS）。下一阶段目标是打包并验证 Milestone 8 Release Candidate (候选版本)。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`e7e20fc77c9872fcf2232f391519b8faceb205d1`（`main`，PR #21 精确合并提交）
-- 当前工作分支：`hardening/m7-2-data-recovery-robustness`
+- 已验证基线：`e3d6a693c29d6be93848ffb652743f8919e17216`（`main`，PR #22 精确合并提交）
+- 当前工作分支：`hardening/m7-3-release-readiness-verification`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20 与 PR #21 已合并入 `main`；M7.2 PR #22 已从当前分支开启，仍未合并。
+- Pull Request 状态：PR #20、PR #21 与 PR #22 已合并入 `main`；M7.3 PR #23 当前为 **Ready for Review / Open**，所有人工验证门（C3、C4、最终验收门）均已通过，等待 Product Owner 手动合并。

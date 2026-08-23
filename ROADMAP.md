@@ -306,7 +306,7 @@ Scope completed:
 
 ## Milestone 7: Product Hardening
 
-Status: M7.0/M7.1/M7.2 complete and accepted; H-01 resolved; C1/B4 complete; C2 genuine process-restart Human Gate PASS; M7.3 next but not started; Product Hardening incomplete until M7.3 closes
+Status: M7.0-M7.3 complete and Product Owner accepted (PASS); H-01 resolved; C1/B4 complete; C2/C3/C4 PASS; Product Hardening complete; Release Candidate not started
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 
@@ -418,6 +418,6 @@ The current lifecycle route is:
 1. Preserve the earlier Milestone 1–5 candidate review as historical evidence. **Complete.**
 2. Complete and accept Milestone 6 and the Pre-Freeze scope. **Complete.**
 3. Pass Review V3, declare V1 Feature Complete, and activate Feature Freeze. **Complete.**
-4. Complete Milestone 7 Product Hardening. **Current stage.**
-5. Produce and validate the Milestone 8 Release Candidate.
+4. Complete Milestone 7 Product Hardening. **Complete.**
+5. Produce and validate the Milestone 8 Release Candidate. **Current stage.**
 6. Mark Current Version Complete only after RC acceptance; handle any public delivery under separate authorization.
