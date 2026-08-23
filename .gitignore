@@ -10,6 +10,8 @@ Desktop.ini
 *.swo
 prompt-draft/
 prompt-drafts/
+.prompt-drafts/
+.claude/
 
 # Logs and temporary files
 *.log
