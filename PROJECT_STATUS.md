@@ -159,4 +159,4 @@ Milestone 7 Product Hardening is complete, and all sub-milestones M7.0-M7.3 have
 - Current working branch: `hardening/m7-3-release-readiness-verification`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20, PR #21, and PR #22 are merged into `main`; M7.3 PR #23 is **Draft / Open** from this branch, with all human verification gates completed and accepted (PASS), and is ready to be merged by the Product Owner.
+- Pull request status: PR #20, PR #21, and PR #22 are merged into `main`; M7.3 PR #23 is **Ready for Review / Open** from this branch, with all human verification gates completed and accepted (PASS), and is ready to be merged by the Product Owner.
