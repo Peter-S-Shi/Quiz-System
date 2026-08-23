@@ -118,9 +118,9 @@ Translation 领域与持久化基础见 `docs/TRANSLATION_DOMAIN.zh-CN.md`。
 
 项目开发按照生命周期阶段组织。完整路线见 `ROADMAP.zh-CN.md`，当前发布状态见 `PROJECT_STATUS.zh-CN.md`。
 
-### 当前版本已规划能力
+### 当前版本能力
 
-Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2（Translation Library 与材料导入导出）、M6.3（Translation Practice 与 session 恢复）、M6.4（学习者作答标记基础）、M6.5（批改 / 修订工作区）、M6.6（外部教师往返）和 M6.7（历史、重新练习、可移植性与全产品整合）均已完成实现；M6.2 到 M6.7 的正式验收被有意推迟到 M6.7 完成后的一次整体 M6 验收。计划中的功能继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
+Milestone 6 Translation Practice 工作线（M6.0–M6.7）、Pre-Freeze UI Productization 与功能冻结前范围收尾 Batches A–C 均已实现并验收。Whole-Product Feature Complete Review V3 以 0 个 Category A 阻断项通过；V1 Feature Complete 已宣布，Feature Freeze 已激活。冻结后的当前版本继续保持本地优先、多语言通用，并且不依赖 AI 判分或付费模型 API。
 
 ## 多语言支持
 
@@ -130,11 +130,11 @@ Translation Practice 仍是 Milestone 6 的主要新增学习工作流。M6.0 Op
 
 ## 当前状态
 
-当前阶段：Feature Development - Scope Reopened（功能开发阶段，范围已重新开放）。
+当前阶段：Feature Freeze / Milestone 7 Product Hardening（功能冻结 / 产品硬化阶段）。
 
-Quiz Studio 是一个本地优先的 private pre-release 原型。M6.0 Open Teaching Interchange 和 M6.1 Translation Domain and Persistence Foundation 均已验收。M6.2 Translation Library and Material Import/Export、M6.3 Translation Practice and Session Recovery、M6.4 Learner Answer Marking and Annotation Foundation、M6.5 Rich Correction / Revision Workspace、M6.6 External Teacher Round Trip 和 M6.7 History, Retry, Portability, and Whole-Product Integration 均已完成实现。M6.2 到 M6.7 的正式验收被有意推迟：用户决定不逐个验收子里程碑，而是在 M6.7 完成后进行一次覆盖整个 M6 的综合验收。当前版本尚未 Release Ready。
+Quiz Studio 是一个本地优先的 private pre-release 产品。M6 综合验收、功能冻结前各项验收门与 Whole-Product Feature Complete Review V3 均已通过；V1 Feature Complete 已宣布，Feature Freeze 已激活。Milestone 7 Product Hardening 已通过 M7.0 审计与合同锁定正式开启；当前产品尚未达到 Release Candidate 就绪状态。
 
-覆盖整个 M6 的综合验收、新一轮 Feature Complete Review、Feature Freeze、Milestone 7 Product Hardening、Milestone 8 Release Candidate 验证、完整人工 QA 和最终干净环境验证仍待完成。GitHub Pages 部署继续暂缓，直到仓库公开并完成发布验证。
+Product Hardening 实施、发布就绪验证、最终人工验收与 Milestone 8 Release Candidate 验证仍待完成。公开 GitHub Pages 部署与正式 GitHub Release 已延迟至冻结 V1 范围之外。
 
 ## 数据和隐私
 

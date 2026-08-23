@@ -43,6 +43,8 @@
 
 ### Documentation
 
+- Added `M7_HARDENING_AUDIT.md`, the evidence-based Milestone 7 execution contract covering B1–B4, C1–C4, classified hardening findings, human gates, and the M7.1/M7.2/M7.3 batch map.
+- Synchronized bilingual lifecycle documentation with declared V1 Feature Complete, active Feature Freeze, the PR #19 baseline, M7.0 opening, and the decision to keep public Pages and a formal GitHub Release outside frozen V1 delivery.
 - Added bilingual Translation History/Retry usage, developer architecture notes (including an M1-M6 storage-governance table), an M6.7 manual-QA delta, and a consolidated end-to-end M6.0-M6.7 manual acceptance journey.
 - Added bilingual External Teacher Round Trip usage, developer architecture notes, and an M6.6 manual-QA delta.
 - Added bilingual Correction Workspace usage, developer architecture notes, and an M6.5 manual-QA delta.

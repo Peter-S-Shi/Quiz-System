@@ -108,7 +108,7 @@ Milestone 5 为未来公开发布建立基础，但不代表当前版本已经�
 
 ## Feature Complete Review
 
-状态：旧范围下已达到候选评审；随后因发布范围调整而重新开放
+状态：Whole-Product Feature Complete Review V3 已通过并获接受；V1 Feature Complete 已宣布
 
 此前已评审的 Milestone 1-5 候选范围包括：
 
@@ -129,17 +129,17 @@ Milestone 5 为未来公开发布建立基础，但不代表当前版本已经�
 
 当前解释：
 
-- 项目在原 Milestone 1-5 边界下曾达到 Feature Complete Candidate 评审状态。
-- 该历史评审对当时已审查的范围仍然有效，但不再代表当前版本功能范围已经关闭。
-- Translation Practice 已被批准为当前版本的必要工作，因此项目重新进入功能开发阶段。
-- 当前版本尚未 Release Ready。
-- Translation Practice 目前只是已批准计划，尚未实现或验收。
-- 尚未完成系统级人工验收。
-- 项目尚未进入 Feature Freeze。
+- 原 Milestone 1–5 Candidate 评审仅作为历史证据保留。
+- Milestone 6、Pre-Freeze UI Productization 与范围收尾 Batches A–C 随后均已实现并验收。
+- Whole-Product Feature Complete Review V3 以 0 个 Category A 阻断项通过。
+- V1 Feature Complete 已宣布，Feature Freeze 已激活。
+- 产品尚未达到 Release Candidate 就绪状态；Milestone 7 Product Hardening 与 Milestone 8 Release Candidate 验证仍待完成。
 
 ## Feature Freeze Gate
 
-只有满足以下条件后，才能进入 Feature Freeze：
+状态：Product Owner 已授权，且 PR #19 合并（`d5c78b9`）后 **ACTIVE**。
+
+该 Gate 当时要求：
 
 - Milestone 6 Translation Practice 已按批准范围实现并通过验收。
 - 重新开放后的当前版本范围通过新一轮 Feature Complete Review。
@@ -287,7 +287,7 @@ M6.7 状态：
 
 - Translation Practice 必须完成实现，并按推迟验收政策纳入 M6 整体验收，重新开放的当前版本范围才能通过 Feature Complete Review。
 - 每个 M6.x 实现仍必须先经过实现评审、回归测试、CI 和范围审查，才能开始下一个子里程碑；正式的用户验收被推迟到 M6.7 之后的一次整体验收（这一推迟不追溯适用于已经验收的 M6.0 和 M6.1）。
-- 在 M6 整体验收完成前，Feature Freeze 保持未启用。
+- M6 整体验收已完成，Review V3 已通过，Feature Freeze 已激活。以上验收政策继续作为历史流程证据保留。
 
 ## Pre-Freeze UI Productization: Layered Paper Study Desk
 
@@ -305,6 +305,8 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 - **Human Acceptance Gate**：Final Human Acceptance Gate 已执行并通过（PASS）。
 
 ## Milestone 7：Product Hardening
+
+状态：M7.0 Hardening Audit & Contract Lock 进行中；产品实现等待 Product Owner 审查 M7.0 Draft PR
 
 目标：在不扩大产品范围的前提下，让现有功能成为可靠、统一、可验证的整体。
 
@@ -352,9 +354,9 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 - 隐私与 secret-safety 检查通过。
 - 经过验证的本地提交与目标远程分支一致。
 
-## Milestone 8：Release Candidate and Public Delivery
+## Milestone 8：Release Candidate Validation
 
-目标：从干净环境验证候选版本，并准备公开交付。
+目标：在不扩大冻结 V1 范围的前提下，从干净环境验证候选版本。
 
 必要工作：
 
@@ -368,9 +370,9 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 - 执行最终隐私与 secret 扫描。
 - 确认所有公开示例都是合成内容。
 - 更新 README、CHANGELOG 和 RELEASE_NOTES。
-- 仓库公开后启用并验证 GitHub Pages。
 - 记录已知限制。
-- 创建最终 `v1.0.0` tag 和 GitHub Release。
+
+公开 GitHub Pages 部署、最终 `v1.0.0` tag 与正式 GitHub Release 均延迟至冻结 V1 范围之外；RC 验收后仍需 Product Owner 单独授权。
 
 RC 规则：
 
@@ -402,15 +404,18 @@ Current Version Complete / v1.0.0
 - 云同步与用户账户。
 - 分享、协作和应用内教师账号/管理工作流。
 - 主观题批改。
-- 条目级元认知标记交互优化（高亮色彩切换按钮、再次点击取消标记、单个条目支持同时多种标记、移除弹出框交互）——已记录至 post-UI 硬化/Backlog。
+- 公开 GitHub Pages 部署与正式 GitHub Release。
+- 超出现有“单一整题标记切换”合同的同一条目多种整题标记并存。
+- Translation History 分页、虚拟化与高级历史图谱可视化。
+- 单卷音频播放限制、禁止拖动与重播次数限制。
 
 ## 路线原则
 
 当前生命周期路线是：
 
-1. 保留旧 Milestone 1-5 范围下曾达到 Feature Complete Candidate 的历史事实。
-2. 在重新开放的当前版本范围内完成 Milestone 6 Translation Practice。
-3. 重新执行 Feature Complete Review，并只在扩展后的边界获接受后进入 Feature Freeze。
-4. 完成 Milestone 7 Product Hardening。
-5. 生成并验证 Milestone 8 Release Candidate 与公开交付。
-6. 只有 RC 验收完成后才标记 Current Version Complete。
+1. 保留早期 Milestone 1–5 Candidate 评审作为历史证据。**已完成。**
+2. 完成并验收 Milestone 6 与 Pre-Freeze 范围。**已完成。**
+3. 通过 Review V3、宣布 V1 Feature Complete 并激活 Feature Freeze。**已完成。**
+4. 完成 Milestone 7 Product Hardening。**当前阶段。**
+5. 生成并验证 Milestone 8 Release Candidate。
+6. 只有 RC 验收完成后才标记 Current Version Complete；任何公开交付均需另行授权。

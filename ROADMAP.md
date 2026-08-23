@@ -108,7 +108,7 @@ Acceptance status:
 
 ## Feature Complete Review
 
-Status: Historical candidate review reached under the previous scope; release scope subsequently reopened
+Status: Whole-Product Feature Complete Review V3 accepted (PASS); V1 Feature Complete declared
 
 The previously reviewed Milestone 1-5 candidate scope included:
 
@@ -129,17 +129,17 @@ The previously reviewed Milestone 1-5 candidate scope included:
 
 Current interpretation:
 
-- The project reached a Feature Complete Candidate review under the previous Milestone 1-5 boundary.
-- That historical review remains valid for the scope assessed at the time, but it no longer closes the current-version feature scope.
-- Translation Practice has since been approved as required current-version work, so feature development is active again.
-- It is not yet Release Ready.
-- Translation Practice is planned and has not yet been implemented or accepted.
-- System-level manual acceptance has not been completed.
-- The project has not entered Feature Freeze.
+- The earlier Milestone 1–5 candidate review remains historical evidence only.
+- Milestone 6, Pre-Freeze UI Productization, and scope-closure Batches A–C were subsequently implemented and accepted.
+- Whole-Product Feature Complete Review V3 passed with zero Category A blockers.
+- V1 Feature Complete is declared and Feature Freeze is active.
+- The product is not yet Release Candidate ready; Milestone 7 Product Hardening and Milestone 8 Release Candidate validation remain.
 
 ## Feature Freeze Gate
 
-Feature Freeze can begin only when:
+Status: **ACTIVE** following Product Owner authorization and PR #19 merge (`d5c78b9`).
+
+The gate required:
 
 - Milestone 6 Translation Practice is implemented and accepted against its approved scope.
 - The reopened current-version scope receives a new Feature Complete Review.
@@ -287,7 +287,7 @@ Acceptance effect:
 
 - Translation Practice must be implemented and, per the deferred acceptance policy, covered by the comprehensive M6-wide acceptance before the reopened current-version scope can pass Feature Complete Review.
 - Each M6.x implementation must still receive its own implementation review, regression testing, CI, and scope review before the next sub-milestone begins; individual formal user acceptance is deferred to the one comprehensive M6-wide acceptance after M6.7 (this deferral does not apply retroactively to M6.0 and M6.1, which are already accepted).
-- Feature Freeze remains inactive until the M6-wide acceptance is complete.
+- The M6-wide acceptance is complete, Review V3 passed, and Feature Freeze is active. The acceptance policy above is retained as historical process evidence.
 
 ## Pre-Freeze UI Productization: Layered Paper Study Desk
 
@@ -305,6 +305,8 @@ Scope completed:
 - **Human Acceptance Gate**: Final Human Acceptance Gate has been executed and passed (PASS).
 
 ## Milestone 7: Product Hardening
+
+Status: M7.0 Hardening Audit & Contract Lock in progress; product implementation awaits Product Owner review of the M7.0 Draft PR
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 
@@ -352,9 +354,9 @@ Exit conditions:
 - Privacy and secret-safety checks pass.
 - Verified local commits match the target remote branch.
 
-## Milestone 8: Release Candidate and Public Delivery
+## Milestone 8: Release Candidate Validation
 
-Goal: validate a release candidate from a clean environment and prepare public delivery.
+Goal: validate a release candidate from clean environments without expanding the frozen V1 scope.
 
 Required work:
 
@@ -368,9 +370,9 @@ Required work:
 - Run final privacy and secret scans.
 - Confirm all public examples are synthetic.
 - Update README, CHANGELOG, and RELEASE_NOTES.
-- Enable and verify GitHub Pages after the repository becomes public.
 - Record known limitations.
-- Create the final `v1.0.0` tag and GitHub Release.
+
+Public GitHub Pages deployment, a final `v1.0.0` tag, and a formal GitHub Release are deferred outside the frozen V1 scope. They require separate Product Owner authorization after RC acceptance.
 
 RC rules:
 
@@ -404,15 +406,18 @@ These remain outside the current v1 scope:
 - Cloud sync and user accounts.
 - Sharing, collaboration, and in-app teacher account/administration workflows.
 - Subjective question grading.
-- Item-level metacognitive marking interaction refinement (active-color toggle buttons, click-again-to-remove, multiple simultaneous marks per item, and removal of popup-style box) — recorded for post-UI hardening / backlog.
+- Public GitHub Pages deployment and a formal GitHub Release.
+- Multiple simultaneous whole-item metacognitive marks beyond the current one-mark toggle contract.
+- Translation History pagination, virtualization, and advanced history graph visualization.
+- Per-paper audio playback restrictions, seek lockouts, and replay limits.
 
 ## Roadmap Principle
 
 The current lifecycle route is:
 
-1. Preserve the Feature Complete Candidate review reached under the previous Milestone 1-5 scope as historical evidence.
-2. Complete Milestone 6 Translation Practice under the reopened current-version scope.
-3. Perform a new Feature Complete Review and enter Feature Freeze only after the expanded boundary is accepted.
-4. Complete Milestone 7 Product Hardening.
-5. Produce and validate the Milestone 8 Release Candidate and public delivery.
-6. Mark Current Version Complete only after RC acceptance.
+1. Preserve the earlier Milestone 1–5 candidate review as historical evidence. **Complete.**
+2. Complete and accept Milestone 6 and the Pre-Freeze scope. **Complete.**
+3. Pass Review V3, declare V1 Feature Complete, and activate Feature Freeze. **Complete.**
+4. Complete Milestone 7 Product Hardening. **Current stage.**
+5. Produce and validate the Milestone 8 Release Candidate.
+6. Mark Current Version Complete only after RC acceptance; handle any public delivery under separate authorization.

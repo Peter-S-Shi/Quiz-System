@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Feature Freeze / Product Hardening Preparation
+Feature Freeze / Product Hardening
 
 ## Current Milestone
 
-Milestone 7 Preparation (Feature Freeze Active / V1 Feature Complete Declared)
+Milestone 7.0 — Hardening Audit & Contract Lock
 
 The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
@@ -86,9 +86,9 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 ## Hardening Progress
 
-**Not started.**
+**M7.0 audit and contract lock in progress; product implementation has not started.**
 
-Milestone 7 Product Hardening will begin only after the formal Milestone 7 Skill & Loop Preflight and authorization envelope.
+Milestone 7 is authorized under Feature Freeze. `M7_HARDENING_AUDIT.md` is the execution contract and Product Owner review gate before M7.1 implementation.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -150,16 +150,16 @@ Milestone 7 Product Hardening will begin only after the formal Milestone 7 Skill
 
 ## Next Engineering Objective
 
-**Milestone 7 — Product Hardening**
+**Product Owner review of M7.0, then Milestone 7.1 — UX & Interaction Hardening**
 
-*Note: Milestone 7 has not yet started in this governance closure. A separate Milestone 7 Skill & Loop Preflight and authorization envelope will precede implementation.*
+M7.1 must not begin until the M7.0 Draft PR is reviewed and explicitly authorized.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline: `22d9aee Merge pull request #18 from Peter-S-Shi/audit/whole-product-feature-complete-review-v3` (`main`)
-- Current working branch: `governance/v1-feature-freeze-closure`
+- Verified baseline: `d5c78b9ba58ab24659fc6fd637024cbe0186b0d0 Merge pull request #19 from Peter-S-Shi/governance/v1-feature-freeze-closure` (`main`)
+- Current working branch: `hardening/m7-audit-contract-lock`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
-- Private repository status: assumed private based on current project policy and deferred Pages decision
-- Pull request status: PR #17 and PR #18 merged into `main`. Current branch `governance/v1-feature-freeze-closure` for Feature Freeze closure.
+- Private repository status: verified private during M7.0 preflight
+- Pull request status: PR #19 merged into `main`; the M7.0 delivery is a Draft PR review gate and must not be merged without Product Owner review.
