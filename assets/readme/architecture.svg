@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">Open Teaching Interchange Architecture &amp; Lifecycle</title>
+  <desc id="arch-desc">A cyclic data flow showing Authoring, Learner Practice, Finalized Response, External Review, Teacher Correction, and Lineage Retry loop without in-app AI API dependencies.</desc>
+
+  <defs>
+    <linearGradient id="archDeskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f141c"/>
+      <stop offset="100%" stop-color="#18202c"/>
+    </linearGradient>
+
+    <filter id="cardGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="420" rx="14" fill="url(#archDeskGrad)"/>
+
+  <!-- Top Title & Subtitle -->
+  <g transform="translate(48, 32)">
+    <text x="0" y="0" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700" letter-spacing="0.08em">SYSTEM ARCHITECTURE</text>
+    <text x="0" y="24" fill="#f1f5f9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="700">Open Teaching Interchange &amp; Lineage Loop</text>
+    <text x="0" y="44" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13">
+      AI-Native, API-Optional: Portable structured contracts enable external human/AI collaboration via files with zero server lock-in.
+    </text>
+  </g>
+
+  <!-- TOP ROW: In-App Learning Workflow (Client-Side Storage) -->
+  <!-- Card 1: Authoring & Material -->
+  <g transform="translate(48, 115)" filter="url(#cardGlow)">
+    <rect width="240" height="110" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.2"/>
+    <rect x="12" y="12" width="60" height="18" rx="4" fill="#0284c7" opacity="0.2"/>
+    <text x="16" y="25" fill="#38bdf8" font-family="ui-monospace, monospace" font-size="10" font-weight="700">INPUT</text>
+    <text x="12" y="52" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="700">1. Learning Material</text>
+    <text x="12" y="72" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Quiz Paper (5 Q-Types + Media)</text>
+    <text x="12" y="90" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Translation Document JSON</text>
+  </g>
+
+  <!-- Flow Arrow 1 -> 2 -->
+  <line x1="294" y1="170" x2="330" y2="170" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Card 2: Learner Practice Desk -->
+  <g transform="translate(336, 115)" filter="url(#cardGlow)">
+    <rect width="248" height="110" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+    <rect x="12" y="12" width="76" height="18" rx="4" fill="#1d4ed8" opacity="0.25"/>
+    <text x="16" y="25" fill="#60a5fa" font-family="ui-monospace, monospace" font-size="10" font-weight="700">PRACTICE</text>
+    <text x="12" y="52" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="700">2. Layered Study Desk</text>
+    <text x="12" y="72" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Objective Practice (Audio/Img)</text>
+    <text x="12" y="90" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Metacognitive Marking on Spans</text>
+  </g>
+
+  <!-- Flow Arrow 2 -> 3 -->
+  <line x1="590" y1="170" x2="626" y2="170" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Card 3: Finalized Protected Evidence -->
+  <g transform="translate(632, 115)" filter="url(#cardGlow)">
+    <rect width="248" height="110" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+    <rect x="12" y="12" width="90" height="18" rx="4" fill="#059669" opacity="0.25"/>
+    <text x="16" y="25" fill="#34d399" font-family="ui-monospace, monospace" font-size="10" font-weight="700">IMMUTABLE</text>
+    <text x="12" y="52" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="700">3. Learner Response</text>
+    <text x="12" y="72" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Protected answer &amp; marks snapshot</text>
+    <text x="12" y="90" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Contract: learner-response.schema</text>
+  </g>
+
+  <!-- Flow Arrow 3 -> 4 -->
+  <line x1="886" y1="170" x2="922" y2="170" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Card 4: Transport Export -->
+  <g transform="translate(928, 115)" filter="url(#cardGlow)">
+    <rect width="224" height="110" rx="8" fill="#1e293b" stroke="#8b5cf6" stroke-width="1.2"/>
+    <rect x="12" y="12" width="76" height="18" rx="4" fill="#7c3aed" opacity="0.25"/>
+    <text x="16" y="25" fill="#c084fc" font-family="ui-monospace, monospace" font-size="10" font-weight="700">ENVELOPE</text>
+    <text x="12" y="52" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14.5" font-weight="700">4. Review Request</text>
+    <text x="12" y="72" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Self-contained export JSON</text>
+    <text x="12" y="90" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12">• Zero storage leakage</text>
+  </g>
+
+  <!-- BOTTOM ROW: External Ecosystem & Remediation Loop -->
+  <!-- Downward / Upward Connector Lines -->
+  <path d="M 1040 230 L 1040 270 L 980 270" stroke="#8b5cf6" stroke-width="1.8" fill="none"/>
+  
+  <!-- Card 5: External Reviewer (Human Teacher or External AI) -->
+  <g transform="translate(680, 260)" filter="url(#cardGlow)">
+    <rect width="290" height="120" rx="8" fill="#172033" stroke="#8b5cf6" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <rect x="12" y="12" width="130" height="18" rx="4" fill="#6d28d9" opacity="0.3"/>
+    <text x="16" y="25" fill="#d8b4fe" font-family="ui-monospace, monospace" font-size="10" font-weight="700">EXTERNAL AGENT / HUMAN</text>
+    <text x="12" y="52" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">5. Teacher Review Generation</text>
+    <text x="12" y="72" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5">• Evaluates answers &amp; learner uncertainty</text>
+    <text x="12" y="90" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5">• Applies insert/replace/delete corrections</text>
+    <text x="12" y="108" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5">• Schema: teacher-review.schema.json</text>
+  </g>
+
+  <!-- Left Arrow 5 -> 6 -->
+  <line x1="674" y1="320" x2="636" y2="320" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Card 6: Remediation & Retries -->
+  <g transform="translate(336, 260)" filter="url(#cardGlow)">
+    <rect width="292" height="120" rx="8" fill="#17232e" stroke="#10b981" stroke-width="1.4"/>
+    <rect x="12" y="12" width="100" height="18" rx="4" fill="#047857" opacity="0.3"/>
+    <text x="16" y="25" fill="#6ee7b7" font-family="ui-monospace, monospace" font-size="10" font-weight="700">REMEDIATION</text>
+    <text x="12" y="52" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="700">6. Remediation &amp; Retry Desk</text>
+    <text x="12" y="72" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5">• Import remediation Translation Document</text>
+    <text x="12" y="90" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5">• Retry all / selected / needs-work items</text>
+    <text x="12" y="108" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11.5">• Independent response IDs preserve lineage</text>
+  </g>
+
+  <!-- Left/Up Arrow 6 -> 2 / 1 (Lineage Loop Closure) -->
+  <path d="M 330 320 L 168 320 L 168 232" stroke="#10b981" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+
+  <!-- History Index Pill on Left -->
+  <g transform="translate(48, 280)">
+    <rect width="180" height="80" rx="6" fill="#1e2530" stroke="#334155" stroke-width="1"/>
+    <text x="12" y="24" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="700">Lineage &amp; History Graph</text>
+    <text x="12" y="44" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11">Survives document deletion</text>
+    <text x="12" y="62" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11">Traceable ancestry chains</text>
+  </g>
+</svg>
