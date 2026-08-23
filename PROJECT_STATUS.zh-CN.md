@@ -166,4 +166,4 @@ Milestone 7 继续处于 Feature Freeze。M7.1 已完成接受的 M-01、M-02、
 - 当前工作分支：`hardening/m7-1-ux-interaction`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20 已合并入 `main`；M7.1 将通过 Draft PR 交付，在 Product Owner Human Acceptance 前不得合并。
+- Pull Request 状态：PR #20 已合并入 `main`；M7.1 Draft PR #21 已开启，在 Product Owner Human Acceptance 前不得合并。

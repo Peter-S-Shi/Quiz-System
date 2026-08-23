@@ -166,4 +166,4 @@ Execute `manual-qa/m7-1-human-acceptance.md`. Do not begin M7.2 until M7.1 is ac
 - Current working branch: `hardening/m7-1-ux-interaction`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20 merged into `main`; M7.1 will be delivered through a Draft PR and must not be merged before Product Owner Human Acceptance.
+- Pull request status: PR #20 merged into `main`; Draft PR #21 is open for M7.1 and must not be merged before Product Owner Human Acceptance.
