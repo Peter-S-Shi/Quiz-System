@@ -306,7 +306,7 @@ Scope completed:
 
 ## Milestone 7: Product Hardening
 
-Status: M7.0-M7.3 complete and Product Owner accepted (PASS); H-01 resolved; C1/B4 complete; C2/C3/C4 PASS; Product Hardening complete; Release Candidate not started
+Status: Complete and accepted (M7.0–M7.3 complete; H-01 resolved; C1–C4 PASS; Product Hardening complete)
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 

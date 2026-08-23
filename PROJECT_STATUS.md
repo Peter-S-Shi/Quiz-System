@@ -83,13 +83,13 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 ## Open Release Blockers
 
 - None. Milestone 7 Product Hardening is complete, and the Product Owner has manually verified and passed all M7.3/C3/Hosted PWA/local runtime/regression gates (PASS).
-- A final release candidate (Milestone 8) has not been packaged or validated yet.
+- Milestone 8 Release Candidate 1 validation is active (Batch A candidate preparation complete; Batch B verification pending).
 
 ## Hardening Progress
 
 **M7.0 complete; M7.1 complete and accepted; M7.2 complete and Product Owner accepted; M7.3 complete, Product Owner accepted, and merged.**
 
-Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged at `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is complete and merged via PR #23 at `6e175df53a6abb7ea75d9415ff6640801cddbb0b`. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate are PASS, so M7.3 and Product Hardening are complete. Release Candidate work (Milestone 8) has not started.
+Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged at `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is complete and merged via PR #23 at `6e175df53a6abb7ea75d9415ff6640801cddbb0b`. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate are PASS, so M7.3 and Product Hardening are complete. Milestone 8 Release Candidate validation is active.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -164,4 +164,4 @@ Milestone 7 Product Hardening is complete and accepted. Milestone 8 Release Cand
 - Accepted lifecycle baseline: `main` (Milestone 7 Product Hardening complete; M8 Batch A candidate preparation complete)
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20–PR #24 are merged into `main`; PR #25 packages the Milestone 8 Batch A candidate preparation baseline.
+- Pull request status: PR #20–PR #25 merged into `main`; Milestone 8 Release Candidate 1 preparation baseline accepted.

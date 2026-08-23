@@ -306,7 +306,7 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 ## Milestone 7：Product Hardening
 
-状态：M7.0-M7.3 已完成并被 Product Owner 接受（PASS）；H-01 已解决；C1/B4 已完成；C2/C3/C4 PASS；Product Hardening 已完成；Release Candidate 尚未开始
+状态：已完成并验收（M7.0–M7.3 全部完成；H-01 已解决；C1–C4 PASS；Product Hardening 已完成）
 
 目标：在不扩大产品范围的前提下，让现有功能成为可靠、统一、可验证的整体。
 

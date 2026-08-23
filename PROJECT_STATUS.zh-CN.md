@@ -83,13 +83,13 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 ## 当前发布阻断项
 
 - 无。Milestone 7 产品硬化已完成，Product Owner 已手动验证并通过全部 M7.3/C3/托管 PWA/本地运行时/回归测试等验证项（PASS）。
-- 最终候选版本（Milestone 8）尚未打包和验证。
+- Milestone 8 Release Candidate 1 验证已激活（Batch A 候选版本准备已完成；Batch B 验证待执行）。
 
 ## Hardening 进度
 
 **M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 已完成、被 Product Owner 接受并已合并。**
 
-Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 在 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成并通过 PR #23 合并至 `6e175df53a6abb7ea75d9415ff6640801cddbb0b`。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Release Candidate 工作（Milestone 8）尚未开始。
+Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 在 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成并通过 PR #23 合并至 `6e175df53a6abb7ea75d9415ff6640801cddbb0b`。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Milestone 8 候选版本验证已激活。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -164,4 +164,4 @@ Milestone 7 产品硬化已全部完成并通过验收。Milestone 8 候选版�
 - 接受生命周期基线：`main`（Milestone 7 产品硬化已完成；M8 Batch A 候选版本准备已完成）
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20–PR #24 均已合并入 `main`；PR #25 封装 Milestone 8 Batch A 候选版本准备基线。
+- Pull Request 状态：PR #20–PR #25 均已合并入 `main`；Milestone 8 Release Candidate 1 准备基线已接受。
