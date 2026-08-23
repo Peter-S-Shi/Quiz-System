@@ -99,7 +99,7 @@ Milestone 7 remains under active Feature Freeze. M7.2 repaired H-01 with a non-d
 
 ## Verification Status
 
-- **289 automated unit/integration tests pass** (275 accepted through M7.1 plus 14 M7.2 data-safety, migration, linear History traversal, and restart-recovery regressions). Existing Question Registry, grading, schema, category, media, backup, marking, correction, review, deletion-policy, runtime, and Service Worker contracts remain green.
+- **290 automated unit/integration tests pass** (275 accepted through M7.1 plus 15 M7.2 data-safety, migration, linear History traversal, exact four-tier parity, and restart-recovery regressions). Existing Question Registry, grading, schema, category, media, backup, marking, correction, review, deletion-policy, runtime, and Service Worker contracts remain green.
 - **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes and Special Practice information architecture verified (Human Gate A = **PASS**).
 - **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation, and safe deletion modal verified (Human Gate B = **PASS**).
 - **Pre-Freeze V1 Scope Closure (Batch C)**: Objective Question Media (Image & Audio across all 5 types, native Blob IndexedDB store, Image Viewer modal, in-question player, portability referential integrity, backup/restore, evidence preservation, and conservative reference-aware cleanup) verified (Human Gate C = **PASS**).

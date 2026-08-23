@@ -99,7 +99,7 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 
 ## 验证状态
 
-- **289 项自动化单元/集成测试通过**（M7.1 接受的 275 项，加 14 项 M7.2 数据安全、迁移、History 线性遍历与重启恢复回归）。既有题目注册、评分、schema、分类、媒体、备份、标记、批改、评阅、删除策略、runtime 与 Service Worker 合同继续全绿。
+- **290 项自动化单元/集成测试通过**（M7.1 接受的 275 项，加 15 项 M7.2 数据安全、迁移、History 线性遍历、四档精确一致性与重启恢复回归）。既有题目注册、评分、schema、分类、媒体、备份、标记、批改、评阅、删除策略、runtime 与 Service Worker 合同继续全绿。
 - **Pre-Freeze V1 Scope Closure (Batch A)**：客观做题反馈模式与专项练习信息架构已通过人工验证（Human Gate A = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch B)**：试卷库分类组织与渐进式导航已通过人工验证（Human Gate B = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch C)**：客观题多媒体支持已通过人工验证（Human Gate C = **PASS**）。

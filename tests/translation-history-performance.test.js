@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildHistoryIndex } from "../src/core/translation-history.js";
+import {
+  buildHistoryEntry,
+  buildHistoryIndex,
+  filterHistoryEntries,
+  isTranslationLearnerResponse,
+  resolveResponseLineage,
+} from "../src/core/translation-history.js";
+import { createHistoryPerformanceDataset } from "../scripts/lib/history-performance-fixtures.mjs";
 
 test("buildHistoryIndex reads source collections within a linear budget", () => {
   const count = 200;
@@ -23,6 +30,61 @@ test("buildHistoryIndex reads source collections within a linear budget", () => 
   assert.ok(responseReads <= count * 8, `expected linear response reads, observed ${responseReads}`);
   assert.ok(reviewReads <= count * 6, `expected linear review reads, observed ${reviewReads}`);
 });
+
+test("optimized History derivation exactly matches the pre-optimization reference at every locked tier", () => {
+  for (const count of [100, 500, 1000, 2500]) {
+    const { learnerResponses, teacherReviews } = createHistoryPerformanceDataset(count);
+    const referenceIndex = buildReferenceIndex(learnerResponses, teacherReviews);
+    const optimizedIndex = buildHistoryIndex(learnerResponses, teacherReviews);
+
+    assert.deepEqual(optimizedIndex, referenceIndex, `full index parity failed at ${count} responses`);
+
+    const filters = [
+      { purpose: "all", status: "all", sort: "newest" },
+      { purpose: "retry", status: "needs-work", sort: "oldest" },
+      { purpose: "remediation", status: "reviewed", sort: "newest" },
+      { purpose: "practice", status: "unreviewed", sort: "oldest" },
+    ];
+    filters.forEach((filter) => {
+      assert.deepEqual(
+        filterHistoryEntries(optimizedIndex, filter),
+        filterHistoryEntries(referenceIndex, filter),
+        `filter/sort parity failed at ${count}: ${JSON.stringify(filter)}`,
+      );
+    });
+
+    const source = learnerResponses[0];
+    assert.deepEqual(resolveResponseLineage(source, { learnerResponses, teacherReviews }), {
+      ancestors: [],
+      descendants: [
+        {
+          responseId: "perf-response-00001",
+          purpose: "retry",
+          materialTitle: "Synthetic History 1",
+          sourceReviewId: null,
+          completedAt: "2026-01-01T00:01:00.000Z",
+        },
+        {
+          responseId: "perf-response-00002",
+          purpose: "remediation",
+          materialTitle: "Synthetic History 2",
+          sourceReviewId: "perf-review-0-0",
+          completedAt: "2026-01-01T00:02:00.000Z",
+        },
+      ],
+    }, `lineage parity failed at ${count} responses`);
+  }
+});
+
+function buildReferenceIndex(learnerResponses, teacherReviews) {
+  const translationResponses = learnerResponses.filter(isTranslationLearnerResponse);
+  return translationResponses
+    .map((response) => buildHistoryEntry(response, {
+      teacherReviews,
+      learnerResponses: translationResponses,
+    }))
+    .sort((left, right) => new Date(right.completedAt) - new Date(left.completedAt));
+}
 
 function countedArray(values, onNumericRead) {
   return new Proxy(values, {
