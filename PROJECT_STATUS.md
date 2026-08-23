@@ -162,7 +162,7 @@ Execute `manual-qa/m7-1-human-acceptance.md`. Do not begin M7.2 until M7.1 is ac
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline: `db079224263c3453097cf8c45ad36aa451282f9e Merge pull request #20 from Peter-S-Shi/hardening/m7-audit-contract-lock` (`main`)
+- Verified baseline: `db079224263c3453097cf8c45ad36aa451282f9e Merge pull request #20` (`main`, source branch `hardening/m7-audit-contract-lock`)
 - Current working branch: `hardening/m7-1-ux-interaction`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight

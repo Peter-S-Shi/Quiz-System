@@ -162,7 +162,7 @@ Milestone 7 继续处于 Feature Freeze。M7.1 已完成接受的 M-01、M-02、
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`db079224263c3453097cf8c45ad36aa451282f9e Merge pull request #20 from Peter-S-Shi/hardening/m7-audit-contract-lock` (`main`)
+- 已验证基线：`db079224263c3453097cf8c45ad36aa451282f9e Merge pull request #20`（`main`，来源分支 `hardening/m7-audit-contract-lock`）
 - 当前工作分支：`hardening/m7-1-ux-interaction`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
