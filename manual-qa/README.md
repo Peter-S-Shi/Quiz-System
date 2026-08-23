@@ -7,6 +7,7 @@ This folder contains the retrospective manual QA baseline for Quiz Studio.
 - `manual_review_questionnaire.html` is a standalone bilingual review questionnaire. It works offline and can be opened directly in a browser.
 - `samples/` contains synthetic quiz files for import, backup, boundary, and rejection-path testing.
 - `results/` is reserved for filled review exports and screenshots. Filled results are local-only by default.
+- `m7-1-human-acceptance.md` is the focused Product Owner gate for M7.1 UX and interaction hardening (**PASS — no issues found**).
 
 ## How To Use
 
