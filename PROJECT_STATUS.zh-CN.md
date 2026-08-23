@@ -2,11 +2,11 @@
 
 ## 当前阶段
 
-Feature Freeze / Product Hardening Preparation（功能冻结与产品硬化准备阶段）
+Feature Freeze / Product Hardening（功能冻结 / 产品硬化阶段）
 
 ## 当前里程碑
 
-Milestone 7 Preparation (Feature Freeze Active / V1 Feature Complete Declared)（Milestone 7 准备：Feature Freeze 已激活 / V1 Feature Complete 已宣布）
+Milestone 7.0 — Hardening Audit & Contract Lock（产品硬化审计与执行合同锁定）
 
 产品负责人已正式接受 Whole-Product Feature Complete Review V3（PASS 裁决），确认 V1 不存在任何 Category A 阻断项，正式宣布 Quiz Studio V1 为 **Feature Complete（功能完备）**，并明确授权进入 **Feature Freeze（功能冻结）**。
 
@@ -80,15 +80,16 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 ## 当前发布阻断项
 
+- **H-01 — 规范 Quiz Library 启动覆盖风险：**损坏或不受支持的 `quiz-studio-library-v1` JSON 可能在加载失败后被立即替换为自动生成的默认 Library。M7.2 必须先保留原始值、安全失败并补充迁移/损坏回归测试，之后才可进入 RC。
 - 功能冻结下的 Milestone 7 产品硬化尚未执行。
 - 旧版单试卷数据在代表性旧 localStorage 状态下的迁移行为，以及真实浏览器关闭/重开后的 active session 恢复尚未获得单独专项验证。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
 
 ## Hardening 进度
 
-**尚未开始。**
+**M7.0 审计与合同锁定进行中；产品实现尚未开始。**
 
-Milestone 7 Product Hardening 将在正式的 Milestone 7 Skill & Loop Preflight 与授权包裹签署后启动。
+Milestone 7 已在 Feature Freeze 下获得授权。`M7_HARDENING_AUDIT.md` 是 M7.1 实施前的执行合同与 Product Owner 审查门。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -111,6 +112,7 @@ Milestone 7 Product Hardening 将在正式的 Milestone 7 Skill & Loop Preflight
 
 ## 已知风险
 
+- 规范 Quiz Library 启动流程目前没有针对损坏或不受支持存储 JSON 的隔离/恢复路径；这是 M7 审计中的 H-01 发布阻断项，目标在 M7.2 关闭。
 - 由于仓库保持 private 且 Pages 部署暂缓，GitHub Pages 目前不能视为可用交付方式。
 - ES module 应用不支持通过浏览器 `file://` 直接打开；用户必须使用本地静态服务器或 `start-local.bat`。
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。Translation 历史按设计同样没有条目数量上限，继承了这一风险。
@@ -150,16 +152,16 @@ Milestone 7 Product Hardening 将在正式的 Milestone 7 Skill & Loop Preflight
 
 ## 后续工程目标
 
-**Milestone 7 — Product Hardening（产品硬化阶段）**
+**Product Owner 审查 M7.0，随后进入 Milestone 7.1 — UX & Interaction Hardening**
 
-*注：本治理闭包中尚未启动 Milestone 7。正式实施前将有单独的 Milestone 7 Skill & Loop Preflight 与授权包裹。*
+在 M7.0 Draft PR 获得审查并被明确授权前，不得开始 M7.1。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`22d9aee Merge pull request #18 from Peter-S-Shi/audit/whole-product-feature-complete-review-v3` (`main`)
-- 当前工作分支：用于 Feature Freeze 闭包的 `governance/v1-feature-freeze-closure`
+- 已验证基线：`d5c78b9ba58ab24659fc6fd637024cbe0186b0d0 Merge pull request #19 from Peter-S-Shi/governance/v1-feature-freeze-closure` (`main`)
+- 当前工作分支：`hardening/m7-audit-contract-lock`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
-- 私有仓库状态：基于当前项目策略和暂缓 Pages 的决定，设定为 private
-- Pull Request 状态：PR #17 与 PR #18 均已合并入 `main`。当前分支 `governance/v1-feature-freeze-closure` 用于 Feature Freeze 治理闭包。
+- 私有仓库状态：M7.0 preflight 已验证为 private
+- Pull Request 状态：PR #19 已合并入 `main`；M7.0 将以 Draft PR 作为审查门，未经 Product Owner 审查不得合并。

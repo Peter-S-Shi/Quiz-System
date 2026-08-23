@@ -2,7 +2,7 @@
 
 ## Pre-release Preparation
 
-Quiz Studio is currently in Milestone 6 feature development. M6.0 Open Teaching Interchange is accepted. M6.1 Translation Domain and Persistence Foundation is implementation complete and awaiting user acceptance; Translation Library and practice UI have not started. Full manual QA, Feature Freeze, Product Hardening, Release Candidate validation, and final clean-environment verification are not complete.
+Quiz Studio V1 is Feature Complete and Feature Freeze is active. The Milestone 6 Translation Practice line, Pre-Freeze UI Productization, scope-closure Batches A–C, and Whole-Product Feature Complete Review V3 are accepted. Milestone 7 Product Hardening has opened with the M7.0 audit and contract lock; hardening implementation, final manual acceptance, and Release Candidate validation are not complete.
 
 This is not a `v1.0.0` release.
 
@@ -24,6 +24,6 @@ Known limitations:
 
 - Data is stored in browser local storage, not cloud sync.
 - Subjective grading is not included.
-- Teacher Review import/rendering and Translation Practice are not included yet.
-- Translation Library and practice UI are not included yet.
-- GitHub Pages deployment is deferred while the repository remains private.
+- External Teacher Review exchange remains manual and file-based; there is no in-app AI integration.
+- Browser storage quotas apply to long-term local evidence collections.
+- Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
