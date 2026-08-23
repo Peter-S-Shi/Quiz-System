@@ -4,6 +4,7 @@
 
 ### Added
 
+- Completed Milestone 7.3 Release-Readiness Verification: added reproducible external-review handoff artifacts (seed backup and UI-exported request) and multi-OS clean-environment matrix (Windows 11 and Ubuntu CI). The Product Owner accepted all remaining Human Gates (C3 authentic external review round trip, critical journey, hosted PWA, cache upgrade, and local runtime).
 - Added a non-destructive canonical Quiz Library bootstrap recovery contract plus representative M1–M6 migration, precedence, interrupted-upgrade, idempotence, recovery-failure, and post-migration backup/export regressions.
 - Added locked-tier Translation History characterization at 100/500/1,000/2,500 synthetic responses and a deterministic linear-traversal performance contract.
 - Added Objective and Translation process-restart serialization regressions plus a bilingual genuine browser-process-restart Human Acceptance checklist; the Product Owner subsequently accepted the C2 Human Gate with PASS and no issues found in Google Chrome 151.0.7922.173.
@@ -44,11 +45,13 @@
 
 ### Fixed
 
+- Fixed `normalizeLearnerResponse()` to preserve `learnerItemMarks` during review-request export, ensuring full fidelity between serialized requests and local Learner Responses.
 - Preserved Correction Workspace Insert/Replace selection and color state across asynchronous custom-dialog entry; cancellation paths remain non-mutating.
 - Fixed an M6.7 deletion-integrity gap: deleting a Learner Response or Teacher Review no longer ignores live remediation Translation Documents that still claim it as `sourceResponseId`/`sourceReviewId`. `analyzeLearnerResponseDeletion()`/`analyzeTeacherReviewDeletion()` now detect that case (`dependentRemediationDocumentIds`/`hasBlockingDependents`) and the deletion is refused outright with a bilingual warning until the dependent remediation material is deleted first, instead of silently leaving a live canonical record with unresolvable provenance (which `parseLibraryBackup()` would then reject on the next restore). Finalized retry/remediation responses are unaffected and still never block deletion; only *live* remediation documents do.
 
 ### Documentation
 
+- Synchronized all lifecycle and governance documentation (`PROJECT_STATUS`, `ROADMAP`, `README`, `RELEASE_NOTES`, and `manual-qa/` manifests) across English and Chinese to declare Milestone 7 Product Hardening complete.
 - Added `M7_HARDENING_AUDIT.md`, the evidence-based Milestone 7 execution contract covering B1–B4, C1–C4, classified hardening findings, human gates, and the M7.1/M7.2/M7.3 batch map.
 - Synchronized bilingual lifecycle documentation with declared V1 Feature Complete, active Feature Freeze, the PR #19 baseline, M7.0 opening, and the decision to keep public Pages and a formal GitHub Release outside frozen V1 delivery.
 - Added bilingual Translation History/Retry usage, developer architecture notes (including an M1-M6 storage-governance table), an M6.7 manual-QA delta, and a consolidated end-to-end M6.0-M6.7 manual acceptance journey.

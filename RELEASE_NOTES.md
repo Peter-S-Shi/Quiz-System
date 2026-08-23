@@ -2,7 +2,7 @@
 
 ## Pre-release Preparation
 
-Quiz Studio V1 is Feature Complete and Feature Freeze is active. M7.0, M7.1, and M7.2 are complete and accepted. Canonical Library bootstrap now preserves malformed/unsupported raw data before any replacement, representative legacy migrations pass, Translation History has locked-tier characterization plus a bounded one-pass-map optimization, and Objective/Translation serialization recovery contracts pass. H-01 is resolved. The Product Owner accepted the C2 genuine browser-process-restart Human Gate in Google Chrome 151.0.7922.173 with no issues found. M7.3 is next but has not started; Product Hardening and Release Candidate validation are not complete.
+Quiz Studio V1 is Feature Complete and Feature Freeze is active. Milestone 7 Product Hardening (M7.0–M7.3) is complete and accepted. Canonical Library bootstrap now preserves malformed/unsupported raw data before any replacement, representative legacy migrations pass, Translation History has locked-tier characterization plus a bounded one-pass-map optimization, and Objective/Translation serialization recovery contracts pass. H-01 is resolved, C1–C4 verification is PASS, and all Product Owner Human Acceptance gates have passed. Milestone 8 Release Candidate validation has not started.
 
 This is not a `v1.0.0` release.
 
