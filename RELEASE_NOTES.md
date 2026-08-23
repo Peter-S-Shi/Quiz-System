@@ -1,12 +1,12 @@
 # Release Notes
 
-## v1.0.0-rc.1 Candidate Preparation
+## v1.0.0-rc.1 Candidate Release & Acceptance
 
 Quiz Studio V1 is Feature Complete and Feature Freeze is active. Milestone 7 Product Hardening (M7.0–M7.3) is complete and accepted across all verification layers (292 automated unit/integration tests green, H-01 resolved, C1–C4 verification passed, and all Product Owner Human Acceptance gates passed).
 
 This candidate release packages the frozen V1 product for Milestone 8 Release Candidate validation. It establishes the release candidate contract, version metadata alignment (`1.0.0-rc.1`), and the RC verification matrix across clean Windows, Ubuntu CI, browser matrix (Chrome, Edge, Firefox), hosted PWA, and accumulated data portability.
 
-This is a pre-release candidate for validation only. It is not the final `v1.0.0` release. Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope and remain unauthorized until formal Release Candidate acceptance.
+Milestone 8 verification and Product Owner human acceptance are COMPLETE with 0 release-blocking defects. Candidate `v1.0.0-rc.1` is ACCEPTED. Public GitHub Pages deployment, desktop packaging, and a formal GitHub Release are deferred outside the frozen V1 scope.
 
 Highlights:
 

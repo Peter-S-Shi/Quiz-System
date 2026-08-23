@@ -1,15 +1,18 @@
 # Changelog
 
-## [1.0.0-rc.1] - Candidate Preparation
+## [1.0.0-rc.1] - 2026-08-23
 
 ### Added
 
-- Established the Milestone 8 Release Candidate verification contract and test matrix (`manual-qa/m8-rc1-verification.md` and Chinese counterpart) covering clean Windows, Ubuntu CI, Chrome/Edge/Firefox browser matrix, hosted PWA, and accumulated data portability.
+- Completed Milestone 8 Release Candidate verification and acceptance on candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`).
+- Verified exact candidate across automated suite (292/292 tests pass), Ubuntu CI, Python localhost runtime contracts, and representative accumulated full backup/restore round-trip (`manual-qa/m8-b-exact-candidate-verification.md`).
+- Product Owner formally accepted all Batch C Human Gates: clean Windows launch/restart, Chrome/Edge/Firefox smoke, native file dialog imports for Teacher Review and remediation docs, hosted HTTPS PWA, and known limitations (`manual-qa/m8-c-human-acceptance.md`).
 - Aligned version metadata to `1.0.0-rc.1` across `package.json` and `package-lock.json`.
 
 ### Documentation
 
-- Reconciled lifecycle roadmaps, release notes, and runtime usage instructions across `README.md`, `ROADMAP.md`, `PROJECT_STATUS.md`, `RELEASE_NOTES.md`, and `manual-qa/` manifests.
+- Established bilingual Milestone 8 QA and acceptance manifests (`manual-qa/m8-rc1-verification.md`, `manual-qa/m8-b-exact-candidate-verification.md`, `manual-qa/m8-c-human-acceptance.md` and Chinese counterparts).
+- Synchronized lifecycle governance across `PROJECT_STATUS.md`, `ROADMAP.md`, `README.md`, `RELEASE_NOTES.md`, and `CHANGELOG.md`.
 
 ## Unreleased
 

@@ -12,8 +12,9 @@ This folder contains the retrospective manual QA baseline for Quiz Studio.
 - `m7-3-c3-external-review.md`, `m7-3-c3-seed-backup.json`, and the real UI-exported `m7-3-c3-review-request.json` form the reproducible external-review handoff for C3 (**PASS — Product Owner accepted**).
 - `m7-3-c4-clean-environment.md` records the required clean Windows and Ubuntu matrix (**PASS; macOS deferred / not verified**).
 - `m7-3-final-human-acceptance.md` consolidates the M7.3 Product Owner gate (**PASS — Product Owner accepted; Product Hardening complete**).
-- `m8-rc1-verification.md` establishes the comprehensive verification contract for Release Candidate 1 (`v1.0.0-rc.1`) (**ACTIVE — Batch B agent verification complete; Batch C human acceptance pending**).
-- `m8-b-exact-candidate-verification.md` records the exact candidate verification evidence across automated suite, Ubuntu CI, runtime contracts, accumulated backup round-trip, and release safety, isolating human/native browser gates for Batch C (**Agent Checks PASS; Human Gates Prepared**).
+- `m8-rc1-verification.md` establishes the comprehensive verification contract and completed matrix for Release Candidate 1 (`v1.0.0-rc.1`) (**COMPLETE / ACCEPTED**).
+- `m8-b-exact-candidate-verification.md` records the exact candidate verification evidence across automated suite, Ubuntu CI, runtime contracts, accumulated backup round-trip, and release safety (**PASS**).
+- `m8-c-human-acceptance.md` records the final Product Owner human acceptance across clean Windows launch, browser matrix smoke, native file pickers, hosted PWA, and known limitations (**PASS — ACCEPTED; Milestone 8 Complete**).
 
 ## How To Use
 

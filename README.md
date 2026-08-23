@@ -130,11 +130,11 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-Current phase: Feature Freeze / Milestone 8 Release Candidate Validation.
+Current phase: Feature Freeze / Milestone 8 Complete (Candidate `v1.0.0-rc.1` Accepted).
 
 Quiz Studio is a local-first private pre-release product. The comprehensive M6 acceptance, Pre-Freeze acceptance gates, Whole-Product Feature Complete Review V3, and Milestone 7 Product Hardening (M7.0–M7.3) have all passed and been accepted. V1 Feature Complete is declared and Feature Freeze remains active.
 
-Milestone 8 Release Candidate Validation is active (unified execution via PR #25; Batch A candidate preparation complete; Batch B exact verification and Batch C human acceptance in progress). Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
+Milestone 8 Release Candidate Validation is COMPLETE and ACCEPTED (Candidate `v1.0.0-rc.1` at commit `f33bafcfe42ac8dd521466026c343102dc18897a` verified and accepted across all automated, runtime, and Product Owner human gates; PR #25 ready for final merge). Public GitHub Pages deployment, desktop application packaging, and a formal GitHub Release are deferred outside the frozen V1 scope.
 
 ## Data and Privacy
 

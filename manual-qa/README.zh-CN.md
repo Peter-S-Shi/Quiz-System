@@ -12,8 +12,9 @@
 - `m7-3-c3-external-review.zh-CN.md`、`m7-3-c3-seed-backup.json` 与通过真实 UI 导出的 `m7-3-c3-review-request.json` 组成可复现 C3 外部评阅交接（**PASS — Product Owner 已接受**）。
 - `m7-3-c4-clean-environment.zh-CN.md` 记录 Windows 与 Ubuntu 必须项的干净环境矩阵（**PASS；macOS 延期/未验证**）。
 - `m7-3-final-human-acceptance.zh-CN.md` 汇总 M7.3 Product Owner 验收门（**PASS — Product Owner 已接受；Product Hardening 完成**）。
-- `m8-rc1-verification.zh-CN.md` 建立 Release Candidate 1 (`v1.0.0-rc.1`) 全量验证合同（**ACTIVE — Batch B Agent 验证完成；Batch C 人工验收推进中**）。
-- `m8-b-exact-candidate-verification.zh-CN.md` 记录覆盖自动化套件、Ubuntu CI、运行时合同、累积备份往返与发布安全性的精确候选版本验证证据，并明确分离交接给 Batch C 的人工/原生浏览器验收门（**Agent 检查项 PASS；人工验收门已就绪**）。
+- `m8-rc1-verification.zh-CN.md` 建立 Release Candidate 1 (`v1.0.0-rc.1`) 全量验证合同与完整矩阵（**COMPLETE / ACCEPTED**）。
+- `m8-b-exact-candidate-verification.zh-CN.md` 记录覆盖自动化套件、Ubuntu CI、运行时合同、累积备份往返与发布安全性的精确候选版本验证证据（**PASS**）。
+- `m8-c-human-acceptance.zh-CN.md` 记录覆盖干净 Windows 启动、浏览器矩阵冒烟、原生文件选择器、托管 PWA 与已知局限性的最终 Product Owner 人工验收证据（**PASS — ACCEPTED；Milestone 8 完成**）。
 
 ## 使用方式
 
