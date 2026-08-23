@@ -12,18 +12,16 @@ The deterministic synthetic fixture contains 10 items per response, 0–2 review
 
 For the locked 2,500-response tier, core History derivation should remain below 100 ms on this reference environment and index + filter/sort + list projection should remain below 150 ms. This leaves browser layout/paint headroom for a user-visible interaction around one second without introducing pagination or virtualization.
 
-The baseline index took 173.47 / 181.46 ms at 2,500 responses and scaled superlinearly (26.12 ms at 1,000). That demonstrated the repeated full-collection scan bottleneck and justified the bounded optimization allowed by M7.2.
+The initial baseline index took 173.47 / 181.46 ms at 2,500 responses and scaled superlinearly (26.12 ms at 1,000). That demonstrated the repeated full-collection scan bottleneck and justified the bounded optimization allowed by M7.2. A complete reproducibility run against the exact baseline module then captured every operation shown below; timing variation between the two baseline runs does not change the decision.
 
 ## Before optimization
 
 | Responses | Reviews | Serialized MiB | Heap MiB | Index | Filter/sort | Detail | List projection |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 100 | 99 | 0.31 | 6.23 | 0.73 / 0.89 | not retained | 0.01 / 0.01 | 0.02 / 0.03 |
-| 500 | 499 | 1.55 | 9.53 | 7.60 / 8.22 | not retained | 0.02 / 0.02 | 0.05 / 0.06 |
-| 1,000 | 999 | 3.09 | 18.96 | 26.12 / 26.58 | not retained | 0.02 / 0.03 | 0.11 / 0.14 |
-| 2,500 | 2,499 | 7.78 | 21.59 | 173.47 / 181.46 | not retained | 0.06 / 0.07 | 0.33 / 0.37 |
-
-The first baseline table display referenced the wrong JSON property for filter/sort, so those four values were not retained. The index evidence that triggered optimization and all other listed observations are preserved; the corrected harness records the field below.
+| 100 | 99 | 0.31 | 6.23 | 0.76 / 0.84 | 0.01 / 0.09 | 0.01 / 0.04 | 0.01 / 0.04 |
+| 500 | 499 | 1.55 | 9.53 | 7.64 / 9.13 | 0.03 / 0.05 | 0.02 / 0.02 | 0.05 / 0.28 |
+| 1,000 | 999 | 3.09 | 18.96 | 26.49 / 28.33 | 0.06 / 0.07 | 0.02 / 0.04 | 0.10 / 0.13 |
+| 2,500 | 2,499 | 7.78 | 21.59 | 136.24 / 138.58 | 0.15 / 0.21 | 0.06 / 0.23 | 0.60 / 0.72 |
 
 ## After bounded optimization
 
