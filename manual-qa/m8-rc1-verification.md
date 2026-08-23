@@ -4,10 +4,11 @@ This document establishes the exact verification contract for Quiz Studio Releas
 
 ## Candidate Metadata
 
-- **Candidate Tag**: `v1.0.0-rc.1` *(Cut pending Product Owner merge of Batch A)*
-- **Candidate Commit SHA**: *(Pending merged main baseline commit)*
+- **Candidate Tag**: `v1.0.0-rc.1`
+- **Candidate Commit Identity**: The exact commit resolved by immutable Git tag `v1.0.0-rc.1` on `main` (exact commit SHA recorded in Batch B execution records upon tag cut)
 - **Feature Freeze**: ACTIVE
 - **Milestone 7 Product Hardening**: COMPLETE / ACCEPTED (292 tests green, H-01 resolved, C1–C4 PASS)
+- **Milestone 8 Status**: ACTIVE (Batch A candidate preparation complete; Batch B/C verification pending)
 - **Public Release Authorization**: NOT AUTHORIZED (RC verification only)
 
 ---

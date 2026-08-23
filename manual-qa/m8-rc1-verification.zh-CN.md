@@ -4,10 +4,11 @@
 
 ## 候选版本元信息
 
-- **候选版本 Tag**：`v1.0.0-rc.1` *(待 Product Owner 合并 Batch A 后正式打 Tag)*
-- **候选版本提交 SHA**：*(待合并后的 main 基线提交)*
+- **候选版本 Tag**：`v1.0.0-rc.1`
+- **候选版本提交身份**：由 `main` 分支上不可变 Git tag `v1.0.0-rc.1` 所解析的精确提交（精确提交 SHA 在打 Tag 后记录于 Batch B 执行记录中）
 - **Feature Freeze**：ACTIVE（已激活）
 - **Milestone 7 Product Hardening**：COMPLETE / ACCEPTED（292 项测试全绿，H-01 解决，C1–C4 PASS）
+- **Milestone 8 状态**：ACTIVE（Batch A 候选版本准备已完成；Batch B/C 验证待执行）
 - **公开正式发布授权**：NOT AUTHORIZED（仅用于 RC 验证）
 
 ---

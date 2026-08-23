@@ -356,7 +356,7 @@ Exit conditions:
 
 ## Milestone 8: Release Candidate Validation
 
-Status: Candidate preparation active (Batch A in progress; candidate `v1.0.0-rc.1` preparation; Batch B/C validation pending)
+Status: Active (Batch A candidate preparation complete; Batch B exact verification and Batch C human acceptance pending)
 
 Goal: validate a release candidate from clean environments without expanding the frozen V1 scope.
 

@@ -6,7 +6,7 @@ Feature Freeze / Milestone 8 Release Candidate Validation（功能冻结 / Miles
 
 ## 当前里程碑
 
-Milestone 8 — Release Candidate 1 候选版本准备（Batch A）
+Milestone 8 — Release Candidate 1 验证（Batch A 候选版本准备已完成 / Batch B 验证待执行）
 
 产品负责人已正式接受 Whole-Product Feature Complete Review V3（PASS 裁决），确认 V1 不存在任何 Category A 阻断项，正式宣布 Quiz Studio V1 为 **Feature Complete（功能完备）**，并明确授权进入 **Feature Freeze（功能冻结）**。
 
@@ -152,17 +152,16 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 后续工程目标
 
-**Batch A: RC 合同锁定与候选版本准备（目标：`v1.0.0-rc.1`）**
+**Batch B: 精确候选版本验证（目标：`v1.0.0-rc.1`）**
 
-Milestone 7 产品硬化已全部完成并通过验收。Milestone 8 候选版本验证已激活。Batch A 建立 `v1.0.0-rc.1` 的 RC 验证合同与候选元数据。Batch A 合并后，Batch B（精确候选版本验证）与 Batch C（RC 人工验收）将在不可变的候选 tag 上执行。
+Milestone 7 产品硬化已全部完成并通过验收。Milestone 8 候选版本验证已激活。Batch A 已建立 RC 验证合同、版本号对齐（`1.0.0-rc.1`）与候选元数据文档。在 `main` 上打出 `v1.0.0-rc.1` 候选版本 tag 后，将在不可变的候选提交上执行 Batch B（精确候选版本验证）与 Batch C（RC 人工验收）。
 
 ## 仓库状态
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`3b26d21414827401ff530b9b0e3871a99c7c0f1e`（`main`，PR #24 精确合并提交）
-- 接受生命周期基线：`main`（Milestone 7 产品硬化已完成；PR #24 已合并）
-- 当前工作分支：`release/m8-a-rc1-candidate-preparation`
+- 候选版本基线：`main`（对应 `v1.0.0-rc.1`）
+- 接受生命周期基线：`main`（Milestone 7 产品硬化已完成；M8 Batch A 候选版本准备已完成）
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20、PR #21、PR #22、PR #23 与 PR #24 均已合并入 `main`；M8 Batch A Candidate Preparation PR 正在本分支推进。
+- Pull Request 状态：PR #20–PR #24 均已合并入 `main`；PR #25 封装 Milestone 8 Batch A 候选版本准备基线。

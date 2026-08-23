@@ -356,7 +356,7 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 ## Milestone 8：Release Candidate Validation
 
-状态：候选版本准备中（Batch A 正在推进；候选版本 `v1.0.0-rc.1` 准备中；Batch B/C 验证待执行）
+状态：进行中（Batch A 候选版本准备已完成；Batch B 精确验证与 Batch C 人工验收待执行）
 
 目标：在不扩大冻结 V1 范围的前提下，从干净环境验证候选版本。
 
