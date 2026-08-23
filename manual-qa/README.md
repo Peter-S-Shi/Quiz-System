@@ -9,6 +9,9 @@ This folder contains the retrospective manual QA baseline for Quiz Studio.
 - `results/` is reserved for filled review exports and screenshots. Filled results are local-only by default.
 - `m7-1-human-acceptance.md` is the focused Product Owner gate for M7.1 UX and interaction hardening (**PASS — no issues found**).
 - `m7-2-process-restart-acceptance.md` is the focused genuine browser-process restart gate for M7.2 C2 (**PASS — Product Owner accepted; no issues found**).
+- `m7-3-c3-external-review.md`, `m7-3-c3-seed-backup.json`, and the real UI-exported `m7-3-c3-review-request.json` form the reproducible external-review handoff for C3 (**PENDING — independent reviewer required**).
+- `m7-3-c4-clean-environment.md` records the required clean Windows and Ubuntu matrix (**PASS; macOS deferred / not verified**).
+- `m7-3-final-human-acceptance.md` consolidates the remaining M7.3 Product Owner gate (**PENDING**).
 
 ## How To Use
 

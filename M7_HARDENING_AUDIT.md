@@ -150,15 +150,15 @@ Synthetic pre-authored fixtures do not close C3.
 
 ### C4 — Clean clone / environment verification
 
-Smallest meaningful M7.3 matrix:
+M7.3 execution uses the Product Owner's revised C4 matrix below. It supersedes the original audit assumption that a clean macOS row was mandatory:
 
 | Environment | Required checks |
 | --- | --- |
 | Clean Windows 11 | Fresh clone, `npm ci`, `npm run check`, `start-local.bat`, canonical `localhost:8000`, fresh browser profile |
-| Clean current macOS | Fresh clone, `npm ci`, `npm run check`, `python -u scripts/dev-server.py`, canonical origin, fresh browser profile |
-| GitHub Actions Ubuntu | Existing Node 22/Python 3.12 CI, full 270-test suite |
+| GitHub Actions Ubuntu | Existing Node 22/Python 3.12 CI, full repository suite |
+| Clean current macOS | **DEFERRED / NOT VERIFIED**; record honestly, but do not treat it as a mandatory M7.3 exit row or create artificial infrastructure |
 
-For both clean machines, verify no machine-specific path assumptions, first launch, synthetic import/export, runtime health, and shutdown/restart. This is source/runtime validation, not desktop packaging.
+On clean Windows, verify no machine-specific path assumptions, first launch, synthetic import/export, runtime health, shutdown/restart, and representative PWA/offline behavior where applicable. C4 passes only when Windows and Ubuntu pass, no runtime defect remains, and macOS is accurately recorded as deferred. This is source/runtime validation, not desktop packaging.
 
 ## 5. Naming Consistency
 

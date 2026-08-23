@@ -297,7 +297,7 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 完成范围：
 
-- **设计规范与系统基础（[DESIGN.md](file:///f:/CodexWorkspaces/Quiz%20System/DESIGN.md)）**：建立完整的表面 Token（Strong Paper 亮色、Soft Near-Black 暗色）、中性次级标签、自然语义墨水（Oxford Blue、Vermilion、Forest、Amber、Violet）、排版阶梯、动效语言与基于 Web Audio API 的零外部依赖物理合成音效架构。
+- **设计规范与系统基础（[DESIGN.md](DESIGN.md)）**：建立完整的表面 Token（Strong Paper 亮色、Soft Near-Black 暗色）、中性次级标签、自然语义墨水（Oxford Blue、Vermilion、Forest、Amber、Violet）、排版阶梯、动效语言与基于 Web Audio API 的零外部依赖物理合成音效架构。
 - **应用框架与偏好设置**：工具启动台首页（`homeView`）、持久化 UI 偏好管理器（`uiPreferences` 保存主题、音效、减弱动效偏好与可拖拽侧边栏宽度）、轻量偏好设置对话框与顶部栏物理音效切换。
 - **核心做题与翻译研习纸面**：客观题练习与翻译练习采用停靠在研习桌面上的连续手稿纸样式，配备有机翻页动效、铅笔书写摩擦音效，以及匹配题逐对独立状态判定与内联正确答案提示。
 - **教师批改台**：批改工作区重构为单张连续手稿纸批改台，配备样式批注笔盘、实时墨水投射视图，以及带有物理下压回弹与钝击音效的橡胶印章反馈。
@@ -306,7 +306,7 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 ## Milestone 7：Product Hardening
 
-状态：M7.0/M7.1/M7.2 已完成并被接受；H-01 已解决；C1/B4 已完成；C2 真实进程重启 Human Gate PASS；M7.3 是下一目标但尚未开始；Product Hardening 在 M7.3 关闭前仍未完成
+状态：M7.0/M7.1/M7.2 已完成并被接受；H-01 已解决；C1/B4 已完成；C2 PASS；M7.3 进行中；C4 PASS 且 macOS 延期；C3 与最终 Human Gate 为 PENDING；Product Hardening 未完成；Release Candidate 尚未开始
 
 目标：在不扩大产品范围的前提下，让现有功能成为可靠、统一、可验证的整体。
 

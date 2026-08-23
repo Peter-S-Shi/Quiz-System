@@ -306,7 +306,7 @@ Scope completed:
 
 ## Milestone 7: Product Hardening
 
-Status: M7.0/M7.1/M7.2 complete and accepted; H-01 resolved; C1/B4 complete; C2 genuine process-restart Human Gate PASS; M7.3 next but not started; Product Hardening incomplete until M7.3 closes
+Status: M7.0/M7.1/M7.2 complete and accepted; H-01 resolved; C1/B4 complete; C2 PASS; M7.3 in progress; C4 PASS with macOS deferred; C3 and final Human Gate PENDING; Product Hardening incomplete; Release Candidate not started
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 

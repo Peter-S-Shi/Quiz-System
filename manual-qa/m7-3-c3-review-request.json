@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.review-request",
+  "id": "06e22040-ce00-47b1-8fed-34b6d1e32c44",
+  "exportedAt": "2026-08-23T03:54:41.228Z",
+  "task": "Read this Quiz Studio review-request JSON. Return exactly one JSON object conforming to the Quiz Studio Teacher Review contract (documentType \"quiz-studio.teacher-review\"). Preserve responseId and itemId values exactly. Do not rewrite the learnerResponse.",
+  "learnerResponse": {
+    "schemaVersion": 1,
+    "documentType": "quiz-studio.learner-response",
+    "id": "m7-3-c3-response-20260822",
+    "status": "finalized",
+    "finalizedAt": "2026-08-22T19:55:00.000Z",
+    "material": {
+      "type": "translation-document",
+      "id": "m7-3-c3-document-20260822",
+      "title": "Synthetic Community Notes",
+      "snapshot": {
+        "items": [
+          {
+            "id": "m7-3-c3-item-1",
+            "sourceText": "La biblioteca cierra a las seis.",
+            "referenceTranslation": "The library closes at six.",
+            "position": 0
+          },
+          {
+            "id": "m7-3-c3-item-2",
+            "sourceText": "Mañana enviaremos el informe.",
+            "referenceTranslation": "Tomorrow we will send the report.",
+            "position": 1
+          },
+          {
+            "id": "m7-3-c3-item-3",
+            "sourceText": "Aunque llovía, continuaron caminando.",
+            "referenceTranslation": "Although it was raining, they kept walking.",
+            "position": 2
+          }
+        ],
+        "sourceLanguage": "es",
+        "targetLanguage": "en"
+      }
+    },
+    "session": {
+      "id": "m7-3-c3-session-20260822",
+      "startedAt": "2026-08-22T19:45:00.000Z",
+      "completedAt": "2026-08-22T19:55:00.000Z"
+    },
+    "responses": [
+      {
+        "itemId": "m7-3-c3-item-1",
+        "answer": "The library close at six."
+      },
+      {
+        "itemId": "m7-3-c3-item-2",
+        "answer": "Tomorrow we send report."
+      },
+      {
+        "itemId": "m7-3-c3-item-3",
+        "answer": "Although it was raining they kept walking."
+      }
+    ],
+    "summary": {
+      "itemCount": 3
+    },
+    "provenance": {
+      "purpose": "practice"
+    },
+    "learnerAnnotations": [
+      {
+        "itemId": "m7-3-c3-item-2",
+        "id": "m7-3-c3-annotation-1",
+        "kind": "uncertain",
+        "start": 0,
+        "end": 8,
+        "text": "Tomorrow",
+        "createdAt": "2026-08-22T19:50:00.000Z"
+      }
+    ],
+    "learnerItemMarks": [
+      {
+        "itemId": "m7-3-c3-item-3",
+        "kind": "uncertain"
+      }
+    ]
+  },
+  "requestedOutput": {
+    "documentType": "quiz-studio.teacher-review",
+    "schemaVersion": 1
+  }
+}
