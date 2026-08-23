@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-Feature Freeze / 已接受候选版本（`v1.0.0-rc.1`）/ Maintenance Hold
+V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold)
 
 ## 当前活跃里程碑
 
@@ -160,9 +160,9 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 **维护保留状态（当前无活跃工程里程碑）**
 
-Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPTED）。候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）已获 Product Owner 验收通过，Feature Freeze 保持激活。当前未安排任何活跃工程里程碑。
+Quiz Studio V1 已完成版本 `1.0.0` 最终定版。已接受的候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）作为不可变验证基线保持不变，且无任何候选版本后的运行时代码修改。当前未安排任何活跃工程里程碑。
 
-未来任何工作（如发布分发、GitHub Pages 部署、正式 GitHub Release、最终 `v1.0.0`、作品集包装或下一版本规划）均保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
+未来任何工作（如 GitHub Pages 部署、桌面应用打包或下一版本规划）均保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 
@@ -170,7 +170,9 @@ Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPT
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 仓库生命周期状态：Milestone 8 COMPLETE / ACCEPTED（已完成并接受）；Feature Freeze 保持激活
+- 仓库生命周期状态：V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold)
+- 最终发布版本号：`1.0.0`
 - 已接受候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
-- 提交与合并追踪：请查阅 Git 历史以获取当前 `main` 提交身份与 PR 合并记录
+- 提交与合并追踪：请查阅 Git 历史以获取 `main` 提交身份与 PR 合并记录
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
+- 发布状态：请参考 GitHub Releases 页面以获取已发布分发状态

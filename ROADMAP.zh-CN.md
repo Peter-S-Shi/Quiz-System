@@ -378,12 +378,12 @@ RC 规则：
 
 ## 生命周期状态与后续步骤
 
-Milestone 8 候选版本验证已全部完成并通过验收（候选版本 `v1.0.0-rc.1` 已被接受）。
+Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状态（V1 Finalized / Maintenance Hold），历史全部里程碑（M1–M8）均已完成并验收。
 
-- 产品仓库处于 **Accepted Release Candidate / Maintenance Hold（已接受候选版本 / 维护保留）** 状态，当前无活跃工程里程碑。
-- 接受 `v1.0.0-rc.1` 确立了经验证的候选版本质量，并不自动触发或强制要求最终 `v1.0.0`、正式 GitHub Release 或 GitHub Pages 部署。
-- 将 GitHub 仓库可见性变更为 public 已获授权，并与 Pages 部署或正式 Release 相互独立。
-- 未来任何发布分发、正式 GitHub Release、最终 `v1.0.0`、GitHub Pages 部署、作品集包装或下一版本规划均保持可选，并需经 Product Owner 另行授权。
+- **不可变验证基线**：已接受的候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）作为验证通过的产品与运行时基线保持不变。
+- **最终 V1 发布线**：最终 `1.0.0` 版本元数据与证据驱动的作品集展示资产已闭环并合入 `main`。
+- **维护保留状态**：仓库处于维护保留状态，当前未安排任何活跃工程里程碑。
+- **可选后续工作**：未来任何发布分发、正式 GitHub Release、GitHub Pages 部署或下一版本（V2）规划均保持可选，并需经 Product Owner 另行授权。
 
 ## 维护 / 下一版本
 
@@ -416,4 +416,4 @@ Milestone 8 候选版本验证已全部完成并通过验收（候选版本 `v1.
 3. 通过 Review V3、宣布 V1 Feature Complete 并激活 Feature Freeze。**已完成。**
 4. 完成 Milestone 7 Product Hardening。**已完成。**
 5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
-6. 候选版本已接受（`v1.0.0-rc.1`）；仓库进入维护保留状态。未来可选的交付决策保持由 Product Owner 独立授权。**当前生命周期状态。**
+6. 候选版本已接受（`v1.0.0-rc.1`），V1 发布元数据已定版（`1.0.0`），仓库进入维护保留状态。未来维护与 V2 规划保持由 Product Owner 独立授权。**当前生命周期状态。**

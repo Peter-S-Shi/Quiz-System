@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Feature Freeze / Accepted Release Candidate (`v1.0.0-rc.1`) / Maintenance Hold
+V1 Finalized / Maintenance Hold
 
 ## Active Milestone
 
@@ -160,9 +160,9 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 **Maintenance Hold (No Active Engineering Milestone)**
 
-Milestone 8 Release Candidate Validation is COMPLETE and ACCEPTED. Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) is accepted by the Product Owner and Feature Freeze remains active. No active engineering milestone is currently scheduled.
+Quiz Studio V1 is finalized at version `1.0.0`. The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the immutable verification baseline with zero post-candidate runtime modifications. No active engineering milestone is currently scheduled.
 
-Any future work (such as release distribution, GitHub Pages deployment, formal GitHub Release, final `v1.0.0`, portfolio packaging, or next-version planning) remains separately deferred and begins only upon explicit Product Owner authorization.
+Any future work (such as GitHub Pages deployment, desktop application packaging, or next-version planning) remains separately deferred and begins only upon explicit Product Owner authorization.
 
 Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.
 
@@ -170,7 +170,9 @@ Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFI
 
 - Default branch: `main`
 - Remote: `origin`
-- Repository lifecycle state: Milestone 8 COMPLETE / ACCEPTED; Feature Freeze remains active
+- Repository lifecycle state: V1 Finalized / Maintenance Hold
+- Final release version: `1.0.0`
 - Accepted candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
-- Commit and merge tracking: Use Git history for current `main` commit identity and PR merge history
+- Commit and merge tracking: Use Git history for `main` commit identity and PR merge history
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
+- Publication status: Refer to GitHub Releases page for published release distribution status

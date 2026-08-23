@@ -195,7 +195,7 @@ Quiz System/
 │   └── app.js              # UI controller, routing, and localization engine
 ├── tests/                  # Automated test suite (292 tests)
 ├── DESIGN.md               # Layered Paper Study Desk design system & tokens
-├── PROJECT_STATUS.md       # Lifecycle roadmap & release candidate status
+├── PROJECT_STATUS.md       # Lifecycle roadmap & project status
 ├── index.html              # Application entrypoint & DOM shell
 ├── styles.css              # Study desk theme & responsive stylesheets
 └── sw.js                   # Service Worker precache for offline support
@@ -213,6 +213,6 @@ Quiz System/
 
 ## Project Status & License
 
-- **Current Version**: `v1.0.0-rc.1` (Feature Complete / Maintenance Hold)
+- **Current Version**: `v1.0.0` (V1 Finalized / Maintenance Hold)
 - **Design System**: Layered Paper Study Desk (`DESIGN.md`)
 - **License**: [MIT License](LICENSE) © 2026 Quiz Studio Contributors

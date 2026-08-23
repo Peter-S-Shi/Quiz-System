@@ -1,8 +1,22 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
 
-- No post-RC product or runtime changes.
+- No post-v1.0.0 product or runtime changes.
+
+## [1.0.0] - 2026-08-23
+
+### Release Summary
+
+- Finalized Quiz Studio V1 release metadata and documentation for the `1.0.0` general release line.
+- Preserves the full, immutable verification lineage of accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`).
+- Introduces zero product or runtime behavior changes beyond the accepted candidate baseline and post-RC documentation / portfolio presentation enhancements.
+- Synchronized version metadata across `package.json` and `package-lock.json` (`1.0.0`).
+
+### Documentation & Packaging
+
+- Integrated evidence-first portfolio presentation assets (`assets/readme/hero.svg`, `assets/readme/capabilities.svg`, `assets/readme/architecture.svg`) and restructured bilingual documentation (`README.md`, `README.zh-CN.md`).
+- Reconciled lifecycle governance records (`PROJECT_STATUS.md`, `PROJECT_STATUS.zh-CN.md`, `ROADMAP.md`, `ROADMAP.zh-CN.md`, `RELEASE_NOTES.md`) into durable V1 Finalized / Maintenance Hold state.
 
 ## [1.0.0-rc.1] - 2026-08-23
 

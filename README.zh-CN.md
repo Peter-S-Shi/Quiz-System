@@ -193,7 +193,7 @@ Quiz System/
 │   └── app.js              # UI 渲染控制器、路由与本地化字典
 ├── tests/                  # 自动化测试用例套件 (292 tests)
 ├── DESIGN.md               # 分层纸质书桌设计系统与视觉 Token
-├── PROJECT_STATUS.zh-CN.md # 生命周期路线图与版本状态
+├── PROJECT_STATUS.zh-CN.md # 生命周期路线图与项目状态
 ├── index.html              # 应用入口 HTML 骨架
 ├── styles.css              # 书桌主题与响应式样式表
 └── sw.js                   # 离线运行 Service Worker 预缓存
@@ -211,6 +211,6 @@ Quiz System/
 
 ## 项目状态与开源协议
 
-- **当前版本**：`v1.0.0-rc.1`（Feature Complete / 维护冻结状态）
+- **当前版本**：`v1.0.0`（V1 最终定版 / 维护冻结状态）
 - **设计规范**：Layered Paper Study Desk (`DESIGN.md`)
 - **开源协议**：[MIT License](LICENSE) © 2026 Quiz Studio Contributors
