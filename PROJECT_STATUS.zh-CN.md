@@ -162,4 +162,4 @@ Milestone 7 继续处于 Feature Freeze。M7.2 与 PR #22 已在精确 `main` �
 - 当前工作分支：`hardening/m7-3-release-readiness-verification`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20、PR #21 与 PR #22 已合并入 `main`；M7.3 Draft PR 待从当前分支创建，在剩余 Human Gate 通过前不得合并。
+- Pull Request 状态：PR #20、PR #21 与 PR #22 已合并入 `main`；M7.3 PR #23 当前为 **Draft / Open**，在剩余 Human Gate 通过前不得合并。

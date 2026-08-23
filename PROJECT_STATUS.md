@@ -162,4 +162,4 @@ Give the prepared C3 request to an independent external reviewer, import and ver
 - Current working branch: `hardening/m7-3-release-readiness-verification`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20, PR #21, and PR #22 are merged into `main`; the M7.3 Draft PR is pending creation from this branch and must not be merged before the remaining Human Gate passes.
+- Pull request status: PR #20, PR #21, and PR #22 are merged into `main`; M7.3 PR #23 is **Draft / Open** from this branch and must not be merged before the remaining Human Gate passes.
