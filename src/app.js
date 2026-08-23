@@ -4960,7 +4960,7 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
   document.getElementById("applyReplaceCorrection").addEventListener("click", () => applyReplaceCorrection(item.id, answerText));
   document.getElementById("applyDeleteCorrection").addEventListener("click", () => applyDeleteCorrection(item.id, answerText));
   document.querySelectorAll("[data-remove-correction]").forEach((button) => {
-    button.addEventListener("click", () => removeWorkspaceCorrection(item.id, button.dataset.removeCorrection));
+    button.addEventListener("click", () => removeWorkspaceCorrection(item.id, button.dataset.removeCorrection, "#applyDeleteCorrection"));
   });
 function triggerStampAnimation(stamp) {
   if (stamp && document.documentElement.dataset.motion !== "reduced") {
@@ -4974,6 +4974,7 @@ function triggerStampAnimation(stamp) {
     studioAudio.playStampThud();
     updateWorkspaceItemReview(item.id, { judgment: event.target.value || undefined });
     renderTranslationMainPanel();
+    focusAfterRerender("#correctionJudgment");
     triggerStampAnimation(document.getElementById("judgmentStamp"));
   });
   document.getElementById("correctionItemComment").addEventListener("input", (event) => {
@@ -5026,7 +5027,8 @@ function applyStyleCorrection(itemId, answerText, styleType, color) {
   }
   const draft = { operation: "style", styleType, start, end, anchoredText: answerText.slice(start, end) };
   if (styleType === "color") draft.color = color;
-  applyWorkspaceCorrection(itemId, answerText, draft);
+  const focusSelector = styleType === "color" ? "#applyColorCorrection" : `[data-style="${styleType}"]`;
+  applyWorkspaceCorrection(itemId, answerText, draft, focusSelector);
 }
 
 async function applyInsertCorrection(itemId, answerText) {
@@ -5041,7 +5043,7 @@ async function applyInsertCorrection(itemId, answerText) {
   if (!text) return;
   const draft = { operation: "insert", start, end: start, anchoredText: "", text };
   if (color) draft.color = color;
-  applyWorkspaceCorrection(itemId, answerText, draft);
+  applyWorkspaceCorrection(itemId, answerText, draft, "#applyInsertCorrection");
 }
 
 async function applyReplaceCorrection(itemId, answerText) {
@@ -5062,7 +5064,7 @@ async function applyReplaceCorrection(itemId, answerText) {
   if (!text) return;
   const draft = { operation: "replace", start, end, anchoredText, text };
   if (color) draft.color = color;
-  applyWorkspaceCorrection(itemId, answerText, draft);
+  applyWorkspaceCorrection(itemId, answerText, draft, "#applyReplaceCorrection");
 }
 
 function applyDeleteCorrection(itemId, answerText) {
@@ -5073,25 +5075,27 @@ function applyDeleteCorrection(itemId, answerText) {
     showToast(t("toast.correctionSelectionRequired"));
     return;
   }
-  applyWorkspaceCorrection(itemId, answerText, { operation: "delete", start, end, anchoredText: answerText.slice(start, end) });
+  applyWorkspaceCorrection(itemId, answerText, { operation: "delete", start, end, anchoredText: answerText.slice(start, end) }, "#applyDeleteCorrection");
 }
 
-function applyWorkspaceCorrection(itemId, answerText, draft) {
+function applyWorkspaceCorrection(itemId, answerText, draft, focusSelector) {
   try {
     const itemReview = getWorkspaceItemReview(itemId);
     const nextCorrections = addCorrection(itemReview.corrections, draft, answerText);
     updateWorkspaceItemReview(itemId, { corrections: nextCorrections });
     renderTranslationMainPanel();
+    focusAfterRerender(focusSelector);
   } catch {
     showToast(t("toast.correctionConflict"));
   }
 }
 
-function removeWorkspaceCorrection(itemId, correctionId) {
+function removeWorkspaceCorrection(itemId, correctionId, focusSelector) {
   const itemReview = getWorkspaceItemReview(itemId);
   const nextCorrections = removeCorrection(itemReview.corrections, correctionId);
   updateWorkspaceItemReview(itemId, { corrections: nextCorrections });
   renderTranslationMainPanel();
+  focusAfterRerender(focusSelector);
 }
 
 function saveCorrectionReview(response) {

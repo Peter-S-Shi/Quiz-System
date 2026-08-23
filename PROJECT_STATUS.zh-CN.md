@@ -101,7 +101,7 @@ Milestone 7 继续处于 Feature Freeze。M7.1 已完成接受的 M-01、M-02、
 
 ## 验证状态
 
-- **274 项自动化单元/集成测试通过**（接受的 270 项基线加 4 项 M7.1 交互合同回归，覆盖原生对话框清单、统一 Study Desk 对话框、高内容删除确认顺序与整题标记 pressed 语义）。既有题目注册、评分、schema、session、分类、媒体、备份、标记、批改、评阅、删除策略、runtime 与 Service Worker 合同继续全绿。
+- **275 项自动化单元/集成测试通过**（接受的 270 项基线加 5 项 M7.1 交互合同回归，覆盖原生对话框清单、统一 Study Desk 对话框、高内容删除确认顺序、整题标记 pressed 语义与 Correction Workspace 焦点恢复）。既有题目注册、评分、schema、session、分类、媒体、备份、标记、批改、评阅、删除策略、runtime 与 Service Worker 合同继续全绿。
 - **Pre-Freeze V1 Scope Closure (Batch A)**：客观做题反馈模式与专项练习信息架构已通过人工验证（Human Gate A = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch B)**：试卷库分类组织与渐进式导航已通过人工验证（Human Gate B = **PASS**）。
 - **Pre-Freeze V1 Scope Closure (Batch C)**：客观题多媒体支持已通过人工验证（Human Gate C = **PASS**）。

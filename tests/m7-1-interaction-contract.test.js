@@ -42,3 +42,11 @@ test("whole-item marking controls expose their toggle state", () => {
   assert.match(appSource, /data-item-mark-kind="uncertain"[^>]+aria-pressed=/);
   assert.match(appSource, /data-item-mark-kind="should_know"[^>]+aria-pressed=/);
 });
+
+test("Correction Workspace restores focus after in-task rerenders", () => {
+  const applyCorrection = functionBody("applyWorkspaceCorrection");
+  const removeCorrection = functionBody("removeWorkspaceCorrection");
+  assert.match(appSource, /getElementById\("correctionJudgment"\)[\s\S]{0,400}focusAfterRerender\("#correctionJudgment"\)/);
+  assert.match(applyCorrection, /focusAfterRerender\(focusSelector\)/);
+  assert.match(removeCorrection, /focusAfterRerender\(focusSelector\)/);
+});
