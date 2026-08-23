@@ -30,7 +30,7 @@ The Product Owner has formally accepted Whole-Product Feature Complete Review V3
 
 Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) was executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06), Batch B Human Gate B (Journeys 01–07), and Batch C Human Gate C (Journeys 01–07) were formally evaluated and passed (PASS). Whole-Product Feature Complete Review V3 was formally evaluated, accepted as PASS, and merged into `main`.
 
-M7.0 was accepted through PR #20. M7.1 implementation and Product Owner Human Acceptance are complete and merged through PR #21. H-01 is resolved, C1 and B4 are complete, and the Product Owner completed the C2 genuine browser-process-restart Human Gate with PASS and no issues found. M7.2 is complete, Product Owner accepted, and merged through PR #22. M7.3 is complete and all gates (C3, C4, final Human Gate) are PASS; Product Hardening is complete.
+M7.0 was accepted through PR #20. M7.1 implementation and Product Owner Human Acceptance are complete and merged through PR #21. H-01 is resolved, C1 and B4 are complete, and the Product Owner completed the C2 genuine browser-process-restart Human Gate with PASS and no issues found. M7.2 is complete, Product Owner accepted, and merged through PR #22. M7.3 is complete and merged through PR #23 with all gates (C3, C4, final Human Gate) PASS; Product Hardening is complete.
 
 ## Current Release Scope
 
@@ -87,9 +87,9 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 ## Hardening Progress
 
-**M7.0 complete; M7.1 complete and accepted; M7.2 complete and Product Owner accepted; M7.3 complete and Product Owner accepted.**
+**M7.0 complete; M7.1 complete and accepted; M7.2 complete and Product Owner accepted; M7.3 complete, Product Owner accepted, and merged.**
 
-Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 are merged at the exact `main` baseline `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is complete. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate are PASS, so M7.3 and Product Hardening are complete. Release Candidate work (Milestone 8) has not started.
+Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged at `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is complete and merged via PR #23 at `6e175df53a6abb7ea75d9415ff6640801cddbb0b`. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate are PASS, so M7.3 and Product Hardening are complete. Release Candidate work (Milestone 8) has not started.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -155,8 +155,8 @@ Milestone 7 Product Hardening is complete, and all sub-milestones M7.0-M7.3 have
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline: `e3d6a693c29d6be93848ffb652743f8919e17216` (`main`, exact PR #22 merge commit)
-- Current working branch: `hardening/m7-3-release-readiness-verification`
+- Verified baseline: `6e175df53a6abb7ea75d9415ff6640801cddbb0b` (`main`, exact PR #23 merge commit)
+- Accepted lifecycle baseline: `main` (Milestone 7 Product Hardening complete and accepted)
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20, PR #21, and PR #22 are merged into `main`; M7.3 PR #23 is **Ready for Review / Open** from this branch, with all human verification gates completed and accepted (PASS), and is ready to be merged by the Product Owner.
+- Pull request status: PR #20, PR #21, PR #22, and PR #23 are merged into `main`; Milestone 7 Product Hardening is complete with all human verification gates passed (PASS).

@@ -30,7 +30,7 @@ Milestone 7 — Product Hardening Complete（产品硬化完成）
 
 M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。Batch A Human Gate A (Journeys 01–06)、Batch B Human Gate B (Journeys 01–07) 与 Batch C Human Gate C (Journeys 01–07) 均已正式通过人工验收（PASS）。Whole-Product Feature Complete Review V3 已正式完成评估并合入 `main`。
 
-M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已完成，并通过 PR #21 合并。H-01 已解决，C1 与 B4 已完成；Product Owner 已完成 C2 浏览器真实进程重启 Human Gate，结果为 PASS，未发现问题。M7.2 已完成、被 Product Owner 接受，并通过 PR #22 合并。M7.3 已完成且所有验证门（C3、C4、最终人工验收门）结果均为 PASS；产品硬化已全部完成。
+M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已完成，并通过 PR #21 合并。H-01 已解决，C1 与 B4 已完成；Product Owner 已完成 C2 浏览器真实进程重启 Human Gate，结果为 PASS，未发现问题。M7.2 已完成、被 Product Owner 接受，并通过 PR #22 合并。M7.3 已完成并通过 PR #23 合并，所有验证门（C3、C4、最终人工验收门）结果均为 PASS；产品硬化已全部完成。
 
 ## 当前发布范围
 
@@ -87,9 +87,9 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 ## Hardening 进度
 
-**M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 已完成并被 Product Owner 接受。**
+**M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 已完成、被 Product Owner 接受并已合并。**
 
-Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 已在精确 `main` 基线 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Release Candidate 工作（Milestone 8）尚未开始。
+Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 在 `e3d6a693c29d6be93848ffb652743f8919e17216` 合并；H-01 已 **RESOLVED**，C1/B4 已完成，C2 Human Acceptance 为 PASS。M7.3 已完成并通过 PR #23 合并至 `6e175df53a6abb7ea75d9415ff6640801cddbb0b`。其 Windows 11 与 Ubuntu C4 必须项均通过；修订合同下 macOS 明确为 DEFERRED / NOT VERIFIED。准备真实 C3 交接时发现并修复了一项受限缺陷：review-request 导出会静默丢弃 `learnerItemMarks`；公共导出 seam 现已保持完整 Learner Response。C3 与汇总最终 Human Gate 均为 PASS，因此 M7.3 与 Product Hardening 已全部完成。Release Candidate 工作（Milestone 8）尚未开始。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -155,8 +155,8 @@ Milestone 7 产品硬化已全部完成，所有子里程碑 M7.0-M7.3 的验收
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 已验证基线：`e3d6a693c29d6be93848ffb652743f8919e17216`（`main`，PR #22 精确合并提交）
-- 当前工作分支：`hardening/m7-3-release-readiness-verification`
+- 已验证基线：`6e175df53a6abb7ea75d9415ff6640801cddbb0b`（`main`，PR #23 精确合并提交）
+- 接受生命周期基线：`main`（Milestone 7 产品硬化已完成并验收）
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20、PR #21 与 PR #22 已合并入 `main`；M7.3 PR #23 当前为 **Ready for Review / Open**，所有人工验证门（C3、C4、最终验收门）均已通过，等待 Product Owner 手动合并。
+- Pull Request 状态：PR #20、PR #21、PR #22 与 PR #23 均已合并入 `main`；Milestone 7 产品硬化全部完成并通过所有人工验证门（PASS）。
