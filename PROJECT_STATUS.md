@@ -6,7 +6,7 @@ Feature Freeze / Product Hardening
 
 ## Current Milestone
 
-Milestone 7.1 — UX & Interaction Hardening
+Milestone 7.2 — Data / Recovery / Robustness Hardening
 
 The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
@@ -30,7 +30,7 @@ The Product Owner has formally accepted Whole-Product Feature Complete Review V3
 
 Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) was executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06), Batch B Human Gate B (Journeys 01–07), and Batch C Human Gate C (Journeys 01–07) were formally evaluated and passed (PASS). Whole-Product Feature Complete Review V3 was formally evaluated, accepted as PASS, and merged into `main`.
 
-M7.0 Hardening Audit & Contract Lock was accepted and merged through PR #20. M7.1 implementation and its focused Product Owner Human Acceptance Gate are complete; the Product Owner reported PASS with no issues found.
+M7.0 was accepted through PR #20. M7.1 implementation and Product Owner Human Acceptance are complete and merged through PR #21. M7.2 engineering implementation and automated verification are complete on its hardening branch; the C2 genuine browser-process-restart Human Gate remains PENDING.
 
 ## Current Release Scope
 
@@ -82,15 +82,14 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 ## Open Release Blockers
 
-- **H-01 — Canonical Quiz Library bootstrap overwrite risk:** malformed or unsupported `quiz-studio-library-v1` JSON can fall through loading and be immediately replaced by a generated default library. M7.2 must preserve the raw value, fail safely, and add migration/corruption regressions before RC.
-- Legacy single-paper migration across representative old localStorage states and full browser-close/restart active-session recovery have not received dedicated verification.
+- **C2 genuine browser-process-restart acceptance:** automated Objective and Translation serialization/recovery contracts pass, but full process close/reopen and forced-termination evidence must still be executed by the Product Owner.
 - A release candidate and final clean-environment verification do not yet exist.
 
 ## Hardening Progress
 
-**M7.0 complete and accepted; M7.1 implementation complete; M7.1 Human Acceptance PASS; M7.1 complete.**
+**M7.0 and M7.1 complete and accepted; M7.2 engineering implementation and automated verification complete; C2 Human Gate PENDING.**
 
-Milestone 7 remains under active Feature Freeze. M7.1 completed the accepted M-01, M-02, M-03, and M-05 implementation scope: semantic whole-item toggle states and focus recovery, responsive/touch/keyboard hardening, 19 approved native-dialog replacements under one Study Desk contract, and confirmation safeguards for Objective Question and Translation Item deletion. The two expressly accepted native confirmations remain. The Product Owner completed the focused M7.1 Human Acceptance Gate with PASS and no issues found. M7.2 work, including H-01, has not started.
+Milestone 7 remains under active Feature Freeze. M7.2 repaired H-01 with a non-destructive bootstrap quarantine/recovery contract, covered representative C1 historical states, characterized all four locked B4 tiers and replaced repeated scans with bounded one-pass maps, and strengthened C2 session serialization/recovery contracts. H-01 is **RESOLVED** by bootstrap-path evidence. C2 remains open only for genuine browser-process execution; M7.2 is not yet human-accepted, M7.3 has not started, and Product Hardening is not complete.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -100,12 +99,15 @@ Milestone 7 remains under active Feature Freeze. M7.1 completed the accepted M-0
 
 ## Verification Status
 
-- **275 automated unit/integration tests pass** (the accepted 270-test baseline plus five M7.1 interaction-contract regressions covering the native-dialog inventory, reusable Study Desk dialog, high-content deletion confirmation ordering, whole-item pressed semantics, and Correction Workspace focus recovery). Existing Question Registry, grading, schema, session, category, media, backup, marking, correction, review, deletion-policy, runtime, and Service Worker contracts remain green.
+- **289 automated unit/integration tests pass** (275 accepted through M7.1 plus 14 M7.2 data-safety, migration, linear History traversal, and restart-recovery regressions). Existing Question Registry, grading, schema, category, media, backup, marking, correction, review, deletion-policy, runtime, and Service Worker contracts remain green.
 - **Pre-Freeze V1 Scope Closure (Batch A)**: Practice feedback modes and Special Practice information architecture verified (Human Gate A = **PASS**).
 - **Pre-Freeze V1 Scope Closure (Batch B)**: Library collection-style categories, empty persistence, scoped search, rename propagation, paper reassignment, progressive single-level navigation, and safe deletion modal verified (Human Gate B = **PASS**).
 - **Pre-Freeze V1 Scope Closure (Batch C)**: Objective Question Media (Image & Audio across all 5 types, native Blob IndexedDB store, Image Viewer modal, in-question player, portability referential integrity, backup/restore, evidence preservation, and conservative reference-aware cleanup) verified (Human Gate C = **PASS**).
 - **Whole-Product Feature Complete Review V3**: Complete product review verified with 0 Category A blockers (Review V3 = **PASS**).
 - **M7.1 Product Owner Human Acceptance**: Focused marking, dialog, deletion, responsive/narrow-screen, bilingual, category-deletion, and Correction Workspace verification completed with no issues (Human Gate = **PASS**).
+- **M7.2 H-01 / C1**: malformed or unsupported canonical data stays byte-for-byte recoverable; recovery-write failure blocks later canonical persistence; precedence, interrupted upgrades, idempotence, backup/export, and M1–M6 representative compatibility pass.
+- **M7.2 B4**: the 2,500-response index improved from 173.47 / 181.46 ms to 6.05 / 6.39 ms median/worst on the recorded reference run, using only one-pass in-memory maps; correctness parity passes at every tier.
+- **M7.2 C2 automated contracts**: Objective `instant`/`submitAtEnd` and Translation normal/retry/remediation serialization recovery plus key isolation pass. Genuine browser-process Human Gate = **PENDING**.
 
 ## Agreed Question Media Policy (Batch C Scope Definition)
 
@@ -114,7 +116,7 @@ Milestone 7 remains under active Feature Freeze. M7.1 completed the accepted M-0
 
 ## Known Risks
 
-- Canonical Quiz Library bootstrap currently has no quarantine/recovery path for malformed or unsupported stored JSON; this is the M7 audit's H-01 release blocker, targeted to M7.2.
+- Canonical Quiz Library recovery is intentionally storage-level and has no new migration-management UI; preserved raw canonical data remains available under the dedicated recovery key for diagnosis/recovery.
 - GitHub Pages cannot currently be treated as available because the repository remains private and Pages deployment is deferred.
 - Browser `file://` opening is not supported for the ES module app; users must use a local static server or `start-local.bat`.
 - Finalized Learner Responses use browser local storage without silent history truncation; large long-term evidence collections may eventually encounter browser storage limits. Translation History inherits this: it has no entry cap by design.
@@ -126,14 +128,12 @@ Milestone 7 remains under active Feature Freeze. M7.1 completed the accepted M-0
 ## Unknown Or Unverified
 
 - Full backup export and import round trip with large-scale long-term history accumulation.
-- Legacy single-paper migration behavior across representative old localStorage states (Review V3 Gap C1).
-- Translation Practice session recovery across a genuine browser process restart (Review V3 Gap C2).
+- Genuine browser-process restart recovery for Objective and Translation sessions (Review V3 Gap C2); automated serialization contracts do not close this Human Gate.
 - PWA install, offline behavior, and cache upgrade behavior across major browsers.
 - Clean-environment clone and run process across multiple OS environments (Review V3 Gap C4).
 - A real end-to-end round trip using an actual external human reviewer or a real AI assistant/LLM session from an exported request file (Review V3 Gap C3).
 - Native OS file-picker behavior for the Teacher Review and remediation-document file inputs.
 - Very large review-request/remediation-request export files (many items, many corrections) practical file size.
-- Translation History performance characterization with a very large number of accumulated responses/reviews.
 
 ## Deferred Features
 
@@ -148,16 +148,16 @@ Milestone 7 remains under active Feature Freeze. M7.1 completed the accepted M-0
 
 ## Next Engineering Objective
 
-**M7.2 Data / Recovery / Robustness Hardening**
+**Complete the M7.2 C2 Product Owner Human Acceptance Gate**
 
-H-01 remains OPEN and explicitly belongs to M7.2. M7.2 is the next engineering objective but has not started; begin it only under a separate Product Owner instruction.
+Execute the bilingual genuine browser-process-restart checklist with synthetic data. Do not begin M7.3 until M7.2 is accepted under a separate Product Owner instruction.
 
 ## Repository State
 
 - Default branch: `main`
 - Remote: `origin`
-- Verified baseline: `db079224263c3453097cf8c45ad36aa451282f9e Merge pull request #20` (`main`, source branch `hardening/m7-audit-contract-lock`)
-- Current working branch: `hardening/m7-1-ux-interaction`
+- Verified baseline: `e7e20fc77c9872fcf2232f391519b8faceb205d1` (`main`, exact PR #21 merge commit)
+- Current working branch: `hardening/m7-2-data-recovery-robustness`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20 merged into `main`; PR #21 is open and Ready for review, Product Owner Human Acceptance is PASS, and PR #21 remains unmerged.
+- Pull request status: PR #20 and PR #21 are merged into `main`; M7.2 Draft PR delivery is pending from this branch.

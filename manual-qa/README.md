@@ -8,6 +8,7 @@ This folder contains the retrospective manual QA baseline for Quiz Studio.
 - `samples/` contains synthetic quiz files for import, backup, boundary, and rejection-path testing.
 - `results/` is reserved for filled review exports and screenshots. Filled results are local-only by default.
 - `m7-1-human-acceptance.md` is the focused Product Owner gate for M7.1 UX and interaction hardening (**PASS — no issues found**).
+- `m7-2-process-restart-acceptance.md` is the focused genuine browser-process restart gate for M7.2 C2 (**PENDING — Product Owner execution required**).
 
 ## How To Use
 

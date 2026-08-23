@@ -306,7 +306,7 @@ Scope completed:
 
 ## Milestone 7: Product Hardening
 
-Status: M7.0 complete/accepted; M7.1 implementation and Product Owner Human Acceptance complete (PASS); M7.2 is next, H-01 remains open, and M7.2 has not started
+Status: M7.0/M7.1 complete and accepted; M7.2 engineering and automated verification complete; H-01 resolved; C2 genuine process-restart Human Gate PENDING; M7.3 not started
 
 Goal: make the existing feature set reliable, consistent, and verifiable without expanding the product scope.
 
