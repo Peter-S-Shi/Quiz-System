@@ -164,9 +164,8 @@ Deferred items remain intentionally deferred: macOS (DEFERRED / NOT VERIFIED), p
 
 - Default branch: `main`
 - Remote: `origin`
-- Repository status: Milestone 8 complete and accepted; Feature Freeze remains active
-- Verified baseline on `main`: `3b26d21414827401ff530b9b0e3871a99c7c0f1e` (PR #24 merge commit; Milestone 7 complete and accepted)
-- Candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
+- Repository lifecycle state: Milestone 8 COMPLETE / ACCEPTED; Feature Freeze remains active
+- Accepted candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
+- Commit and merge tracking: Use Git history for current `main` commit identity and PR merge history
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20–PR #24 are merged into `main`; Milestone 8 execution and verification records are complete.

@@ -164,9 +164,8 @@ Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPT
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 仓库状态：Milestone 8 已完成并被接受；Feature Freeze 保持激活
-- `main` 分支已验证基线：`3b26d21414827401ff530b9b0e3871a99c7c0f1e`（PR #24 合并提交；Milestone 7 产品硬化已完成并验收）
-- 候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
+- 仓库生命周期状态：Milestone 8 COMPLETE / ACCEPTED（已完成并接受）；Feature Freeze 保持激活
+- 已接受候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
+- 提交与合并追踪：请查阅 Git 历史以获取当前 `main` 提交身份与 PR 合并记录
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20–PR #24 均已合并入 `main`；Milestone 8 执行与验证记录已全部完成。
