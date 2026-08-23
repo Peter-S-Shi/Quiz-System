@@ -1,6 +1,6 @@
 ﻿# Milestone 8 Batch B: 精确候选版本验证 (`v1.0.0-rc.1`)
 
-本文件记录 Quiz Studio Release Candidate 1 (`v1.0.0-rc.1`) 的精确候选版本验证证据。
+本文件记录由 Agent 工具在 Quiz Studio Release Candidate 1 (`v1.0.0-rc.1`) 上执行的精确候选版本验证证据，并明确分离交接给 Batch C 的真实人工/原生浏览器验收门。
 
 ## 1. 候选版本身份与打 Tag 记录
 
@@ -13,75 +13,40 @@
 
 ---
 
-## 2. 自动化与依赖验证
+## 2. Agent 可执行验证项（已有证据并 PASS）
 
-| 检查项 | 范围 / 工具 | 目标环境 | 结果 | 证据 / 备注 |
+| 检查项 | 范围 / 工具 | 目标环境 | 结果 | 证据 / 详情 |
 | :--- | :--- | :--- | :--- | :--- |
 | **依赖干净安装** | `npm ci` 干净依赖解析 | Node.js 20+ / Windows 11 | **PASS** | 依赖干净解析，无漏洞告警 |
-| **语法与自动化套件** | `npm run check`（语法 + 292 项单元/集成测试） | Node.js 20+ / Windows 11 | **PASS** | 292/292 测试通过（0 失败、0 跳过，耗时 1485 ms） |
+| **语法与自动化套件** | `npm run check`（语法 + 292 项单元/集成测试） | Node.js 20+ / Windows 11 | **PASS** | 精确候选 SHA 上通过 292/292 测试（0 失败、0 跳过，耗时 1663 ms） |
 | **包元数据一致性** | `package.json` 与 `package-lock.json` | 仓库文件树 | **PASS** | 两个清单文件版本号均锁定为 `1.0.0-rc.1` |
 | **CI 执行** | 候选 SHA 上的 GitHub Actions 工作流 | Ubuntu runner (`ubuntu-latest`) | **PASS** | Ubuntu CI 在精确候选提交上全绿 |
+| **自动化运行时合同** | Python 服务器绑定、CRLF 启动器、端口冲突 | 本地运行时测试 | **PASS** | 13/13 运行时/启动器测试通过；环回源 SW 注册被正确拦截 |
+| **累积备份往返验证** | 代表性全量备份导出 → 干净状态恢复 → 完整性验证 | Node.js / 核心模块 | **PASS** | 经实测验证：5305 字节有效载荷（含试卷、媒体 Blob、翻译文档、评阅与血缘）完整恢复且引用无损 |
+| **发布安全性审计** | 密钥、机器路径与 prompt-draft 扫描 | 仓库文件树 | **PASS** | 零私有凭据、零机器路径、`.prompt-drafts/` 未跟踪 |
+| **合成示例资产** | 测试用例与示例文件审计 | `examples/`, `manual-qa/samples/` | **PASS** | 已提交的所有样本资产均确认为严格合成数据 |
+| **已知局限性披露** | 文档边界准确披露 | 文档审查 | **PASS** | 本地存储配额、手动文件交换、无内置 AI |
+| **macOS 环境** | 干净 clone 与执行 | macOS / Safari | **DEFERRED / NOT VERIFIED** | 明确延期，位于已验证平台边界之外 |
 
 ---
 
-## 3. 干净 Windows 运行时合同
+## 3. Product Owner / 原生环境验收门（交接至 Batch C）
 
-| 检查项 | 验证目标 | 目标环境 | 结果 | 证据 / 备注 |
+以下领域需要真实人工交互、操作系统原生文件对话框或真实浏览器渲染，在 Batch B 中保持 **PENDING**，移交 Product Owner 在 Batch C 中验收：
+
+| 验收领域 | 验证范围 | 目标环境 | 状态 | 验证协议 |
 | :--- | :--- | :--- | :--- | :--- |
-| **启动器文件完整性** | CRLF 换行符、cmd.exe 语法 | Windows 11 / `start-local.bat` | **PASS** | `tests/launcher-contract.test.js` 验证 CRLF 与 Python 委派 |
-| **规范源地址** | `http://localhost:8000` / 环回地址 | Windows 11 (64-bit) | **PASS** | 环回绑定经验证覆盖 IPv4 (127.0.0.1) 与 IPv6 (::1) |
-| **端口冲突与拒绝** | 端口冲突处理、拒绝调用方端口漂移 | 本地运行时测试 | **PASS** | 严格遵循 8000 端口，零端口漂移 |
-| **环回 SW 策略** | 环回地址不注册生产 Service Worker | 本地运行时测试 | **PASS** | `service-worker-policy.test.js` 验证环回源跳过 SW 注册 |
-| **进程生命周期** | 干净启动、健康端点、关闭与重启 | Windows 11 Python 3 运行时 | **PASS** | 干净启动与重启，无孤儿进程残留 |
+| **干净 Windows 真实启动** | 通过 `start-local.bat` 启动，验证拉起 `http://localhost:8000`，测试关闭与重启 | Windows 11 (64-bit) | **PENDING** | 在干净终端执行 `start-local.bat`；确认 8000 端口绑定及环回地址零 SW 注册 |
+| **浏览器矩阵冒烟** | 受支持浏览器上的受限冒烟测试 | Google Chrome, Microsoft Edge, Mozilla Firefox (Windows) | **PENDING** | 验证各浏览器中的试卷编辑、做题、历史与主题切换 |
+| **托管 HTTPS PWA** | HTTPS 测试源：SW 注册、在线使用、离线重新打开/使用、重回在线恢复 | 生产 HTTPS 测试源 | **PENDING** | 验证生产 Service Worker、离线缓存与用户状态保持 |
+| **原生 OS 文件选择器** | 使用系统文件对话框导入 Teacher Review 与补救 Translation Document | Windows 11 文件对话框 | **PENDING** | 使用真实 Windows 文件对话框选择并导入外部评阅 JSON |
+| **PO 最终 RC 验收** | Product Owner 对 RC1 的全量人工验收签署 | Product Owner 审查 | **PENDING** | 最终里程碑签署 |
 
 ---
 
-## 4. 跨平台矩阵与托管 PWA
-
-| 验证领域 | 环境 / 源地址 | 范围 | 结果 | 证据 / 备注 |
-| :--- | :--- | :--- | :--- | :--- |
-| **Windows 11** | Windows 11 Pro 64-bit | 完整运行时、启动器与自动化测试 | **PASS** | 全部基线与本地运行时合同通过 |
-| **Ubuntu Linux** | `ubuntu-latest` (GitHub Actions CI) | 干净检出、`npm ci`、测试执行 | **PASS** | CI 自动化执行全绿 |
-| **macOS** | macOS / Safari | 干净 clone 与执行 | **DEFERRED / NOT VERIFIED** | 明确延期，位于已验证平台边界之外 |
-| **托管 PWA** | HTTPS 测试源 | SW 注册、离线壳缓存、用户数据保留 | **PASS** | 生产 SW 注册、离线重新打开/使用、重回在线恢复均通过验证 |
-
----
-
-## 5. 代表性累积备份往返验证
-
-- **验证范围**：包含分类、带图片/音频附件的客观题、翻译文件夹/文档、学习者作答记录、教师评阅与重练/补救血缘关系的便携式全量备份导出。
-- **验证方法**：全量备份导出 → 模拟干净配置文件/状态 → 全量恢复 → 引用完整性与深度语义比对。
-- **结果**：
-  - 媒体 Blob 引用完整性：**PASS**（`tests/media.test.js`）。
-  - 翻译文档与文件夹结构：**PASS**（`tests/translation-domain.test.js`）。
-  - 评阅传输与补救血缘：**PASS**（`tests/review-transport.test.js`）。
-  - 题库 bootstrap 非破坏性恢复：**PASS**（`tests/library-bootstrap.test.js`）。
-
----
-
-## 6. 发布安全性审计
-
-- **密钥与凭据**：**PASS**（代码库中零 API Key、私有 Token 或凭据）。
-- **机器特异性路径**：**PASS**（发布向提交文件中零绝对本地文件系统路径）。
-- **合成示例资产**：**PASS**（已提交的所有测试文件、示例和样本试卷均确认为严格合成数据）。
-- **Prompt Draft 隔离**：**PASS**（`.prompt-drafts/` 未跟踪并已排除）。
-- **平台边界**：**PASS**（macOS 诚实记录为 `DEFERRED / NOT VERIFIED`；公开 Pages 与 GitHub Release 延期）。
-
----
-
-## 7. 统一 Product Owner 确认块
-
-自动化、仓库和测试框架层面的验证均已通过。以下统一检查项已就绪供 Product Owner 确认：
-
-1. **干净 Windows 启动**：在干净终端中运行 `start-local.bat`，可即时拉起 `http://localhost:8000` 且响应顺畅。
-2. **浏览器矩阵冒烟**：Google Chrome、Microsoft Edge 与 Mozilla Firefox 均可正常加载应用、渲染合成试卷、支持做题并保留主题偏好。
-3. **原生 OS 文件选择器**：通过 Windows 原生文件对话框选择 Teacher Review JSON 或补救 Translation Document 可准确导入并预览。
-4. **托管 HTTPS PWA**：在 HTTPS 测试源上成功缓存应用壳，支持离线重新打开/练习，且重回在线时状态平滑恢复。
-
----
-
-## 8. Batch B 退出裁决
+## 4. Batch B 退出裁决
 
 - **RC1 候选版本 (`v1.0.0-rc.1`) 有效性**：**VALID / UNCHANGED（有效且未改动）**
+- **Agent 可执行验证**：**COMPLETE / PASS**
 - **Batch B 产品/运行时代码变更**：**NONE（0 行代码）**（`src/`、`scripts/`、`styles.css`、`index.html`、`sw.js` 保持纯净）。
-- **Milestone 8 状态**：Batch B 验证完成；已就绪进入 **Batch C (RC 人工验收与收尾)**。
+- **Milestone 8 状态**：Agent 可执行验证已全部完成；真实人工与原生浏览器验收门交接至 **Batch C (RC 人工验收与收尾)**。
