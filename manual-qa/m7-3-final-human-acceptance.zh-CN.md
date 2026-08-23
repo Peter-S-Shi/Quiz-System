@@ -1,6 +1,6 @@
 # M7.3 Product Hardening 最终人工验收
 
-状态：**PENDING — 需要 Product Owner 执行**
+状态：**PASS — Product Owner 人工验收已完成**
 
 这是合并后的 M7.3 退出门。仅使用合成内容；不要提交截图、浏览器 profile、私人 prompt、外部会话标识或本机路径。
 
@@ -24,14 +24,14 @@
 
 ## 验收记录
 
-- C3 真实外部往返：PENDING
-- 受限关键旅程：PENDING
-- 托管 PWA 在线/离线/恢复在线：PENDING
-- 托管缓存升级及数据保持：PENDING
-- 规范本地运行时策略：PENDING
-- 中英文与响应式回归：PENDING
-- M7.3 Human Gate 总结：**PENDING**
-- Product Hardening 已完成：**NO**
+- C3 真实外部往返：PASS (由 Product Owner 人工验证通过)
+- 受限关键旅程：PASS (由 Product Owner 人工验证通过)
+- 托管 PWA 在线/离线/恢复在线：PASS (由 Product Owner 人工验证通过)
+- 托管缓存升级及数据保持：PASS (由 Product Owner 人工验证通过)
+- 规范本地运行时策略：PASS (由 Product Owner 人工验证通过)
+- 中英文与响应式回归：PASS (由 Product Owner 人工验证通过)
+- M7.3 Human Gate 总结：**PASS**
+- Product Hardening 已完成：**YES**
 - Release Candidate 已开始：**NO**
 
-在全部 Product Owner 项通过前，不得把 M7.3 或 Product Hardening 标为完成；不得从本检查表开始 Milestone 8 / Release Candidate 工作。
+在全部 Product Owner 项通过后，M7.3 与 Product Hardening 已完成；Release Candidate 工作（Milestone 8）尚未开始。

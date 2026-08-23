@@ -306,7 +306,7 @@ Pre-Freeze UI Productization（功能冻结前 UI 产品化）在执行 Whole-Pr
 
 ## Milestone 7：Product Hardening
 
-状态：M7.0/M7.1/M7.2 已完成并被接受；H-01 已解决；C1/B4 已完成；C2 PASS；M7.3 进行中；C4 PASS 且 macOS 延期；C3 与最终 Human Gate 为 PENDING；Product Hardening 未完成；Release Candidate 尚未开始
+状态：M7.0-M7.3 已完成并被 Product Owner 接受（PASS）；H-01 已解决；C1/B4 已完成；C2/C3/C4 PASS；Product Hardening 已完成；Release Candidate 尚未开始
 
 目标：在不扩大产品范围的前提下，让现有功能成为可靠、统一、可验证的整体。
 
@@ -416,6 +416,6 @@ Current Version Complete / v1.0.0
 1. 保留早期 Milestone 1–5 Candidate 评审作为历史证据。**已完成。**
 2. 完成并验收 Milestone 6 与 Pre-Freeze 范围。**已完成。**
 3. 通过 Review V3、宣布 V1 Feature Complete 并激活 Feature Freeze。**已完成。**
-4. 完成 Milestone 7 Product Hardening。**当前阶段。**
-5. 生成并验证 Milestone 8 Release Candidate。
+4. 完成 Milestone 7 Product Hardening。**已完成。**
+5. 生成并验证 Milestone 8 Release Candidate。**当前阶段。**
 6. 只有 RC 验收完成后才标记 Current Version Complete；任何公开交付均需另行授权。

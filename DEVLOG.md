@@ -1,5 +1,9 @@
 # Development Log
 
+## 2026-08-23
+
+- Closed Milestone 7 (Product Hardening) after the Product Owner manually verified and passed all remaining M7.3/C3/Hosted PWA/Cache Upgrade/Localhost Runtime/Bilingual & Responsive regression tests. Reconciled and updated `PROJECT_STATUS.md`, `PROJECT_STATUS.zh-CN.md`, `ROADMAP.md`, `ROADMAP.zh-CN.md`, and all four `manual-qa` checklists under `hardening/m7-3-release-readiness-verification` to record that Milestone 7 is complete and all gates are passed. No product logic modifications were made. The automated test suite remains 292/292 passing. Ready to transition to Milestone 8 (Release Candidate validation).
+
 ## 2026-08-22
 
 - Started M7.3 from the exact merged PR #22 baseline `e3d6a693c29d6be93848ffb652743f8919e17216` without entering M8 or Release Candidate work. C4 passes under its revised matrix: a fresh Windows 11 clone completed `npm ci`, 290/290 baseline tests, bilingual missing-Python diagnosis, canonical IPv4/IPv6 runtime health, a fresh Chrome 151 profile, real synthetic paper import/export, and shutdown/restart; exact-baseline Ubuntu CI passes; macOS is explicitly DEFERRED / NOT VERIFIED. C3 preparation produced a privacy-safe seed backup and a new synthetic request exported through the real Quiz Studio History UI in a fresh isolated profile; genuine independent authorship and Product Owner import/persistence verification remain PENDING. The preparation exposed one real fidelity defect: `normalizeLearnerResponse()` silently removed whole-item marks from review-request exports. Public-seam red/green regressions now preserve `learnerItemMarks` and lock the exact seed/request relationship; the suite is 292/292. The consolidated M7.3 critical-journey and hosted PWA/cache Human Gate remains PENDING, so M7.3 and Product Hardening are incomplete and Release Candidate work has not started.

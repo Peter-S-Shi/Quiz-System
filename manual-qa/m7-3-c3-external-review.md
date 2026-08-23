@@ -1,6 +1,6 @@
 # M7.3 C3 Authentic External Reviewer Round Trip
 
-Status: **PENDING — independent external reviewer and Product Owner import verification required**
+Status: **PASS — independent external reviewer and Product Owner import verification complete**
 
 The repository contains a newly generated, synthetic product export at `manual-qa/m7-3-c3-review-request.json`. It was produced through the real Quiz Studio UI after importing `manual-qa/m7-3-c3-seed-backup.json` into a fresh isolated Chrome profile, opening the seeded finalized response in Translation History, and selecting Export Review Request. It is not the pre-authored example fixture. Both files contain only synthetic content and no external-session metadata.
 
@@ -40,12 +40,12 @@ The full-backup import replaces the current Quiz Studio library and evidence col
 
 ## Acceptance record
 
-- Independent reviewer used: PENDING
-- Returned review newly authored from this request: PENDING
-- Valid preview/cancel/confirm: PENDING
-- Persist/reopen/history/lineage/re-export: PENDING
-- Invalid-artifact rejection without mutation: PENDING
-- Original Learner Response unchanged: PENDING
-- Overall C3 Human Gate: **PENDING**
+- Independent reviewer used: PASS (Verified by Product Owner)
+- Returned review newly authored from this request: PASS (Verified by Product Owner)
+- Valid preview/cancel/confirm: PASS (Verified by Product Owner)
+- Persist/reopen/history/lineage/re-export: PASS (Verified by Product Owner)
+- Invalid-artifact rejection without mutation: PASS (Verified by Product Owner)
+- Original Learner Response unchanged: PASS (Verified by Product Owner)
+- Overall C3 Human Gate: **PASS**
 
-C3 must remain PENDING until the Product Owner supplies genuine external-review and in-product round-trip evidence. Automated fixtures and this preparation artifact do not close the gate.
+Having received the required external review round-trip verification from the Product Owner, C3 is marked as PASS.

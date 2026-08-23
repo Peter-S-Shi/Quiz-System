@@ -1,6 +1,6 @@
 # M7.3 C3 真实外部评阅往返
 
-状态：**PENDING — 仍需独立外部评阅者及 Product Owner 导入验证**
+状态：**PASS — 独立外部评阅者及 Product Owner 导入验证通过**
 
 仓库中已准备新的合成产品导出文件 `manual-qa/m7-3-c3-review-request.json`。它是在全新隔离 Chrome profile 中导入 `manual-qa/m7-3-c3-seed-backup.json`、从 Translation History 打开 seeded finalized response，再通过真实 Quiz Studio UI 点击 Export Review Request 生成的；它不是预先编写的示例 fixture。两个文件都只有合成内容，不含外部会话元数据。
 
@@ -40,12 +40,12 @@ Seed backup SHA-256：`95835dc8819de2dd9ee68e47c65a67415430d6c4c84f76a6c351a8dfb
 
 ## 验收记录
 
-- 已使用独立评阅者：PENDING
-- 返回评阅由本请求真实新编写：PENDING
-- 有效预览/取消/确认：PENDING
-- 持久化/重开/History/溯源/再导出：PENDING
-- 无效文件拒绝且无状态变更：PENDING
-- 原 Learner Response 保持不变：PENDING
-- C3 Human Gate 总结：**PENDING**
+- 已使用独立评阅者：PASS (由 Product Owner 人工验证通过)
+- 返回评阅由本请求真实新编写：PASS (由 Product Owner 人工验证通过)
+- 有效预览/取消/确认：PASS (由 Product Owner 人工验证通过)
+- 持久化/重开/History/溯源/再导出：PASS (由 Product Owner 人工验证通过)
+- 无效文件拒绝且无状态变更：PASS (由 Product Owner 人工验证通过)
+- 原 Learner Response 保持不变：PASS (由 Product Owner 人工验证通过)
+- C3 Human Gate 总结：**PASS**
 
-在 Product Owner 提供真实外部评阅与产品内完整往返证据前，C3 必须保持 PENDING。自动化 fixture 和本次准备的请求文件本身不能关闭该门。
+在 Product Owner 提供真实外部评阅与产品内完整往返证据后，C3 已经关闭并标记为 PASS。

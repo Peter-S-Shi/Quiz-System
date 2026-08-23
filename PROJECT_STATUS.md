@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-Feature Freeze / Product Hardening
+Feature Freeze / Release Candidate Preparation
 
 ## Current Milestone
 
-Milestone 7.3 — Release-Readiness Verification
+Milestone 7 — Product Hardening Complete
 
 The Product Owner has formally accepted Whole-Product Feature Complete Review V3 (PASS), accepted 0 Category A Feature Complete blockers, declared Quiz Studio V1 as Feature Complete, and authorized entering Feature Freeze.
 
@@ -30,7 +30,7 @@ The Product Owner has formally accepted Whole-Product Feature Complete Review V3
 
 Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) was executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06), Batch B Human Gate B (Journeys 01–07), and Batch C Human Gate C (Journeys 01–07) were formally evaluated and passed (PASS). Whole-Product Feature Complete Review V3 was formally evaluated, accepted as PASS, and merged into `main`.
 
-M7.0 was accepted through PR #20. M7.1 implementation and Product Owner Human Acceptance are complete and merged through PR #21. H-01 is resolved, C1 and B4 are complete, and the Product Owner completed the C2 genuine browser-process-restart Human Gate with PASS and no issues found. M7.2 is complete, Product Owner accepted, and merged through PR #22. M7.3 is active under Feature Freeze.
+M7.0 was accepted through PR #20. M7.1 implementation and Product Owner Human Acceptance are complete and merged through PR #21. H-01 is resolved, C1 and B4 are complete, and the Product Owner completed the C2 genuine browser-process-restart Human Gate with PASS and no issues found. M7.2 is complete, Product Owner accepted, and merged through PR #22. M7.3 is complete and all gates (C3, C4, final Human Gate) are PASS; Product Hardening is complete.
 
 ## Current Release Scope
 
@@ -82,15 +82,14 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 ## Open Release Blockers
 
-- **C3 authentic external-review round trip:** a new synthetic product export and bilingual handoff are ready, but an independent reviewer and Product Owner import/persistence verification remain PENDING.
-- **M7.3 final Human Gate:** the bounded critical journey and hosted PWA/offline/cache-upgrade rows remain PENDING.
-- Product Hardening remains incomplete. A Release Candidate does not exist and Release Candidate work has not started.
+- None. Milestone 7 Product Hardening is complete, and the Product Owner has manually verified and passed all M7.3/C3/Hosted PWA/local runtime/regression gates (PASS).
+- A final release candidate (Milestone 8) has not been packaged or validated yet.
 
 ## Hardening Progress
 
-**M7.0 complete; M7.1 complete and accepted; M7.2 complete and Product Owner accepted; M7.3 in progress.**
+**M7.0 complete; M7.1 complete and accepted; M7.2 complete and Product Owner accepted; M7.3 complete and Product Owner accepted.**
 
-Milestone 7 remains under active Feature Freeze. M7.2 and PR #22 are merged at the exact `main` baseline `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is now active. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate remain PENDING, so M7.3 and Product Hardening are not complete. Release Candidate work has not started.
+Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 are merged at the exact `main` baseline `e3d6a693c29d6be93848ffb652743f8919e17216`; H-01 is **RESOLVED**, C1/B4 are complete, and C2 Human Acceptance is PASS. M7.3 is complete. Its required clean Windows 11 and Ubuntu C4 rows pass, while macOS is explicitly DEFERRED / NOT VERIFIED under the revised contract. Preparing the genuine C3 handoff exposed and fixed one bounded defect where review-request export silently dropped `learnerItemMarks`; the public export seam now preserves the entire Learner Response. C3 and the consolidated final Human Gate are PASS, so M7.3 and Product Hardening are complete. Release Candidate work (Milestone 8) has not started.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -109,7 +108,7 @@ Milestone 7 remains under active Feature Freeze. M7.2 and PR #22 are merged at t
 - **M7.2 H-01 / C1**: malformed or unsupported canonical data stays byte-for-byte recoverable; recovery-write failure blocks later canonical persistence; precedence, interrupted upgrades, idempotence, backup/export, and M1–M6 representative compatibility pass.
 - **M7.2 B4**: the 2,500-response index improved from 173.47 / 181.46 ms to 6.05 / 6.39 ms median/worst on the recorded reference run, using only one-pass in-memory maps; correctness parity passes at every tier.
 - **M7.2 C2**: Objective `instant`/`submitAtEnd` and Translation normal/retry/remediation automated recovery contracts pass; genuine browser-process close/reopen and forced-termination/reopen were accepted by the Product Owner in Google Chrome 151.0.7922.173 (Official Build) (64-bit). Human Gate = **PASS**.
-- **M7.3 C3**: a privacy-safe seed backup restores the exact finalized synthetic response in a disposable profile; the committed request was then exported through the real Quiz Studio History UI and retains answers, span annotations, and whole-item marks. Independent external authorship plus Product Owner preview/confirm/persistence/reopen/re-export/rejection verification = **PENDING**.
+- **M7.3 C3**: a privacy-safe seed backup restores the exact finalized synthetic response in a disposable profile; the committed request was then exported through the real Quiz Studio History UI and retains answers, span annotations, and whole-item marks. Independent external authorship plus Product Owner preview/confirm/persistence/reopen/re-export/rejection verification = **PASS**.
 - **M7.3 C4**: clean Windows 11 clone, `npm ci`, 290/290 baseline tests, canonical runtime health/restart, fresh Chrome 151 profile, and real synthetic paper import/export pass; exact-baseline Ubuntu CI passes; macOS is **DEFERRED / NOT VERIFIED**. Overall C4 = **PASS**.
 
 ## Agreed Question Media Policy (Batch C Scope Definition)
@@ -131,9 +130,7 @@ Milestone 7 remains under active Feature Freeze. M7.2 and PR #22 are merged at t
 ## Unknown Or Unverified
 
 - Full backup export and import round trip with large-scale long-term history accumulation.
-- Hosted PWA install, offline reopen/use, return-online, and cache-upgrade behavior on a production Service Worker origin.
 - macOS clean clone/run behavior is DEFERRED / NOT VERIFIED and is not a mandatory M7.3 exit row.
-- A real end-to-end round trip using an actual external human reviewer or a real AI assistant/LLM session from an exported request file (Review V3 Gap C3).
 - Native OS file-picker behavior for the Teacher Review and remediation-document file inputs.
 - Very large review-request/remediation-request export files (many items, many corrections) practical file size.
 
@@ -150,9 +147,9 @@ Milestone 7 remains under active Feature Freeze. M7.2 and PR #22 are merged at t
 
 ## Next Engineering Objective
 
-**Complete the M7.3 Product Owner Human Gate**
+**Transition to Milestone 8 — Release Candidate Validation**
 
-Give the prepared C3 request to an independent external reviewer, import and verify the returned review, then execute the consolidated critical-journey and hosted PWA/cache rows. Do not mark M7.3 or Product Hardening complete and do not begin Release Candidate work before those gates pass.
+Milestone 7 Product Hardening is complete, and all sub-milestones M7.0-M7.3 have been accepted by the Product Owner. The next objective is to package and validate the Milestone 8 Release Candidate.
 
 ## Repository State
 
@@ -162,4 +159,4 @@ Give the prepared C3 request to an independent external reviewer, import and ver
 - Current working branch: `hardening/m7-3-release-readiness-verification`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20, PR #21, and PR #22 are merged into `main`; M7.3 PR #23 is **Draft / Open** from this branch and must not be merged before the remaining Human Gate passes.
+- Pull request status: PR #20, PR #21, and PR #22 are merged into `main`; M7.3 PR #23 is **Draft / Open** from this branch, with all human verification gates completed and accepted (PASS), and is ready to be merged by the Product Owner.
