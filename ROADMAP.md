@@ -378,12 +378,12 @@ RC rules:
 
 ## Lifecycle State & Next Steps
 
-Milestone 8 Release Candidate validation is complete and accepted (`v1.0.0-rc.1` accepted).
+Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical milestones (M1–M8) complete and accepted.
 
-- The product repository is in an **Accepted Release Candidate / Maintenance Hold** state with no active engineering milestone.
-- Acceptance of `v1.0.0-rc.1` establishes verified candidate quality and does not automatically trigger or require final `v1.0.0`, a formal GitHub Release, or GitHub Pages deployment.
-- Changing the GitHub repository visibility to public is authorized and independent of Pages deployment or a formal GitHub Release.
-- Any future release distribution, formal GitHub Release, final `v1.0.0`, GitHub Pages deployment, portfolio packaging, or next-version planning remains optional and requires separate Product Owner authorization.
+- **Immutable Verification Candidate**: The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the verified product and runtime baseline.
+- **Final V1 Release Line**: Final `1.0.0` version metadata and evidence-driven portfolio presentation assets are closed and integrated into `main`.
+- **Maintenance Hold**: The repository is in Maintenance Hold with no active engineering milestone.
+- **Optional Future Work**: Any future release distribution, formal GitHub Release, GitHub Pages deployment, or next-version (V2) planning remains optional and requires separate Product Owner authorization.
 
 ## Maintenance / Next Version
 
@@ -416,4 +416,4 @@ The current lifecycle route is:
 3. Pass Review V3, declare V1 Feature Complete, and activate Feature Freeze. **Complete.**
 4. Complete Milestone 7 Product Hardening. **Complete.**
 5. Produce and validate the Milestone 8 Release Candidate. **Complete.**
-6. Release Candidate accepted (`v1.0.0-rc.1`); repository in maintenance hold. Optional future delivery decisions remain under separate Product Owner authorization. **Current lifecycle state.**
+6. Release Candidate accepted (`v1.0.0-rc.1`), V1 release metadata finalized (`1.0.0`), and repository in maintenance hold. Future maintenance or V2 iterations remain under separate Product Owner authorization. **Current lifecycle state.**
