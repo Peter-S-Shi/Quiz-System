@@ -2,9 +2,13 @@
 
 ## 当前阶段
 
-Feature Freeze / Milestone 8 Release Candidate Validation（功能冻结 / Milestone 8 候选版本验证阶段）
+Feature Freeze / 已接受候选版本（`v1.0.0-rc.1`）/ Maintenance Hold
 
-## 当前里程碑
+## 当前活跃里程碑
+
+无
+
+## 最近已完成里程碑
 
 Milestone 8 — Release Candidate 1 验证：COMPLETE / ACCEPTED（候选版本 `v1.0.0-rc.1` 于提交 `f33bafcfe42ac8dd521466026c343102dc18897a` 获 Product Owner 正式人工验收通过）
 
@@ -53,13 +57,13 @@ M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已
 
 产品负责人已明确授权进入 **Feature Freeze（功能冻结）**。
 
-自此节点开始，V1 产品功能范围全面冻结：
-- 在 Milestone 7 期间，不得向 V1 引入常规新功能、新题型、新练习分支或任何功能范围扩充。
-- 若产品硬化过程中发现真正阻断发布的缺陷确实需要扩大 V1 范围，必须作为 **Product Owner Hard Gate（产品负责人硬门禁）** 严格升级审批，严禁自主扩充。
+V1 产品功能范围已全面冻结：
+- 在 Feature Freeze 期间，不得向 V1 引入常规新功能、新题型、新练习分支或任何功能范围扩充。
+- 若未来维护过程中发现缺陷确实需要扩大 V1 范围，必须作为 **Product Owner Hard Gate（产品负责人硬门禁）** 严格升级审批，严禁自主扩充。
 
-## 冻结期硬化规则（Frozen-Scope Hardening Rules）
+## 冻结期策略（Frozen-Scope Policy）
 
-Milestone 7 Product Hardening 可以包含：
+在 Feature Freeze 与 maintenance hold 期间，允许的工程活动仅限于：
 - 缺陷修复与可靠性硬化；
 - 数据完整性保护与防御性错误处理；
 - 既有交互体验打磨（明确包含翻译元认知标记切换交互优化必做项）；
@@ -119,7 +123,7 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 ## 已知风险
 
 - Quiz Library 规范恢复刻意保持为存储层合同，没有新增迁移管理 UI；保留的原始规范数据位于专用恢复键中，供诊断/恢复。
-- 由于仓库保持 private 且 Pages 部署暂缓，GitHub Pages 目前不能视为可用交付方式。
+- GitHub Pages 部署保持延期且未激活；仓库可见性与 Pages 部署相互独立。
 - ES module 应用不支持通过浏览器 `file://` 直接打开；用户必须使用本地静态服务器或 `start-local.bat`。
 - Finalized Learner Response 使用浏览器本地存储且不被 history 静默截断；长期积累的大型 evidence 集合最终可能遇到浏览器容量限制。Translation 历史按设计同样没有条目数量上限，继承了这一风险。
 - 外部 Teacher Review 与补救往返完全是手动的（导出一份文件、交给外部一方、导入他们返回的文件）；目前没有、也不计划做任何应用内 AI 集成。
@@ -154,11 +158,13 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 后续工程目标
 
-**Post-M8 发布决策与发布复盘（Post-M8 Release Decision / Release Retrospective）**
+**维护保留状态（当前无活跃工程里程碑）**
 
-Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPTED）。候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）已通过全部自动化检查（292/292 测试全绿、CI 全绿）、运行时合同、累积数据备份往返验证，以及 Product Owner Batch C 全部人工验收门（干净 Windows 启动、多浏览器冒烟、原生文件对话框、托管 HTTPS PWA 与已知局限性确认），打 Tag 后零产品/运行时代码变更。下一生命周期阶段为 Post-M8 发布决策与发布复盘。
+Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPTED）。候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）已获 Product Owner 验收通过，Feature Freeze 保持激活。当前未安排任何活跃工程里程碑。
 
-延期项保持有意延期：macOS 环境（DEFERRED / NOT VERIFIED）、公开 GitHub Pages 部署、正式 GitHub Release、最终 `v1.0.0` 以及桌面应用打包。
+未来任何工作（如发布分发、GitHub Pages 部署、正式 GitHub Release、最终 `v1.0.0`、作品集包装或下一版本规划）均保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
+
+保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 
 ## 仓库状态
 
@@ -168,4 +174,3 @@ Milestone 8 候选版本验证已全部完成并通过验收（COMPLETE / ACCEPT
 - 已接受候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
 - 提交与合并追踪：请查阅 Git 历史以获取当前 `main` 提交身份与 PR 合并记录
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
-- 私有仓库状态：M7.0 preflight 已验证为 private

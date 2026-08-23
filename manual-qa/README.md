@@ -28,7 +28,7 @@ This folder contains the retrospective manual QA baseline for Quiz Studio.
 
 This baseline is for manual review only. It does not change product features, business logic, workflows, or release state.
 
-The questionnaire includes milestone deltas for M6.0 and M6.2–M6.7 plus one continuous M6.0–M6.7 end-to-end journey. Those modules cover finalized evidence, Translation Library and Practice, learner marking, rich correction, external file exchange, History, retry, lineage, and destructive-workflow safety. The comprehensive M6 acceptance has been executed and passed; the retained deltas remain reusable regression evidence for Milestone 7. Passing the historical gate does not close new M7 verification contracts, which are recorded in `M7_HARDENING_AUDIT.md`.
+The questionnaire includes milestone deltas for M6.0 and M6.2–M6.7 plus one continuous M6.0–M6.7 end-to-end journey. Those modules cover finalized evidence, Translation Library and Practice, learner marking, rich correction, external file exchange, History, retry, lineage, and destructive-workflow safety. These retained deltas served as reusable regression evidence throughout Milestone 7; Milestone 7 Product Hardening and Milestone 8 Release Candidate verification have since completed and been accepted.
 
 ## Privacy
 

@@ -96,4 +96,4 @@ Milestone 6.4 adds learner-controlled metacognitive marking of the learner's own
 
 ## Deferred
 
-Rich correction, suggested/inserted correction text, Teacher Review round trips, remediation generation, and AI integration remain later M6 work.
+Rich correction, suggested revision text, Teacher Review round trips, and remediation material generation were subsequently delivered across Milestone 6.5–6.7. Embedded/in-app AI integration remains explicitly deferred outside the V1 product scope.

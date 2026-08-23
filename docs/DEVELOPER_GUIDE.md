@@ -33,7 +33,7 @@ A completed Objective Quiz creates a finalized Learner Response before the activ
 
 The lightweight history array remains capped for display and wrong-question workflows. Learner Response records use a separate storage key and are not silently removed by that cap. Full backups include both collections.
 
-Teacher Review validation accepts only additive review fields and rejects unknown top-level fields, mismatched response IDs, and unknown item IDs. Rich correction semantics and review-import UI remain later M6 work.
+Teacher Review validation accepts only additive review fields and rejects unknown top-level fields, mismatched response IDs, and unknown item IDs. Rich correction semantics and review-import UI were deferred at M6.0 and subsequently delivered in M6.5 and M6.6.
 
 ## Translation Library
 
@@ -144,4 +144,4 @@ node --test
 
 ## Release Preparation
 
-The repository includes CI and a manual-only GitHub Pages workflow. Pages deployment is deferred while the repository remains private and should be enabled only when the project is ready to become public.
+The repository includes CI and a manual-only GitHub Pages workflow (`workflow_dispatch`). GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope and require separate Product Owner authorization. Repository visibility may be public independently of Pages deployment.

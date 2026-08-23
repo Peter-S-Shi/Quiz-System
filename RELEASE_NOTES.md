@@ -4,9 +4,9 @@
 
 Quiz Studio V1 is Feature Complete and Feature Freeze is active. Milestone 7 Product Hardening (M7.0–M7.3) is complete and accepted across all verification layers (292 automated unit/integration tests green, H-01 resolved, C1–C4 verification passed, and all Product Owner Human Acceptance gates passed).
 
-This candidate release packages the frozen V1 product for Milestone 8 Release Candidate validation. It establishes the release candidate contract, version metadata alignment (`1.0.0-rc.1`), and the RC verification matrix across clean Windows, Ubuntu CI, browser matrix (Chrome, Edge, Firefox), hosted PWA, and accumulated data portability.
+This release represents the frozen V1 candidate snapshot (tagged as `v1.0.0-rc.1` at commit `f33bafcfe42ac8dd521466026c343102dc18897a`) that completed Milestone 8 Release Candidate validation and received formal Product Owner acceptance across all automated, runtime, and human gates with 0 release-blocking defects.
 
-Milestone 8 verification and Product Owner human acceptance are COMPLETE with 0 release-blocking defects. Candidate `v1.0.0-rc.1` is ACCEPTED. Public GitHub Pages deployment, desktop packaging, and a formal GitHub Release are deferred outside the frozen V1 scope.
+Candidate `v1.0.0-rc.1` is ACCEPTED. Public repository visibility is independent of optional GitHub Pages deployment, desktop application packaging, a formal GitHub Release, or final `v1.0.0`, which remain separately deferred.
 
 Highlights:
 
@@ -26,7 +26,7 @@ Known Limitations:
 - External Teacher Review interchange is manual file-based JSON; there is no embedded AI API.
 - Browser storage quotas apply to accumulated local evidence; export/backup is recommended for long-term archives.
 - Clean environment verification for macOS is explicitly DEFERRED / NOT VERIFIED.
-- Public GitHub Pages deployment and a formal GitHub Release are deferred outside the frozen V1 scope.
+- Public GitHub Pages deployment, desktop application packaging, and a formal GitHub Release are deferred outside the frozen V1 scope. Public repository visibility is independent of Pages deployment.
 
 ## Historical v0.1.0 Prototype Baseline
 

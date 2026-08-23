@@ -2,9 +2,13 @@
 
 ## Current Phase
 
-Feature Freeze / Milestone 8 Release Candidate Validation
+Feature Freeze / Accepted Release Candidate (`v1.0.0-rc.1`) / Maintenance Hold
 
-## Current Milestone
+## Active Milestone
+
+None
+
+## Most Recent Completed Milestone
 
 Milestone 8 — Release Candidate 1 Validation: COMPLETE / ACCEPTED (Candidate `v1.0.0-rc.1` at `f33bafcfe42ac8dd521466026c343102dc18897a` formally accepted by Product Owner)
 
@@ -53,13 +57,13 @@ Basis for declaration:
 
 The Product Owner has explicitly authorized entry into **Feature Freeze**.
 
-From this point forward, the V1 product scope is frozen:
-- No ordinary new features, new question types, new practice branches, or functional scope expansions may enter V1 during Milestone 7.
-- If product hardening reveals that a genuine release-blocking defect requires material V1 scope expansion, it must be treated as a **Product Owner Hard Gate** rather than expanding scope autonomously.
+The V1 product scope is frozen:
+- No ordinary new features, new question types, new practice branches, or functional scope expansions may enter V1 under Feature Freeze.
+- If any future maintenance reveals a defect requiring material V1 scope expansion, it must be treated as a **Product Owner Hard Gate** rather than expanding scope autonomously.
 
-## Frozen-Scope Hardening Rules
+## Frozen-Scope Policy
 
-Milestone 7 Product Hardening may include:
+Permitted activities under Feature Freeze and maintenance hold are limited to:
 - Defect correction and reliability hardening;
 - Data-integrity protection and defensive error handling;
 - UX refinement of existing capabilities (specifically including the mandatory learner metacognitive marking toggle UX polish);
@@ -119,7 +123,7 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 ## Known Risks
 
 - Canonical Quiz Library recovery is intentionally storage-level and has no new migration-management UI; preserved raw canonical data remains available under the dedicated recovery key for diagnosis/recovery.
-- GitHub Pages cannot currently be treated as available because the repository remains private and Pages deployment is deferred.
+- GitHub Pages deployment is deferred and not active; repository visibility is independent of Pages deployment.
 - Browser `file://` opening is not supported for the ES module app; users must use a local static server or `start-local.bat`.
 - Finalized Learner Responses use browser local storage without silent history truncation; large long-term evidence collections may eventually encounter browser storage limits. Translation History inherits this: it has no entry cap by design.
 - The external Teacher Review and remediation round trip is entirely manual (export a file, hand it to an external party, import the file they return); there is no in-app AI integration, and none is planned.
@@ -154,11 +158,13 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 ## Next Engineering Objective
 
-**Post-M8 Release Decision / Release Retrospective**
+**Maintenance Hold (No Active Engineering Milestone)**
 
-Milestone 8 Release Candidate Validation is COMPLETE and ACCEPTED. Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) has successfully passed all automated checks (292/292 tests green, CI green), runtime contracts, accumulated backup/restore verification, and all Product Owner Batch C Human Gates (clean Windows launch, multi-browser smoke, native file dialogs, hosted HTTPS PWA, and known limitations acceptance) with zero post-tag product/runtime code modifications. The next lifecycle stage is Post-M8 Release Decision and Release Retrospective.
+Milestone 8 Release Candidate Validation is COMPLETE and ACCEPTED. Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) is accepted by the Product Owner and Feature Freeze remains active. No active engineering milestone is currently scheduled.
 
-Deferred items remain intentionally deferred: macOS (DEFERRED / NOT VERIFIED), public GitHub Pages deployment, formal GitHub Release, final `v1.0.0`, and desktop packaging.
+Any future work (such as release distribution, GitHub Pages deployment, formal GitHub Release, final `v1.0.0`, portfolio packaging, or next-version planning) remains separately deferred and begins only upon explicit Product Owner authorization.
+
+Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.
 
 ## Repository State
 
@@ -168,4 +174,3 @@ Deferred items remain intentionally deferred: macOS (DEFERRED / NOT VERIFIED), p
 - Accepted candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
 - Commit and merge tracking: Use Git history for current `main` commit identity and PR merge history
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
-- Private repository status: verified private during M7.0 preflight

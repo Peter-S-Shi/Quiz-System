@@ -1,5 +1,8 @@
 # Milestone 7 Hardening Audit & Contract Lock
 
+> [!NOTE]
+> **Historical Lifecycle Record**: This document is the historical execution contract and audit record for Milestone 7 Product Hardening for baseline commit `d5c78b9`. Milestone 7 Product Hardening and Milestone 8 Release Candidate Validation have since completed and been accepted. `PROJECT_STATUS.md` is the current repository lifecycle authority.
+
 ## Verdict
 
 **READY FOR M7 IMPLEMENTATION**, subject to Product Owner review of the M7.0 Draft PR.

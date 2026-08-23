@@ -1,8 +1,8 @@
 # Quiz Studio
 
-Quiz Studio is a local-first quiz authoring and practice prototype. It lets users create editable quiz papers, answer objective questions, receive immediate feedback, and switch the interface between Chinese and English.
+Quiz Studio is a local-first study desk and practice application. It lets users create editable quiz papers, answer objective questions, practice translation with metacognitive marking and rich teacher reviews, receive immediate feedback, and switch the interface between Chinese and English.
 
-The current version is a static ES module web application. It runs in a browser through a local static server and stores paper data in local browser storage, so no backend database is required for the first prototype.
+The current version is a static ES module web application. It runs in a browser through a local static server and stores data in local browser storage (localStorage and IndexedDB), providing an entirely local-first V1 experience without requiring a backend database or remote account.
 
 ## Features
 
@@ -130,11 +130,11 @@ Quiz paper content is intentionally separate from the interface language. Switch
 
 ## Current Status
 
-Current phase: Feature Freeze / Milestone 8 Complete (Candidate `v1.0.0-rc.1` Accepted).
+Current phase: Feature Freeze / Accepted Release Candidate (`v1.0.0-rc.1`) / Maintenance Hold.
 
-Quiz Studio is a local-first private pre-release product. The comprehensive M6 acceptance, Pre-Freeze acceptance gates, Whole-Product Feature Complete Review V3, and Milestone 7 Product Hardening (M7.0–M7.3) have all passed and been accepted. V1 Feature Complete is declared and Feature Freeze remains active.
+Quiz Studio is a local-first web application. Pre-Freeze acceptance gates, Whole-Product Feature Complete Review V3, Milestone 7 Product Hardening (M7.0–M7.3), and Milestone 8 Release Candidate Validation have all completed and been accepted. Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) is formally accepted by the Product Owner and Feature Freeze remains active.
 
-Milestone 8 Release Candidate Validation is COMPLETE and ACCEPTED (Candidate `v1.0.0-rc.1` at commit `f33bafcfe42ac8dd521466026c343102dc18897a` verified and accepted across all automated, runtime, and Product Owner human gates). Public GitHub Pages deployment, desktop application packaging, and a formal GitHub Release are deferred outside the frozen V1 scope.
+Repository visibility may be public independently of optional GitHub Pages deployment, desktop application packaging, a formal GitHub Release, or final `v1.0.0`, which remain separately deferred and require explicit Product Owner authorization.
 
 ## Data and Privacy
 
@@ -144,6 +144,6 @@ No data is sent to a server in the current static version.
 
 ## Development Notes
 
-This project is intentionally lightweight at this stage. It uses plain HTML, CSS, and JavaScript so the product behavior can evolve quickly before introducing a larger framework or backend architecture.
+This project uses an intentional local-first architecture built with plain HTML, CSS, and standard ES modules. This design provides direct browser portability, zero build-step overhead, and full user data sovereignty without requiring a mandatory server backend or runtime framework.
 
 See `docs/DEVELOPER_GUIDE.md` for architecture and validation details.

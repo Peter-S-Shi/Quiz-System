@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- No post-RC product or runtime changes.
+
 ## [1.0.0-rc.1] - 2026-08-23
 
 ### Added
@@ -14,7 +18,7 @@
 - Established bilingual Milestone 8 QA and acceptance manifests (`manual-qa/m8-rc1-verification.md`, `manual-qa/m8-b-exact-candidate-verification.md`, `manual-qa/m8-c-human-acceptance.md` and Chinese counterparts).
 - Synchronized lifecycle governance across `PROJECT_STATUS.md`, `ROADMAP.md`, `README.md`, `RELEASE_NOTES.md`, and `CHANGELOG.md`.
 
-## Unreleased
+## Pre-RC Development Baseline (Included in v1.0.0-rc.1)
 
 ### Added
 

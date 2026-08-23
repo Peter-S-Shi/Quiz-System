@@ -33,7 +33,7 @@ Objective Quiz 完成时，会在清除活动 session 前建立 finalized Learne
 
 轻量 history 数组继续为界面显示和错题流程保留条数上限。Learner Response 使用独立存储 key，不会被该上限静默删除。完整备份同时包含两个集合。
 
-Teacher Review 校验只接受追加式 review 字段，并拒绝未知顶层字段、不匹配的 response ID 和未知 item ID。Rich correction 语义和 review 导入 UI 仍属于后续 M6 工作。
+Teacher Review 校验只接受追加式 review 字段，并拒绝未知顶层字段、不匹配的 response ID 和未知 item ID。Rich correction 语义与 review 导入 UI 在 M6.0 阶段暂缓，随后已在 M6.5 与 M6.6 中完整交付。
 
 ## Translation Library
 
@@ -144,4 +144,4 @@ node --test
 
 ## 发布准备
 
-仓库已经包含 CI 和仅手动触发的 GitHub Pages workflow。private 阶段暂缓部署，等项目准备公开时再启用 Pages。
+仓库已经包含 CI 和仅手动触发的 GitHub Pages workflow（`workflow_dispatch`）。GitHub Pages 部署与正式 GitHub Release 均在冻结 V1 范围之外保持延期，需要 Product Owner 另行授权。仓库可见性可独立公开，与 Pages 部署相互独立。

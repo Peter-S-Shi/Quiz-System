@@ -28,7 +28,7 @@
 
 这份基线只用于手工验收，不改变产品功能、业务逻辑、工作流或发布状态。
 
-问卷保留了 M6.0 与 M6.2–M6.7 各里程碑增量，以及一条贯穿 M6.0–M6.7 的端到端综合旅程。这些模块覆盖 finalized evidence、Translation Library 与 Practice、学习者标记、富文本批改、外部文件交换、History、重练、溯源和破坏性工作流安全。M6 综合验收已经执行并通过；保留的增量继续作为 Milestone 7 的可复用回归证据。历史验收通过不代表新的 M7 验证合同已经关闭；这些合同记录在 `M7_HARDENING_AUDIT.md` 中。
+问卷保留了 M6.0 与 M6.2–M6.7 各里程碑增量，以及一条贯穿 M6.0–M6.7 的端到端综合旅程。这些模块覆盖 finalized evidence、Translation Library 与 Practice、学习者标记、富文本批改、外部文件交换、History、重练、溯源和破坏性工作流安全。这些保留的增量在整个 Milestone 7 期间持续作为可复用回归证据；Milestone 7 产品硬化与 Milestone 8 候选版本验证随后均已全部完成并获得正式验收。
 
 ## 隐私
 
