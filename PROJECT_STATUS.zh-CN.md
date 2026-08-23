@@ -160,4 +160,4 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 - 当前工作分支：`hardening/m7-2-data-recovery-robustness`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20 与 PR #21 已合并入 `main`；M7.2 Draft PR 正待从当前分支交付。
+- Pull Request 状态：PR #20 与 PR #21 已合并入 `main`；M7.2 PR #22 已从当前分支以 Draft 开启，在 Product Owner 审查前不得合并。

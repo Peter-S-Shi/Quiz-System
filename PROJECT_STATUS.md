@@ -160,4 +160,4 @@ Execute the bilingual genuine browser-process-restart checklist with synthetic d
 - Current working branch: `hardening/m7-2-data-recovery-robustness`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20 and PR #21 are merged into `main`; M7.2 Draft PR delivery is pending from this branch.
+- Pull request status: PR #20 and PR #21 are merged into `main`; M7.2 PR #22 is open as Draft from this branch and must not be merged before Product Owner review.
