@@ -46,7 +46,13 @@ test("whole-item marking controls expose their toggle state", () => {
 test("Correction Workspace restores focus after in-task rerenders", () => {
   const applyCorrection = functionBody("applyWorkspaceCorrection");
   const removeCorrection = functionBody("removeWorkspaceCorrection");
+  const saveReview = functionBody("saveCorrectionReview");
+  assert.match(appSource, /dataset\.switchReview[\s\S]{0,300}focusAfterRerender/);
+  assert.match(appSource, /getElementById\("startNewReviewInline"\)[\s\S]{0,300}focusAfterRerender\("#startNewReviewInline"\)/);
   assert.match(appSource, /getElementById\("correctionJudgment"\)[\s\S]{0,400}focusAfterRerender\("#correctionJudgment"\)/);
+  assert.match(appSource, /getElementById\("previousCorrectionItem"\)[\s\S]{0,300}focusAfterRerender/);
+  assert.match(appSource, /getElementById\("nextCorrectionItem"\)[\s\S]{0,300}focusAfterRerender/);
   assert.match(applyCorrection, /focusAfterRerender\(focusSelector\)/);
   assert.match(removeCorrection, /focusAfterRerender\(focusSelector\)/);
+  assert.match(saveReview, /focusAfterRerender\("#saveCorrectionReview"\)/);
 });

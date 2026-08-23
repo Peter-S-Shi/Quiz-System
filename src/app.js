@@ -4928,13 +4928,16 @@ function bindCorrectionWorkspaceEvents(response, item, answerText, availableRevi
   });
   document.querySelectorAll("[data-switch-review]").forEach((button) => {
     button.addEventListener("click", () => {
-      correctionReviewDraft = availableReviews.find((review) => review.id === button.dataset.switchReview);
+      const reviewId = button.dataset.switchReview;
+      correctionReviewDraft = availableReviews.find((review) => review.id === reviewId);
       renderTranslationMainPanel();
+      focusAfterRerender(`[data-switch-review="${CSS.escape(reviewId)}"]`);
     });
   });
   document.getElementById("startNewReviewInline")?.addEventListener("click", () => {
     correctionReviewDraft = createFreshReviewDraft(response.id);
     renderTranslationMainPanel();
+    focusAfterRerender("#startNewReviewInline");
   });
   document.getElementById("exportReviewJson")?.addEventListener("click", () => exportCurrentReviewJson(response));
   document.getElementById("exportRemediationRequest")?.addEventListener("click", () => exportCurrentRemediationRequest(response));
@@ -4987,12 +4990,14 @@ function triggerStampAnimation(stamp) {
     studioAudio.playPageTurn();
     correctionItemIndex -= 1;
     renderTranslationMainPanel();
+    focusAfterRerender("#previousCorrectionItem:not([disabled]), #nextCorrectionItem");
     triggerPageTurnAnimation(translationDocumentPanel, "prev");
   });
   document.getElementById("nextCorrectionItem").addEventListener("click", () => {
     studioAudio.playPageTurn();
     correctionItemIndex += 1;
     renderTranslationMainPanel();
+    focusAfterRerender("#nextCorrectionItem:not([disabled]), #previousCorrectionItem");
     triggerPageTurnAnimation(translationDocumentPanel, "next");
   });
   document.getElementById("saveCorrectionReview").addEventListener("click", () => {
@@ -5105,6 +5110,7 @@ function saveCorrectionReview(response) {
     correctionReviewDraft = findTeacherReviewForResponse(next, response.id);
     showToast(t("toast.correctionReviewSaved"));
     renderTranslationMainPanel();
+    focusAfterRerender("#saveCorrectionReview");
   } catch {
     showToast(t("toast.correctionReviewSaveFail"));
   }
