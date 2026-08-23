@@ -30,7 +30,7 @@ The Product Owner has formally accepted Whole-Product Feature Complete Review V3
 
 Formal user acceptance for M6.2 through M6.7 was deferred to a unified M6 comprehensive acceptance once M6.7 implementation concluded. That comprehensive human acceptance (Journeys 01–10) was executed and passed (PASS). M6.0 and M6.1 were previously accepted individually. Batch A Human Gate A (Journeys 01–06), Batch B Human Gate B (Journeys 01–07), and Batch C Human Gate C (Journeys 01–07) were formally evaluated and passed (PASS). Whole-Product Feature Complete Review V3 was formally evaluated, accepted as PASS, and merged into `main`.
 
-M7.0 was accepted through PR #20. M7.1 implementation and Product Owner Human Acceptance are complete and merged through PR #21. M7.2 engineering implementation and automated verification are complete on its hardening branch; the C2 genuine browser-process-restart Human Gate remains PENDING.
+M7.0 was accepted through PR #20. M7.1 implementation and Product Owner Human Acceptance are complete and merged through PR #21. H-01 is resolved, C1 and B4 are complete, and the Product Owner completed the C2 genuine browser-process-restart Human Gate with PASS and no issues found. M7.2 is complete and Product Owner accepted.
 
 ## Current Release Scope
 
@@ -82,14 +82,14 @@ Explicitly prohibited during Feature Freeze (V2 / Deferred Scope):
 
 ## Open Release Blockers
 
-- **C2 genuine browser-process-restart acceptance:** automated Objective and Translation serialization/recovery contracts pass, but full process close/reopen and forced-termination evidence must still be executed by the Product Owner.
+- **M7.3 release-readiness verification:** M7.2 is complete, but Product Hardening remains incomplete until the separately authorized M7.3 scope closes.
 - A release candidate and final clean-environment verification do not yet exist.
 
 ## Hardening Progress
 
-**M7.0 and M7.1 complete and accepted; M7.2 engineering implementation and automated verification complete; C2 Human Gate PENDING.**
+**M7.0 complete; M7.1 complete and accepted; M7.2 complete and Product Owner accepted; M7.3 not started.**
 
-Milestone 7 remains under active Feature Freeze. M7.2 repaired H-01 with a non-destructive bootstrap quarantine/recovery contract, covered representative C1 historical states, characterized all four locked B4 tiers and replaced repeated scans with bounded one-pass maps, and strengthened C2 session serialization/recovery contracts. H-01 is **RESOLVED** by bootstrap-path evidence. C2 remains open only for genuine browser-process execution; M7.2 is not yet human-accepted, M7.3 has not started, and Product Hardening is not complete.
+Milestone 7 remains under active Feature Freeze. M7.2 repaired H-01 with a non-destructive bootstrap quarantine/recovery contract, completed representative C1 historical-state verification, characterized all four locked B4 tiers and replaced repeated scans with bounded one-pass maps, and strengthened C2 session serialization/recovery contracts. H-01 is **RESOLVED**. The Product Owner completed genuine Chrome process close/reopen and forced-termination/reopen verification on 2026-08-22 with PASS and no issues found, so C2 and M7.2 are complete and accepted. M7.3 is the next engineering objective but has not started; Product Hardening and Release Candidate work are not complete.
 
 ### Milestone 7 Product Hardening Scope (Mandatory V1)
 - **Learner Metacognitive Marking Toggle UX**: Interaction refinement for translation practice (active-color toggle buttons, click-again-to-remove, and streamlined non-popup inline toggle interaction).
@@ -107,7 +107,7 @@ Milestone 7 remains under active Feature Freeze. M7.2 repaired H-01 with a non-d
 - **M7.1 Product Owner Human Acceptance**: Focused marking, dialog, deletion, responsive/narrow-screen, bilingual, category-deletion, and Correction Workspace verification completed with no issues (Human Gate = **PASS**).
 - **M7.2 H-01 / C1**: malformed or unsupported canonical data stays byte-for-byte recoverable; recovery-write failure blocks later canonical persistence; precedence, interrupted upgrades, idempotence, backup/export, and M1–M6 representative compatibility pass.
 - **M7.2 B4**: the 2,500-response index improved from 173.47 / 181.46 ms to 6.05 / 6.39 ms median/worst on the recorded reference run, using only one-pass in-memory maps; correctness parity passes at every tier.
-- **M7.2 C2 automated contracts**: Objective `instant`/`submitAtEnd` and Translation normal/retry/remediation serialization recovery plus key isolation pass. Genuine browser-process Human Gate = **PENDING**.
+- **M7.2 C2**: Objective `instant`/`submitAtEnd` and Translation normal/retry/remediation automated recovery contracts pass; genuine browser-process close/reopen and forced-termination/reopen were accepted by the Product Owner in Google Chrome 151.0.7922.173 (Official Build) (64-bit). Human Gate = **PASS**.
 
 ## Agreed Question Media Policy (Batch C Scope Definition)
 
@@ -128,7 +128,6 @@ Milestone 7 remains under active Feature Freeze. M7.2 repaired H-01 with a non-d
 ## Unknown Or Unverified
 
 - Full backup export and import round trip with large-scale long-term history accumulation.
-- Genuine browser-process restart recovery for Objective and Translation sessions (Review V3 Gap C2); automated serialization contracts do not close this Human Gate.
 - PWA install, offline behavior, and cache upgrade behavior across major browsers.
 - Clean-environment clone and run process across multiple OS environments (Review V3 Gap C4).
 - A real end-to-end round trip using an actual external human reviewer or a real AI assistant/LLM session from an exported request file (Review V3 Gap C3).
@@ -148,9 +147,9 @@ Milestone 7 remains under active Feature Freeze. M7.2 repaired H-01 with a non-d
 
 ## Next Engineering Objective
 
-**Complete the M7.2 C2 Product Owner Human Acceptance Gate**
+**M7.3 Release-Readiness Verification**
 
-Execute the bilingual genuine browser-process-restart checklist with synthetic data. Do not begin M7.3 until M7.2 is accepted under a separate Product Owner instruction.
+M7.2 is complete and Product Owner accepted. M7.3 is next but has not started; begin it only under separate Product Owner instruction. Do not begin Release Candidate work.
 
 ## Repository State
 
@@ -160,4 +159,4 @@ Execute the bilingual genuine browser-process-restart checklist with synthetic d
 - Current working branch: `hardening/m7-2-data-recovery-robustness`
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Private repository status: verified private during M7.0 preflight
-- Pull request status: PR #20 and PR #21 are merged into `main`; M7.2 PR #22 is open as Draft from this branch and must not be merged before Product Owner review.
+- Pull request status: PR #20 and PR #21 are merged into `main`; M7.2 PR #22 is open from this branch and remains unmerged.

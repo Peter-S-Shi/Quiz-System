@@ -30,7 +30,7 @@ Milestone 7.2 — Data / Recovery / Robustness Hardening（数据 / 恢复 / 鲁
 
 M6.2 到 M6.7 的正式用户验收统一推迟至 M6.7 实现完成后统一进行 M6 综合验收。该项综合人工验收（Journeys 01–10）已执行完毕并全部通过（PASS）。M6.0 和 M6.1 此前已单独完成验收。Batch A Human Gate A (Journeys 01–06)、Batch B Human Gate B (Journeys 01–07) 与 Batch C Human Gate C (Journeys 01–07) 均已正式通过人工验收（PASS）。Whole-Product Feature Complete Review V3 已正式完成评估并合入 `main`。
 
-M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已完成，并通过 PR #21 合并。M7.2 工程实现与自动化验证已在其 hardening 分支完成；C2 浏览器真实进程重启 Human Gate 仍为 PENDING。
+M7.0 已通过 PR #20 接受。M7.1 实现与 Product Owner Human Acceptance 已完成，并通过 PR #21 合并。H-01 已解决，C1 与 B4 已完成；Product Owner 已完成 C2 浏览器真实进程重启 Human Gate，结果为 PASS，未发现问题。M7.2 已完成并被 Product Owner 接受。
 
 ## 当前发布范围
 
@@ -82,14 +82,14 @@ Feature Freeze 期间明确禁止的内容（V2 / 延迟范围）：
 
 ## 当前发布阻断项
 
-- **C2 浏览器真实进程重启验收：**Objective 与 Translation 自动化序列化/恢复合同已通过，但 Product Owner 仍须执行完整进程关闭/重开与强制终止证据。
+- **M7.3 发布就绪验证：**M7.2 已完成，但在单独授权的 M7.3 范围关闭前，Product Hardening 仍未完成。
 - 尚不存在 Release Candidate，也尚未完成最终干净环境验证。
 
 ## Hardening 进度
 
-**M7.0 与 M7.1 已完成并被接受；M7.2 工程实现与自动化验证完成；C2 Human Gate PENDING。**
+**M7.0 已完成；M7.1 已完成并被接受；M7.2 已完成并被 Product Owner 接受；M7.3 尚未开始。**
 
-Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢复合同修复 H-01，覆盖代表性 C1 历史状态，完成四个锁定 B4 层级的性能取证并以受限的一次性 Map 消除重复扫描，同时增强 C2 会话序列化/恢复合同。H-01 已由 bootstrap 路径证据证明为 **RESOLVED**。C2 仅剩浏览器真实进程人工执行；M7.2 尚未被人工接受，M7.3 尚未开始，Product Hardening 尚未完成。
+Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢复合同修复 H-01，完成代表性 C1 历史状态验证，完成四个锁定 B4 层级的性能取证并以受限的一次性 Map 消除重复扫描，同时增强 C2 会话序列化/恢复合同。H-01 已 **RESOLVED**。Product Owner 于 2026-08-22 完成真实 Chrome 进程关闭/重开与强制终止/重开验证，结果为 PASS，未发现问题，因此 C2 与 M7.2 均已完成并被接受。M7.3 是下一工程目标但尚未开始；Product Hardening 与 Release Candidate 工作均未完成。
 
 ### Milestone 7 Product Hardening 范围（V1 必须项）
 - **翻译学习者元认知标记切换交互优化**：翻译练习中的标记交互优化（活动颜色切换按钮、再次点击取消标记、免弹窗内联切换）。
@@ -107,7 +107,7 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 - **M7.1 Product Owner Human Acceptance**：整题标记、对话框、删除保护、响应式/窄屏、双语、分类删除与 Correction Workspace 等专项验证均未发现问题（Human Gate = **PASS**）。
 - **M7.2 H-01 / C1**：损坏或不受支持的规范数据保持逐字节可恢复；恢复写入失败时阻止后续规范写入；优先级、中断升级、幂等、迁移后备份/导出及 M1–M6 代表性兼容均通过。
 - **M7.2 B4**：记录的参考运行中，2,500 条响应索引由 173.47 / 181.46 ms 降至 6.05 / 6.39 ms（中位数/最差），仅使用一次性内存 Map；每层正确性一致。
-- **M7.2 C2 自动化合同**：Objective `instant`/`submitAtEnd`、Translation 普通/Retry/Remediation 序列化恢复及键隔离通过。真实浏览器进程 Human Gate = **PENDING**。
+- **M7.2 C2**：Objective `instant`/`submitAtEnd`、Translation 普通/Retry/Remediation 自动化恢复合同均通过；Product Owner 已在 Google Chrome 151.0.7922.173（Official Build，64-bit）中接受真实浏览器进程关闭/重开与强制终止/重开验证。Human Gate = **PASS**。
 
 ## 题目媒体支持规范（Batch C 范围定义）
 
@@ -128,7 +128,6 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 ## 未知或未验证事项
 
 - 使用超大规模积累数据进行完整备份导出和导入往返。
-- Objective 与 Translation 在浏览器真实进程重启后的会话恢复（Review V3 Gap C2）；自动化序列化合同不能关闭该 Human Gate。
 - PWA 安装、离线行为和缓存升级在主要浏览器中的表现。
 - 干净环境重新 clone 并运行项目（Review V3 Gap C4）。
 - 使用真实的外部人类评阅者或真实的外部 AI assistant/LLM 会话从导出的请求文件生成 Teacher Review 或补救 Translation Document 的真实端到端往返（Review V3 Gap C3）。
@@ -148,9 +147,9 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 
 ## 后续工程目标
 
-**完成 M7.2 C2 Product Owner Human Acceptance Gate**
+**M7.3 发布就绪验证**
 
-使用合成数据执行双语浏览器真实进程重启清单。在 Product Owner 单独接受 M7.2 前，不得开始 M7.3。
+M7.2 已完成并被 Product Owner 接受。M7.3 是下一目标但尚未开始；仅在 Product Owner 单独指令下启动。不得开始 Release Candidate 工作。
 
 ## 仓库状态
 
@@ -160,4 +159,4 @@ Milestone 7 继续处于 Feature Freeze。M7.2 以非破坏性启动隔离/恢�
 - 当前工作分支：`hardening/m7-2-data-recovery-robustness`
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 私有仓库状态：M7.0 preflight 已验证为 private
-- Pull Request 状态：PR #20 与 PR #21 已合并入 `main`；M7.2 PR #22 已从当前分支以 Draft 开启，在 Product Owner 审查前不得合并。
+- Pull Request 状态：PR #20 与 PR #21 已合并入 `main`；M7.2 PR #22 已从当前分支开启，仍未合并。
