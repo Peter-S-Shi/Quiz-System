@@ -1,6 +1,6 @@
 # M7.1 人工验收清单
 
-状态：**PENDING — 需要 Product Owner 执行**
+状态：**PASS — Product Owner 已接受，未发现问题**
 
 仅使用合成试卷、翻译文档、作答与批改数据。中英文界面均需测试。每节记录 PASS/FAIL 和简短合成备注；截图与导出结果仅保存在本地。
 
@@ -48,12 +48,13 @@
 
 ## 结果
 
-- 测试者代码：
-- 浏览器/版本：
-- 设备或视口方法：
-- 英文：PASS / FAIL
-- 中文：PASS / FAIL
-- 键盘/焦点：PASS / FAIL
-- 触屏/窄屏布局：PASS / FAIL
-- M7.1 Human Gate 总结：PASS / FAIL
-- 合成备注：
+- 接受人：Product Owner
+- 接受日期：2026-08-22
+- 浏览器/版本：Product Owner 环境；仓库中未记录具体版本
+- 设备或视口方法：M7.1 专项矩阵，包括窄屏验证
+- 英文：PASS
+- 中文：PASS
+- 键盘/焦点：PASS
+- 触屏/窄屏布局：PASS
+- M7.1 Human Gate 总结：**PASS**
+- 接受说明：整题标记、对话框、删除保护、响应式、双语、分类两阶段删除和 Correction Workspace 等范围内工作流均未发现问题。

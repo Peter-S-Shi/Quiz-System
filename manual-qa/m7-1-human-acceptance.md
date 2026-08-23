@@ -1,6 +1,6 @@
 # M7.1 Human Acceptance Checklist
 
-Status: **PENDING — Product Owner execution required**
+Status: **PASS — Product Owner accepted; no issues found**
 
 Use synthetic papers, Translation Documents, responses, and reviews. Test in both English and Chinese. Record PASS/FAIL and a short synthetic note for each section; keep screenshots and exported results local-only.
 
@@ -48,12 +48,13 @@ Use synthetic papers, Translation Documents, responses, and reviews. Test in bot
 
 ## Result
 
-- Tester code:
-- Browser/version:
-- Device or viewport method:
-- English: PASS / FAIL
-- Chinese: PASS / FAIL
-- Keyboard/focus: PASS / FAIL
-- Touch/narrow layout: PASS / FAIL
-- Overall M7.1 Human Gate: PASS / FAIL
-- Synthetic notes:
+- Accepted by: Product Owner
+- Acceptance date: 2026-08-22
+- Browser/version: Product Owner environment; not recorded in the repository
+- Device or viewport method: focused M7.1 matrix, including narrow-screen verification
+- English: PASS
+- Chinese: PASS
+- Keyboard/focus: PASS
+- Touch/narrow layout: PASS
+- Overall M7.1 Human Gate: **PASS**
+- Acceptance note: No issues found across the scoped marking, dialog, deletion, responsive, bilingual, category-deletion, and Correction Workspace workflows.
