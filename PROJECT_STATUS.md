@@ -164,6 +164,8 @@ Quiz Studio V1 is finalized at version `1.0.0`. The accepted Release Candidate `
 
 Any future work (such as GitHub Pages deployment, desktop application packaging, or next-version planning) remains separately deferred and begins only upon explicit Product Owner authorization.
 
+Quiz Studio V2 product scope is frozen in [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md) (baseline `v1.0.0`). This is a governance document only: no V2 implementation, ADR, spike, or V2 development branch exists yet. The V2 development branch is created only after the Desktop Architecture Gate passes.
+
 Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.
 
 ## Repository State
