@@ -164,6 +164,8 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版。已接受的候选版本 `
 
 未来任何工作（如 GitHub Pages 部署、桌面应用打包或下一版本规划）均保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
 
+Quiz Studio V2 产品范围已冻结于 [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md)（基线 `v1.0.0`）。该文件仅为治理文档：目前尚无 V2 实现、ADR、技术验证（spike）或 V2 开发分支；V2 开发分支仅在 Desktop Architecture Gate 通过后创建。
+
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 
 ## 仓库状态
