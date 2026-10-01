@@ -1,7 +1,9 @@
 # Quiz Studio V2 — Product Scope Freeze
 
-**Status:** FROZEN  
-**Freeze Date:** 2026-10-01  
+**Status:** FROZEN — Revision 1  
+**Original Freeze Date:** 2026-10-01  
+**Revision Date:** 2026-10-01  
+**Revision:** Calendar Scheduling Surface scoped amendment  
 **V1 Baseline:** `main@787fc5a9f8e5ff55826d05e5a1ca98781719e52e`  
 **V1 Release:** `v1.0.0`
 
@@ -16,6 +18,25 @@ Feature discovery for V2 Core is complete.
 From this point forward, implementation work should not reopen product scope unless new evidence reveals a material usability, data-integrity, migration, accessibility, or architectural problem.
 
 New ideas that do not invalidate the frozen product model should be recorded for later evaluation rather than inserted into the active V2 implementation path.
+
+### 1.1 Post-Freeze Scoped Amendment — Calendar Scheduling Surface
+
+After the original freeze, a focused Socratic scope audit identified a material usability gap:
+
+> V2 already owns future scheduling semantics, but a Today-centered surface alone leaves the learner with insufficient temporal visibility and insufficient direct control over future study arrangements.
+
+Revision 1 therefore adds a **Calendar Scheduling Surface** to V2 Core.
+
+This is a bounded extension of the existing Learning Orchestration / Scheduling system. It does **not** reopen:
+
+- Goal / Exam planning;
+- workload planning;
+- daily study-budget planning;
+- external calendar events;
+- reminders / notifications;
+- general-purpose calendar functionality.
+
+The Calendar exists to expose and edit Quiz Studio’s own future learning schedules while preserving learner control.
 
 ---
 
@@ -39,7 +60,7 @@ It must not turn learning into an opaque algorithm-controlled feed.
 
 ## 3. V2 Product Structure
 
-V2 consists of three primary product/engineering systems, one new learning-content capability, and one cross-domain UX requirement.
+V2 consists of three primary product/engineering systems, one new learning-content capability, one cross-domain UX requirement, and one first-class scheduling surface.
 
 ### 3.1 Desktop Foundation
 
@@ -85,6 +106,26 @@ Active learning sessions should provide a dedicated answering/practice surface t
 Focused Practice is a UX property shared across domains.
 
 It is not a separate canonical application mode.
+
+### 3.6 Calendar Scheduling Surface
+
+V2 includes a first-class Calendar surface for Quiz Studio learning schedules.
+
+The Calendar exists to answer:
+
+> **What learning sessions are scheduled beyond today, and how do I want to arrange them?**
+
+The Calendar is part of Learning Orchestration.
+
+It is **not**:
+
+- a general-purpose calendar;
+- a Goal / Exam planner;
+- a workload planner;
+- a reminder system;
+- a deadline manager.
+
+Calendar scheduling remains learner-controlled.
 
 ---
 
@@ -142,15 +183,42 @@ algorithmVersion: v1
 
 ## 4.5 Scheduling is not evidence
 
-`dueAt`, revisit intervals, and related scheduling facts describe when something should reappear.
+`dueAt`, revisit intervals, recurrence rules, user-scheduled dates, and related scheduling facts describe when something should reappear or when the learner intends to practice.
 
 They do not describe what the learner knows.
 
-## 4.6 Deadline is Context, not Evidence
+Scheduling facts may change without rewriting canonical learning evidence.
 
-Future scoped deadline support may affect prioritization.
+### 4.5.1 Learner ownership of active schedules
 
-A deadline must never manufacture weakness or overwrite learning evidence.
+V2 distinguishes between:
+
+- engine-derived scheduling;
+- user-authored scheduling.
+
+Engine-derived schedules may be recalculated from new evidence while they remain engine-owned.
+
+Once the learner explicitly creates or changes a schedule, that active schedule becomes user-owned.
+
+The engine must not silently overwrite a user-owned date.
+
+If new evidence produces a materially different engine recommendation, Quiz Studio should present the competing dates and ask the learner which date to use.
+
+Only one active schedule should result from that decision; the product should not create duplicate competing dates for the same intended session.
+
+## 4.6 External deadlines are outside V2 Core
+
+V2 Calendar does not accept external events such as:
+
+- exams;
+- assignments;
+- appointments;
+- personal calendar events;
+- external deadlines.
+
+If a future version introduces scoped deadline context, it remains Context, not Evidence.
+
+A future deadline must never manufacture weakness or overwrite learning evidence.
 
 ## 4.7 Explanation is Content, not Evidence
 
@@ -279,6 +347,8 @@ Canonical Evidence
 Remediation Semantics
         ↓
 Lightweight Scheduling
+        ↕
+Calendar Scheduling Surface
         ↓
 Explainable Recommendation
         ↓
@@ -331,6 +401,20 @@ Time affects recommendations through scheduling semantics.
 
 Recommendations should expose human-readable reasons.
 
+When an engine-derived scheduling suggestion conflicts with a user-owned schedule, the system should negotiate rather than silently overwrite:
+
+```text
+Current user schedule
+        +
+Engine-suggested date
+        ↓
+Explicit learner choice
+        ↓
+One active schedule
+```
+
+The learner remains the final authority over the active user-owned date.
+
 V2 must not present a mysterious universal value such as:
 
 ```text
@@ -341,11 +425,11 @@ as canonical learning truth.
 
 ---
 
-# 7. Lightweight Scheduled Revisit — KEEP
+# 7. Lightweight Scheduled Revisit + Calendar Scheduling Surface — KEEP + ADD
 
-V2 Core includes lightweight scheduled revisit.
+V2 Core includes lightweight scheduled revisit and a first-class Calendar Scheduling Surface.
 
-Purpose:
+## 7.1 Scheduled revisit purpose
 
 ```text
 difficulty
@@ -356,9 +440,9 @@ difficulty
 → new evidence
 ```
 
-Core scheduling needs only to support:
+Core engine scheduling needs to support:
 
-- future revisit time;
+- future revisit date;
 - Due / Overdue recognition;
 - adjustment of the next revisit from new evidence;
 - explainable revisit reasons.
@@ -374,6 +458,174 @@ Scheduled review is due
 Advanced statistical memory modeling is not required for V2 Core.
 
 FSRS is deferred.
+
+## 7.2 Calendar purpose
+
+The Calendar solves the temporal-visibility problem created by a Today-only view.
+
+It lets the learner:
+
+- inspect future Quiz Studio learning schedules;
+- see which learning sessions are scheduled on which dates;
+- inspect Due / Overdue items;
+- directly reschedule an existing scheduled session;
+- manually schedule a currently unscheduled learning material for a future date.
+
+The Calendar is an editable scheduling surface, not merely a read-only projection.
+
+## 7.3 Manual scheduling contract
+
+A manual Calendar schedule is date-level only.
+
+The minimum manually scheduled session contract is:
+
+```text
+date
++
+material
++
+Task Domain
++
+Intent: Practice / Test
+```
+
+Manual scheduling does **not** require:
+
+- exact clock time;
+- estimated duration;
+- question-count budget;
+- daily workload target;
+- automatic workload balancing;
+- reminder / notification.
+
+The learner may create a future session even when the engine has not created a revisit for that material.
+
+## 7.4 User rescheduling authority
+
+If the learner changes an existing scheduled date:
+
+> **the new date becomes the current authoritative active schedule.**
+
+The old date must not continue to generate Overdue status merely because it was previously suggested by the engine.
+
+Changing a schedule changes scheduling context only.
+
+It does not rewrite learning evidence.
+
+## 7.5 Engine / user scheduling conflict
+
+If new evidence causes the engine to recommend a different date from a user-owned active schedule:
+
+- the engine must not silently overwrite the learner;
+- the engine must not create a second competing active schedule;
+- Quiz Studio should present both candidate dates;
+- the learner chooses which date becomes active.
+
+Conceptually:
+
+```text
+User schedule: Oct 6
+Engine suggestion: Oct 8
+        ↓
+Choose Oct 6 / Choose Oct 8
+        ↓
+One active schedule
+```
+
+## 7.6 Simple recurrence
+
+V2 Calendar supports simple user-authored recurrence for learning sessions.
+
+Examples may include:
+
+- every N days;
+- weekly;
+- other similarly simple bounded recurrence patterns.
+
+V2 does not require a full general-purpose recurrence grammar.
+
+Recurring schedules remain user-authored learning strategy, not canonical learning evidence.
+
+## 7.7 Recurrence re-anchoring
+
+If an engine conflict is presented and the learner accepts the engine-suggested date for a recurring schedule:
+
+> **the accepted date becomes the new recurrence anchor.**
+
+Future occurrences are recalculated from that new anchor using the existing cadence.
+
+Example:
+
+```text
+Original:
+Oct 3 → Oct 6 → Oct 9 → Oct 12
+every 3 days
+
+Learner accepts engine suggestion:
+Oct 8
+
+Result:
+Oct 3 → Oct 8 → Oct 11 → Oct 14
+```
+
+## 7.8 Manual movement of a recurring occurrence
+
+When the learner manually moves one occurrence of a recurring schedule, Quiz Studio should ask:
+
+```text
+Move this occurrence only
+or
+Move this occurrence and future occurrences
+```
+
+If the learner chooses **this occurrence only**:
+
+- the moved item becomes a one-off exception;
+- the remaining recurrence keeps its existing anchor.
+
+If the learner chooses **this occurrence and future occurrences**:
+
+- the new date becomes the new anchor;
+- future occurrences are recalculated from that anchor.
+
+The product must not guess which behavior the learner intended.
+
+## 7.9 Missed schedules
+
+If a scheduled session passes without completion:
+
+> **it becomes Overdue.**
+
+It must not:
+
+- silently disappear;
+- automatically move itself to another date.
+
+The learner may then:
+
+- start it;
+- reschedule it;
+- cancel it.
+
+Overdue is a factual scheduling state, not a punishment or gamification mechanic.
+
+## 7.10 Calendar non-goals
+
+V2 Calendar does not include:
+
+- external events;
+- exam dates;
+- assignment deadlines;
+- personal appointments;
+- cross-application calendar sync;
+- exact-time scheduling;
+- reminders;
+- desktop notifications;
+- workload planning;
+- daily study-budget planning;
+- automatic workload balancing;
+- Goal / Exam planning.
+
 
 ---
 
@@ -826,9 +1078,11 @@ CUT from Core:
 - daily study-budget planner;
 - large goal-management architecture.
 
-A future scoped deadline may exist as optional context.
+V2 Calendar does not accept external exam dates, assignment deadlines, appointments, or other non-Quiz-Studio events.
 
-Deadline remains Context, not Evidence.
+A future version may separately revisit scoped Deadline Context, but that is outside V2 Core and outside the V2 Calendar contract.
+
+If later introduced, Deadline remains Context, not Evidence.
 
 Exam Simulation, if later required, should be modeled as Test session policy rather than a new canonical learning domain.
 
@@ -869,7 +1123,8 @@ The following are explicitly outside V2 Core unless separately reopened:
 
 ### LATER
 
-- optional scoped Deadline Context;
+- optional scoped Deadline Context, outside V2 Calendar;
+- exact-time scheduling / reminder notifications, if separately justified;
 - desktop ergonomics beyond baseline parity.
 
 ### DEFER
@@ -890,6 +1145,8 @@ The following are explicitly outside V2 Core unless separately reopened:
 - canonical Mastery Score;
 - canonical Learning State Machine;
 - full Goal/Exam subsystem;
+- general-purpose calendar / external-event manager;
+- workload planner / daily study-budget planner;
 - Study Mode Router / Mode Zoo;
 - Analytics Dashboard;
 - XP/streak/leaderboard gamification;
@@ -991,6 +1248,21 @@ At minimum, release readiness must demonstrate:
 - recommendation separated from evidence;
 - learner can choose Manual vs Recommended selection.
 
+### Calendar Scheduling
+
+- future Quiz Studio schedules are visible beyond Today;
+- learner can directly reschedule an existing session;
+- learner can manually schedule an unscheduled material as a future Practice / Test session;
+- manually changed dates become the authoritative active schedule;
+- engine/user date conflicts require explicit learner choice;
+- no duplicate active schedule is created by a conflict;
+- simple recurrence works;
+- accepting a new date can re-anchor future recurrence;
+- recurring-item manual movement offers `this occurrence only` vs `this and future`;
+- missed sessions become Overdue rather than disappearing or auto-shifting;
+- Calendar remains date-level only;
+- no external events, exam dates, reminders, notifications, workload planning, or daily study-budget planning are introduced.
+
 ### Objective Explanation
 
 - all five objective question types support optional explanation;
@@ -1053,9 +1325,9 @@ V1 Migration ADR
         ↓
 Migration Milestone
         ↓
-Scheduler / Recommendation ADR
+Scheduler / Recommendation / Calendar ADR
         ↓
-Learning Orchestration Milestone
+Learning Orchestration + Calendar Milestone
         ↓
 Task-Domain Integration
 (Objective / Translation / Typing)
@@ -1081,7 +1353,7 @@ Therefore:
 
 - Desktop ADR gates Desktop Foundation.
 - Migration ADR gates Migration implementation.
-- Scheduler/Recommendation ADR gates Learning Orchestration implementation.
+- Scheduler/Recommendation/Calendar ADR gates Learning Orchestration and Calendar scheduling implementation.
 
 The V2 development branch should be created after the Desktop Architecture Gate passes and the first real V2 repository modification is ready.
 
@@ -1161,6 +1433,12 @@ Learning Orchestration
 ├─ canonical heterogeneous evidence
 ├─ remediation semantics
 ├─ lightweight scheduled revisit
+├─ Calendar Scheduling Surface
+│  ├─ future schedule visibility
+│  ├─ manual scheduling / rescheduling
+│  ├─ simple recurrence
+│  ├─ Due / Overdue
+│  └─ learner-resolved engine conflicts
 ├─ explainable recommendation
 ├─ Manual / Recommended selection
 └─ Practice / Test intent
@@ -1199,13 +1477,16 @@ Cloud SaaS
 Typing-tutor curriculum
 Mastery-scoring engine
 Mode-heavy study application
+General-purpose calendar
+Goal / Exam / workload planner
+Reminder / notification system
 ```
 
 ---
 
 # 28. Final Freeze Statement
 
-> **Quiz Studio V2 is a local-first desktop learning workspace built around durable learning evidence, explainable next-practice recommendations, and learner control. It preserves the strongest V1 workflows, establishes reliable desktop data ownership and V1 continuity, adds lightweight scheduled revisit, objective-answer explanations, and first-class copy-typing practice, while refusing unnecessary mastery scoring, analytics dashboards, embedded AI, mode proliferation, gamification, and cloud dependency.**
+> **Quiz Studio V2 is a local-first desktop learning workspace built around durable learning evidence, explainable next-practice recommendations, learner-controlled calendar scheduling, and learner sovereignty. It preserves the strongest V1 workflows, establishes reliable desktop data ownership and V1 continuity, adds lightweight scheduled revisit, a date-level Calendar Scheduling Surface with manual scheduling/rescheduling and simple recurrence, objective-answer explanations, and first-class copy-typing practice, while refusing unnecessary mastery scoring, analytics dashboards, embedded AI, Goal/Exam/workload planning, general-purpose calendar behavior, reminders, mode proliferation, gamification, and cloud dependency.**
 
 The product scope described in this document is now **FROZEN**.
 
