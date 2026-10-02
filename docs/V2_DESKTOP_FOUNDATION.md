@@ -1,7 +1,7 @@
 # V2 Desktop Foundation — Milestone Record
 
 **Branch:** `v2` (long-lived V2 development line, cut from `main@8eb6608`)
-**Status:** implementation complete; the Human Gate was HOLD for an architecture-boundary repair (section 8), now repaired and **awaiting re-review**
+**Status:** **ACCEPTED** (Desktop Foundation Human Gate PASS, 2026-10-02) after two bounded repairs (sections 8 and 9); acceptance debt D1-D4 stays open as non-blocking packaged/manual debt (section 10)
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§5.1, §24), ADR 0001 (ACCEPTED, amendments A1–A8), `docs/V2_UI_ARCHITECTURE_FREEZE.md`, `docs/adr/evidence/0001-desktop-spike-report.md`.
 **Code:** [`desktop/`](../desktop/README.md). V1 production code, tests and CI are untouched.
 
@@ -98,7 +98,7 @@ See [`desktop/README.md`](../desktop/README.md): environment script, test suites
 
 ## 7. Gate readiness
 
-The milestone's exit conditions are met except where listed as acceptance debt D1–D4, which the Product Owner may accept, schedule, or run manually. Nothing in V1 Migration, Scheduler, Calendar or the domain integrations has been started. The next milestone (V1 Migration ADR) is **not** started and needs separate authorization.
+The milestone's exit conditions are met except where listed as acceptance debt D1–D4, which the Product Owner may accept, schedule, or run manually. Nothing in V1 Migration, Scheduler, Calendar or the domain integrations has been started. Superseded by section 10: the Human Gate passed and the V1 Migration ADR (ADR 0002) is the active next stage; Migration implementation has not started.
 
 ## 8. Human Gate HOLD: raw-path boundary repair
 
@@ -121,3 +121,18 @@ The section 8 repair introduced a fidelity defect: `dispatch` ran a generic scru
 - Only the system-generated diagnostic is sanitized: `error.message` of a failure envelope (`sanitize_envelope`), the same field where the app builds boot/recovery status and consistency-problem detail (`sanitize_message`). The sanitizer redacts the literal data root first, then drive paths (spaces allowed), UNC and `\\?\` verbatim paths and common Unix roots.
 - Regression tests (`core/port/tests/webview_contract.rs`): a canonical payload full of Windows/Unix/UNC path-like literals (also as object keys and inside a user `error.message` field) is committed through the WebView and read back with an identical canonical hash and no `<path>`/`<data folder>` anywhere (this test was red against the blanket scrub); error diagnostics with spaced Windows, verbatim, UNC and Unix paths are redacted while context text is kept; success results and the `result` of a failure envelope are never touched; system responses stay free of the real data root; forbidden commands are still rejected.
 - No change to store/media/activation/archive semantics. D1-D4 remain open acceptance debt; the milestone remains awaiting Human Gate re-review.
+
+## 10. Human Gate outcome: ACCEPTED
+
+The Product Owner passed the Desktop Foundation Human Gate (**PASS - ACCEPTED**, 2026-10-02) after the boundary repair (section 8) and the structured-contract fidelity fix (section 9). `v2` remains the long-lived V2 development branch and is **not** merged to `main`.
+
+| Item | Status after acceptance |
+|---|---|
+| Desktop Foundation exit conditions | Met (section 4); Windows CI green on the accepted commit |
+| D1 native Open dialog automated round-trip | **Open - non-blocking packaged/manual acceptance debt** (not PASS, not removed) |
+| D2 OS drag-and-drop of a >= 1 GiB file | **Open - non-blocking packaged/manual acceptance debt** |
+| D3 OneDrive-redirected Desktop/Documents | **Open - non-blocking packaged/manual acceptance debt** |
+| D4 runtime-less WebView2 `downloadBootstrapper` | **Open - non-blocking packaged/manual acceptance debt** (static evidence only) |
+| Other open items | final app icon, bundled CJK fonts, code signing, auto-update (unchanged) |
+
+Next stage: the **V1 Migration ADR (ADR 0002)** is active; it gates the Migration milestone. **Migration implementation has not started**, and Scheduler / Recommendation / Calendar and the domain integrations remain not started.

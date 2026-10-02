@@ -2,11 +2,11 @@
 
 ## 当前阶段
 
-V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2 Desktop Foundation（`v2` 分支进行中；实现完成；Human Gate HOLD 已通过边界修复处理，等待复审；Migration ADR 尚未开始）
+V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + `v2` 分支上的 V2：Desktop Foundation **已验收（ACCEPTED）**（Human Gate PASS）；V1 Migration ADR（ADR 0002）进行中；Migration 实现尚未开始
 
 ## 当前活跃里程碑
 
-V1：无（维护冻结）。V2：**Desktop Foundation** 是长期 `v2` 开发分支（自 `main@8eb6608` 切出，已推送至 `origin/v2`，无指向 `main` 的 PR）上的活跃里程碑。实现已完成，等待 Human Gate；里程碑记录与证据映射见 [`docs/V2_DESKTOP_FOUNDATION.zh-CN.md`](docs/V2_DESKTOP_FOUNDATION.zh-CN.md)。V1 Migration ADR **尚未**开始。
+V1：无（维护冻结）。V2：**Desktop Foundation 已验收（ACCEPTED）**（Human Gate PASS），位于长期 `v2` 开发分支（自 `main@8eb6608` 切出，已推送至 `origin/v2`，无指向 `main` 的 PR，`v2` 未合并）；里程碑记录与证据映射见 [`docs/V2_DESKTOP_FOUNDATION.zh-CN.md`](docs/V2_DESKTOP_FOUNDATION.zh-CN.md)。当前活跃阶段为 **V1 Migration ADR（ADR 0002）**；Migration 实现**尚未**开始。
 
 ## 最近已完成里程碑
 
@@ -162,7 +162,7 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 Quiz Studio V1 已完成版本 `1.0.0` 最终定版。已接受的候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）作为不可变验证基线保持不变，且无任何候选版本后的运行时代码修改。当前未安排任何 V1 工程里程碑。V1 的后续事项（如 GitHub Pages 部署或正式 GitHub Release）保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
 
-Quiz Studio V2 已 **通过 Desktop Architecture Gate**；正式 V2 开发分支 `v2` 已创建，**Desktop Foundation 进行中**。上述 V1 发布线保持不变，仍是不可变的 `v1.0.0` 基线；V2 工作不会修改它。
+Quiz Studio V2 已 **通过 Desktop Architecture Gate**；正式 V2 开发分支 `v2` 已创建，**Desktop Foundation 已验收（ACCEPTED）**。上述 V1 发布线保持不变，仍是不可变的 `v1.0.0` 基线；V2 工作不会修改它。
 
 V2 进展（以所链接文档为准，此处不改变其内容）：
 
@@ -173,16 +173,17 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 - **Bounded desktop spike：已完成。** 在一次性的 `spike/desktop-runtime` 分支上执行（最终 HEAD `a79cea5c29d10f88c0a7f09c8a265a76dca17d23`，永不合并）；长期证据见 [`docs/adr/evidence/0001-desktop-spike-report.md`](docs/adr/evidence/0001-desktop-spike-report.md)，并配有已修订的 [spike contract](docs/adr/0001-appendix-desktop-spike-contract.md)。
 - **Desktop Architecture Gate：已通过 —— GO WITH AMENDMENT**（Product Owner）。H2–H7 PASS；H1 为 CONDITIONAL，已带残余限制被接受（无 WebView2 Runtime 环境下的 `downloadBootstrapper` 实测、禁用网卡 + `pktmon` 运行均推迟）；H8 已由 Human Gate CANCELLED / RECLASSIFIED（其未完成的原生 Open 对话框、OS 拖放与 OneDrive 重定向的 Desktop/Documents 检查转入 Desktop Foundation / 打包验收）。
 - **延续的 Typing 约束：** 第三方搜狗拼音 IME 在打包应用中不产生 composition 事件；未来 Typing 不得把 `compositionend` 作为唯一的已提交文本路径，必须兼容非 composing 的已提交输入 / `insertText`。这不会重新打开桌面架构。
-- **Desktop Foundation：`v2` 上实现完成，等待 Human Gate。** Tauri 2 + WebView2 外壳（单实例、严格 CSP、白名单 IPC、由 Rust 持有的原生对话框/拖放）、catalog 驱动的 SQLite store（Unit of Work 与 payload/projection 一致性）、内容寻址媒体、带 journal 恢复的统一 staging/activation/rollback 原语、V2 archive、稳定的身份/版本/数据根、按用户 NSIS 安装包。代码位于 [`desktop/`](desktop/README.md)；一次性 spike 代码未被复制。
+- **Desktop Foundation：已验收（Human Gate PASS，2026-10-02）。** 在 `v2` 上实现： Tauri 2 + WebView2 外壳（单实例、严格 CSP、白名单 IPC、由 Rust 持有的原生对话框/拖放）、catalog 驱动的 SQLite store（Unit of Work 与 payload/projection 一致性）、内容寻址媒体、带 journal 恢复的统一 staging/activation/rollback 原语、V2 archive、稳定的身份/版本/数据根、按用户 NSIS 安装包。代码位于 [`desktop/`](desktop/README.md)；一次性 spike 代码未被复制。
 - **验证（Windows CI，`windows-latest`，MSVC + 静态 CRT —— [运行记录](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37012332165)，全部步骤通过）：** fmt + clippy `-D warnings`；15 个 JS 测试；按 ADR 阈值运行的 Rust 套件 —— 500 次强制 kill 崩溃循环（0 违规）、activation 检查点矩阵 6 个检查点 × 2 模式 × 3 次 + 回滚中 kill（状态恒为 pre 或 post）、400 MiB 流式写入/归档/恢复（子进程峰值远低于 300 MiB 上限）、14 种命名 archive 篡改 + 300 次位翻转均在激活前被拒绝、5,000 个 JS↔Rust↔DB 保真向量（0 不一致）；应用二进制可复现（两次构建 SHA-256 相同）；发布二进制不含故障注入钩子；安装包为 `downloadBootstrapper` 模式；已安装 exe 冒烟（标识、自测、启动、单实例、应用进程无监听/无远程连接、强制结束后恢复）；同标识升级保留数据；静默卸载保留用户数据。
-- **移交 Human Gate 的验收欠账（明确列出，未豁免）：** D1 原生打开对话框自动化往返、D2 ≥ 1 GiB OS 拖放、D3 OneDrive 重定向桌面/文档、D4 无运行时 WebView2 的 `downloadBootstrapper`（仅静态证据）—— 手动步骤见 [`manual-qa/v2-desktop-foundation.zh-CN.md`](manual-qa/v2-desktop-foundation.zh-CN.md)。其他未决项：最终应用图标（目前为中性占位图标）、内置 CJK 字体（外壳使用系统字体，不引用网络资源）、代码签名与自动更新（范围外）。
-- **尚未开始（保持不变）：** V1 Migration ADR / 迁移实现、Scheduler / Recommendation / Calendar、Objective / Translation / Typing 领域集成、产品视图。
+- **验收欠账（不阻塞的打包/手动欠账；保持开放，未标 PASS，未删除）：** D1 原生打开对话框自动化往返、D2 ≥ 1 GiB OS 拖放、D3 OneDrive 重定向桌面/文档、D4 无运行时 WebView2 的 `downloadBootstrapper`（仅静态证据）—— 手动步骤见 [`manual-qa/v2-desktop-foundation.zh-CN.md`](manual-qa/v2-desktop-foundation.zh-CN.md)。其他未决项：最终应用图标（目前为中性占位图标）、内置 CJK 字体（外壳使用系统字体，不引用网络资源）、代码签名与自动更新（范围外）。
+- **当前阶段：** V1 Migration ADR（ADR 0002）—— Migration Readiness Inventory 的 Human Gate 决策 D-1 至 D-15 为权威输入。
+- **尚未开始（保持不变）：** Migration 实现、Scheduler / Recommendation / Calendar、Objective / Translation / Typing 领域集成、产品视图。
 
 **Human Gate HOLD / 修复：** Human Gate 发现原始文件系统路径进入了 WebView（绝对数据根、绝对媒体路径、WebView 可调用的 `media.gc`）。已在限定范围内修复：响应不含路径、`media.gc` 移出 WebView 白名单（仅 Rust 以固定策略执行 GC）、删除 `verifyBackup(path)`、移除 asset protocol 与预览、新增回归测试；ADR 0001 第 7 节现明确升级失败拒绝运行为已接受行为，第 15 节标记为已接受。D1–D4 仍为未执行的验收欠账。
 
 **跟进修复（保真）：** 第一次修复的整体路径 scrub 会改写 `store.read` payload 中用户写入的、形似路径的文本。WebView 边界现为结构化契约：系统结果按构造无路径，规范/用户内容永不改写，只清洗失败诊断信息（`error.message`，覆盖含空格 Windows、UNC/verbatim 与 Unix 路径）；回归测试同时证明无损往返与无泄露。
 
-**下一步行动：Desktop Foundation 的 Human Gate 复审。** 通过后，V2 下一步是 V1 Migration ADR，该步骤**尚未**开始，需另行授权。`spike/desktop-runtime` 分支保持一次性且永不合并。
+**下一步行动：完成 V1 Migration ADR（ADR 0002），然后停在其 Human Gate。** Migration 里程碑由该 ADR 约束，并需另行授权。`spike/desktop-runtime` 分支保持一次性且永不合并。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 
@@ -190,7 +191,7 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 仓库生命周期状态：V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2 Desktop Foundation（`v2` 分支，实现完成，等待 Human Gate）
+- 仓库生命周期状态：V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2（`v2` 分支）：Desktop Foundation 已验收，V1 Migration ADR 进行中
 - V2 开发分支：`v2`（自 `main@8eb6608`；已推送；长期分支；无指向 `main` 的 PR）
 - 最终发布版本号：`1.0.0`
 - 已接受候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）

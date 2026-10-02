@@ -1,7 +1,7 @@
 # V2 Desktop Foundation —— 里程碑记录
 
 **分支：** `v2`（长期 V2 开发线，自 `main@8eb6608` 切出）
-**状态：** 实现完成；Human Gate 曾为 HOLD（架构边界修复，见第 8 节），现已修复，**等待复审**
+**状态：** **已验收（ACCEPTED）**（Desktop Foundation Human Gate PASS，2026-10-02），期间经过两次限定范围的修复（第 8、9 节）；验收欠账 D1–D4 保持开放，作为不阻塞的打包/手动验收欠账（第 10 节）
 **权威输入：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§5.1、§24）、ADR 0001（已接受，含修订 A1–A8）、`docs/V2_UI_ARCHITECTURE_FREEZE.md`、`docs/adr/evidence/0001-desktop-spike-report.md`。
 **代码：** [`desktop/`](../desktop/README.md)。V1 生产代码、测试与 CI 均未改动。
 
@@ -84,7 +84,7 @@ qs-port   与运行时无关的 Store Port（JSON 入、envelope 出）、健康
 
 ## 7. Gate 就绪情况
 
-除验收欠账 D1–D4（产品负责人可接受、排期或手动执行）外，退出条件均已满足。V1 Migration、Scheduler、Calendar 与各领域集成均未启动。下一里程碑（V1 Migration ADR）**尚未**开始，需另行授权。
+除验收欠账 D1–D4（产品负责人可接受、排期或手动执行）外，退出条件均已满足。V1 Migration、Scheduler、Calendar 与各领域集成均未启动。已被第 10 节取代：Human Gate 已通过，V1 Migration ADR（ADR 0002）为当前活跃的下一阶段；Migration 实现尚未开始。
 
 ## 8. Human Gate HOLD：原始路径边界修复
 
@@ -107,3 +107,18 @@ Human Gate 发现首版违反了已声明的边界“原始文件系统路径不
 - 只清洗系统生成的诊断信息：失败 envelope 的 `error.message`（`sanitize_envelope`），以及应用构造启动/恢复状态和一致性问题详情时的同一字段（`sanitize_message`）。清洗器先替换字面数据根，再处理盘符路径（允许空格）、UNC 与 `\\?\` verbatim 路径及常见 Unix 根目录。
 - 回归测试（`core/port/tests/webview_contract.rs`）：包含 Windows/Unix/UNC 路径样式文本（也作为对象键、以及用户自己的 `error.message` 字段）的规范 payload 经 WebView 提交并读回，规范哈希一致且无任何 `<path>`/`<data folder>`（该测试对旧的整体 scrub 为红）；含空格 Windows、verbatim、UNC、Unix 路径的错误诊断被清洗且保留上下文；成功结果及失败 envelope 的 `result` 永不被触碰；系统响应不含真实数据根；禁用命令仍被拒绝。
 - store/media/activation/archive 语义未变；D1–D4 仍为未执行验收欠账；里程碑仍等待 Human Gate 复审。
+
+## 10. Human Gate 结论：ACCEPTED
+
+产品负责人在边界修复（第 8 节）与结构化契约保真修复（第 9 节）之后通过了 Desktop Foundation Human Gate（**PASS - ACCEPTED**，2026-10-02）。`v2` 仍是长期 V2 开发分支，**不**合并到 `main`。
+
+| 项目 | 验收后状态 |
+|---|---|
+| Desktop Foundation 退出条件 | 已满足（第 4 节）；被验收提交的 Windows CI 为绿色 |
+| D1 原生打开对话框自动化往返 | **开放 —— 不阻塞的打包/手动验收欠账**（未标 PASS，未删除） |
+| D2 ≥ 1 GiB OS 拖放 | **开放 —— 不阻塞的打包/手动验收欠账** |
+| D3 OneDrive 重定向桌面/文档 | **开放 —— 不阻塞的打包/手动验收欠账** |
+| D4 无运行时 WebView2 的 `downloadBootstrapper` | **开放 —— 不阻塞的打包/手动验收欠账**（仅静态证据） |
+| 其他未决项 | 最终应用图标、内置 CJK 字体、代码签名、自动更新（不变） |
+
+下一阶段：**V1 Migration ADR（ADR 0002）** 为活跃阶段，它约束 Migration 里程碑。**Migration 实现尚未开始**；Scheduler / Recommendation / Calendar 与各领域集成同样尚未开始。
