@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-V1 Finalized / Maintenance Hold
+V1 Finalized / Maintenance Hold + V2 Architecture Validation Active
 
 ## Active Milestone
 
-None
+V1: None (maintenance hold). V2: Architecture Validation — bounded desktop spike authorized, not yet started; no V2 implementation milestone is active.
 
 ## Most Recent Completed Milestone
 
@@ -158,13 +158,22 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 ## Next Engineering Objective
 
-**Maintenance Hold (No Active Engineering Milestone)**
+**V1 release line: Maintenance Hold (No Active V1 Engineering Milestone)**
 
-Quiz Studio V1 is finalized at version `1.0.0`. The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the immutable verification baseline with zero post-candidate runtime modifications. No active engineering milestone is currently scheduled.
+Quiz Studio V1 is finalized at version `1.0.0`. The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the immutable verification baseline with zero post-candidate runtime modifications. No V1 engineering milestone is currently scheduled. V1 follow-ups such as GitHub Pages deployment or a formal GitHub Release remain separately deferred and begin only upon explicit Product Owner authorization.
 
-Any future work (such as GitHub Pages deployment, desktop application packaging, or next-version planning) remains separately deferred and begins only upon explicit Product Owner authorization.
+Quiz Studio V2 is in **Architecture Validation (active)**. The V1 release line above is unchanged and remains the immutable `v1.0.0` baseline; V2 work does not modify it.
 
-Quiz Studio V2 product scope is frozen in [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md) (baseline `v1.0.0`). This is a governance document only: no V2 implementation, ADR, spike, or V2 development branch exists yet. The V2 development branch is created only after the Desktop Architecture Gate passes.
+V2 progress (see the linked documents for authority; nothing here changes them):
+
+- **Product Scope Freeze Revision 1: complete** — [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md).
+- **UI Architecture Freeze: complete** — [`docs/V2_UI_ARCHITECTURE_FREEZE.md`](docs/V2_UI_ARCHITECTURE_FREEZE.md) (Human Design Gate passed; approved design inputs tracked under `docs/design-inputs/`).
+- **V1 Migration Readiness Inventory: complete** — passed its Human Gate and is merged into `main` ([`docs/V2_MIGRATION_READINESS_INVENTORY.md`](docs/V2_MIGRATION_READINESS_INVENTORY.md)).
+- **Desktop Runtime & Application Data ADR: Human Gate approved for a bounded spike** (GO WITH AMENDMENT) — [`docs/adr/0001-desktop-runtime-and-application-data.md`](docs/adr/0001-desktop-runtime-and-application-data.md) and the companion [spike contract](docs/adr/0001-appendix-desktop-spike-contract.md). The ADR is **not** accepted as the desktop architecture: the **Desktop Architecture Gate has not been passed**.
+- **Bounded desktop spike: authorized, not started.** No spike has been run and no spike results exist.
+- **No V2 production implementation exists, and no V2 development branch exists.**
+
+**Next engineering objective: execute the disposable bounded desktop spike** defined in the spike contract. The spike lives on a throwaway `spike/desktop-runtime` branch that is **never merged**. Only after the **Desktop Architecture Gate passes** may the formal V2 development branch be created and Desktop Foundation begin (Scope Freeze §24).
 
 Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.
 
@@ -172,7 +181,7 @@ Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFI
 
 - Default branch: `main`
 - Remote: `origin`
-- Repository lifecycle state: V1 Finalized / Maintenance Hold
+- Repository lifecycle state: V1 Finalized / Maintenance Hold + V2 Architecture Validation Active
 - Final release version: `1.0.0`
 - Accepted candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
 - Commit and merge tracking: Use Git history for `main` commit identity and PR merge history

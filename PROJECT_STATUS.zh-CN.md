@@ -2,11 +2,11 @@
 
 ## 当前阶段
 
-V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold)
+V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2 架构验证进行中 (V2 Architecture Validation Active)
 
 ## 当前活跃里程碑
 
-无
+V1：无（维护冻结）。V2：架构验证 —— bounded desktop spike 已获授权、尚未开始；当前没有处于活跃状态的 V2 实现里程碑。
 
 ## 最近已完成里程碑
 
@@ -158,13 +158,22 @@ Milestone 7 产品硬化已在 Feature Freeze 下全部完成。M7.2 与 PR #22 
 
 ## 后续工程目标
 
-**维护保留状态（当前无活跃工程里程碑）**
+**V1 发布线：维护保留状态（当前无活跃 V1 工程里程碑）**
 
-Quiz Studio V1 已完成版本 `1.0.0` 最终定版。已接受的候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）作为不可变验证基线保持不变，且无任何候选版本后的运行时代码修改。当前未安排任何活跃工程里程碑。
+Quiz Studio V1 已完成版本 `1.0.0` 最终定版。已接受的候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）作为不可变验证基线保持不变，且无任何候选版本后的运行时代码修改。当前未安排任何 V1 工程里程碑。V1 的后续事项（如 GitHub Pages 部署或正式 GitHub Release）保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
 
-未来任何工作（如 GitHub Pages 部署、桌面应用打包或下一版本规划）均保持独立延期，仅在获得 Product Owner 明确授权后方可启动。
+Quiz Studio V2 处于 **架构验证阶段（进行中）**。上述 V1 发布线保持不变，仍是不可变的 `v1.0.0` 基线；V2 工作不会修改它。
 
-Quiz Studio V2 产品范围已冻结于 [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md)（基线 `v1.0.0`）。该文件仅为治理文档：目前尚无 V2 实现、ADR、技术验证（spike）或 V2 开发分支；V2 开发分支仅在 Desktop Architecture Gate 通过后创建。
+V2 进展（以所链接文档为准，此处不改变其内容）：
+
+- **产品范围冻结 Revision 1：已完成** —— [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md)。
+- **UI 架构冻结：已完成** —— [`docs/V2_UI_ARCHITECTURE_FREEZE.md`](docs/V2_UI_ARCHITECTURE_FREEZE.md)（已通过 Human Design Gate；已批准的设计输入已纳入 `docs/design-inputs/` 版本控制）。
+- **V1 Migration Readiness Inventory：已完成** —— 已通过 Human Gate 并合入 `main`（[`docs/V2_MIGRATION_READINESS_INVENTORY.md`](docs/V2_MIGRATION_READINESS_INVENTORY.md)）。
+- **Desktop Runtime & Application Data ADR：已通过 Human Gate，获准进行 bounded spike**（GO WITH AMENDMENT）—— [`docs/adr/0001-desktop-runtime-and-application-data.md`](docs/adr/0001-desktop-runtime-and-application-data.md) 及配套 [spike contract](docs/adr/0001-appendix-desktop-spike-contract.md)。该 ADR **尚未**被接受为桌面架构：**Desktop Architecture Gate 尚未通过**。
+- **Bounded desktop spike：已获授权，尚未开始。** 目前没有运行过 spike，也没有 spike 结果。
+- **目前不存在任何 V2 生产实现，也不存在 V2 开发分支。**
+
+**下一工程目标：执行 spike contract 中定义的一次性（disposable）bounded desktop spike。** spike 位于一次性的 `spike/desktop-runtime` 分支，**永不合并**。仅在 **Desktop Architecture Gate 通过**之后，才可创建正式 V2 开发分支并开始 Desktop Foundation（Scope Freeze §24）。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 
@@ -172,7 +181,7 @@ Quiz Studio V2 产品范围已冻结于 [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUC
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 仓库生命周期状态：V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold)
+- 仓库生命周期状态：V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2 架构验证进行中 (V2 Architecture Validation Active)
 - 最终发布版本号：`1.0.0`
 - 已接受候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
 - 提交与合并追踪：请查阅 Git 历史以获取 `main` 提交身份与 PR 合并记录
