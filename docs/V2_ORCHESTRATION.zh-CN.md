@@ -70,7 +70,7 @@ WebView 领域层（纯 JS/TS，注入时钟）                         Rust cor
 
 ## 4. 结果
 
-本地（开发机，debug profile，阈值按默认缩放）：`qs-orchestration` 13 个 Rust 测试、`qs-store` 与 `qs-port` 套件通过（自检现为 9 步）、`clippy -D warnings` 与 `rustfmt` 干净、93 个 JS 测试（既有 18 + 纯 38 + 对真实 store 的集成 37）。CI（`windows-latest` 上的 `Desktop (V2)`，阈值 `QS_ORCH_KILLS=100`、`QS_ORCH_SEQUENCES=60` 加既有 `QS_*`）：运行完成后记录（待运行）。
+本地（开发机，debug profile，阈值按默认缩放）：`qs-orchestration` 13 个 Rust 测试、`qs-store` 与 `qs-port` 套件通过（自检现为 9 步）、`clippy -D warnings` 与 `rustfmt` 干净、93 个 JS 测试（既有 18 + 纯 38 + 对真实 store 的集成 37）。CI（`windows-latest` 上的 `Desktop (V2)`，阈值 `QS_ORCH_KILLS=100`、`QS_ORCH_SEQUENCES=60` 加既有 `QS_*`）：**全绿**，[run 37059517115](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37059517115)（首次 run 37058593471 因一个仅 Windows 出现的缺陷变红——CRLF 检出与 LF golden 文件字节对比——已用 `*.golden.json eol=lf` 修复，随后集成步骤实际运行并通过）。
 
 ## 5. 提交 Human Gate 的实现澄清
 

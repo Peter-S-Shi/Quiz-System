@@ -70,7 +70,7 @@ Mutation check (not a committed test): six deliberate defects in `ScheduleStore`
 
 ## 4. Results
 
-Local (development machine, debug profile, thresholds default-scaled): `qs-orchestration` 13 Rust tests, `qs-store` and `qs-port` suites green (the self-test now has 9 steps), `clippy -D warnings` and `rustfmt` clean, 93 JS tests (18 existing + 38 pure + 37 integration against the real store). CI (`Desktop (V2)` on `windows-latest`, thresholds `QS_ORCH_KILLS=100`, `QS_ORCH_SEQUENCES=60` plus the existing `QS_*`): recorded after the run completes (pending).
+Local (development machine, debug profile, thresholds default-scaled): `qs-orchestration` 13 Rust tests, `qs-store` and `qs-port` suites green (the self-test now has 9 steps), `clippy -D warnings` and `rustfmt` clean, 93 JS tests (18 existing + 38 pure + 37 integration against the real store). CI (`Desktop (V2)` on `windows-latest`, thresholds `QS_ORCH_KILLS=100`, `QS_ORCH_SEQUENCES=60` plus the existing `QS_*`): **green**, [run 37059517115](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37059517115) (first run 37058593471 was red on one Windows-only defect — CRLF checkout vs the LF golden file — fixed by `*.golden.json eol=lf`; the integration steps then ran and passed).
 
 ## 5. Implementation clarifications for the Human Gate
 
