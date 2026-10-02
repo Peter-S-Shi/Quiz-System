@@ -1,0 +1,12 @@
+{
+ "bytes": 1073741824,
+ "srcSha": "5c2aaf45153a76a050cf93052b450eb34550aecc001f6d7eaff0b4e6aa91b77d",
+ "copySha": "5c2aaf45153a76a050cf93052b450eb34550aecc001f6d7eaff0b4e6aa91b77d",
+ "identical": true,
+ "copyMs": 1085,
+ "progressEvents": 10,
+ "frames": 725,
+ "maxFrameGapMs": 4.700000002980232,
+ "p99FrameGapMs": 4,
+ "p50FrameGapMs": 2.7999999970197678
+}

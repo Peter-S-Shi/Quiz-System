@@ -1,13 +1,13 @@
 {
     "driver":  [
                    "save plain: ok",
-                   "open plain: dialog \u0027spike open 0\u0027 not found",
-                   "save desktop: dialog \u0027spike save 1\u0027 not found",
+                   "open plain: ok",
+                   "save desktop: file name edit not found",
                    "open desktop: dialog \u0027spike open 1\u0027 not found",
                    "save documents: dialog \u0027spike save 2\u0027 not found",
                    "open documents: dialog \u0027spike open 2\u0027 not found",
-                   "save cjk: dialog \u0027spike save 3\u0027 not found",
-                   "open cjk: dialog \u0027spike open 3\u0027 not found"
+                   "save cjk: ok",
+                   "open cjk: dialog still open after click+Enter"
                ],
     "paths":  [
                   {
@@ -34,7 +34,7 @@
     "filesPresentBeforeCleanup":  [
                                       {
                                           "case":  "plain",
-                                          "srcExists":  false,
+                                          "srcExists":  true,
                                           "copyExists":  false
                                       },
                                       {
@@ -49,7 +49,7 @@
                                       },
                                       {
                                           "case":  "cjk",
-                                          "srcExists":  false,
+                                          "srcExists":  true,
                                           "copyExists":  false
                                       }
                                   ],

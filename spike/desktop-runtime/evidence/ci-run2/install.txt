@@ -1,0 +1,2 @@
+installer exit code: 0
+installed exe exists: True

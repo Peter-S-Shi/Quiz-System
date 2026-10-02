@@ -1,0 +1,36 @@
+{
+ "info": {
+  "identifier": "io.github.peter-s-shi.quiz-studio",
+  "appVersion": "0.1.0",
+  "pid": 17492,
+  "storeSchemaVersion": 1,
+  "notice": null,
+  "startupError": null,
+  "dataRootUnderLocalAppData": true,
+  "dataRootInsideOneDrive": false,
+  "dataRootRedacted": "%LOCALAPPDATA%/io.github.peter-s-shi.quiz-studio",
+  "args": [
+   "--auto",
+   "h1",
+   "--result-dir",
+   "<SPIKE>\\work\\h1-installed",
+   "--tag",
+   "_installed"
+  ]
+ },
+ "locationOrigin": "http://tauri.localhost",
+ "locationProtocol": "http:",
+ "outboundProbes": {
+  "fetchExternal": "blocked",
+  "fetchHttpLocal": "blocked",
+  "websocket": "blocked",
+  "imgExternal": "blocked"
+ },
+ "cspViolationsSeen": 4,
+ "cspViolations": [
+  "connect-src:https://example.com/",
+  "connect-src:http://127.0.0.1:9/",
+  "connect-src:ws://127.0.0.1:9/",
+  "img-src:https://example.com/x.png"
+ ]
+}

@@ -32,17 +32,34 @@ function FindDialog($title) {
   }
   return $null
 }
+Add-Type -Namespace W -Name N -MemberDefinition @'
+[DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern IntPtr SendMessage(IntPtr h, uint m, IntPtr w, string l);
+[DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, uint m, IntPtr w, IntPtr l);
+[DllImport("user32.dll")] public static extern IntPtr GetDlgItem(IntPtr h, int id);
+[DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint m, IntPtr w, IntPtr l);
+[DllImport("user32.dll")] public static extern bool IsWindow(IntPtr h);
+'@
 function Drive($title, $path) {
   $w = FindDialog $title
   if (-not $w) { return "dialog '$title' not found" }
   Start-Sleep -Milliseconds 700
+  $hDlg = [IntPtr]$w.Current.NativeWindowHandle
   $edit = $w.FindAll([Windows.Automation.TreeScope]::Descendants, (New-Object Windows.Automation.PropertyCondition([Windows.Automation.AutomationElement]::AutomationIdProperty, "1001"))) | Select-Object -First 1
   if (-not $edit) { return "file name edit not found" }
-  $vp = $edit.GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern); $vp.SetValue($path)
+  [W.N]::SendMessage([IntPtr]$edit.Current.NativeWindowHandle, 0x000C, [IntPtr]::Zero, $path) | Out-Null   # WM_SETTEXT
   Start-Sleep -Milliseconds 300
-  $btn = $w.FindAll([Windows.Automation.TreeScope]::Descendants, (New-Object Windows.Automation.PropertyCondition([Windows.Automation.AutomationElement]::AutomationIdProperty, "1"))) | Select-Object -First 1
-  if (-not $btn) { return "default button not found" }
-  $btn.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+  $btn = [W.N]::GetDlgItem($hDlg, 1)   # IDOK (Save / Open)
+  if ($btn -eq [IntPtr]::Zero) { return "OK button not found" }
+  [W.N]::SendMessage($btn, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null   # BM_CLICK
+  Start-Sleep -Milliseconds 1500
+  if ([W.N]::IsWindow($hDlg)) {   # dialog still open: commit with Enter in the edit control
+    $eh = [IntPtr]$edit.Current.NativeWindowHandle
+    [W.N]::PostMessage($eh, 0x0100, [IntPtr]0x0D, [IntPtr]::Zero) | Out-Null
+    [W.N]::PostMessage($eh, 0x0101, [IntPtr]0x0D, [IntPtr]::Zero) | Out-Null
+    Start-Sleep -Milliseconds 1500
+    if ([W.N]::IsWindow($hDlg)) { return "dialog still open after click+Enter" }
+    return "ok (Enter)"
+  }
   return "ok"
 }
 $log = @()

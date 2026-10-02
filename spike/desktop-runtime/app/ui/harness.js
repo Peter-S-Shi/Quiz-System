@@ -266,9 +266,12 @@ async function scenarioH8Dialogs(args) {
     const saved = await invoke("plugin:dialog|save", { options: { title: `spike save ${i}`, defaultPath: "spike-case.bin" } });
     if (!saved) { cases.push({ i, error: "save cancelled" }); continue; }
     const made = JSON.parse(await invoke("make_big_file", { path: saved, mib: args.mib || 64 }));
+    (window.__trace = window.__trace || []).push("saved:" + JSON.stringify(saved));
     const picked = await invoke("plugin:dialog|open", { options: { title: `spike open ${i}`, multiple: false } });
+    window.__trace.push("picked:" + JSON.stringify(picked));
     if (!picked) { cases.push({ i, error: "open cancelled" }); continue; }
-    const copied = JSON.parse(await invoke("stream_copy", { src: picked, dest: saved + ".copy" }));
+    const srcPath = typeof picked === "string" ? picked : (picked && picked.path) || String(picked);
+    const copied = JSON.parse(await invoke("stream_copy", { src: srcPath, dest: saved + ".copy" }));
     cases.push({ i, bytes: copied.bytes, identical: made.sha256 === copied.sha256, copyMs: copied.ms, pathChars: saved.length });
   }
   stop = true;

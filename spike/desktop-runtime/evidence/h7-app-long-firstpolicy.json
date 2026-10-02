@@ -1,0 +1,16 @@
+{
+ "chars": 20000,
+ "steps": 20000,
+ "words": 3388,
+ "lineHeightPx": 30,
+ "scrollAdjustments": 281,
+ "activeNotVisible": 0,
+ "layoutJumps": 149,
+ "maxScrollDeltaPx": 60,
+ "inputBlurEvents": 0,
+ "stepsWithoutFocusedInput": 0,
+ "documentHasFocusEnd": true,
+ "finalScrollTop": 8980,
+ "scrollHeight": 9248,
+ "frameGapMsP95": 128.59999999403954
+}
