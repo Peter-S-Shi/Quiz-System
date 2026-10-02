@@ -1,0 +1,583 @@
+{
+  "invalid": [
+    {
+      "collection": "learner_response",
+      "id": "resp-1",
+      "payload": {
+        "id": "resp-1",
+        "itemCount": 1,
+        "items": [
+          "a"
+        ]
+      }
+    },
+    {
+      "collection": "learner_response",
+      "id": "resp-1",
+      "payload": {
+        "id": "resp-OTHER",
+        "itemCount": 1,
+        "paperId": "p"
+      }
+    },
+    {
+      "collection": "learner_response",
+      "id": "resp-1",
+      "payload": {
+        "id": "resp-1",
+        "itemCount": "1",
+        "paperId": "p"
+      }
+    },
+    {
+      "collection": "learner_response",
+      "id": "resp-1",
+      "payload": {
+        "id": "resp-1",
+        "itemCount": 1.5,
+        "paperId": "p"
+      }
+    },
+    {
+      "collection": "learner_response",
+      "id": "resp-1",
+      "payload": {
+        "id": "resp-1",
+        "itemCount": 1,
+        "items": "nope",
+        "paperId": "p"
+      }
+    },
+    {
+      "collection": "learner_response",
+      "id": "resp-1",
+      "payload": {
+        "id": "resp-1",
+        "itemCount": 1,
+        "items": [
+          1
+        ],
+        "paperId": "p"
+      }
+    },
+    {
+      "collection": "teacher_review",
+      "id": "rev-1",
+      "payload": [
+        1
+      ]
+    }
+  ],
+  "specs": [
+    {
+      "canonical": true,
+      "columns": [
+        {
+          "kind": "text",
+          "name": "content_hash",
+          "pointer": "/contentHash",
+          "required": true
+        },
+        {
+          "kind": "integer",
+          "name": "size",
+          "pointer": "/size",
+          "required": true
+        },
+        {
+          "kind": "text",
+          "name": "mime",
+          "pointer": "/mimeType",
+          "required": false
+        },
+        {
+          "kind": "text",
+          "name": "name",
+          "pointer": "/name",
+          "required": false
+        }
+      ],
+      "idPointer": "/id",
+      "name": "media_object",
+      "relations": []
+    },
+    {
+      "canonical": true,
+      "columns": [],
+      "idPointer": null,
+      "name": "setting",
+      "relations": []
+    },
+    {
+      "canonical": false,
+      "columns": [],
+      "idPointer": null,
+      "name": "recovery_session",
+      "relations": []
+    },
+    {
+      "canonical": true,
+      "columns": [
+        {
+          "kind": "text",
+          "name": "paper_id",
+          "pointer": "/paperId",
+          "required": true
+        },
+        {
+          "kind": "text",
+          "name": "title",
+          "pointer": "/title",
+          "required": false
+        },
+        {
+          "kind": "text",
+          "name": "finalized_at",
+          "pointer": "/finalizedAt",
+          "required": false
+        },
+        {
+          "kind": "integer",
+          "name": "item_count",
+          "pointer": "/itemCount",
+          "required": true
+        }
+      ],
+      "idPointer": "/id",
+      "name": "learner_response",
+      "relations": [
+        {
+          "columns": [
+            {
+              "kind": "text",
+              "name": "item_id",
+              "pointer": "",
+              "required": true
+            }
+          ],
+          "dedupe": false,
+          "ordinalColumn": "ord",
+          "ownerColumn": "response_id",
+          "pointer": "/items",
+          "table": "response_item"
+        },
+        {
+          "columns": [
+            {
+              "kind": "text",
+              "name": "media_id",
+              "pointer": "",
+              "required": true
+            }
+          ],
+          "dedupe": true,
+          "ordinalColumn": null,
+          "ownerColumn": "owner_id",
+          "pointer": "/mediaRefs",
+          "table": "media_ref"
+        }
+      ]
+    },
+    {
+      "canonical": true,
+      "columns": [
+        {
+          "kind": "text",
+          "name": "response_id",
+          "pointer": "/responseId",
+          "required": true
+        }
+      ],
+      "idPointer": "/id",
+      "name": "teacher_review",
+      "relations": []
+    },
+    {
+      "canonical": true,
+      "columns": [
+        {
+          "kind": "text",
+          "name": "source_response_id",
+          "pointer": "/sourceResponseId",
+          "required": true
+        },
+        {
+          "kind": "text",
+          "name": "source_review_id",
+          "pointer": "/sourceReviewId",
+          "required": false
+        }
+      ],
+      "idPointer": "/id",
+      "name": "remediation_doc",
+      "relations": []
+    },
+    {
+      "canonical": true,
+      "columns": [
+        {
+          "kind": "text",
+          "name": "response_id",
+          "pointer": "/responseId",
+          "required": false
+        }
+      ],
+      "idPointer": "/id",
+      "name": "history_entry",
+      "relations": []
+    },
+    {
+      "canonical": true,
+      "columns": [
+        {
+          "kind": "integer",
+          "name": "n",
+          "pointer": "/n",
+          "required": true
+        }
+      ],
+      "idPointer": "/id",
+      "name": "uow_marker",
+      "relations": []
+    }
+  ],
+  "valid": [
+    {
+      "collection": "learner_response",
+      "expected": {
+        "columns": {
+          "finalized_at": "2026-01-02T01:01:00.000Z",
+          "item_count": 4,
+          "paper_id": "paper-1",
+          "title": "Synthetic Response 1"
+        },
+        "relations": {
+          "media_ref": [
+            {
+              "media_id": "m1"
+            },
+            {
+              "media_id": "m2"
+            }
+          ],
+          "response_item": [
+            {
+              "item_id": "q-1-0"
+            },
+            {
+              "item_id": "q-1-1"
+            },
+            {
+              "item_id": "q-1-2"
+            },
+            {
+              "item_id": "q-1-3"
+            }
+          ]
+        }
+      },
+      "id": "resp-1",
+      "payload": {
+        "bigCounter": "9007199254740993",
+        "extensions": {
+          "unknownFutureField": true,
+          "vendor.example": {
+            "nested": {
+              "deep": [
+                1,
+                [
+                  2,
+                  [
+                    3,
+                    {
+                      "k": "v"
+                    }
+                  ]
+                ]
+              ]
+            }
+          }
+        },
+        "finalizedAt": "2026-01-02T01:01:00.000Z",
+        "id": "resp-1",
+        "itemCount": 4,
+        "items": [
+          "q-1-0",
+          "q-1-1",
+          "q-1-2",
+          "q-1-3"
+        ],
+        "mediaRefs": [
+          "m1",
+          "m2",
+          "m1"
+        ],
+        "paperId": "paper-1",
+        "responses": [
+          {
+            "answer": {
+              "elapsedMs": 60015,
+              "matched": [
+                [
+                  "a",
+                  "1"
+                ],
+                [
+                  "b",
+                  "2"
+                ]
+              ]
+            },
+            "flags": {
+              "flagged": true,
+              "viewedHint": false
+            },
+            "itemId": "q-1-0",
+            "score": 0.23963517042566548
+          },
+          {
+            "answer": [
+              3,
+              3,
+              "x"
+            ],
+            "flags": {
+              "flagged": true,
+              "viewedHint": false
+            },
+            "itemId": "q-1-1",
+            "score": 0.6016393124127964
+          },
+          {
+            "answer": {
+              "elapsedMs": 34577,
+              "matched": [
+                [
+                  "a",
+                  "1"
+                ],
+                [
+                  "b",
+                  "2"
+                ]
+              ]
+            },
+            "flags": {
+              "flagged": false,
+              "viewedHint": true
+            },
+            "itemId": "q-1-2",
+            "score": 0.8642295104336587
+          },
+          {
+            "answer": null,
+            "flags": {
+              "flagged": false,
+              "viewedHint": true
+            },
+            "itemId": "q-1-3",
+            "score": 0.5296555859667949
+          }
+        ],
+        "schemaVersion": 1,
+        "title": "Synthetic Response 1"
+      }
+    },
+    {
+      "collection": "learner_response",
+      "expected": {
+        "columns": {
+          "finalized_at": null,
+          "item_count": 0,
+          "paper_id": "p",
+          "title": null
+        },
+        "relations": {
+          "media_ref": [],
+          "response_item": []
+        }
+      },
+      "id": "resp-2",
+      "payload": {
+        "id": "resp-2",
+        "itemCount": 0,
+        "items": [],
+        "paperId": "p"
+      }
+    },
+    {
+      "collection": "learner_response",
+      "expected": {
+        "columns": {
+          "finalized_at": null,
+          "item_count": 2,
+          "paper_id": "p",
+          "title": null
+        },
+        "relations": {
+          "media_ref": [
+            {
+              "media_id": "x"
+            }
+          ],
+          "response_item": [
+            {
+              "item_id": "a"
+            },
+            {
+              "item_id": "b"
+            }
+          ]
+        }
+      },
+      "id": "resp-3",
+      "payload": {
+        "id": "resp-3",
+        "itemCount": 2,
+        "items": [
+          "a",
+          "b"
+        ],
+        "mediaRefs": [
+          "x",
+          "x"
+        ],
+        "paperId": "p",
+        "title": null
+      }
+    },
+    {
+      "collection": "teacher_review",
+      "expected": {
+        "columns": {
+          "response_id": "resp-1"
+        },
+        "relations": {}
+      },
+      "id": "rev-1",
+      "payload": {
+        "extensions": {
+          "x": 1
+        },
+        "id": "rev-1",
+        "marks": [
+          {
+            "item": 1,
+            "ok": true
+          }
+        ],
+        "responseId": "resp-1"
+      }
+    },
+    {
+      "collection": "remediation_doc",
+      "expected": {
+        "columns": {
+          "source_response_id": "resp-1",
+          "source_review_id": null
+        },
+        "relations": {}
+      },
+      "id": "rem-1",
+      "payload": {
+        "id": "rem-1",
+        "sourceResponseId": "resp-1"
+      }
+    },
+    {
+      "collection": "remediation_doc",
+      "expected": {
+        "columns": {
+          "source_response_id": "resp-1",
+          "source_review_id": "rev-1"
+        },
+        "relations": {}
+      },
+      "id": "rem-2",
+      "payload": {
+        "id": "rem-2",
+        "sourceResponseId": "resp-1",
+        "sourceReviewId": "rev-1"
+      }
+    },
+    {
+      "collection": "history_entry",
+      "expected": {
+        "columns": {
+          "response_id": null
+        },
+        "relations": {}
+      },
+      "id": "hist-1",
+      "payload": {
+        "id": "hist-1"
+      }
+    },
+    {
+      "collection": "history_entry",
+      "expected": {
+        "columns": {
+          "response_id": "resp-9"
+        },
+        "relations": {}
+      },
+      "id": "hist-2",
+      "payload": {
+        "id": "hist-2",
+        "responseId": "resp-9",
+        "summary": {
+          "correct": 3,
+          "total": 5
+        }
+      }
+    },
+    {
+      "collection": "uow_marker",
+      "expected": {
+        "columns": {
+          "n": 7
+        },
+        "relations": {}
+      },
+      "id": "m-7",
+      "payload": {
+        "filler": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "id": "m-7",
+        "n": 7,
+        "rows": 4
+      }
+    },
+    {
+      "collection": "media_object",
+      "expected": {
+        "columns": {
+          "content_hash": "abababababababababababababababababababababababababababababababab",
+          "mime": "application/octet-stream",
+          "name": "img-1.bin",
+          "size": 12
+        },
+        "relations": {}
+      },
+      "id": "img-1",
+      "payload": {
+        "contentHash": "abababababababababababababababababababababababababababababababab",
+        "id": "img-1",
+        "mimeType": "application/octet-stream",
+        "name": "img-1.bin",
+        "size": 12
+      }
+    },
+    {
+      "collection": "setting",
+      "expected": {
+        "columns": {},
+        "relations": {}
+      },
+      "id": "theme",
+      "payload": {
+        "key": "theme",
+        "value": "paper"
+      }
+    }
+  ]
+}

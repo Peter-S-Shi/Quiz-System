@@ -123,6 +123,28 @@ fn ident_ok(s: &str) -> bool {
         && c.all(|x| x.is_ascii_lowercase() || x.is_ascii_digit() || x == '_')
 }
 
+impl Column {
+    pub fn to_json(&self) -> serde_json::Value {
+        serde_json::json!({"name": self.name, "pointer": self.pointer, "kind": format!("{:?}", self.kind).to_lowercase(), "required": self.required})
+    }
+}
+
+impl Collection {
+    /// Declarative description shipped to the JS side (`schema.info`) so the domain layer can build projections.
+    pub fn to_json(&self) -> serde_json::Value {
+        serde_json::json!({
+            "name": self.name,
+            "idPointer": self.id_pointer,
+            "canonical": self.canonical,
+            "columns": self.columns.iter().map(Column::to_json).collect::<Vec<_>>(),
+            "relations": self.relations.iter().map(|r| serde_json::json!({
+                "table": r.table, "ownerColumn": r.owner_column, "pointer": r.pointer, "dedupe": r.dedupe,
+                "ordinalColumn": r.ordinal_column, "columns": r.columns.iter().map(Column::to_json).collect::<Vec<_>>(),
+            })).collect::<Vec<_>>(),
+        })
+    }
+}
+
 impl Catalog {
     pub fn new(migrations: Vec<Migration>, collections: Vec<Collection>) -> Result<Catalog> {
         for (i, m) in migrations.iter().enumerate() {

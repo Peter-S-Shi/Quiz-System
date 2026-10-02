@@ -137,7 +137,7 @@ impl Core {
                     "dataRoot": self.root.path().display().to_string(),
                     "store": {"applicationId": i.application_id, "userVersion": i.user_version, "catalogVersion": i.catalog_version,
                                "createdBy": i.created_by, "lastOpenedBy": i.last_opened_by},
-                    "collections": self.catalog.collections().iter().map(|c| c.name.clone()).collect::<Vec<_>>(),
+                    "collections": self.catalog.collections().iter().map(|c| c.to_json()).collect::<Vec<_>>(),
                     "startup": self.startup.to_json(),
                 }))
             }

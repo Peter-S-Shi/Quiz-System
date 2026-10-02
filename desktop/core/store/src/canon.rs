@@ -80,16 +80,64 @@ fn canonical_number(text: &str) -> String {
     }
 }
 
+/// Shortest round-trip decimal digits of a positive finite f64 as (digits, exponent10-of-first-digit), with
+/// ECMAScript's tie rule: among equally short candidates take the closest to the exact value, and on an
+/// exact tie the one with an even last digit. Rust's formatter picks the other candidate on exact ties
+/// (found by the JS<->Rust vectors: 153924.33520507812), so ties are re-decided from the exact expansion.
+fn shortest_digits(x: f64) -> (String, i32) {
+    let sci = format!("{:e}", x); // shortest round-trip digits, e.g. "1.2345e-7"
+    let (mant, exp) = sci.split_once('e').expect("exponent form");
+    let exp: i32 = exp.parse().expect("exponent");
+    let digits: String = mant.chars().filter(|c| *c != '.').collect();
+    if digits.len() < 16 {
+        return (digits, exp); // an exact-tie between two round-tripping candidates needs ~16+ digits
+    }
+    let exact = format!("{:.780e}", x);
+    let (emant, eexp) = exact.split_once('e').expect("exponent form");
+    let eexp: i32 = eexp.parse().expect("exponent");
+    let ed: Vec<u8> = emant.bytes().filter(|b| *b != b'.').map(|b| b - b'0').collect();
+    let k = digits.len();
+    let mut kept: Vec<u8> = ed[..k].to_vec();
+    let rest = &ed[k..];
+    let up = match rest[0] {
+        0..=4 => false,
+        6..=9 => true,
+        _ => rest[1..].iter().any(|d| *d != 0) || kept[k - 1] % 2 == 1, // exact tie -> round to even
+    };
+    let mut e10 = eexp;
+    if up {
+        let mut i = k;
+        loop {
+            if i == 0 {
+                kept.insert(0, 1);
+                kept.truncate(k);
+                e10 += 1;
+                break;
+            }
+            i -= 1;
+            if kept[i] == 9 {
+                kept[i] = 0;
+            } else {
+                kept[i] += 1;
+                break;
+            }
+        }
+    }
+    let cand: String = kept.iter().map(|d| (b'0' + d) as char).collect();
+    let text = format!("{}.{}e{}", &cand[..1], &cand[1..], e10);
+    match text.parse::<f64>() {
+        Ok(back) if back == x => (cand, e10),
+        _ => (digits, exp),
+    }
+}
+
 /// ECMAScript `Number::toString(x)` for a finite f64 (ECMA-262 section 6.1.6.1.20).
 pub fn es_number_to_string(x: f64) -> String {
     if x == 0.0 {
         return "0".into();
     }
     let neg = x < 0.0;
-    let sci = format!("{:e}", x.abs()); // shortest round-trip digits, e.g. "1.2345e-7"
-    let (mant, exp) = sci.split_once('e').expect("exponent form");
-    let exp: i32 = exp.parse().expect("exponent");
-    let digits: String = mant.chars().filter(|c| *c != '.').collect();
+    let (digits, exp) = shortest_digits(x.abs());
     let k = digits.len() as i32;
     let n = exp + 1; // value = 0.DIGITS * 10^n
     let mut s = String::new();
@@ -168,6 +216,10 @@ mod tests {
             ("3.141592653589793", "3.141592653589793"),
             ("100", "100"),
             ("1.25e2", "125"),
+            ("153924.33520507812", "153924.33520507812"), // exact decimal tie: ES picks the even candidate
+            ("0.30000000000000004", "0.30000000000000004"),
+            ("5e-324", "5e-324"),
+            ("1.7976931348623157e308", "1.7976931348623157e+308"),
         ] {
             assert_eq!(canonical(&parse(src)), want, "{src}");
         }

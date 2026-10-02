@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="side" aria-label="Primary">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">Q</div>
+        <div><b>Quiz Studio</b><span id="brandVersion" class="mono"></span></div>
+      </div>
+      <nav class="nav" id="nav" aria-label="Views">
+        <button type="button" data-view="today">Today</button>
+        <button type="button" data-view="calendar">Calendar</button>
+        <button type="button" data-view="library">Library</button>
+        <button type="button" data-view="history">History</button>
+        <button type="button" data-view="review">Review</button>
+        <button type="button" data-view="exchange">Exchange</button>
+        <button type="button" data-view="settings" aria-current="page">Settings</button>
+      </nav>
+      <div class="side-foot">
+        <span class="chip" id="healthChip" role="status">Starting…</span>
+      </div>
+      <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>
+    </aside>
+    <main class="main" id="main" tabindex="-1"></main>
+  </div>
+  <dialog id="confirmDialog" class="dialog">
+    <form method="dialog">
+      <h2 id="confirmTitle"></h2>
+      <p id="confirmBody"></p>
+      <menu>
+        <button value="cancel" class="btn">Cancel</button>
+        <button value="ok" class="btn danger" id="confirmOk">Confirm</button>
+      </menu>
+    </form>
+  </dialog>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
