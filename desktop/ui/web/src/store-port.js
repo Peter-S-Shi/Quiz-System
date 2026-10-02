@@ -36,7 +36,6 @@ export function createStorePort(transport) {
     commit: (uow) => call('store.commit', { uow }),
     checkConsistency: () => call('store.check_consistency'),
     locateMedia: (id) => call('media.locate', { id }),
-    verifyBackup: (path) => call('backup.verify', { path }),
     listSnapshots: async () => (await call('snapshots.list')).snapshots,
   };
 }

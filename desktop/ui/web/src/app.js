@@ -87,7 +87,6 @@ function renderSystem(main) {
   };
   const bar = h('i');
   const progress = h('div', { class: 'progress', hidden: true, role: 'progressbar' }, bar);
-  const preview = h('img', { class: 'preview', hidden: true, alt: 'Stored media preview' });
   const drop = h('div', { class: 'drop', id: 'dropzone' }, 'Drop a file here to store it (streamed, bounded memory) - or use the button.');
   const guarded = async (label, fn) => {
     try {
@@ -99,10 +98,6 @@ function renderSystem(main) {
 
   const showStored = (r) => {
     say(`Stored "${r.name}" (${fmtBytes(r.size)}) as ${r.hash.slice(0, 12)}...${r.deduplicated ? ' [already present]' : ''}`);
-    if (r.mimeType.startsWith('image/') && tauri?.core?.convertFileSrc) {
-      preview.src = tauri.core.convertFileSrc(r.absolutePath);
-      preview.hidden = false;
-    }
   };
 
   const launch = h('dd', {}, '...');
@@ -128,7 +123,7 @@ function renderSystem(main) {
     h('section', { class: 'card' }, h('h2', {}, 'Identity'), h('dl', { class: 'kv' },
       h('dt', {}, 'Product'), h('dd', {}, `${info.product} ${info.appVersion}`),
       h('dt', {}, 'Identifier'), h('dd', { class: 'mono' }, info.identifier),
-      h('dt', {}, 'Data folder'), h('dd', { class: 'mono' }, info.dataRoot),
+      h('dt', {}, 'Data location'), h('dd', {}, 'Application data folder of the current Windows user (managed by the application)'),
       h('dt', {}, 'Store schema'), h('dd', {}, `v${info.store.userVersion} (build supports v${info.store.catalogVersion})`),
       h('dt', {}, 'Collections'), h('dd', {}, info.collections.map((c) => c.name).join(', ')))),
     h('section', { class: 'card' }, h('h2', {}, 'Store health'), h('dl', { class: 'kv' }, h('dt', {}, 'Startup'), health, h('dt', {}, 'Snapshots'), snaps),
@@ -144,7 +139,7 @@ function renderSystem(main) {
         if (r.ok && r.result) showStored(r.result);
         else if (!r.ok) say(`Add file failed - ${r.error.code}: ${r.error.message}`);
       }) }, 'Add a file...')),
-      drop, progress, preview),
+      drop, progress),
     h('section', { class: 'card' }, h('h2', {}, 'Backup and restore'), h('div', { class: 'row' },
       h('button', { class: 'btn', type: 'button', onclick: () => guarded('Backup', async () => {
         const r = await invoke('native_backup_save');

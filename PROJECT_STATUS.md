@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-V1 Finalized / Maintenance Hold + V2 Desktop Foundation (active on branch `v2`; implementation complete, awaiting Human Gate; Migration ADR not started)
+V1 Finalized / Maintenance Hold + V2 Desktop Foundation (active on branch `v2`; implementation complete; Human Gate HOLD resolved by a boundary repair, awaiting re-review; Migration ADR not started)
 
 ## Active Milestone
 
@@ -178,7 +178,9 @@ V2 progress (see the linked documents for authority; nothing here changes them):
 - **Acceptance debt carried to the Human Gate (explicit, not waived):** D1 native Open dialog automated round-trip, D2 OS drag-and-drop ≥ 1 GiB, D3 OneDrive-redirected Desktop/Documents, D4 runtime-less WebView2 `downloadBootstrapper` (static evidence only) — manual steps in [`manual-qa/v2-desktop-foundation.md`](manual-qa/v2-desktop-foundation.md). Also open: final app icon (neutral placeholder ships), bundled CJK fonts (shell uses system fonts, no network resource), code signing and auto-update (out of scope).
 - **Not started (unchanged):** V1 Migration ADR / migration implementation, Scheduler / Recommendation / Calendar, Objective / Translation / Typing domain integration, product views.
 
-**Next action: Human Gate review of Desktop Foundation.** After acceptance, the next V2 step is the V1 Migration ADR, which is **not** started and needs separate authorization. The `spike/desktop-runtime` branch stays disposable and is never merged.
+**Human Gate HOLD / repair:** the Human Gate found that raw filesystem paths crossed into the WebView (absolute data root, absolute media path, WebView-callable `media.gc`). Repaired in scope: path-free responses, `media.gc` removed from the WebView allowlist (Rust-owned fixed-policy GC only), `verifyBackup(path)` removed, asset protocol/preview removed, regression tests added (`core/port/tests/webview_contract.rs`, `desktop/ui/tests`); ADR 0001 section 7 now states the failed-upgrade refusal as accepted behavior and section 15 is marked accepted. D1-D4 remain open acceptance debt.
+
+**Next action: Human Gate re-review of Desktop Foundation.** After acceptance, the next V2 step is the V1 Migration ADR, which is **not** started and needs separate authorization. The `spike/desktop-runtime` branch stays disposable and is never merged.
 
 Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.
 

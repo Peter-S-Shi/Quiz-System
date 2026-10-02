@@ -6,7 +6,7 @@
 
 | # | 检查 | 步骤 | 预期 |
 |---|---|---|---|
-| D1 | 原生**打开**对话框 | 设置 → System → *Add a file…*，分别从普通文件夹和含中文字符的文件夹选择图片；再用 *Restore from backup…* 选择 `.qsarchive` | 弹出系统对话框；文件被存储（显示哈希）、图片预览正常；恢复先校验再请求确认；取消则无任何改动 |
+| D1 | 原生**打开**对话框 | 设置 → System → *Add a file…*，分别从普通文件夹和含中文字符的文件夹选择图片；再用 *Restore from backup…* 选择 `.qsarchive` | 弹出系统对话框；文件被存储（显示哈希；本里程碑无预览）；恢复先校验再请求确认；取消则无任何改动 |
 | D2 | ≥ 1 GiB **拖放** | 将 ≥ 1 GiB 合成文件拖到投放区 | 窗口保持响应、进度条推进、文件入库；进程工作集 < 300 MiB |
 | D3 | **OneDrive 重定向**桌面/文档 | *Create backup…* 保存到被重定向的桌面与文档；再从同一位置 *Restore from backup…* | archive 写入并校验通过；恢复成功；数据文件夹仍在 `%LOCALAPPDATA%`（不在 OneDrive） |
 | D4 | **无运行时的 WebView2** | 在没有 Evergreen WebView2 运行时的机器/配置上，联网交互式运行安装程序 | bootstrapper 下载并安装运行时，随后应用可启动 |

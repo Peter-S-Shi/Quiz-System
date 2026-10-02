@@ -4,11 +4,12 @@
 //! `{"ok":true,"result":...}` / `{"ok":false,"error":{"code","message"}}` back.
 //!
 //! Commands: `schema.info`, `store.read`, `store.count`, `store.commit`, `store.check_consistency`,
-//! `media.ingest_file`, `media.locate`, `media.gc`, `backup.create`, `backup.verify`, `backup.restore`,
+//! `media.ingest_file`, `media.locate`, `backup.create`, `backup.verify`, `backup.restore`,
 //! `snapshots.list`, `snapshots.restore`.
 
 pub mod offline;
 pub mod selftest;
+pub mod webview;
 
 use qs_activation as activation;
 use qs_archive as archive;
@@ -73,7 +74,7 @@ impl Core {
         let snapshots_pruned = activation::prune_snapshots(root, SNAPSHOTS_KEPT)?;
         let media = MediaStore::new(root.media_dir());
         let media_gc = if quick_check_ok {
-            let r = media.gc(&referenced_hashes(&store)?, MEDIA_GC_SAFETY_DELAY)?;
+            let r = gc_with_fixed_policy(&media, &store)?;
             (r.removed_temp, r.removed_orphans)
         } else {
             (0, 0)
@@ -85,6 +86,12 @@ impl Core {
             media,
             startup: StartupReport { recovered, quick_check_ok, consistency_problems, upgrade, snapshots_pruned, media_gc },
         })
+    }
+
+    /// Media GC: Rust-owned lifecycle/maintenance only (never a WebView command), always with the fixed
+    /// safety delay - callers cannot tune it.
+    pub fn maintenance_gc(&self) -> Result<qs_media::GcReport> {
+        gc_with_fixed_policy(&self.media, &self.store())
     }
 
     pub fn startup(&self) -> &StartupReport {
@@ -137,7 +144,6 @@ impl Core {
                     "product": PRODUCT_NAME,
                     "identifier": APP_IDENTIFIER,
                     "appVersion": APP_VERSION,
-                    "dataRoot": self.root.path().display().to_string(),
                     "store": {"applicationId": i.application_id, "userVersion": i.user_version, "catalogVersion": i.catalog_version,
                                "createdBy": i.created_by, "lastOpenedBy": i.last_opened_by},
                     "collections": self.catalog.collections().iter().map(|c| c.to_json()).collect::<Vec<_>>(),
@@ -169,15 +175,7 @@ impl Core {
                 let rec = recs.first().ok_or_else(|| Error::new(Code::NotFound, "unknown media id"))?;
                 let hash = rec.payload["contentHash"].as_str().unwrap_or_default();
                 let size = self.media.size_of(hash)?;
-                Ok(
-                    json!({"hash": hash, "size": size, "mimeType": rec.payload["mimeType"], "relativePath": format!("data/media/{}/{hash}", &hash[..2])}),
-                )
-            }
-            "media.gc" => {
-                let age = args.get("minAgeSeconds").and_then(Value::as_u64).unwrap_or(MEDIA_GC_SAFETY_DELAY.as_secs());
-                let s = self.store();
-                let r = self.media.gc(&referenced_hashes(&s)?, Duration::from_secs(age))?;
-                Ok(json!({"removedTemp": r.removed_temp, "removedOrphans": r.removed_orphans, "keptYoung": r.kept_young}))
+                Ok(json!({"hash": hash, "size": size, "mimeType": rec.payload["mimeType"]}))
             }
             "backup.create" => {
                 let dest = Path::new(str_arg("dest")?);
@@ -214,6 +212,10 @@ impl Core {
 
 pub fn envelope_err(e: &Error) -> Value {
     json!({"ok": false, "error": {"code": e.code.as_str(), "message": e.message}})
+}
+
+fn gc_with_fixed_policy(media: &MediaStore, store: &Store) -> Result<qs_media::GcReport> {
+    media.gc(&referenced_hashes(store)?, MEDIA_GC_SAFETY_DELAY)
 }
 
 fn referenced_hashes(store: &Store) -> Result<HashSet<String>> {

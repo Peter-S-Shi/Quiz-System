@@ -78,10 +78,8 @@ fn ingest(app: &AppHandle, state: &AppState, path: &Path) -> Value {
     if commit["ok"] != true {
         return commit;
     }
-    let abs = core.root().media_dir().join(&stored.hash[..2]).join(&stored.hash);
     state.log(&format!("media ingested id={id} size={} dedup={}", stored.size, stored.deduplicated));
-    json!({"ok": true, "result": {"id": id, "hash": stored.hash, "size": stored.size, "name": name, "mimeType": mime,
-        "deduplicated": stored.deduplicated, "absolutePath": abs.display().to_string()}})
+    qs_port::webview::media_ingest_result(&id, &stored.hash, stored.size, &name, mime, stored.deduplicated)
 }
 
 #[tauri::command]
@@ -93,7 +91,7 @@ pub async fn native_pick_media(app: AppHandle, state: State<'_, AppState>) -> Re
         .add_filter("All files", &["*"])
         .blocking_pick_file();
     let Some(p) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
-    Ok(ingest(&app, &state, &p))
+    Ok(state.scrubbed(ingest(&app, &state, &p)))
 }
 
 fn default_backup_name() -> String {
@@ -118,7 +116,7 @@ pub async fn native_backup_save(app: AppHandle, state: State<'_, AppState>) -> R
     let Some(dest) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
     let r = core.dispatch("backup.create", &json!({"dest": dest.display().to_string()}));
     state.log(&format!("backup.create ok={}", r["ok"]));
-    Ok(r)
+    Ok(state.scrubbed(r))
 }
 
 /// Step 1 of restore: choose and fully verify the archive (nothing is changed). The UI asks for
@@ -132,9 +130,9 @@ pub async fn native_backup_pick(app: AppHandle, state: State<'_, AppState>) -> R
     if v["ok"] == true {
         *state.pending_backup.lock().unwrap() = Some(path.clone());
         let name = path.file_name().map(|n| n.to_string_lossy().into_owned());
-        return Ok(json!({"ok": true, "result": {"name": name, "verified": v["result"]}}));
+        return Ok(state.scrubbed(json!({"ok": true, "result": {"name": name, "verified": v["result"]}})));
     }
-    Ok(v)
+    Ok(state.scrubbed(v))
 }
 
 #[tauri::command]
@@ -145,7 +143,7 @@ pub async fn native_backup_restore_pending(state: State<'_, AppState>) -> Result
     };
     let r = core.dispatch("backup.restore", &json!({"path": path.display().to_string()}));
     state.log(&format!("backup.restore ok={}", r["ok"]));
-    Ok(r)
+    Ok(state.scrubbed(r))
 }
 
 /// OS drag-and-drop is handled here, in Rust: dropped files are streamed into the media store on a
@@ -166,7 +164,7 @@ pub fn on_window_event(window: &Window, event: &WindowEvent) {
             std::thread::spawn(move || {
                 let state = app.state::<AppState>();
                 for p in paths.iter().filter(|p| p.is_file()) {
-                    let r = ingest(&app, &state, p);
+                    let r = state.scrubbed(ingest(&app, &state, p));
                     let _ = app.emit("qs://ingested", r);
                 }
             });

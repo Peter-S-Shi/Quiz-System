@@ -13,27 +13,12 @@ use serde_json::{json, Value};
 use state::AppState;
 use tauri::{Manager, State};
 
-/// Store Port commands the WebView may call. Path-carrying commands (`media.ingest_file`, `backup.*`)
-/// are deliberately absent: they are reachable only through the native handlers below.
-const WEBVIEW_ALLOWLIST: &[&str] = &[
-    "schema.info",
-    "store.read",
-    "store.count",
-    "store.commit",
-    "store.check_consistency",
-    "media.locate",
-    "media.gc",
-    "snapshots.list",
-    "snapshots.restore",
-];
-
+/// The ONLY WebView entry into the core: the allowlist, dispatch and path scrubbing live in
+/// `qs_port::webview` so the boundary is unit-tested without Tauri.
 #[tauri::command]
 fn port(state: State<'_, AppState>, command: String, args: Value) -> Value {
-    if !WEBVIEW_ALLOWLIST.contains(&command.as_str()) {
-        return json!({"ok": false, "error": {"code": "REJECT_SHAPE", "message": format!("command '{command}' is not available to the WebView")}});
-    }
     match state.core() {
-        Some(core) => core.dispatch(&command, &args),
+        Some(core) => qs_port::webview::dispatch(&core, &command, &args),
         None => json!({"ok": false, "error": {"code": "STORE_UNAVAILABLE", "message": "the data store is not open"}}),
     }
 }
@@ -41,7 +26,7 @@ fn port(state: State<'_, AppState>, command: String, args: Value) -> Value {
 /// Boot status for the UI: ready, or failed with the reason and the snapshots that could restore it.
 #[tauri::command]
 fn app_status(state: State<'_, AppState>) -> Value {
-    state.status_json()
+    state.scrubbed(state.status_json())
 }
 
 /// The UI reports that it rendered and talked to the core (diagnostics + CI smoke evidence).
@@ -54,7 +39,8 @@ fn ui_ready(state: State<'_, AppState>, info: Value) -> Value {
 /// Offline recovery when the store cannot open: the damaged file is preserved, never deleted.
 #[tauri::command]
 fn recovery_restore_snapshot(state: State<'_, AppState>, name: String) -> Value {
-    state.recover_from_snapshot(&name)
+    let r = state.recover_from_snapshot(&name);
+    state.scrubbed(r)
 }
 
 /// Run the foundation proof against an isolated temp root and write the JSON report. Never touches user data.

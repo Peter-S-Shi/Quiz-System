@@ -6,7 +6,7 @@ Before you start: if the disposable spike app is installed it shares the permane
 
 | # | Check | Steps | Expected |
 |---|---|---|---|
-| D1 | Native **Open** dialog | Settings → System → *Add a file…*; pick an image from a normal folder and from a folder with CJK characters; repeat with *Restore from backup…* choosing a `.qsarchive` | The OS dialog opens, the chosen file is stored (hash shown), the image preview renders, restore verifies and asks for confirmation; cancelling changes nothing |
+| D1 | Native **Open** dialog | Settings → System → *Add a file…*; pick an image from a normal folder and from a folder with CJK characters; repeat with *Restore from backup…* choosing a `.qsarchive` | The OS dialog opens, the chosen file is stored (hash shown; no preview in this milestone), restore verifies and asks for confirmation; cancelling changes nothing |
 | D2 | **Drag-and-drop** ≥ 1 GiB | Drag a ≥ 1 GiB synthetic file onto the drop zone | Window stays responsive, progress bar advances, file is stored; process memory stays low (< 300 MiB working set) |
 | D3 | **OneDrive-redirected** Desktop/Documents | *Create backup…* and save into the redirected Desktop and Documents; then *Restore from backup…* from the same places | Archive written and verified; restore works; data folder remains under `%LOCALAPPDATA%` (not in OneDrive) |
 | D4 | **Runtime-less WebView2** | On a machine/profile without the Evergreen WebView2 runtime, run the installer interactively with network access | The bootstrapper downloads and installs the runtime, then the app starts |

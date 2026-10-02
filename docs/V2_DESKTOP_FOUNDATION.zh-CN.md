@@ -1,7 +1,7 @@
 # V2 Desktop Foundation —— 里程碑记录
 
 **分支：** `v2`（长期 V2 开发线，自 `main@8eb6608` 切出）
-**状态：** 实现完成，等待 Human Gate（见“Gate 就绪情况”）
+**状态：** 实现完成；Human Gate 曾为 HOLD（架构边界修复，见第 8 节），现已修复，**等待复审**
 **权威输入：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§5.1、§24）、ADR 0001（已接受，含修订 A1–A8）、`docs/V2_UI_ARCHITECTURE_FREEZE.md`、`docs/adr/evidence/0001-desktop-spike-report.md`。
 **代码：** [`desktop/`](../desktop/README.md)。V1 生产代码、测试与 CI 均未改动。
 
@@ -46,7 +46,7 @@ qs-port   与运行时无关的 Store Port（JSON 入、envelope 出）、健康
 3. **schema 升级**：先自动快照，再在**一个事务**内执行整条 migration 链，提交前核对 catalog 与实际 schema；失败时以物理哈希证明 store 未变（否则从快照文件恢复）。升级失败时应用拒绝降级运行。
 4. **JS 负责 projection、Rust 负责验证**：`schema.info` 发布声明式 collection spec；`projection.js` 据此构造 projection；Rust 重新计算并拒绝不一致者；共享 fixture 保证两端一致。
 5. **规范化 JSON** 只定义一次、实现两遍（Rust、JS），以共享向量验证。跨语言运行发现了一处真实的 ECMAScript 平局舍入差异（`153924.33520507812`），已修复并永久纳入测试（40,012 向量全部一致）。
-6. **原生文件流程归 Rust**：打开/保存对话框、拖放与流式写入均在 Rust；WebView 不接触原始路径，也没有文件系统、shell 或对话框能力。
+6. **原生文件流程归 Rust**：打开/保存对话框、拖放与流式写入均在 Rust；WebView 不接触原始路径，也没有文件系统、shell 或对话框能力。WebView 白名单（`qs_port::webview::ALLOWLIST`）不含携带路径的命令（`media.ingest_file`、`backup.*`）和文件系统维护（`media.gc` 仅由 Rust 维护路径以固定 24 小时安全延迟执行），见第 8 节。
 7. **故障注入是编译期 feature**，仅测试场景 crate 启用；CI 断言发布二进制中没有该钩子。
 8. **健康闸门**：启动 `quick_check` 或 `check_consistency` 失败即拒绝写入且不自动修复；数据库无法打开时显示恢复界面，可用所选快照恢复，并逐字节保留损坏文件。
 
@@ -85,3 +85,15 @@ qs-port   与运行时无关的 Store Port（JSON 入、envelope 出）、健康
 ## 7. Gate 就绪情况
 
 除验收欠账 D1–D4（产品负责人可接受、排期或手动执行）外，退出条件均已满足。V1 Migration、Scheduler、Calendar 与各领域集成均未启动。下一里程碑（V1 Migration ADR）**尚未**开始，需另行授权。
+
+## 8. Human Gate HOLD：原始路径边界修复
+
+Human Gate 发现首版违反了已声明的边界“原始文件系统路径不进入 WebView/JS”：`schema.info` 返回绝对数据根，原生入库结果返回绝对媒体路径并被 `app.js` 传给 `convertFileSrc`，且 `media.gc`（含 WebView 提供的 `minAgeSeconds`）可由 WebView 调用。修复（范围严格受限，无新增架构）：
+
+- `schema.info` 不再返回数据根；`media.locate` 不再返回路径；原生媒体结果以无路径方式构造（`webview::media_ingest_result`）；外壳不显示路径，也取消了媒体预览（移除 asset protocol 及其作用域，不透明媒体服务推迟到首个需要显示媒体的里程碑）。
+- WebView 入口为 `qs_port::webview::dispatch`：白名单（已移除 `media.gc`）→ 命令 → 对 envelope 做路径清洗；原生命令结果与启动状态同样清洗。
+- 媒体 GC 仅由 `Core::maintenance_gc` / 启动流程执行，固定 24 小时安全延迟；`media.gc` 命令已不存在。
+- 删除 JS `verifyBackup(path)`；测试断言 JS Store Port 接口与白名单一致且不带路径参数。
+- 回归测试：`core/port/tests/webview_contract.rs` 与 `ui/tests`；现有 store/media/activation/archive 契约不变。
+- ADR 0001：升级失败时拒绝运行已写入第 7 节（规范性文本），第 15 节标记为已接受的实现澄清。
+- D1–D4 仍为未执行的验收欠账（未标 PASS，不阻塞）。

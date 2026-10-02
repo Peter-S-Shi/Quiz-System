@@ -56,6 +56,13 @@ impl AppState {
         }
     }
 
+    /// Every value returned to the WebView passes through here: no absolute path may cross the boundary.
+    pub fn scrubbed(&self, mut v: Value) -> Value {
+        let root = self.root.as_ref().map(|r| r.path().display().to_string()).unwrap_or_default();
+        qs_port::webview::scrub(&mut v, &root);
+        v
+    }
+
     pub fn status_json(&self) -> Value {
         let identity = json!({"product": PRODUCT_NAME, "identifier": APP_IDENTIFIER, "appVersion": APP_VERSION});
         match (self.core(), self.open_error.lock().unwrap().clone()) {

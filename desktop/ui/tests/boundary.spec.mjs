@@ -26,6 +26,12 @@ test('canonical data never touches browser-origin storage (Scope Freeze 5.1)', (
   }
 });
 
+test('no raw filesystem path or asset-URL conversion is used by the shell (raw paths never cross into JS)', () => {
+  for (const p of shipped) {
+    assert.doesNotMatch(stripComments(readFileSync(p, 'utf8')), /convertFileSrc|absolutePath|dataRoot|asset:|asset\.localhost/, p);
+  }
+});
+
 test('the shell works offline: no remote URLs, CDNs or web fonts are referenced', () => {
   for (const p of shipped) {
     const text = readFileSync(p, 'utf8').replace(/xmlns(:\w+)?="[^"]*"/g, '');

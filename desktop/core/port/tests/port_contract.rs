@@ -60,10 +60,10 @@ fn media_is_ingested_by_streaming_registered_in_one_unit_of_work_and_locatable()
     ok(&core.dispatch("store.commit", &json!({"uow": uw})));
     let loc = core.dispatch("media.locate", &json!({"id": "img-1"}));
     assert_eq!(ok(&loc)["size"], 200_000);
-    assert_eq!(ok(&loc)["relativePath"], format!("data/media/{}/{hash}", &hash[..2]));
+    assert!(loc["result"].get("relativePath").is_none() && loc["result"].get("path").is_none(), "no path-shaped field");
     assert_eq!(core.dispatch("media.locate", &json!({"id": "nope"}))["error"]["code"], "NOT_FOUND");
-    // nothing is orphaned: gc with no safety delay removes nothing
-    assert_eq!(ok(&core.dispatch("media.gc", &json!({"minAgeSeconds": 0})))["removedOrphans"], 0);
+    // nothing is orphaned, and GC is a Rust-owned maintenance call with a fixed safety delay
+    assert_eq!(core.maintenance_gc().unwrap().removed_orphans, 0);
 }
 
 #[test]

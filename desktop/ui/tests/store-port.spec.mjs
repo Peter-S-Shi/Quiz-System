@@ -24,6 +24,17 @@ test('transport failures and malformed responses are reported, not swallowed', a
   await assert.rejects(createStorePort(async () => null).schemaInfo(), (e) => e.code === 'TRANSPORT');
 });
 
+test('the Store Port surface carries no path and matches the WebView allowlist', async () => {
+  const seen = [];
+  const port = createStorePort(async (command, args) => { seen.push([command, args]); return { ok: true, result: { records: [], count: 0, snapshots: [] } }; });
+  assert.equal(port.verifyBackup, undefined);
+  await port.schemaInfo(); await port.read('setting'); await port.count('setting'); await port.commit({ ops: [] });
+  await port.checkConsistency(); await port.locateMedia('m'); await port.listSnapshots();
+  const hasPathArg = (v) => v && typeof v === 'object' && Object.entries(v).some(([k, x]) => /path|dest/i.test(k) || hasPathArg(x));
+  for (const [command, args] of seen) assert.equal(hasPathArg(args), false, command);
+  assert.equal(seen.some(([c]) => c === 'media.gc' || c.startsWith('backup.')), false);
+});
+
 test('read unwraps records; the tauri transport requires the IPC global', async () => {
   const port = createStorePort(async () => ({ ok: true, result: { records: [{ id: 'x', rev: 1, payload: {} }] } }));
   assert.equal((await port.read('setting'))[0].id, 'x');

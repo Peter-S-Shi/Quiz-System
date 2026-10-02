@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2 Desktop Foundation（`v2` 分支进行中；实现完成，等待 Human Gate；Migration ADR 尚未开始）
+V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2 Desktop Foundation（`v2` 分支进行中；实现完成；Human Gate HOLD 已通过边界修复处理，等待复审；Migration ADR 尚未开始）
 
 ## 当前活跃里程碑
 
@@ -178,7 +178,9 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 - **移交 Human Gate 的验收欠账（明确列出，未豁免）：** D1 原生打开对话框自动化往返、D2 ≥ 1 GiB OS 拖放、D3 OneDrive 重定向桌面/文档、D4 无运行时 WebView2 的 `downloadBootstrapper`（仅静态证据）—— 手动步骤见 [`manual-qa/v2-desktop-foundation.zh-CN.md`](manual-qa/v2-desktop-foundation.zh-CN.md)。其他未决项：最终应用图标（目前为中性占位图标）、内置 CJK 字体（外壳使用系统字体，不引用网络资源）、代码签名与自动更新（范围外）。
 - **尚未开始（保持不变）：** V1 Migration ADR / 迁移实现、Scheduler / Recommendation / Calendar、Objective / Translation / Typing 领域集成、产品视图。
 
-**下一步行动：Desktop Foundation 的 Human Gate 评审。** 通过后，V2 下一步是 V1 Migration ADR，该步骤**尚未**开始，需另行授权。`spike/desktop-runtime` 分支保持一次性且永不合并。
+**Human Gate HOLD / 修复：** Human Gate 发现原始文件系统路径进入了 WebView（绝对数据根、绝对媒体路径、WebView 可调用的 `media.gc`）。已在限定范围内修复：响应不含路径、`media.gc` 移出 WebView 白名单（仅 Rust 以固定策略执行 GC）、删除 `verifyBackup(path)`、移除 asset protocol 与预览、新增回归测试；ADR 0001 第 7 节现明确升级失败拒绝运行为已接受行为，第 15 节标记为已接受。D1–D4 仍为未执行的验收欠账。
+
+**下一步行动：Desktop Foundation 的 Human Gate 复审。** 通过后，V2 下一步是 V1 Migration ADR，该步骤**尚未**开始，需另行授权。`spike/desktop-runtime` 分支保持一次性且永不合并。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 

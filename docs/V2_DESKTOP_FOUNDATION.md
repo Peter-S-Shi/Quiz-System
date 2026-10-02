@@ -1,7 +1,7 @@
 # V2 Desktop Foundation — Milestone Record
 
 **Branch:** `v2` (long-lived V2 development line, cut from `main@8eb6608`)
-**Status:** implementation complete, awaiting the Human Gate (see "Gate readiness" below)
+**Status:** implementation complete; the Human Gate was HOLD for an architecture-boundary repair (section 8), now repaired and **awaiting re-review**
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§5.1, §24), ADR 0001 (ACCEPTED, amendments A1–A8), `docs/V2_UI_ARCHITECTURE_FREEZE.md`, `docs/adr/evidence/0001-desktop-spike-report.md`.
 **Code:** [`desktop/`](../desktop/README.md). V1 production code, tests and CI are untouched.
 
@@ -28,7 +28,7 @@ WebView (offline shell, JS)                       desktop/ui/web
    │  ONE command `port` (allowlisted) + native_* commands (no paths in JS)
    ▼
 Tauri shell  (qs-desktop)                         desktop/app/src-tauri
-   │  single instance · CSP · asset protocol scoped to data/media · native dialogs / drag-drop in Rust
+   │  single instance · CSP · native dialogs / drag-drop in Rust
    ▼
 qs-port   runtime-neutral Store Port (JSON in / envelope out), health gate, snapshots, offline recovery, self-test
    ├─ qs-archive     zip + per-file SHA-256 manifest · verify-all-before-activate · specific refusal codes
@@ -47,7 +47,7 @@ qs-port   runtime-neutral Store Port (JSON in / envelope out), health gate, snap
 3. **Schema upgrade** runs the whole migration chain in **one transaction** after an automatic snapshot, verifies the catalog against the resulting schema before committing, and on any failure proves the store unchanged by a physical hash (restoring the snapshot file otherwise). The app refuses to run degraded on a failed upgrade rather than opening an old schema with new code.
 4. **JS owns projections, Rust verifies.** `schema.info` publishes the declarative collection specs; `ui/web/src/projection.js` builds projections from them and Rust recomputes and rejects mismatches. Shared fixtures keep the two implementations identical.
 5. **Canonical JSON** is specified once and implemented twice (Rust, JS) with shared vectors. The cross-language run found a genuine ECMAScript tie-rounding divergence (`153924.33520507812`); it is fixed and now permanently covered (40,012-vector run clean).
-6. **Rust-owned native flows.** Open/Save dialogs, drag-and-drop and streaming ingest run in Rust; the WebView never receives a raw path and has no file-system, shell or dialog capability. Path-carrying Store Port commands (`media.ingest_file`, `backup.*`) are not in the WebView allowlist.
+6. **Rust-owned native flows.** Open/Save dialogs, drag-and-drop and streaming ingest run in Rust; the WebView never receives a raw path and has no file-system, shell or dialog capability. The WebView allowlist (`qs_port::webview::ALLOWLIST`) excludes path-carrying commands (`media.ingest_file`, `backup.*`) and filesystem maintenance (`media.gc`, which only the Rust maintenance path runs, with a fixed 24 h safety delay). See section 8.
 7. **Fault injection is a compile-time feature** (`qs-platform/fault-injection`), enabled only by the test scenario crate. CI asserts the shipped binary contains no hook.
 8. **Health gate.** If startup `quick_check` or `check_consistency` fails, writes are refused and nothing is auto-repaired; a corrupt database that cannot open yields a recovery screen that restores a chosen snapshot while preserving the damaged file byte-for-byte.
 
@@ -99,3 +99,15 @@ See [`desktop/README.md`](../desktop/README.md): environment script, test suites
 ## 7. Gate readiness
 
 The milestone's exit conditions are met except where listed as acceptance debt D1–D4, which the Product Owner may accept, schedule, or run manually. Nothing in V1 Migration, Scheduler, Calendar or the domain integrations has been started. The next milestone (V1 Migration ADR) is **not** started and needs separate authorization.
+
+## 8. Human Gate HOLD: raw-path boundary repair
+
+The Human Gate found that the first build violated the declared boundary "raw filesystem paths do not cross into the WebView/JS": `schema.info` returned the absolute data root, the native ingest result returned an absolute media path that `app.js` fed to `convertFileSrc`, and `media.gc` (with a WebView-supplied `minAgeSeconds`) was WebView-callable. Repair (scope strictly limited, no new architecture):
+
+- `schema.info` no longer returns the data root; `media.locate` no longer returns a path; native media results are built path-free (`webview::media_ingest_result`); the shell shows no path and no longer previews media (the asset protocol and its scope were removed - opaque media serving is deferred to the first milestone that displays media).
+- The WebView entry is `qs_port::webview::dispatch`: allowlist (`media.gc` removed), command, then `scrub` of the envelope; native command results and boot status are scrubbed too.
+- Media GC is `Core::maintenance_gc` / startup only, fixed 24 h safety delay; the `media.gc` command no longer exists.
+- JS `verifyBackup(path)` removed; a test asserts the JS Store Port surface equals the allowlist and carries no path argument.
+- Regression tests: `core/port/tests/webview_contract.rs` (allowlist; forbidden commands rejected and GC provably not run; every allowlisted command, error paths included, free of absolute paths and the data root; scrub redaction; JS surface equals allowlist) and `ui/tests` (no `convertFileSrc`/`absolutePath`/`dataRoot`, no path arguments). Existing store/media/activation/archive contracts are unchanged.
+- ADR 0001: the failed-upgrade refusal is now normative in section 7; section 15 is marked as accepted implementation clarifications.
+- D1-D4 stay open acceptance debt (not executed this round, not PASS, not blocking).
