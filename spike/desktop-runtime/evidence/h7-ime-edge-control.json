@@ -1,0 +1,45 @@
+{
+ "browser": "Edg/154.0.4258.48",
+ "send": "sent=20 aborted=False",
+ "phrasesRequested": 20,
+ "compositionStarts": 20,
+ "compositionUpdates": 134,
+ "compositionEnds": 20,
+ "inputEvents": 134,
+ "composingInputEvents": 134,
+ "textareaLength": 40,
+ "sample": [
+  {
+   "t": "blur"
+  },
+  {
+   "t": "compositionstart",
+   "data": "",
+   "value": ""
+  },
+  {
+   "t": "compositionupdate",
+   "data": "n",
+   "value": ""
+  },
+  {
+   "t": "input",
+   "inputType": "insertCompositionText",
+   "isComposing": true,
+   "data": "n",
+   "value": "n"
+  },
+  {
+   "t": "compositionupdate",
+   "data": "ni",
+   "value": "n"
+  },
+  {
+   "t": "input",
+   "inputType": "insertCompositionText",
+   "isComposing": true,
+   "data": "ni",
+   "value": "ni"
+  }
+ ]
+}

@@ -1,0 +1,98 @@
+{
+ "phrasesRequested": 20,
+ "compositionStarts": 0,
+ "compositionUpdates": 0,
+ "compositionEnds": 0,
+ "orderViolations": 0,
+ "prematureCommitEvents": 0,
+ "committedFromCompositionEnd": "",
+ "textareaValue": "你好世界学习中文语言拼音输入法文章打字练习记忆段落长句词汇语法翻译错误正确保存开始",
+ "committedEqualsValue": false,
+ "blurEvents": 2,
+ "sampleEvents": [
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "你好",
+   "value": "你好"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "世界",
+   "value": "你好世界"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "学习",
+   "value": "你好世界学习"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "中文",
+   "value": "你好世界学习中文"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "语言",
+   "value": "你好世界学习中文语言"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "拼音",
+   "value": "你好世界学习中文语言拼音"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "输入法",
+   "value": "你好世界学习中文语言拼音输入法"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "文章",
+   "value": "你好世界学习中文语言拼音输入法文章"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "打字",
+   "value": "你好世界学习中文语言拼音输入法文章打字"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "练习",
+   "value": "你好世界学习中文语言拼音输入法文章打字练习"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "记忆",
+   "value": "你好世界学习中文语言拼音输入法文章打字练习记忆"
+  },
+  {
+   "t": "input",
+   "inputType": "insertText",
+   "isComposing": false,
+   "data": "段落",
+   "value": "你好世界学习中文语言拼音输入法文章打字练习记忆段落"
+  }
+ ]
+}
