@@ -1,0 +1,15 @@
+{
+    "finished":  true,
+    "seconds":  15.3,
+    "socketSamples":  25,
+    "tcpOrUdpListeners":  [
+
+                          ],
+    "nonLoopbackRemotes":  [
+                               "msedgewebview2.exe:browser/main -\u003e 52.96.230.210:443 Established"
+                           ],
+    "processNamesInTree":  [
+                               "msedgewebview2.exe",
+                               "quiz-studio-spike.exe"
+                           ]
+}

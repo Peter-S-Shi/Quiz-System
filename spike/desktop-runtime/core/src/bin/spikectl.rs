@@ -205,6 +205,10 @@ fn run(a: &[String]) -> Result<()> {
             out(json!({"verify": r, "finalFilesWithWrongHash": partial, "leftoverTemps": temps}));
         }
         "h3-matrix" => h3_matrix(a)?,
+        "lock-probe" => {
+            let r = Store::open(Path::new(&req(a, "--root")?), &OpenOpts { synchronous: "FULL".into(), lock: true });
+            out(json!({"opened": r.is_ok(), "error": r.err().map(|e| format!("{e:#}"))}));
+        }
         "h4-faults" => h4_faults(a)?,
         "h3-visibility" => h3_visibility(a)?,
         "archive-create" => out(archive::create(Path::new(&req(a, "--root")?), Path::new(&req(a, "--out")?))?),

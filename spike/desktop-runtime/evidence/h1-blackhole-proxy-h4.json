@@ -1,0 +1,37 @@
+{
+ "ingest": {
+  "assets": 140,
+  "bytes": 329564160,
+  "dedupedFiles": 1,
+  "peakWorkingSetMiB": 206.375
+ },
+ "ingestWallMs": 1979.5,
+ "jsHeapMiBAfterIngest": 61.45158386230469,
+ "imageUrl": "htt<path>",
+ "fetchImage": {
+  "status": 200,
+  "type": "image/png",
+  "bytes": 4876
+ },
+ "imageRender": {
+  "ok": true,
+  "w": 64,
+  "h": 64
+ },
+ "audio": {
+  "ok": true,
+  "duration": 60,
+  "seekTo": 45,
+  "currentTimeAfterSeek": 45,
+  "seekable": 60,
+  "currentTimeAfterSecondSeek": 10
+ },
+ "outOfScopeAsset": {
+  "status": 403,
+  "blocked": true
+ },
+ "traversalAsset": {
+  "status": 403,
+  "blocked": true
+ }
+}

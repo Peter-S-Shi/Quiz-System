@@ -1,5 +1,7 @@
 # disposable spike: build output and generated data never committed
 target/
+target-*/
+ci-evidence/
 work/
 dist/
 node_modules/

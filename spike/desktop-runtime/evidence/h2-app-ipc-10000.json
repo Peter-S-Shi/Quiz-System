@@ -1,0 +1,40 @@
+{
+ "responses": 10000,
+ "uowCommits": 10000,
+ "ingestSeconds": 33.41539999999106,
+ "commitIpc": {
+  "p50ms": 3.0999999940395355,
+  "p95ms": 4.299999997019768,
+  "p99ms": 7.5999999940395355,
+  "maxMs": 45.3999999910593
+ },
+ "fidelityViaIpc": {
+  "records": 19999,
+  "jsHashEqual": 19999,
+  "diffs": []
+ },
+ "historyFullList": {
+  "rows": 10000,
+  "iters": 60,
+  "p50ms": 64.8999999910593,
+  "p95ms": 71.09999999403954,
+  "maxMs": 88
+ },
+ "historyPage50": {
+  "p50ms": 1.199999988079071,
+  "p95ms": 1.4000000059604645
+ },
+ "store": {
+  "counts": {
+   "learner_response": 10000,
+   "teacher_review": 9999,
+   "media_object": 0,
+   "uow_marker": 0
+  },
+  "storeSchemaVersion": 1,
+  "quickCheck": true,
+  "consistencyProblems": 0,
+  "stateHash": "291fcfc58cfb7a558a04f7569ecfae5b7200273badde89911440f159cb81d250",
+  "recovery": []
+ }
+}

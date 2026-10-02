@@ -1,0 +1,99 @@
+# DISPOSABLE spike workflow: exists only on the never-merged branch spike/desktop-runtime.
+# Purpose: pristine-image evidence for H1 (reproducible MSVC/static-CRT build, per-user install) and headless H2-H5 reruns.
+name: Spike desktop runtime (disposable)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [spike/desktop-runtime]
+    paths:
+      - "spike/desktop-runtime/**"
+      - ".github/workflows/spike-desktop-runtime.yml"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 75
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: spike/desktop-runtime
+    env:
+      RUSTFLAGS: "-C target-feature=+crt-static"
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Environment manifest
+        run: |
+          New-Item -ItemType Directory -Force ci-evidence | Out-Null
+          $wv = (Get-ItemProperty 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}' -ErrorAction SilentlyContinue).pv
+          [ordered]@{
+            os = (Get-CimInstance Win32_OperatingSystem).Version
+            webview2Runtime = $wv
+            rustc = (rustc -vV) -join "`n"
+            node = (node -v)
+            runnerIsElevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          } | ConvertTo-Json | Set-Content ci-evidence/environment.json
+          Get-Content ci-evidence/environment.json
+      - name: Install tauri-cli
+        run: cargo install tauri-cli --version "^2" --locked
+      - name: Generate synthetic datasets
+        run: |
+          New-Item -ItemType Directory -Force work | Out-Null
+          node scripts/gen-evidence.mjs 2500 work/ev2500.ndjson work/ev2500.hashes.ndjson
+          node scripts/gen-evidence.mjs 10000 work/ev10000.ndjson work/ev10000.hashes.ndjson
+          node scripts/gen-fidelity.mjs work/fid.ndjson work/fid.hashes.ndjson
+      - name: Build 1 (clean checkout) - spikectl and installer
+        run: |
+          cargo build --release -p spike-core
+          Push-Location app/src-tauri; cargo tauri build --bundles nsis; Pop-Location
+          $exe = "target/release/quiz-studio-spike.exe"
+          $setup = (Get-ChildItem target/release/bundle/nsis/*.exe | Select-Object -First 1)
+          [ordered]@{ appExeSha256 = (Get-FileHash $exe).Hash.ToLower(); installerSha256 = (Get-FileHash $setup.FullName).Hash.ToLower(); installerBytes = $setup.Length } | ConvertTo-Json | Set-Content ci-evidence/build1.json
+          Copy-Item $setup.FullName work/setup-build1.exe
+          Copy-Item $exe work/app-build1.exe
+          Get-Content ci-evidence/build1.json
+      - name: Headless H2-H5 evidence on the pristine runner
+        run: |
+          $x = "target/release/spikectl.exe"
+          & $x ingest-ndjson --root work/h2/a --file work/ev2500.ndjson | Set-Content ci-evidence/h2-ingest-2500.json
+          & $x fidelity --root work/h2/a --file work/ev2500.ndjson --js work/ev2500.hashes.ndjson | Set-Content ci-evidence/h2-fidelity-evidence.json
+          & $x ingest-ndjson --root work/h2/f --file work/fid.ndjson | Out-Null
+          & $x fidelity --root work/h2/f --file work/fid.ndjson --js work/fid.hashes.ndjson | Set-Content ci-evidence/h2-fidelity-fixtures.json
+          & $x h2-probes --root work/h2/p | Set-Content ci-evidence/h2-probes.json
+          & $x bench-commit --root work/h2/a --n 1000 | Set-Content ci-evidence/h2-commit-latency.json
+          & $x crash-loop --root work/h2crash --target-midloop 150 --min-ms 50 --max-ms 400 --seed 7 --log ci-evidence/h2-crashloop.jsonl | Set-Content ci-evidence/h2-crashloop-summary.json
+          & $x ingest-ndjson --root work/h2b --file work/ev10000.ndjson | Out-Null
+          & $x h3-matrix --work work/h3 --ndjson work/ev10000.ndjson --live-n 5000 --repeats 1 | Set-Content ci-evidence/h3-matrix.json
+          & $x gen-media --out work/media-envelope.json | Out-Null
+          & $x ingest-media --root work/h4/live --envelope work/media-envelope.json | Set-Content ci-evidence/h4-ingest.json
+          & $x h4-faults --work work/h4f | Set-Content ci-evidence/h4-faults.json
+      - name: Install (per-user, silent) and run the packaged app headlessly
+        run: |
+          $p = Start-Process work/setup-build1.exe -ArgumentList "/S" -PassThru -Wait
+          "installer exit code: $($p.ExitCode)" | Tee-Object ci-evidence/install.txt
+          $exe = Join-Path $env:LOCALAPPDATA "Quiz Studio Spike/quiz-studio-spike.exe"
+          "installed exe exists: $(Test-Path $exe)" | Tee-Object -Append ci-evidence/install.txt
+          $r = ./scripts/run-app.ps1 -Exe $exe -Auto "h1,h2,h7unicode" -Tag _ci -ResultDir ci-evidence/app -TimeoutSec 240 -Extra @('--ndjson', "$PWD/work/ev2500.ndjson")
+          $r | Set-Content ci-evidence/app-run-summary.json
+          Get-ChildItem ci-evidence/app | Select-Object Name
+      - name: Build 2 (from scratch) - reproducibility
+        run: |
+          Remove-Item -Recurse -Force target
+          Push-Location app/src-tauri; cargo tauri build --bundles nsis; Pop-Location
+          $exe = "target/release/quiz-studio-spike.exe"
+          $setup = (Get-ChildItem target/release/bundle/nsis/*.exe | Select-Object -First 1)
+          $b1 = Get-Content ci-evidence/build1.json | ConvertFrom-Json
+          $r = [ordered]@{ appExeSha256 = (Get-FileHash $exe).Hash.ToLower(); installerSha256 = (Get-FileHash $setup.FullName).Hash.ToLower() }
+          $r.appExeIdenticalToBuild1 = ($r.appExeSha256 -eq $b1.appExeSha256)
+          $r.installerIdenticalToBuild1 = ($r.installerSha256 -eq $b1.installerSha256)
+          $r | ConvertTo-Json | Set-Content ci-evidence/build2.json
+          Get-Content ci-evidence/build2.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spike-ci-evidence
+          path: spike/desktop-runtime/ci-evidence

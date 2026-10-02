@@ -1,0 +1,314 @@
+{
+ "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+ "fixtures": 34,
+ "pass": 34,
+ "failures": [],
+ "rows": [
+  {
+   "name": "ascii",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 1,
+   "nfdLen": 1,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "latin word",
+   "expected": 5,
+   "got": 5,
+   "ok": true,
+   "nfcLen": 5,
+   "nfdLen": 5,
+   "nfcGraphemes": 5
+  },
+  {
+   "name": "e + combining acute",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 1,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "n + two combining dots",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 3,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "precomposed e-acute",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 1,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "flag JP",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 4,
+   "nfdLen": 4,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "flags JP+US",
+   "expected": 2,
+   "got": 2,
+   "ok": true,
+   "nfcLen": 8,
+   "nfdLen": 8,
+   "nfcGraphemes": 2
+  },
+  {
+   "name": "family ZWJ",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 11,
+   "nfdLen": 11,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "thumbs + skin tone",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 4,
+   "nfdLen": 4,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "couple with heart ZWJ",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 8,
+   "nfdLen": 8,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "technologist ZWJ",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 7,
+   "nfdLen": 7,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "two emoji",
+   "expected": 2,
+   "got": 2,
+   "ok": true,
+   "nfcLen": 4,
+   "nfdLen": 4,
+   "nfcGraphemes": 2
+  },
+  {
+   "name": "England tag flag",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 14,
+   "nfdLen": 14,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "keycap 1",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 3,
+   "nfdLen": 3,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Hangul precomposed",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 1,
+   "nfdLen": 3,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Hangul jamo L+V+T",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 1,
+   "nfdLen": 3,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Hangul word precomposed",
+   "expected": 2,
+   "got": 2,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 6,
+   "nfcGraphemes": 2
+  },
+  {
+   "name": "Hangul word jamo",
+   "expected": 2,
+   "got": 2,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 6,
+   "nfcGraphemes": 2
+  },
+  {
+   "name": "Devanagari conjunct kshi (GB9c, Unicode 15.1)",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 4,
+   "nfdLen": 4,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Devanagari ka+virama+ssa (GB9c)",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 3,
+   "nfdLen": 3,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Devanagari two syllables",
+   "expected": 3,
+   "got": 3,
+   "ok": true,
+   "nfcLen": 6,
+   "nfdLen": 6,
+   "nfcGraphemes": 3
+  },
+  {
+   "name": "Thai ko + mai taikhu",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Thai sara am",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Hebrew with niqqud",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Arabic with fatha",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "Hiragana + combining dakuten",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 1,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "CJK + Latin mix",
+   "expected": 3,
+   "got": 3,
+   "ok": true,
+   "nfcLen": 3,
+   "nfdLen": 3,
+   "nfcGraphemes": 3
+  },
+  {
+   "name": "CJK astral",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "fullwidth latin",
+   "expected": 2,
+   "got": 2,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 2,
+   "nfcGraphemes": 2
+  },
+  {
+   "name": "CRLF",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 2,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "ZWNJ between letters",
+   "expected": 2,
+   "got": 2,
+   "ok": true,
+   "nfcLen": 3,
+   "nfdLen": 3,
+   "nfcGraphemes": 2
+  },
+  {
+   "name": "ZWJ between letters",
+   "expected": 2,
+   "got": 2,
+   "ok": true,
+   "nfcLen": 3,
+   "nfdLen": 3,
+   "nfcGraphemes": 2
+  },
+  {
+   "name": "Cyrillic decomposed yo",
+   "expected": 1,
+   "got": 1,
+   "ok": true,
+   "nfcLen": 1,
+   "nfdLen": 2,
+   "nfcGraphemes": 1
+  },
+  {
+   "name": "mixed sentence",
+   "expected": 8,
+   "got": 8,
+   "ok": true,
+   "nfcLen": 9,
+   "nfdLen": 9,
+   "nfcGraphemes": 8
+  }
+ ]
+}
