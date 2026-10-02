@@ -46,15 +46,15 @@
 
 ## 4. 结果
 
-本地（开发机、debug profile、阈值取默认缩放值）：`qs-task-domains` 6 个 Rust 测试，`qs-orchestration`/`qs-store`/`qs-port` 套件通过，`fmt --check` 与 `clippy --workspace --all-targets -D warnings` 干净，**125 个单元 + 55 个集成 JS 测试**通过（Orchestration 与 Migration 套件意图未改）。Windows Desktop CI（`windows-latest` 上的 `Desktop (V2)`，完整阈值）：运行完成后记录（待运行）。
+本地（开发机、debug profile、阈值取默认缩放值）：`qs-task-domains` 6 个 Rust 测试，`qs-orchestration`/`qs-store`/`qs-port` 套件通过，`fmt --check` 与 `clippy --workspace --all-targets -D warnings` 干净，**136 个单元 + 55 个集成 JS 测试**通过（Orchestration 与 Migration 套件意图未改）。Windows Desktop CI（`windows-latest` 上的 `Desktop (V2)`，完整阈值）：第一个候选版（`d6cd0a6`）为绿；Human Gate HOLD 修复（澄清 2、3）之后，新候选版的运行在完成后记录（待运行）。
 
 ## 5. 供 Human Gate 评审的实现澄清
 
 以下是实现过程中在 ADR 0004 之内做出的选择，均不改变任何决定。
 
 1. **Unicode 表是生成、固定并提交的。** `tools/gen-unicode-data.mjs` 读取 UCD 16.0.0 文件（不提交；每个输入的下载地址与 SHA-256 记录在生成的 `data.js` 中）并写出表；官方一致性套件已提交（`GraphemeBreakTest.txt`、`NormalizationTest.txt.gz`）并在 CI 中运行，所以固定的语义是被证明的，而不是被假设的。
-2. **对齐的并列规则与规模上限。** 先去掉公共前后缀，中间部分按最小编辑距离对齐，回溯时依次偏好对角线、遗漏、插入；连续的不匹配步骤合成一个错误。中间部分超过 36 000 000 个单元格时按失败关闭处理（`COMPARE_TOO_LARGE`；recovery 状态保留文本）——对错误散布的超长文本这是一个如实的限制。
-3. **Objective/Translation adapter 是镜像 V1 校验器而不是导入它**（发布的 UI 不能导入 `desktop/ui/web` 之外的文件）。差分测试证明凡 V1 拒绝的都会被拒绝，漂移守卫把封闭键集合钉到公开 JSON Schema（开发中它抓到过一处真实分歧：`learnerItemMarks` 的可选 `createdAt`）。
+2. **对齐的并列规则与规模上限。** 先去掉公共前后缀，中间部分按最小编辑距离对齐，回溯时依次偏好对角线、遗漏、插入；连续的不匹配步骤合成一个错误。对齐是**带状限界**的（Human Gate 修复）：只计算离对角线 `k` 以内的单元格，`k` 不断翻倍直到最优解落入带内，其结果（含并列规则）与完整矩阵完全一致（由对独立完整矩阵参考实现的差分测试证明），因此 `typing-compare/1` 与已存 attempt 都不变。代价是距离 × 长度而非长度平方：约 7 500 个字素、仅有少量相距很远的错误的转录，一秒内即可 finalize。保存的方向单元格上限仍为 36 000 000，超过时按失败关闭处理（`COMPARE_TOO_LARGE`；recovery 状态保留文本）——现在只有错误极多的长文本才会触及。
+3. **Objective/Translation adapter 是镜像 V1 校验器而不是导入它**（发布的 UI 不能导入 `desktop/ui/web` 之外的文件）。现已证明被接受的集合是**未改动 V1 校验器与公开 JSON Schema 的子集**（Human Gate 修复）：系统性差分测试对若干合法 native payload 的每个叶子与容器做变异（删除、类型混淆取值池、未知键），并把 adapter 接受的每个变异体同时交给 V1 校验器和编译后的公开 schema 检验。它找到并关闭了真实缺口：V1 会 trim 标识字符串、quiz-paper 的 snapshot item 必须有 `type`、可选的 `provenance`（含 `author`/`extensions`）与 `learnerItemMarks.createdAt` 保持 schema 类型。漂移守卫另外把封闭键集合钉到该 schema。
 4. **原生 Objective/Translation 记录要求 `provenance`**（`purpose` 为 practice | retry | remediation；retry 记录 `sourceResponseId` 与 `sourceMaterialId`），与会话事实并列：V1 schema 允许省略，而 ADR 0004 §6.3/§10.5 需要 lineage。
 5. **`completeSession` 要求恰好一条证据**且其引用即该会话；`slot` 参数现为可选，给出则必须等于推导出的 slot。
 6. **`algorithmVersion` v2 / planner v1。** planner 之前导入 recommender 的版本常量；现在自有 `PLANNER_ALGORITHM_VERSION = 'v1'`，engine 排程仍为 `v1`。

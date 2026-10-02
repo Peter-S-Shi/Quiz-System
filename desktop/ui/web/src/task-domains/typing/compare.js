@@ -21,8 +21,14 @@ export const COMPARISON = Object.freeze({
   offsetEncoding: 'utf16-code-unit',
 });
 
-/** The largest alignment middle (cells) typing-compare/1 will compute; above it finalization fails closed. */
+/**
+ * The most direction cells typing-compare/1 will store while aligning; above it finalization fails closed
+ * (`COMPARE_TOO_LARGE`). The alignment is band-limited (below), so this bounds distance x length, not length squared:
+ * a long, mostly-correct transcription is cheap, and only a long text with very many errors reaches the limit.
+ */
 export const MAX_ALIGNMENT_CELLS = 36_000_000;
+/** The first half-width of the alignment band; it doubles until the optimum fits (an implementation detail, not a rule). */
+const INITIAL_BAND = 32;
 
 export class TypingCompareError extends Error {
   constructor(code, message) {
@@ -43,8 +49,53 @@ const DIAG = 1;
 const OMIT = 2;
 const INSERT = 3;
 
-/** Alignment steps over the clusters: 'm' match, 's' substitution, 'o' omission, 'i' insertion (left to right). */
-function align(a, b) {
+const INF = 0xffffffff;
+
+/**
+ * Minimum-edit-distance alignment of the (already trimmed) middle `a[lo..lo+n)` x `b[lo..lo+m)` restricted to the band
+ * |i - j| <= k. If the optimum is <= k every optimal path lies inside the band and every cell on it holds its exact
+ * value, while any predecessor outside the band is > k and can neither win nor tie, so the stored directions (and
+ * therefore the tie-break) are exactly those of the full matrix. Returns null when the optimum exceeds k.
+ */
+function alignBand(a, b, lo, n, m, k) {
+  const width = Math.min(2 * k + 1, m + 1);
+  const dir = new Uint8Array((n + 1) * width);
+  const left = (i) => (i > k ? i - k : 0); // first stored column of row i
+  let prev = new Uint32Array(m + 2).fill(INF);
+  let cur = new Uint32Array(m + 2).fill(INF);
+  for (let j = 0; j <= Math.min(m, k); j += 1) { prev[j] = j; dir[j] = j === 0 ? 0 : INSERT; }
+  for (let i = 1; i <= n; i += 1) {
+    const jl = left(i);
+    const jh = Math.min(m, i + k);
+    if (jl > 0) cur[jl - 1] = INF; // a stale value from two rows ago must not act as the left neighbour
+    const base = i * width - jl;
+    for (let j = jl; j <= jh; j += 1) {
+      if (j === 0) { cur[0] = i; dir[base] = OMIT; continue; }
+      const diag = prev[j - 1] + (a[lo + i - 1] === b[lo + j - 1] ? 0 : 1);
+      const omit = prev[j] + 1;
+      const insert = cur[j - 1] + 1;
+      // the stored direction is the backtrace preference: diagonal, then omission, then insertion
+      if (diag <= omit && diag <= insert) { cur[j] = diag; dir[base + j] = DIAG; } else if (omit <= insert) { cur[j] = omit; dir[base + j] = OMIT; } else { cur[j] = insert; dir[base + j] = INSERT; }
+    }
+    if (jh < m) cur[jh + 1] = INF;
+    [prev, cur] = [cur, prev];
+  }
+  if (prev[m] > k) return null;
+  const middle = [];
+  let i = n;
+  let j = m;
+  while (i > 0 || j > 0) {
+    const d = dir[i * width + (j - left(i))];
+    if (d === DIAG) { middle.push(a[lo + i - 1] === b[lo + j - 1] ? 'm' : 's'); i -= 1; j -= 1; } else if (d === OMIT) { middle.push('o'); i -= 1; } else { middle.push('i'); j -= 1; }
+  }
+  return middle.reverse();
+}
+
+/**
+ * Alignment steps over the cluster keys: 'm' match, 's' substitution, 'o' omission, 'i' insertion (left to right).
+ * Exported for the conformance tests, which compare it with an independent full-matrix reference.
+ */
+export function alignKeys(a, b) {
   let lo = 0;
   while (lo < a.length && lo < b.length && a[lo] === b[lo]) lo += 1;
   let ea = a.length;
@@ -52,35 +103,18 @@ function align(a, b) {
   while (ea > lo && eb > lo && a[ea - 1] === b[eb - 1]) { ea -= 1; eb -= 1; }
   const n = ea - lo;
   const m = eb - lo;
-  const steps = new Array(lo).fill('m');
-  if (n * m > MAX_ALIGNMENT_CELLS) throw new TypingCompareError('COMPARE_TOO_LARGE', `alignment of ${n} x ${m} clusters exceeds the typing-compare/1 limit`);
-  const dir = new Uint8Array((n + 1) * (m + 1));
-  let prev = new Uint32Array(m + 1);
-  let cur = new Uint32Array(m + 1);
-  for (let j = 1; j <= m; j += 1) { prev[j] = j; dir[j] = INSERT; }
-  for (let i = 1; i <= n; i += 1) {
-    cur[0] = i;
-    dir[i * (m + 1)] = OMIT;
-    for (let j = 1; j <= m; j += 1) {
-      const diag = prev[j - 1] + (a[lo + i - 1] === b[lo + j - 1] ? 0 : 1);
-      const omit = prev[j] + 1;
-      const insert = cur[j - 1] + 1;
-      // the stored direction is the backtrace preference: diagonal, then omission, then insertion
-      if (diag <= omit && diag <= insert) { cur[j] = diag; dir[i * (m + 1) + j] = DIAG; } else if (omit <= insert) { cur[j] = omit; dir[i * (m + 1) + j] = OMIT; } else { cur[j] = insert; dir[i * (m + 1) + j] = INSERT; }
+  let middle = [];
+  if (n === 0) middle = new Array(m).fill('i');
+  else if (m === 0) middle = new Array(n).fill('o');
+  else {
+    // the band must contain the end cell (|n - m| <= k); it doubles until the optimum fits (at k >= max(n, m) it always does)
+    for (let k = Math.max(INITIAL_BAND, Math.abs(n - m)); ; k *= 2) {
+      if ((n + 1) * Math.min(2 * k + 1, m + 1) > MAX_ALIGNMENT_CELLS) throw new TypingCompareError('COMPARE_TOO_LARGE', `aligning ${n} x ${m} clusters needs more than ${MAX_ALIGNMENT_CELLS} cells`);
+      middle = alignBand(a, b, lo, n, m, k);
+      if (middle) break;
     }
-    [prev, cur] = [cur, prev];
   }
-  const middle = [];
-  let i = n;
-  let j = m;
-  while (i > 0 || j > 0) {
-    const d = dir[i * (m + 1) + j];
-    if (d === DIAG) { middle.push(a[lo + i - 1] === b[lo + j - 1] ? 'm' : 's'); i -= 1; j -= 1; } else if (d === OMIT) { middle.push('o'); i -= 1; } else { middle.push('i'); j -= 1; }
-  }
-  middle.reverse();
-  steps.push(...middle);
-  for (let k = 0; k < a.length - ea; k += 1) steps.push('m');
-  return steps;
+  return [...new Array(lo).fill('m'), ...middle, ...new Array(a.length - ea).fill('m')];
 }
 
 /**
@@ -91,7 +125,7 @@ function align(a, b) {
 export function compare(reference, committed) {
   const r = segment(reference);
   const c = segment(committed);
-  const steps = align(r.keys, c.keys);
+  const steps = alignKeys(r.keys, c.keys);
   const errors = [];
   let ri = 0;
   let ci = 0;

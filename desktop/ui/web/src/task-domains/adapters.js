@@ -13,7 +13,10 @@ import { validateTypingAttempt } from './typing/attempt.js';
 export const SESSION_EXT_KEY = 'quiz-studio.v2.session';
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
-const str = (v) => typeof v === 'string' && v.length > 0;
+// V1's `nonEmptyString` trims, the public schema's `minLength: 1` does not: the adapter takes the stricter (a
+// whitespace-only identity or timestamp is refused). `optStr`: a schema `string` that is only checked when present.
+const str = (v) => typeof v === 'string' && v.trim().length > 0;
+const optStr = (o, k, at, errs) => { if (k in o && typeof o[k] !== 'string') errs.push(`${at}.${k} must be a string`); };
 const KINDS = ['unknown', 'uncertain', 'should_know'];
 /** The closed key sets of the V1 Learner Response public schema (guarded against drift by a test). */
 export const V1_CLOSED_KEYS = Object.freeze({
@@ -32,6 +35,24 @@ function closedKeys(obj, keys, at, errs) {
   for (const k of Object.keys(obj)) if (!keys.includes(k)) errs.push(`${at}: unknown field ${k}`);
 }
 
+const ACTOR_TYPES = ['anonymous', 'human', 'external-ai', 'agent', 'system'];
+/** The public schema's `provenance` definition: closed keys, string fields, a closed actor, an object `extensions`. */
+function validateProvenanceShape(p, errs) {
+  closedKeys(p, V1_CLOSED_KEYS.provenance, 'provenance', errs);
+  for (const k of ['purpose', 'sourceResponseId', 'sourceReviewId', 'sourceMaterialId', 'createdAt']) optStr(p, k, 'provenance', errs);
+  if ('extensions' in p && !isObj(p.extensions)) errs.push('provenance.extensions must be an object');
+  if ('author' in p) {
+    const a = p.author;
+    if (!isObj(a)) errs.push('provenance.author must be an object');
+    else {
+      closedKeys(a, ['type', 'displayLabel', 'toolName'], 'provenance.author', errs);
+      if (!ACTOR_TYPES.includes(a.type)) errs.push('provenance.author.type is invalid');
+      optStr(a, 'displayLabel', 'provenance.author', errs);
+      optStr(a, 'toolName', 'provenance.author', errs);
+    }
+  }
+}
+
 /** The V1 Learner Response contract (validateLearnerResponse + the closed public schema), mirrored. */
 function validateV1Shape(v, errs) {
   if (!isObj(v)) { errs.push('Learner Response must be an object'); return null; }
@@ -47,6 +68,7 @@ function validateV1Shape(v, errs) {
     closedKeys(m, V1_CLOSED_KEYS.material, 'material', errs);
     if (typeof m.title !== 'string') errs.push('material.title is required');
   }
+  if (isObj(m) && !isObj(m.snapshot)) errs.push('material.snapshot must be an object');
   const items = m?.snapshot?.items;
   if (!Array.isArray(items) || !items.length) errs.push('material item snapshots are required');
   if (!isObj(v.session) || !str(v.session.id)) errs.push('session identity is required');
@@ -56,7 +78,8 @@ function validateV1Shape(v, errs) {
   if (!Array.isArray(v.responses) || !v.responses.length) errs.push('responses are required');
   const itemIds = new Set();
   (Array.isArray(items) ? items : []).forEach((it) => {
-    if (!str(it?.id)) errs.push('each item snapshot requires an id');
+    if (!isObj(it)) errs.push('each item snapshot must be an object');
+    else if (!str(it.id)) errs.push('each item snapshot requires an id');
     else if (itemIds.has(it.id)) errs.push(`duplicate item id ${it.id}`);
     else itemIds.add(it.id);
   });
@@ -79,7 +102,7 @@ function validateV1Shape(v, errs) {
   }
   if ('provenance' in v) {
     if (!isObj(v.provenance)) errs.push('provenance must be an object');
-    else closedKeys(v.provenance, V1_CLOSED_KEYS.provenance, 'provenance', errs);
+    else validateProvenanceShape(v.provenance, errs);
   }
   if ('extensions' in v && !isObj(v.extensions)) errs.push('extensions must be an object');
 
@@ -128,6 +151,7 @@ function validateV1Shape(v, errs) {
         else if (seen.has(mk.itemId)) errs.push(`duplicate mark for ${mk.itemId}`);
         else seen.add(mk.itemId);
         if (!KINDS.includes(mk.kind)) errs.push(`invalid mark kind ${mk.kind}`);
+        optStr(mk, 'createdAt', `mark ${i}`, errs);
       });
     }
   }
@@ -161,6 +185,8 @@ function validateObjective(v) {
   const errs = [];
   if (!validateV1Shape(v, errs)) return errs;
   if (v.material?.type !== 'quiz-paper') errs.push('an Objective record has material.type quiz-paper');
+  // the public schema's quiz-paper condition: every item snapshot carries a `type` (a non-empty string here)
+  (Array.isArray(v.material?.snapshot?.items) ? v.material.snapshot.items : []).forEach((it) => { if (isObj(it) && !str(it.type)) errs.push(`Objective item snapshot ${it.id} requires a type`); });
   (Array.isArray(v.responses) ? v.responses : []).forEach((r) => { if (isObj(r) && !('result' in r)) errs.push(`Objective response ${r.itemId} requires a grading result`); });
   if (!Number.isInteger(v.summary?.correctCount) || v.summary.correctCount < 0) errs.push('Objective summary correctCount is required');
   if (typeof v.summary?.percent !== 'number' || !Number.isFinite(v.summary.percent) || v.summary.percent < 0 || v.summary.percent > 100) errs.push('Objective summary percent is required');
