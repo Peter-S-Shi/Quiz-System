@@ -79,3 +79,9 @@ dl.kv dd { margin: 0; overflow-wrap: anywhere; }
 .error-box { background: var(--red-soft); color: var(--red); border-radius: 10px; padding: 12px 14px; }
 
 [hidden] { display: none !important; }
+
+/* V1 migration preview (minimal) */
+.counts { border-collapse: collapse; width: 100%; margin: 8px 0 12px; }
+.counts th, .counts td { text-align: left; padding: 4px 10px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.diag { margin: 6px 0; padding-left: 18px; font-size: 13px; }
+.diag li.bad { color: var(--red); }

@@ -146,6 +146,36 @@ pub async fn native_backup_restore_pending(state: State<'_, AppState>) -> Result
     Ok(state.sanitized(r))
 }
 
+/// V1 migration, step 0 (optional): choose the V1 library recovery artifact. The path stays in Rust; the UI is
+/// only told the file name.
+#[tauri::command]
+pub async fn native_migration_artifact(app: AppHandle, state: State<'_, AppState>) -> Result<Value, ()> {
+    let picked =
+        app.dialog().file().add_filter("Recovery artifact (JSON)", &["json", "txt"]).add_filter("All files", &["*"]).blocking_pick_file();
+    let Some(p) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
+    let name = p.file_name().map(|n| n.to_string_lossy().into_owned());
+    *state.pending_artifact.lock().unwrap() = Some(p);
+    Ok(json!({"ok": true, "result": {"name": name}}))
+}
+
+/// V1 migration, step 1: choose the V1 full backup and build the PREVIEW (nothing live is touched). The WebView
+/// then confirms with `migration.confirm` by the preview's hash, or cancels with `migration.cancel`.
+#[tauri::command]
+pub async fn native_migration_prepare(app: AppHandle, state: State<'_, AppState>) -> Result<Value, ()> {
+    let Some(core) = state.core() else { return Ok(err_msg("STORE_UNAVAILABLE", "the data store is not open")) };
+    let picked =
+        app.dialog().file().add_filter("Quiz Studio V1 backup (JSON)", &["json"]).add_filter("All files", &["*"]).blocking_pick_file();
+    let Some(source) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
+    let artifact = state.pending_artifact.lock().unwrap().take();
+    let mut args = json!({"source": source.display().to_string()});
+    if let Some(a) = artifact {
+        args["artifact"] = json!(a.display().to_string());
+    }
+    let r = core.dispatch("migration.prepare", &args);
+    state.log(&format!("migration.prepare ok={} blocked={}", r["ok"], r["result"]["blocked"]));
+    Ok(state.sanitized(r))
+}
+
 /// OS drag-and-drop is handled here, in Rust: dropped files are streamed into the media store on a
 /// worker thread (UI stays responsive) and the UI is told via events.
 pub fn on_window_event(window: &Window, event: &WindowEvent) {

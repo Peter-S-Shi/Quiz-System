@@ -104,6 +104,29 @@ impl ProcessLock {
     }
 }
 
+/// Free bytes available to the current user on the volume that holds `path` (`u64::MAX` where it cannot be
+/// determined). Used for the migration pre-flight check (ADR 0002 section 4, P1).
+#[cfg(windows)]
+pub fn free_space(path: &Path) -> u64 {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
+    let probe = if path.exists() { path.to_path_buf() } else { path.parent().map(Path::to_path_buf).unwrap_or_else(|| path.to_path_buf()) };
+    let wide: Vec<u16> = probe.as_os_str().encode_wide().chain(std::iter::once(0)).collect();
+    let (mut avail, mut total, mut free) = (0u64, 0u64, 0u64);
+    // SAFETY: `wide` is a NUL-terminated UTF-16 path and the three out-pointers are valid for the call.
+    let ok = unsafe { GetDiskFreeSpaceExW(wide.as_ptr(), &mut avail, &mut total, &mut free) };
+    if ok == 0 {
+        u64::MAX
+    } else {
+        avail
+    }
+}
+
+#[cfg(not(windows))]
+pub fn free_space(_path: &Path) -> u64 {
+    u64::MAX
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

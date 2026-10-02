@@ -8,5 +8,5 @@
 pub mod catalogs;
 pub mod data;
 
-pub use catalogs::{evidence_catalog, evidence_catalog_v2, evidence_catalog_v2_failing};
+pub use catalogs::{artifact_catalog, evidence_catalog, evidence_catalog_v2, evidence_catalog_v2_failing};
 pub use data::*;

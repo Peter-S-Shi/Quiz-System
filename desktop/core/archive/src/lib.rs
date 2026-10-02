@@ -3,6 +3,8 @@
 //! One zip containing `manifest.json` (format/version, store schema version, app version, counts and a
 //! SHA-256 + size for every file), a **consistent online snapshot** of the database (recovery-only data
 //! stripped) and every referenced media object. Everything streams - nothing is held whole in memory.
+//! Format version 2 (ADR 0002, H-4) additionally carries `recovery/<sha256>` entries for the durable
+//! recovery artifacts indexed by the `recovery_artifact` collection; version 1 archives stay readable.
 //! Restore **verifies everything before** invoking the activation primitive and refuses with specific
 //! codes: `ArchiveWrongFormat`, `ArchiveCorrupt`, `ArchiveMissingEntry`, `ArchiveUnlistedEntry`,
 //! `ArchiveHashMismatch`, `ArchiveNewerSchema`, `ArchiveInvalidStore`. A failed restore leaves live data
@@ -26,7 +28,12 @@ use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
 pub const FORMAT: &str = "quiz-studio-archive";
-pub const FORMAT_VERSION: i64 = 1;
+/// Written by this build. Version 1 (no recovery artifacts) is still read and restored.
+pub const FORMAT_VERSION: i64 = 2;
+pub const MIN_READABLE_FORMAT_VERSION: i64 = 1;
+/// Collection whose rows index durable recovery artifacts (files live in `recovery-artifacts/`).
+pub const RECOVERY_ARTIFACT_COLLECTION: &str = "recovery_artifact";
+pub const RECOVERY_PREFIX: &str = "recovery/";
 pub const MANIFEST: &str = "manifest.json";
 pub const DB_ENTRY: &str = "db/quiz-studio.db";
 const CHUNK: usize = 1 << 20;
@@ -65,6 +72,9 @@ pub struct SnapshotHandle {
     schema_version: i32,
     /// distinct (content hash, size) of every registered media object
     media: Vec<(String, u64)>,
+    /// (content hash, size) of every indexed recovery artifact, and where their files live
+    artifacts: Vec<(String, u64)>,
+    artifact_dir: PathBuf,
 }
 
 pub fn snapshot_for_archive(store: &Store, op_id: &str) -> Result<SnapshotHandle> {
@@ -85,7 +95,7 @@ pub fn snapshot_for_archive(store: &Store, op_id: &str) -> Result<SnapshotHandle
         let _: String = c.query_row("PRAGMA journal_mode=DELETE", [], |r| r.get(0)).code(Code::Db)?;
         c.execute_batch("VACUUM").code(Code::Db)?;
     }
-    let (schema_version, media) = {
+    let (schema_version, media, artifacts) = {
         let c = Connection::open(fsx::sqlite_path(&db)?).code(Code::Db)?;
         let v: i32 = c.query_row("PRAGMA user_version", [], |r| r.get(0)).code(Code::Db)?;
         let mut st =
@@ -95,9 +105,32 @@ pub fn snapshot_for_archive(store: &Store, op_id: &str) -> Result<SnapshotHandle
             .code(Code::Db)?
             .collect::<std::result::Result<_, _>>()
             .code(Code::Db)?;
-        (v, m)
+        (v, m, artifact_rows(&c)?)
     };
-    Ok(SnapshotHandle { dir, db, schema_version, media })
+    Ok(SnapshotHandle { dir, db, schema_version, media, artifacts, artifact_dir: store.root().recovery_artifacts_dir() })
+}
+
+/// `(hash, size)` of every `recovery_artifact` row, or nothing when this catalog has no such collection.
+fn artifact_rows(c: &Connection) -> Result<Vec<(String, u64)>> {
+    let has: i64 = c
+        .query_row("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?1", [RECOVERY_ARTIFACT_COLLECTION], |r| r.get(0))
+        .code(Code::Db)?;
+    if has == 0 {
+        return Ok(vec![]);
+    }
+    let mut st = c
+        .prepare(&format!("SELECT id, COALESCE(json_extract(payload,'$.size'),0) FROM {RECOVERY_ARTIFACT_COLLECTION} ORDER BY id"))
+        .code(Code::Db)?;
+    let v = st
+        .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)? as u64)))
+        .code(Code::Db)?
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .code(Code::Db)?;
+    Ok(v)
+}
+
+fn artifact_file(dir: &Path, hash: &str) -> PathBuf {
+    dir.join(format!("{hash}.artifact"))
 }
 
 impl SnapshotHandle {
@@ -173,13 +206,28 @@ fn write_archive_inner(handle: &SnapshotHandle, media: &MediaStore, partial: &Pa
         entries.insert(name, (n, sha));
     }
 
+    let mut artifact_bytes = 0u64;
+    for (hash, size) in &handle.artifacts {
+        if !is_hash(hash) {
+            bail!(Code::ArchiveInvalidStore, "recovery artifact id '{hash}' is not a content hash");
+        }
+        let src = File::open(artifact_file(&handle.artifact_dir, hash))
+            .map_err(|e| Error::new(Code::MediaMissing, format!("recovery artifact {hash} is indexed but its file is missing: {e}")))?;
+        let (n, sha) = add_entry(&mut zip, &format!("{RECOVERY_PREFIX}{hash}"), src, CompressionMethod::Stored)?;
+        if &sha != hash || n != *size {
+            bail!(Code::MediaHashMismatch, "recovery artifact {hash} on disk does not match its content address; refusing to archive it");
+        }
+        artifact_bytes += n;
+        entries.insert(format!("{RECOVERY_PREFIX}{hash}"), (n, sha));
+    }
+
     let manifest = json!({
         "format": FORMAT,
         "formatVersion": FORMAT_VERSION,
         "applicationId": APP_IDENTIFIER,
         "storeSchemaVersion": handle.schema_version,
         "appVersion": APP_VERSION,
-        "counts": {"media": handle.media.len(), "mediaBytes": media_bytes},
+        "counts": {"media": handle.media.len(), "mediaBytes": media_bytes, "recoveryArtifacts": handle.artifacts.len(), "recoveryArtifactBytes": artifact_bytes},
         "entries": entries.iter().map(|(p, (s, h))| json!({"path": p, "size": s, "sha256": h})).collect::<Vec<_>>(),
     });
     zip.start_file(MANIFEST, SimpleFileOptions::default().compression_method(CompressionMethod::Deflated)).code(Code::Io)?;
@@ -211,6 +259,9 @@ pub fn create_archive(store: &Store, dest: &Path) -> Result<ArchiveSummary> {
 fn entry_path_ok(name: &str) -> bool {
     if name == DB_ENTRY {
         return true;
+    }
+    if let Some(hash) = name.strip_prefix(RECOVERY_PREFIX) {
+        return is_hash(hash);
     }
     match name.strip_prefix("media/").and_then(|r| r.split_once('/')) {
         Some((hh, hash)) => is_hash(hash) && hash.starts_with(hh) && hh.len() == 2,
@@ -270,8 +321,11 @@ fn read_manifest(zip: &mut ZipArchive<File>) -> Result<(Manifest, i64)> {
 pub fn verify_archive(path: &Path, max_schema: i32) -> Result<Manifest> {
     let mut zip = open_zip(path)?;
     let (mf, fv) = read_manifest(&mut zip)?;
-    if fv != FORMAT_VERSION {
+    if !(MIN_READABLE_FORMAT_VERSION..=FORMAT_VERSION).contains(&fv) {
         bail!(Code::ArchiveWrongFormat, "unsupported archive format version {fv}");
+    }
+    if fv < 2 && mf.entries.keys().any(|p| p.starts_with(RECOVERY_PREFIX)) {
+        bail!(Code::ArchiveUnlistedEntry, "a format version {fv} archive cannot carry recovery artifacts");
     }
     if mf.store_schema_version > max_schema {
         bail!(
@@ -327,6 +381,11 @@ pub fn verify_archive(path: &Path, max_schema: i32) -> Result<Manifest> {
         if &got != sha || n_total != *size {
             bail!(Code::ArchiveHashMismatch, "'{name}' does not match the manifest checksum");
         }
+        if let Some(addr) = name.strip_prefix(RECOVERY_PREFIX) {
+            if addr != got {
+                bail!(Code::ArchiveHashMismatch, "'{name}' content does not match its content address");
+            }
+        }
         if let Some(addr) = name.strip_prefix("media/").and_then(|r| r.split_once('/')).map(|x| x.1) {
             if addr != got {
                 bail!(Code::ArchiveHashMismatch, "'{name}' content does not match its content address");
@@ -374,6 +433,39 @@ pub fn restore_archive(store: &mut Store, archive: &Path) -> Result<RestoreRepor
         }
         let migrated_from = migrate_file(&staging.db, store.catalog())?.map(|(from, _)| from);
         activation::normalize_staging(&staging.db)?;
+
+        // every indexed recovery artifact must be in the archive (or already preserved locally) - fail closed
+        let wanted = {
+            let c = Connection::open(fsx::sqlite_path(&staging.db)?).code(Code::Db)?;
+            artifact_rows(&c)?
+        };
+        let art_dir = store.root().recovery_artifacts_dir();
+        fs::create_dir_all(&art_dir)?;
+        for (hash, _) in &wanted {
+            let listed = mf.entries.contains_key(&format!("{RECOVERY_PREFIX}{hash}"));
+            if !listed && !artifact_file(&art_dir, hash).is_file() {
+                bail!(Code::ArchiveMissingEntry, "archive indexes recovery artifact {hash} but does not carry it");
+            }
+        }
+        for name in mf.entries.keys().filter(|n| n.starts_with(RECOVERY_PREFIX)) {
+            let hash = &name[RECOVERY_PREFIX.len()..];
+            let dest = artifact_file(&art_dir, hash);
+            if dest.is_file() {
+                continue; // content-addressed: already preserved
+            }
+            let mut src = zip.by_name(name).map_err(|e| Error::new(Code::ArchiveCorrupt, e.to_string()))?;
+            let tmp = fsx::temp_sibling(&dest);
+            {
+                let mut out = File::create(&tmp)?;
+                std::io::copy(&mut src, &mut out).map_err(|e| Error::new(Code::ArchiveCorrupt, e.to_string()))?;
+                out.sync_all()?;
+            }
+            if fsx::sha256_file(&tmp)? != hash {
+                let _ = fs::remove_file(&tmp);
+                bail!(Code::ArchiveHashMismatch, "'{name}' changed while restoring");
+            }
+            fsx::rename_retry(&tmp, &dest)?;
+        }
 
         let media = MediaStore::new(store.root().media_dir());
         let (mut added, mut present) = (0, 0);

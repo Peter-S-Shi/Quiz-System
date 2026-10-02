@@ -1,0 +1,923 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.library-backup",
+  "exportedAt": "2025-04-01T12:00:00.000Z",
+  "library": {
+    "schemaVersion": 1,
+    "papers": [
+      {
+        "schemaVersion": 1,
+        "id": "paper-a",
+        "title": "Sample Paper A",
+        "description": "Synthetic paper with every question type",
+        "category": "Cat A",
+        "tags": [
+          "demo",
+          "synthetic"
+        ],
+        "createdAt": "2025-03-01T09:00:00.000Z",
+        "updatedAt": "2025-03-01T09:10:00.000Z",
+        "lastOpenedAt": "2025-03-02T10:00:00.000Z",
+        "questions": [
+          {
+            "id": "q-single",
+            "type": "single",
+            "prompt": "Pick the right one",
+            "image": {
+              "id": "img-1",
+              "mimeType": "image/png",
+              "name": "one.png",
+              "size": 70,
+              "alt": "a pixel"
+            },
+            "options": [
+              {
+                "id": "o1",
+                "text": "Right",
+                "correct": true
+              },
+              {
+                "id": "o2",
+                "text": "Wrong",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q-multi",
+            "type": "multiple",
+            "prompt": "Pick all that apply",
+            "audio": {
+              "id": "aud-1",
+              "mimeType": "audio/wav",
+              "name": "tone.wav",
+              "size": 40,
+              "duration": 1
+            },
+            "options": [
+              {
+                "id": "m1",
+                "text": "A",
+                "correct": true
+              },
+              {
+                "id": "m2",
+                "text": "B",
+                "correct": true
+              },
+              {
+                "id": "m3",
+                "text": "C",
+                "correct": false
+              }
+            ]
+          },
+          {
+            "id": "q-blank",
+            "type": "blank",
+            "prompt": "Fill in: ___",
+            "answers": [
+              "answer",
+              "reply"
+            ],
+            "caseSensitive": false
+          },
+          {
+            "id": "q-tf",
+            "type": "truefalse",
+            "prompt": "The sky is blue",
+            "answer": true
+          },
+          {
+            "id": "q-match",
+            "type": "matching",
+            "prompt": "Match them",
+            "pairs": [
+              {
+                "id": "p1",
+                "left": "cat",
+                "right": "meow"
+              },
+              {
+                "id": "p2",
+                "left": "dog",
+                "right": "woof"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "schemaVersion": 1,
+        "id": "paper-b",
+        "title": "Sample Paper B",
+        "description": "",
+        "category": "Cat A",
+        "tags": [],
+        "createdAt": "2025-03-01T09:00:00.000Z",
+        "updatedAt": "2025-03-01T09:00:00.000Z",
+        "lastOpenedAt": "2025-03-01T09:00:00.000Z",
+        "questions": [
+          {
+            "id": "q-single",
+            "type": "single",
+            "prompt": "Same id, other paper",
+            "options": [
+              {
+                "id": "b1",
+                "text": "Yes",
+                "correct": true
+              },
+              {
+                "id": "b2",
+                "text": "No",
+                "correct": false
+              }
+            ],
+            "image": {
+              "id": "img-1-copy",
+              "mimeType": "image/png",
+              "name": "copy.png",
+              "size": 70
+            }
+          },
+          {
+            "id": "q-tf-b",
+            "type": "truefalse",
+            "prompt": "Water is dry",
+            "answer": false
+          }
+        ]
+      }
+    ],
+    "categories": [
+      "Cat A",
+      "Empty Cat"
+    ]
+  },
+  "history": [
+    {
+      "id": "sess-2",
+      "paperId": "paper-b",
+      "paperTitle": "Sample Paper B",
+      "completedAt": "2025-03-02T10:00:00.000Z",
+      "questionCount": 2,
+      "correctCount": 1,
+      "percent": 50,
+      "responseId": "lr-obj-2",
+      "missedQuestionIds": [
+        "q-single"
+      ],
+      "results": [
+        {
+          "questionId": "q-single",
+          "sessionQuestionId": "q-single",
+          "type": "single",
+          "prompt": "Same id, other paper",
+          "correct": false,
+          "correctLabel": "Correct answer",
+          "correctAnswer": "Yes"
+        },
+        {
+          "questionId": "q-tf-b",
+          "sessionQuestionId": "q-tf-b",
+          "type": "truefalse",
+          "prompt": "Water is dry",
+          "correct": true,
+          "correctLabel": "Correct answer",
+          "correctAnswer": "False"
+        }
+      ]
+    },
+    {
+      "id": "sess-1",
+      "paperId": "paper-a",
+      "paperTitle": "Sample Paper A",
+      "completedAt": "2025-03-01T09:10:00.000Z",
+      "questionCount": 5,
+      "correctCount": 5,
+      "percent": 12.5,
+      "responseId": "lr-obj-1",
+      "missedQuestionIds": [],
+      "results": [
+        {
+          "questionId": "q-single",
+          "sessionQuestionId": "q-single",
+          "type": "single",
+          "prompt": "Pick the right one",
+          "correct": true,
+          "correctLabel": "Correct answer",
+          "correctAnswer": "Right"
+        },
+        {
+          "questionId": "q-multi",
+          "sessionQuestionId": "q-multi",
+          "type": "multiple",
+          "prompt": "Pick all that apply",
+          "correct": true,
+          "correctLabel": "Correct answer",
+          "correctAnswer": "B, A"
+        },
+        {
+          "questionId": "q-blank",
+          "sessionQuestionId": "q-blank",
+          "type": "blank",
+          "prompt": "Fill in: ___",
+          "correct": true,
+          "correctLabel": "Accepted answers",
+          "correctAnswer": "answer, reply"
+        },
+        {
+          "questionId": "q-tf",
+          "sessionQuestionId": "q-tf",
+          "type": "truefalse",
+          "prompt": "The sky is blue",
+          "correct": true,
+          "correctLabel": "Correct answer",
+          "correctAnswer": "True"
+        },
+        {
+          "questionId": "q-match",
+          "sessionQuestionId": "q-match",
+          "type": "matching",
+          "prompt": "Match them",
+          "correct": true,
+          "correctLabel": "Correct pairs",
+          "correctAnswer": "cat = meow; dog = woof"
+        }
+      ]
+    },
+    {
+      "id": "sess-old",
+      "paperId": "paper-gone",
+      "paperTitle": "An older paper",
+      "completedAt": "2025-03-01T09:00:00.000Z",
+      "questionCount": 3,
+      "correctCount": 1,
+      "percent": 33.333333333333336,
+      "missedQuestionIds": [
+        "x",
+        "y"
+      ],
+      "results": []
+    }
+  ],
+  "learnerResponses": [
+    {
+      "schemaVersion": 1,
+      "documentType": "quiz-studio.learner-response",
+      "id": "lr-obj-1",
+      "status": "finalized",
+      "finalizedAt": "2025-03-01T09:10:00.000Z",
+      "material": {
+        "type": "quiz-paper",
+        "id": "paper-a",
+        "title": "Sample Paper A",
+        "snapshot": {
+          "items": [
+            {
+              "id": "q-single",
+              "type": "single",
+              "prompt": "Pick the right one",
+              "image": {
+                "id": "img-1",
+                "mimeType": "image/png",
+                "name": "one.png",
+                "size": 70,
+                "alt": "a pixel"
+              },
+              "options": [
+                {
+                  "id": "o2",
+                  "text": "Wrong",
+                  "correct": false
+                },
+                {
+                  "id": "o1",
+                  "text": "Right",
+                  "correct": true
+                }
+              ],
+              "sourceId": "q-single"
+            },
+            {
+              "id": "q-multi",
+              "type": "multiple",
+              "prompt": "Pick all that apply",
+              "audio": {
+                "id": "aud-1",
+                "mimeType": "audio/wav",
+                "name": "tone.wav",
+                "size": 40,
+                "duration": 1
+              },
+              "options": [
+                {
+                  "id": "m3",
+                  "text": "C",
+                  "correct": false
+                },
+                {
+                  "id": "m2",
+                  "text": "B",
+                  "correct": true
+                },
+                {
+                  "id": "m1",
+                  "text": "A",
+                  "correct": true
+                }
+              ],
+              "sourceId": "q-multi"
+            },
+            {
+              "id": "q-blank",
+              "type": "blank",
+              "prompt": "Fill in: ___",
+              "answers": [
+                "answer",
+                "reply"
+              ],
+              "caseSensitive": false,
+              "sourceId": "q-blank"
+            },
+            {
+              "id": "q-tf",
+              "type": "truefalse",
+              "prompt": "The sky is blue",
+              "answer": true,
+              "sourceId": "q-tf"
+            },
+            {
+              "id": "q-match",
+              "type": "matching",
+              "prompt": "Match them",
+              "pairs": [
+                {
+                  "id": "p1",
+                  "left": "cat",
+                  "right": "meow",
+                  "rightId": "p1"
+                },
+                {
+                  "id": "p2",
+                  "left": "dog",
+                  "right": "woof",
+                  "rightId": "p2"
+                }
+              ],
+              "sourceId": "q-match",
+              "rightOptions": [
+                {
+                  "id": "p2",
+                  "text": "woof"
+                },
+                {
+                  "id": "p1",
+                  "text": "meow"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "session": {
+        "id": "sess-1",
+        "startedAt": "2025-03-01T09:00:00.000Z",
+        "completedAt": "2025-03-01T09:10:00.000Z"
+      },
+      "responses": [
+        {
+          "itemId": "q-single",
+          "answer": "o1",
+          "result": {
+            "questionId": "q-single",
+            "sessionQuestionId": "q-single",
+            "type": "single",
+            "prompt": "Pick the right one",
+            "correct": true,
+            "correctLabel": "Correct answer",
+            "correctAnswer": "Right"
+          }
+        },
+        {
+          "itemId": "q-multi",
+          "answer": [
+            "m1",
+            "m2"
+          ],
+          "result": {
+            "questionId": "q-multi",
+            "sessionQuestionId": "q-multi",
+            "type": "multiple",
+            "prompt": "Pick all that apply",
+            "correct": true,
+            "correctLabel": "Correct answer",
+            "correctAnswer": "B, A"
+          }
+        },
+        {
+          "itemId": "q-blank",
+          "answer": "answer",
+          "result": {
+            "questionId": "q-blank",
+            "sessionQuestionId": "q-blank",
+            "type": "blank",
+            "prompt": "Fill in: ___",
+            "correct": true,
+            "correctLabel": "Accepted answers",
+            "correctAnswer": "answer, reply"
+          }
+        },
+        {
+          "itemId": "q-tf",
+          "answer": true,
+          "result": {
+            "questionId": "q-tf",
+            "sessionQuestionId": "q-tf",
+            "type": "truefalse",
+            "prompt": "The sky is blue",
+            "correct": true,
+            "correctLabel": "Correct answer",
+            "correctAnswer": "True"
+          }
+        },
+        {
+          "itemId": "q-match",
+          "answer": {
+            "p1": "p1",
+            "p2": "p2"
+          },
+          "result": {
+            "questionId": "q-match",
+            "sessionQuestionId": "q-match",
+            "type": "matching",
+            "prompt": "Match them",
+            "correct": true,
+            "correctLabel": "Correct pairs",
+            "correctAnswer": "cat = meow; dog = woof"
+          }
+        }
+      ],
+      "summary": {
+        "itemCount": 5,
+        "correctCount": 5,
+        "percent": 100
+      },
+      "provenance": {
+        "purpose": "practice"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "documentType": "quiz-studio.learner-response",
+      "id": "lr-obj-2",
+      "status": "finalized",
+      "finalizedAt": "2025-03-02T10:00:00.000Z",
+      "material": {
+        "type": "quiz-paper",
+        "id": "paper-b",
+        "title": "Sample Paper B",
+        "snapshot": {
+          "items": [
+            {
+              "id": "q-single",
+              "type": "single",
+              "prompt": "Same id, other paper",
+              "options": [
+                {
+                  "id": "b2",
+                  "text": "No",
+                  "correct": false
+                },
+                {
+                  "id": "b1",
+                  "text": "Yes",
+                  "correct": true
+                }
+              ],
+              "sourceId": "q-single"
+            },
+            {
+              "id": "q-tf-b",
+              "type": "truefalse",
+              "prompt": "Water is dry",
+              "answer": false,
+              "sourceId": "q-tf-b"
+            }
+          ]
+        }
+      },
+      "session": {
+        "id": "sess-2",
+        "startedAt": "2025-03-01T09:10:00.000Z",
+        "completedAt": "2025-03-02T10:00:00.000Z"
+      },
+      "responses": [
+        {
+          "itemId": "q-single",
+          "answer": "b2",
+          "result": {
+            "questionId": "q-single",
+            "sessionQuestionId": "q-single",
+            "type": "single",
+            "prompt": "Same id, other paper",
+            "correct": false,
+            "correctLabel": "Correct answer",
+            "correctAnswer": "Yes"
+          }
+        },
+        {
+          "itemId": "q-tf-b",
+          "answer": false,
+          "result": {
+            "questionId": "q-tf-b",
+            "sessionQuestionId": "q-tf-b",
+            "type": "truefalse",
+            "prompt": "Water is dry",
+            "correct": true,
+            "correctLabel": "Correct answer",
+            "correctAnswer": "False"
+          }
+        }
+      ],
+      "summary": {
+        "itemCount": 2,
+        "correctCount": 1,
+        "percent": 50
+      },
+      "provenance": {
+        "purpose": "practice"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "documentType": "quiz-studio.learner-response",
+      "id": "lr-tr-1",
+      "status": "finalized",
+      "finalizedAt": "2025-03-01T09:10:00.000Z",
+      "material": {
+        "type": "translation-document",
+        "id": "doc-1",
+        "title": "Animals",
+        "snapshot": {
+          "items": [
+            {
+              "id": "ti-1",
+              "sourceText": "The cat sleeps.",
+              "position": 0,
+              "referenceTranslation": "猫は眠る。"
+            },
+            {
+              "id": "ti-2",
+              "sourceText": "The dog runs.",
+              "position": 1
+            }
+          ],
+          "sourceLanguage": "en",
+          "targetLanguage": "zh"
+        }
+      },
+      "session": {
+        "id": "sess-t1",
+        "startedAt": "2025-03-01T09:00:00.000Z",
+        "completedAt": "2025-03-01T09:10:00.000Z"
+      },
+      "responses": [
+        {
+          "itemId": "ti-1",
+          "answer": "I think 猫 is a cat 😀 and 犬 is a dog — réponse ça va"
+        },
+        {
+          "itemId": "ti-2",
+          "answer": "plain ascii answer"
+        }
+      ],
+      "summary": {
+        "itemCount": 2
+      },
+      "provenance": {
+        "purpose": "practice"
+      },
+      "learnerAnnotations": [
+        {
+          "itemId": "ti-1",
+          "id": "an-1",
+          "kind": "unknown",
+          "start": 8,
+          "end": 9,
+          "text": "猫",
+          "createdAt": "2025-03-01T09:10:00.000Z"
+        },
+        {
+          "itemId": "ti-1",
+          "id": "an-2",
+          "kind": "uncertain",
+          "start": 19,
+          "end": 21,
+          "text": "😀",
+          "createdAt": "2025-03-01T09:10:00.000Z"
+        },
+        {
+          "itemId": "ti-1",
+          "id": "an-3",
+          "kind": "should_know",
+          "start": 39,
+          "end": 46,
+          "text": "réponse",
+          "createdAt": "2025-03-01T09:10:00.000Z"
+        }
+      ],
+      "learnerItemMarks": [
+        {
+          "itemId": "ti-2",
+          "kind": "uncertain"
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "documentType": "quiz-studio.learner-response",
+      "id": "lr-tr-retry",
+      "status": "finalized",
+      "finalizedAt": "2025-03-01T09:10:00.000Z",
+      "material": {
+        "type": "translation-document",
+        "id": "doc-1-retry",
+        "title": "Animals",
+        "snapshot": {
+          "items": [
+            {
+              "id": "ti-1",
+              "sourceText": "The cat sleeps.",
+              "position": 0,
+              "referenceTranslation": "猫は眠る。"
+            },
+            {
+              "id": "ti-2",
+              "sourceText": "The dog runs.",
+              "position": 1
+            }
+          ],
+          "sourceLanguage": "en",
+          "targetLanguage": "zh"
+        }
+      },
+      "session": {
+        "id": "sess-t2",
+        "startedAt": "2025-03-01T09:00:00.000Z",
+        "completedAt": "2025-03-01T09:10:00.000Z"
+      },
+      "responses": [
+        {
+          "itemId": "ti-1",
+          "answer": "I think 猫 is a cat 😀 and 犬 is a dog — réponse ça va"
+        },
+        {
+          "itemId": "ti-2",
+          "answer": "plain ascii answer"
+        }
+      ],
+      "summary": {
+        "itemCount": 2
+      },
+      "provenance": {
+        "purpose": "retry",
+        "sourceResponseId": "lr-gone",
+        "sourceMaterialId": "doc-1",
+        "createdAt": "2025-03-02T10:00:00.000Z"
+      },
+      "learnerAnnotations": [
+        {
+          "itemId": "ti-1",
+          "id": "an-1",
+          "kind": "unknown",
+          "start": 8,
+          "end": 9,
+          "text": "猫",
+          "createdAt": "2025-03-01T09:10:00.000Z"
+        },
+        {
+          "itemId": "ti-1",
+          "id": "an-2",
+          "kind": "uncertain",
+          "start": 19,
+          "end": 21,
+          "text": "😀",
+          "createdAt": "2025-03-01T09:10:00.000Z"
+        },
+        {
+          "itemId": "ti-1",
+          "id": "an-3",
+          "kind": "should_know",
+          "start": 39,
+          "end": 46,
+          "text": "réponse",
+          "createdAt": "2025-03-01T09:10:00.000Z"
+        }
+      ],
+      "learnerItemMarks": [
+        {
+          "itemId": "ti-2",
+          "kind": "uncertain"
+        }
+      ]
+    }
+  ],
+  "teacherReviews": [
+    {
+      "schemaVersion": 1,
+      "documentType": "quiz-studio.teacher-review",
+      "id": "tr-1",
+      "responseId": "lr-tr-1",
+      "createdAt": "2025-03-02T10:00:00.000Z",
+      "reviewer": {
+        "type": "human",
+        "displayLabel": "Reviewer A"
+      },
+      "summary": "Synthetic review",
+      "itemReviews": [
+        {
+          "itemId": "ti-1",
+          "judgment": "partial",
+          "comment": "First review",
+          "tags": [
+            "grammar"
+          ],
+          "suggestedRevision": "a revision",
+          "corrections": [
+            {
+              "id": "c-1",
+              "operation": "replace",
+              "start": 8,
+              "end": 9,
+              "anchoredText": "猫",
+              "text": "猫咪",
+              "createdAt": "2025-03-02T10:00:00.000Z"
+            },
+            {
+              "id": "c-2",
+              "operation": "insert",
+              "start": 0,
+              "end": 0,
+              "anchoredText": "",
+              "text": "Well, ",
+              "createdAt": "2025-03-02T10:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "remediationRecommendations": [
+        {
+          "focus": "articles"
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "documentType": "quiz-studio.teacher-review",
+      "id": "tr-2",
+      "responseId": "lr-tr-1",
+      "createdAt": "2025-03-02T10:00:00.000Z",
+      "reviewer": {
+        "type": "human",
+        "displayLabel": "Reviewer A"
+      },
+      "summary": "Synthetic review",
+      "itemReviews": [
+        {
+          "itemId": "ti-2",
+          "judgment": "partial",
+          "comment": "Second review of the same response",
+          "tags": [
+            "grammar"
+          ],
+          "suggestedRevision": "a revision"
+        }
+      ],
+      "remediationRecommendations": [
+        {
+          "focus": "articles"
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "documentType": "quiz-studio.teacher-review",
+      "id": "tr-3",
+      "responseId": "lr-tr-retry",
+      "createdAt": "2025-03-02T10:00:00.000Z",
+      "reviewer": {
+        "type": "human",
+        "displayLabel": "Reviewer A"
+      },
+      "summary": "Synthetic review",
+      "itemReviews": [
+        {
+          "itemId": "ti-1",
+          "judgment": "partial",
+          "comment": "Review of the retry",
+          "tags": [
+            "grammar"
+          ],
+          "suggestedRevision": "a revision"
+        }
+      ],
+      "remediationRecommendations": [
+        {
+          "focus": "articles"
+        }
+      ]
+    }
+  ],
+  "translationLibrary": {
+    "schemaVersion": 1,
+    "folders": [
+      {
+        "id": "folder-1",
+        "name": "Folder One",
+        "createdAt": "2025-03-01T09:00:00.000Z",
+        "updatedAt": "2025-03-01T09:00:00.000Z"
+      }
+    ],
+    "documents": [
+      {
+        "schemaVersion": 1,
+        "documentType": "quiz-studio.translation-document",
+        "id": "doc-1",
+        "title": "Animals",
+        "folderId": "folder-1",
+        "sourceLanguage": "en",
+        "targetLanguage": "zh",
+        "createdAt": "2025-03-01T09:00:00.000Z",
+        "updatedAt": "2025-03-01T09:10:00.000Z",
+        "items": [
+          {
+            "id": "ti-1",
+            "sourceText": "The cat sleeps.",
+            "position": 0,
+            "referenceTranslation": "猫は眠る。"
+          },
+          {
+            "id": "ti-2",
+            "sourceText": "The dog runs.",
+            "position": 1,
+            "notes": "a note"
+          }
+        ]
+      },
+      {
+        "schemaVersion": 1,
+        "documentType": "quiz-studio.translation-document",
+        "id": "doc-remed",
+        "title": "Remediation",
+        "folderId": "folder-1",
+        "sourceLanguage": "en",
+        "targetLanguage": "zh",
+        "createdAt": "2025-03-02T10:00:00.000Z",
+        "updatedAt": "2025-03-02T10:00:00.000Z",
+        "items": [
+          {
+            "id": "ri-1",
+            "sourceText": "Practice again.",
+            "position": 0
+          }
+        ],
+        "provenance": {
+          "purpose": "remediation",
+          "sourceResponseId": "lr-tr-1",
+          "sourceReviewId": "tr-1",
+          "sourceMaterialId": "doc-1",
+          "createdAt": "2025-03-02T10:00:00.000Z",
+          "author": {
+            "type": "external-ai",
+            "toolName": "synthetic-tool"
+          }
+        }
+      }
+    ]
+  },
+  "mediaAssets": [
+    {
+      "id": "img-1",
+      "mimeType": "image/png",
+      "name": "one.png",
+      "size": 70,
+      "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "aud-1",
+      "mimeType": "audio/wav",
+      "name": "tone.wav",
+      "size": 40,
+      "data": "UklGRiQAAABXQVZFZm10IAcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBw=="
+    },
+    {
+      "id": "img-1-copy",
+      "mimeType": "image/png",
+      "name": "copy.png",
+      "size": 70,
+      "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    }
+  ]
+}

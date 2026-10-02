@@ -1,0 +1,15 @@
+# V2 V1-Migration — manual acceptance checklist
+
+Packaged-app checks for the V1 → V2 Migration milestone (ADR 0002 section 16) that the automated suites cannot cover: the native Open dialogs and the installed shell. Everything the data path does is already proven automatically (`docs/V2_MIGRATION.md`). Use **synthetic** V1 backups only (generate them with `node desktop/scripts/gen-v1-fixtures.mjs`, or export from a V1 build loaded with demo data), run on an installed per-user build, and record PASS / FAIL / not run, the date and the build version next to each item. These are non-blocking acceptance debt in the same sense as D1–D4 of the Desktop Foundation.
+
+| # | Check | Steps | Expected |
+|---|---|---|---|
+| M1 | Native Open dialog for the V1 backup | Settings → System → *Import from Quiz Studio V1* → *Choose V1 backup…*; pick a synthetic backup from a normal folder and from a folder with CJK characters in its path | The OS dialog opens; a preview appears (counts, media, notes, "what V1 never recorded stays unknown"); **no path is shown anywhere**; nothing is imported yet |
+| M2 | Confirm / cancel | From a preview press *Cancel*; repeat and press *Confirm import* | Cancel changes nothing; Confirm imports, the *Active import* row appears, the store reports healthy |
+| M3 | Blocked input | Choose a file that is not a V1 backup (e.g. a V2 `.qsarchive`, or a truncated copy of a backup) | A blocking explanation with stable codes (`MIG_SOURCE_WRONG_KIND`, `MIG_SOURCE_NOT_JSON`); nothing imported; your file is unchanged |
+| M4 | Optional recovery artifact | *Add recovery artifact (optional)…* with a synthetic `quiz-studio-library-recovery-v1` JSON, then import | The preview says it is preserved byte-for-byte and never activated; after import the artifact exists under the data folder's `recovery-artifacts` and a V2 backup (*Create backup…*) restores it |
+| M5 | Repeat import and undo | Import the same backup again; then press *Undo* on the active import | The second import is reported as already imported; *Undo* removes exactly what the import created (it refuses if you edited a migrated record) |
+| M6 | OneDrive-redirected source | Choose a backup stored in the OneDrive-redirected Desktop or Documents folder | Same behavior as M1; the data folder stays under `%LOCALAPPDATA%` |
+| M7 | Large backup | Import a backup with ≥ 400 MiB of media (the automated envelope test already proves bounded memory) | The window stays responsive during preview and activation; the imported media opens byte-identical later when media display exists |
+
+Automated counterparts: `qs-migrate-v1` suites (detection, blocking, conservation + mutation-kill, idempotence/undo, history, media, preview, artifact, oracle), `qs-scenarios` `migration_faults` (kill matrix, random kills, undo kill, memory envelope) and the installed-app `--self-test` migration step.

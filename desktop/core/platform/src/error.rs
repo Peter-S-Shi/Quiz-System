@@ -36,6 +36,8 @@ pub enum Code {
     ArchiveHashMismatch,
     ArchiveNewerSchema,
     ArchiveInvalidStore,
+    /// A maintenance gate (an activation window) is open; the write was refused, nothing changed.
+    StoreBusy,
 }
 
 impl Code {
@@ -66,6 +68,7 @@ impl Code {
             Code::ArchiveHashMismatch => "ARCHIVE_HASH_MISMATCH",
             Code::ArchiveNewerSchema => "ARCHIVE_NEWER_SCHEMA",
             Code::ArchiveInvalidStore => "ARCHIVE_INVALID_STORE",
+            Code::StoreBusy => "STORE_BUSY",
         }
     }
 }

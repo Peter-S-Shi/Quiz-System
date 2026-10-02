@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "documentType": "quiz-studio.library-backup",
+  "exportedAt": "2025-04-01T12:00:00.000Z",
+  "library": {
+    "schemaVersion": 1,
+    "papers": [
+      {
+        "schemaVersion": 1,
+        "id": "paper-min",
+        "title": "Minimal",
+        "description": "",
+        "category": "",
+        "tags": [],
+        "createdAt": "2025-03-01T09:00:00.000Z",
+        "updatedAt": "2025-03-01T09:00:00.000Z",
+        "lastOpenedAt": "2025-03-01T09:00:00.000Z",
+        "questions": [
+          {
+            "id": "q1",
+            "type": "truefalse",
+            "prompt": "Minimal question",
+            "answer": true
+          }
+        ]
+      }
+    ],
+    "categories": []
+  },
+  "history": [],
+  "learnerResponses": [],
+  "teacherReviews": [],
+  "translationLibrary": {
+    "schemaVersion": 1,
+    "folders": [],
+    "documents": []
+  },
+  "mediaAssets": []
+}

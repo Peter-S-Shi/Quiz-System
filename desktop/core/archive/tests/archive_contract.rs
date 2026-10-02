@@ -265,7 +265,7 @@ fn every_named_mutation_is_rejected_before_activation_with_a_specific_code() {
             Code::ArchiveWrongFormat,
             Box::new(|e| {
                 let mut m = manifest(e);
-                m["formatVersion"] = json!(2);
+                m["formatVersion"] = json!(3);
                 set_manifest(e, &m);
             }),
         ),
@@ -444,4 +444,107 @@ fn archiving_fails_closed_when_media_is_missing_or_tampered() {
     // missing
     std::fs::remove_file(media.path_for(&victim).unwrap()).unwrap();
     assert_eq!(code(create_archive(&s, &dest)), Code::MediaMissing);
+}
+
+// ---- recovery artifacts in archives (ADR 0002 H-4) ----
+
+fn artifact_store(t: &TestRoot, bytes: &[u8]) -> (Arc<Catalog>, Store, String) {
+    let c = arc(artifact_catalog());
+    let mut s = open(t, &c);
+    let hash = hex::encode(<sha2::Sha256 as sha2::Digest>::digest(bytes));
+    std::fs::create_dir_all(s.root().recovery_artifacts_dir()).unwrap();
+    std::fs::write(s.root().recovery_artifacts_dir().join(format!("{hash}.artifact")), bytes).unwrap();
+    s.commit(&uow(vec![put_op(&c, "recovery_artifact", &hash, json!({"id": hash, "size": bytes.len(), "reason": "synthetic"}))])).unwrap();
+    s.commit(&finalize_uow(&c, 1, &[])).unwrap();
+    (c, s, hash)
+}
+
+#[test]
+fn recovery_artifacts_travel_in_the_archive_byte_for_byte_and_come_back_on_restore() {
+    let t = temp_root();
+    let bytes = b"\xEF\xBB\xBF{\"raw\":\"synthetic recovery blob with odd bytes\"}\r\n\x00\xff".to_vec();
+    let (c, s, hash) = artifact_store(&t, &bytes);
+    let p = make_archive(&s, t.dir.path(), "a.qsarchive");
+    let mf = verify_archive(&p, c.schema_version()).unwrap();
+    assert!(mf.entries.contains_key(&format!("recovery/{hash}")), "{:?}", mf.entries.keys().collect::<Vec<_>>());
+    let clean = temp_root();
+    let mut target = Store::open(&clean.root, c.clone(), &OpenOptions::default()).unwrap();
+    restore_archive(&mut target, &p).unwrap();
+    let restored = std::fs::read(clean.root.recovery_artifacts_dir().join(format!("{hash}.artifact"))).unwrap();
+    assert_eq!(restored, bytes, "the artifact must be preserved byte-for-byte");
+    assert_eq!(target.count("recovery_artifact").unwrap(), 1);
+    assert_eq!(target.state_hash(false).unwrap(), s.state_hash(false).unwrap());
+}
+
+#[test]
+fn an_indexed_artifact_whose_file_is_missing_fails_the_archive_closed_and_a_tampered_one_is_rejected_before_activation() {
+    let t = temp_root();
+    let (c, s, hash) = artifact_store(&t, b"artifact bytes");
+    let dest = t.dir.path().join("x.qsarchive");
+    std::fs::remove_file(s.root().recovery_artifacts_dir().join(format!("{hash}.artifact"))).unwrap();
+    assert_eq!(code(create_archive(&s, &dest)), Code::MediaMissing);
+    assert!(!dest.exists(), "no partial archive may be left behind");
+
+    let t2 = temp_root();
+    let (c2, s2, hash2) = artifact_store(&t2, b"artifact bytes");
+    let good = make_archive(&s2, t2.dir.path(), "g.qsarchive");
+    let bad = t2.dir.path().join("bad.qsarchive");
+    rewrite(&good, &bad, |e| {
+        let b = e.get_mut(&format!("recovery/{hash2}")).unwrap();
+        b[0] ^= 1;
+    });
+    assert_eq!(code(verify_archive(&bad, c2.schema_version())), Code::ArchiveHashMismatch);
+    let other = temp_root();
+    let mut target = Store::open(&other.root, c2.clone(), &OpenOptions::default()).unwrap();
+    let before = target.state_hash(true).unwrap();
+    assert_eq!(code(restore_archive(&mut target, &bad)), Code::ArchiveHashMismatch);
+    assert_eq!(target.state_hash(true).unwrap(), before);
+    drop(c);
+}
+
+#[test]
+fn a_row_that_indexes_an_artifact_the_archive_does_not_carry_is_refused() {
+    let t = temp_root();
+    let (c, s, hash) = artifact_store(&t, b"artifact bytes");
+    let good = make_archive(&s, t.dir.path(), "g.qsarchive");
+    let stripped = t.dir.path().join("stripped.qsarchive");
+    rewrite(&good, &stripped, |e| {
+        e.remove(&format!("recovery/{hash}"));
+        let mut m = manifest(e);
+        m["entries"] =
+            json!(m["entries"].as_array().unwrap().iter().filter(|x| x["path"] != format!("recovery/{hash}")).cloned().collect::<Vec<_>>());
+        set_manifest(e, &m);
+    });
+    let other = temp_root();
+    let mut target = Store::open(&other.root, c.clone(), &OpenOptions::default()).unwrap();
+    assert_eq!(code(restore_archive(&mut target, &stripped)), Code::ArchiveMissingEntry);
+}
+
+#[test]
+fn a_format_version_1_archive_written_by_the_previous_build_is_still_readable_and_restorable() {
+    let (t, c, s) = populated(4);
+    let new = make_archive(&s, t.dir.path(), "new.qsarchive");
+    let old = t.dir.path().join("old.qsarchive");
+    rewrite(&new, &old, |e| {
+        let mut m = manifest(e);
+        m["formatVersion"] = json!(1);
+        m["counts"].as_object_mut().unwrap().remove("recoveryArtifacts");
+        m["counts"].as_object_mut().unwrap().remove("recoveryArtifactBytes");
+        set_manifest(e, &m);
+    });
+    assert_eq!(verify_archive(&old, c.schema_version()).unwrap().store_schema_version, c.schema_version());
+    let other = temp_root();
+    let mut target = open(&other, &c);
+    restore_archive(&mut target, &old).unwrap();
+    assert_eq!(target.state_hash(false).unwrap(), s.state_hash(false).unwrap());
+    // a version-1 archive may not smuggle in recovery entries
+    let smuggled = t.dir.path().join("smuggled.qsarchive");
+    rewrite(&old, &smuggled, |e| {
+        let h = hex::encode(<sha2::Sha256 as sha2::Digest>::digest(b"x"));
+        e.insert(format!("recovery/{h}"), b"x".to_vec());
+        let mut m = manifest(e);
+        m["entries"].as_array_mut().unwrap().push(json!({"path": format!("recovery/{h}"), "size": 1, "sha256": h}));
+        set_manifest(e, &m);
+    });
+    assert_eq!(code(verify_archive(&smuggled, c.schema_version())), Code::ArchiveUnlistedEntry);
 }

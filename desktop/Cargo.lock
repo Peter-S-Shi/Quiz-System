@@ -2757,6 +2757,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "qs-migrate-v1"
+version = "2.0.0-dev.0"
+dependencies = [
+ "fastrand",
+ "hex",
+ "qs-activation",
+ "qs-archive",
+ "qs-media",
+ "qs-platform",
+ "qs-store",
+ "qs-testkit",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+]
+
+[[package]]
 name = "qs-platform"
 version = "2.0.0-dev.0"
 dependencies = [
@@ -2775,6 +2794,7 @@ dependencies = [
  "qs-activation",
  "qs-archive",
  "qs-media",
+ "qs-migrate-v1",
  "qs-platform",
  "qs-store",
  "qs-testkit",
@@ -2794,6 +2814,7 @@ dependencies = [
  "qs-activation",
  "qs-archive",
  "qs-media",
+ "qs-migrate-v1",
  "qs-platform",
  "qs-port",
  "qs-store",

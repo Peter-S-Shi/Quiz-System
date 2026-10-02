@@ -45,6 +45,29 @@ impl Mode {
     }
 }
 
+/// A read-only assertion evaluated **inside the commit transaction** (after `ATTACH`, before the first write).
+/// `sql` must return one integer: the number of violations. Anything but 0 rolls the whole activation back
+/// (`ACTIVATION_FAILED`, live data unchanged). With no guards configured behavior is unchanged (ADR 0002 section 15.1).
+#[derive(Debug, Clone)]
+pub struct Guard {
+    pub name: String,
+    pub sql: String,
+}
+
+impl Guard {
+    /// "No staged row shares an `id` with a live row whose stored payload differs", for every collection that the
+    /// given mode merges. The attached staging database is addressed as `stg`, the live one as `main`.
+    pub fn no_conflicting_ids(catalog: &Catalog, mode: Mode) -> Vec<Guard> {
+        tables_for(catalog, mode)
+            .into_iter()
+            .map(|c| Guard {
+                name: format!("no-conflicting-ids:{}", c.name),
+                sql: format!("SELECT count(*) FROM stg.{t} s JOIN main.{t} m ON m.id = s.id WHERE m.payload <> s.payload", t = c.name),
+            })
+            .collect()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Options {
     /// Journal/audit label: "restore", "migration", "upgrade", "rollback", ...
@@ -53,10 +76,12 @@ pub struct Options {
     pub deep_media_check: bool,
     /// Prove the staging file was not modified by the activation (WAL + ATTACH must only write `main`).
     pub verify_staging_untouched: bool,
+    /// Commit-transaction guards (see [`Guard`]).
+    pub guards: Vec<Guard>,
 }
 impl Default for Options {
     fn default() -> Self {
-        Options { kind: "activation".into(), deep_media_check: false, verify_staging_untouched: false }
+        Options { kind: "activation".into(), deep_media_check: false, verify_staging_untouched: false, guards: vec![] }
     }
 }
 
@@ -193,7 +218,7 @@ fn activate_inner(
     let uri = sqlite_uri(staging_db, "ro");
     let conn = store.conn();
     conn.execute("ATTACH DATABASE ?1 AS stg", [&uri]).ctx(Code::ActivationFailed, "attach staging")?;
-    let res = apply(conn, &catalog, mode, op_id, &opts.kind, mid);
+    let res = apply(conn, &catalog, mode, op_id, &opts.kind, mid, &opts.guards);
     if !conn.is_autocommit() {
         let _ = conn.execute_batch("ROLLBACK");
     }
@@ -212,8 +237,14 @@ fn activate_inner(
     Ok(Report { op_id: op_id.to_string(), mode, validate_ms, snapshot_ms, commit_ms, peak_mib: mem::peak_mib(), snapshot: snap })
 }
 
-fn apply(conn: &Connection, catalog: &Catalog, mode: Mode, op_id: &str, kind: &str, mid: &str) -> Result<()> {
+fn apply(conn: &Connection, catalog: &Catalog, mode: Mode, op_id: &str, kind: &str, mid: &str, guards: &[Guard]) -> Result<()> {
     conn.execute_batch("BEGIN IMMEDIATE").code(Code::Db)?;
+    for g in guards {
+        let violations: i64 = conn.query_row(&g.sql, [], |r| r.get(0)).ctx(Code::Db, &format!("guard {}", g.name))?;
+        if violations != 0 {
+            bail!(Code::ActivationFailed, "commit guard '{}' failed ({violations} violation(s))", g.name);
+        }
+    }
     let colls = tables_for(catalog, mode);
     if mode == Mode::Replace {
         for c in colls.iter().rev() {

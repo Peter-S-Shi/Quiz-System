@@ -227,3 +227,43 @@ fn snapshot_retention_is_bounded() {
     assert_eq!(prune_snapshots(live.root(), 2).unwrap(), 4);
     assert_eq!(std::fs::read_dir(dir).unwrap().count(), 2);
 }
+
+// ---- commit guard (ADR 0002 section 15.1) ----
+
+#[test]
+fn commit_guard_rolls_back_a_same_id_different_payload_staging_row_and_leaves_live_data_unchanged() {
+    let t = temp_root();
+    let c = cat();
+    let mut live = open_live(&t, &c);
+    fill_n(1..=3)(&mut live);
+    let (st, _) = build_staging(&live, &c, "op-g1", |s| {
+        let c = s.catalog().clone();
+        s.commit(&uow(vec![put_op(&c, "learner_response", "resp-3", response_payload(3, 5, &[]))])).unwrap(); // differs from live resp-3
+        s.commit(&finalize_uow(&c, 4, &[])).unwrap();
+    });
+    let before = live.state_hash(true).unwrap();
+    let mode = Mode::Merge(MergePolicy::KeepExisting);
+    let guards = Guard::no_conflicting_ids(live.catalog(), mode);
+    let e = activate(&mut live, &st.db, mode, "op-g1", &Options { guards, ..Options::default() }).unwrap_err();
+    assert_eq!(e.code, Code::ActivationFailed);
+    assert!(e.message.contains("no-conflicting-ids:learner_response"), "{}", e.message);
+    assert_eq!(live.state_hash(true).unwrap(), before, "a failed guard must leave the live store exactly as it was");
+    let applied: i64 = live.conn().query_row("SELECT count(*) FROM operation_journal WHERE op_id='op-g1'", [], |r| r.get(0)).unwrap();
+    assert_eq!(applied, 0);
+}
+
+#[test]
+fn commit_guard_passes_when_overlapping_rows_are_identical_and_without_guards_behaviour_is_unchanged() {
+    let t = temp_root();
+    let c = cat();
+    let mut live = open_live(&t, &c);
+    fill_n(1..=3)(&mut live);
+    // staging holds the SAME three rows plus one new row
+    let (st, _) = build_staging(&live, &c, "op-g2", fill_n(1..=4));
+    let mode = Mode::Merge(MergePolicy::KeepExisting);
+    let guards = Guard::no_conflicting_ids(live.catalog(), mode);
+    assert!(!guards.is_empty());
+    activate(&mut live, &st.db, mode, "op-g2", &Options { guards, ..Options::default() }).unwrap();
+    assert_eq!(live.count("learner_response").unwrap(), 4);
+    assert!(live.check_consistency().unwrap().is_empty());
+}

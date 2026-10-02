@@ -15,12 +15,20 @@ pub struct AppState {
     core: RwLock<Option<Arc<Core>>>,
     open_error: Mutex<Option<Error>>,
     pub pending_backup: Mutex<Option<PathBuf>>,
+    /// Optional recovery artifact chosen for the next V1 migration preview (the path never reaches JS).
+    pub pending_artifact: Mutex<Option<PathBuf>>,
 }
 
 impl AppState {
     pub fn open_default() -> AppState {
         let root = DataRoot::default_for_user().ok();
-        let st = AppState { root: root.clone(), core: RwLock::new(None), open_error: Mutex::new(None), pending_backup: Mutex::new(None) };
+        let st = AppState {
+            root: root.clone(),
+            core: RwLock::new(None),
+            open_error: Mutex::new(None),
+            pending_backup: Mutex::new(None),
+            pending_artifact: Mutex::new(None),
+        };
         match &root {
             Some(r) => st.try_open(r),
             None => *st.open_error.lock().unwrap() = Some(Error::new(qs_platform::Code::Internal, "LOCALAPPDATA is not set")),

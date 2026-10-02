@@ -66,3 +66,7 @@ quiz-studio.exe --identity                 # prints the permanent identifier and
 ## Data layout
 
 `%LOCALAPPDATA%\io.github.peter-s-shi.quiz-studio\` — `data\quiz-studio.db` (+wal/shm), `data\media\<hh>\<sha256>`, `staging\`, `snapshots\`, `journal\`, `recovery-artifacts\`, `logs\`. Uninstall keeps it unless the interactive uninstaller checkbox is ticked.
+
+## V1 migration
+
+`core/migrate_v1` (`qs-migrate-v1`) implements ADR 0002; see [`docs/V2_MIGRATION.md`](../docs/V2_MIGRATION.md). Fixtures: `node scripts/gen-v1-fixtures.mjs` (generated with V1's own producer). Suites: `cargo test -p qs-migrate-v1` and `cargo test -p qs-scenarios --test migration_faults` (`QS_H3_REPEATS`, `QS_MIG_KILLS`, `QS_HEAVY_MIB`).

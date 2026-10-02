@@ -12,9 +12,9 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Instant;
 
-/// The catalog the product ships today: structural collections only (domain tables come with later milestones).
+/// The catalog the product ships: the foundation's structural collections plus the V1 migration domain schema.
 pub fn product_catalog() -> Arc<Catalog> {
-    Arc::new(Catalog::foundation())
+    Arc::new(qs_migrate_v1::product_catalog())
 }
 
 pub fn run(dir: &Path) -> Result<Value> {
@@ -90,5 +90,36 @@ pub fn run(dir: &Path) -> Result<Value> {
         if rs["ok"] == true && same { Ok(rs["result"].clone()) } else { Err(format!("restore ok={} state-equal={same}: {rs}", rs["ok"])) },
     );
 
+    // the V1 migration closes the loop in the shipped binary too: preview -> confirm -> additive activation -> undo
+    let t = Instant::now();
+    let backup = dir.join("v1-backup.json");
+    std::fs::write(&backup, SYNTHETIC_V1_BACKUP)?;
+    let core_c = Core::open(&DataRoot::at(dir.join("data-c")), product_catalog(), &opts)?;
+    let prep = core_c.dispatch("migration.prepare", &json!({"source": backup.display().to_string()}));
+    let outcome = (|| -> std::result::Result<Value, String> {
+        if prep["ok"] != true || prep["result"]["blocked"] != false {
+            return Err(prep.to_string());
+        }
+        let hash = prep["result"]["reportHash"].as_str().unwrap_or_default().to_string();
+        let done = core_c.dispatch("migration.confirm", &json!({"reportHash": hash}));
+        if done["ok"] != true || done["result"]["result"] != "done" || core_c.with_store(|s| s.count("paper").ok()) != Some(1) {
+            return Err(done.to_string());
+        }
+        let run = done["result"]["runOpId"].as_str().unwrap_or_default().to_string();
+        let undo = core_c.dispatch("migration.undo", &json!({"runOpId": run}));
+        if undo["ok"] != true || undo["result"]["result"] != "done" || core_c.with_store(|s| s.count("paper").ok()) != Some(0) {
+            return Err(undo.to_string());
+        }
+        Ok(json!({"imported": 1, "undone": true}))
+    })();
+    step("migration", t, outcome);
+
     Ok(json!({"ok": all_ok, "steps": steps, "appVersion": qs_platform::identity::APP_VERSION}))
 }
+
+/// A minimal synthetic V1 full backup (one paper, one question) for the self-test.
+const SYNTHETIC_V1_BACKUP: &str = r#"{"schemaVersion":1,"documentType":"quiz-studio.library-backup","exportedAt":"2025-04-01T12:00:00.000Z",
+"library":{"schemaVersion":1,"papers":[{"schemaVersion":1,"id":"paper-selftest","title":"Self-test paper","description":"","category":"","tags":[],
+"createdAt":"2025-03-01T09:00:00.000Z","updatedAt":"2025-03-01T09:00:00.000Z","lastOpenedAt":"2025-03-01T09:00:00.000Z",
+"questions":[{"id":"q1","type":"truefalse","prompt":"Synthetic?","answer":true}]}],"categories":[]},
+"history":[],"learnerResponses":[],"teacherReviews":[],"translationLibrary":{"schemaVersion":1,"folders":[],"documents":[]},"mediaAssets":[]}"#;

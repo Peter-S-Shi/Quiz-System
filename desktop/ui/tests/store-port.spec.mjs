@@ -44,3 +44,16 @@ test('read unwraps records; the tauri transport requires the IPC global', async 
   await t('store.count', { collection: 'setting' });
   assert.deepEqual(seen, [['port', { command: 'store.count', args: { collection: 'setting' } }]]);
 });
+
+test('the migration steps the WebView can call carry no path and only the confirmation hash', async () => {
+  const seen = [];
+  const port = createStorePort(async (command, args) => { seen.push([command, args]); return { ok: true, result: { runs: [] } }; });
+  await port.migrationStatus(); await port.migrationConfirm('abc'); await port.migrationCancel(); await port.migrationUndo('op-1');
+  assert.deepEqual(seen, [
+    ['migration.status', {}],
+    ['migration.confirm', { reportHash: 'abc' }],
+    ['migration.cancel', {}],
+    ['migration.undo', { runOpId: 'op-1' }],
+  ]);
+  assert.equal(seen.some(([c]) => c === 'migration.prepare'), false, 'preparing carries a path: it is a native flow, not a WebView command');
+});

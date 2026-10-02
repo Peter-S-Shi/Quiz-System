@@ -18,7 +18,7 @@ fn self_test_passes_end_to_end_on_an_isolated_root() {
     let d = tempfile::tempdir().unwrap();
     let r = selftest::run(d.path()).unwrap();
     assert_eq!(r["ok"], true, "{}", serde_json::to_string_pretty(&r).unwrap());
-    assert_eq!(r["steps"].as_array().unwrap().len(), 7);
+    assert_eq!(r["steps"].as_array().unwrap().len(), 8);
 }
 
 #[test]
@@ -138,4 +138,33 @@ fn startup_resolves_an_interrupted_operation_from_the_journal() {
     qs_activation::journal::write(&t.root, "op-crashed", "restore", "replace", "snapshotted", json!({})).unwrap();
     let core = open(&t.root, &c);
     assert_eq!(core.startup().recovered, vec![("op-crashed".to_string(), "discarded".to_string())]);
+}
+
+// ---- write gate (ADR 0002 section 15.2) ----
+
+#[test]
+fn the_write_gate_refuses_writes_and_gc_with_store_busy_and_is_released_on_drop_even_when_unwinding() {
+    let t = temp_root();
+    let c = arc(evidence_catalog());
+    let core = Core::open(&t.root, c.clone(), &OpenOptions::default()).unwrap();
+    let uw = finalize_uow(&c, 1, &[]);
+    {
+        let _gate = core.write_gate().unwrap();
+        let busy = core.dispatch("store.commit", &json!({"uow": uw.clone()}));
+        assert_eq!(busy["ok"], false);
+        assert_eq!(busy["error"]["code"], "STORE_BUSY");
+        assert_eq!(core.maintenance_gc().unwrap_err().code.as_str(), "STORE_BUSY");
+        assert_eq!(core.write_gate().err().unwrap().code.as_str(), "STORE_BUSY", "gates do not nest");
+        // reads are never gated, and the holder's own work goes through with_store
+        assert_eq!(core.dispatch("store.count", &json!({"collection": "learner_response"}))["ok"], true);
+        core.with_store(|s| s.commit(&uw).unwrap());
+    }
+    assert_eq!(core.dispatch("store.commit", &json!({"uow": finalize_uow(&c, 2, &[])}))["ok"], true);
+
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _gate = core.write_gate().unwrap();
+        panic!("simulated failure inside the gated section");
+    }));
+    assert!(r.is_err());
+    assert_eq!(core.dispatch("store.commit", &json!({"uow": finalize_uow(&c, 3, &[])}))["ok"], true, "gate released by unwinding");
 }

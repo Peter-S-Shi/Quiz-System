@@ -395,7 +395,7 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 5. Desktop Architecture Gate。**已通过 —— GO WITH AMENDMENT**；ADR 0001 **已接受（ACCEPTED）**（已并入修订 A1–A8；H8 已由 Human Gate 重新分类；H1 带残余限制被接受；Electron fallback 未触发）。
 6. 创建正式 V2 开发分支 `v2`，随后开始 Desktop Foundation。**分支已创建；Desktop Foundation 已验收（Human Gate PASS）**（[里程碑记录](docs/V2_DESKTOP_FOUNDATION.zh-CN.md)；Windows CI 绿色；D1–D4 保持为不阻塞的打包/手动验收欠账）。
 7. V1 Migration ADR（[ADR 0002](docs/adr/0002-v1-to-v2-migration-architecture.md)）。**已验收 —— GO WITH AMENDMENT**（Human Gate，2026-10-02）；仅文档。
-8. V1 Migration 里程碑（实现）。**下一步 —— 尚未授权；实现尚未开始。**
+8. V1 Migration 里程碑（实现）。**实现完成 —— 等待 Human Gate**（[记录](docs/V2_MIGRATION.zh-CN.md)；Windows CI 与手动检查 M1–M7 见该文档）。
 
 ## 维护 / 下一版本
 
@@ -429,4 +429,4 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 4. 完成 Milestone 7 Product Hardening。**已完成。**
 5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
 6. 候选版本已接受（`v1.0.0-rc.1`），V1 发布元数据已定版（`1.0.0`），V1 发布线进入维护保留状态。**当前 V1 生命周期状态。**
-7. V2 Desktop Foundation（架构验证已完成且已通过 Desktop Architecture Gate；正式 V2 开发分支 `v2` 已创建；Desktop Foundation 已验收；ADR 0002 已验收；下一步是 Migration 里程碑，尚未授权，实现尚未开始）。**当前 V2 状态** —— 见上文“当前 V2 路线”。
+7. V2 Desktop Foundation（架构验证已完成且已通过 Desktop Architecture Gate；正式 V2 开发分支 `v2` 已创建；Desktop Foundation 已验收；ADR 0002 已验收；V1 Migration 里程碑已实现，等待 Human Gate）。**当前 V2 状态** —— 见上文“当前 V2 路线”。

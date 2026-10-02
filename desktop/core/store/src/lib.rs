@@ -15,5 +15,5 @@ pub mod read;
 pub mod store;
 pub mod uow;
 
-pub use catalog::{Catalog, Collection, Column, ColumnKind, Migration, Relation};
+pub use catalog::{Catalog, Collection, Column, ColumnKind, Migration, Relation, Role};
 pub use store::{OpenOptions, Store, StoreInfo, Synchronous, UpgradeNotice, APPLICATION_ID};

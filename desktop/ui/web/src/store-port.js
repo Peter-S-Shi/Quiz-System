@@ -37,6 +37,11 @@ export function createStorePort(transport) {
     checkConsistency: () => call('store.check_consistency'),
     locateMedia: (id) => call('media.locate', { id }),
     listSnapshots: async () => (await call('snapshots.list')).snapshots,
+    // V1 migration (ADR 0002): only the path-free steps; choosing the file is a native Rust flow.
+    migrationStatus: () => call('migration.status'),
+    migrationConfirm: (reportHash) => call('migration.confirm', { reportHash }),
+    migrationCancel: () => call('migration.cancel'),
+    migrationUndo: (runOpId) => call('migration.undo', { runOpId }),
   };
 }
 

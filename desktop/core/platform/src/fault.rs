@@ -14,6 +14,15 @@ pub const CHECKPOINTS: &[&str] = &[
     "during-media-gc",
     "media-mid-write",
     "uow-before-commit",
+    // V1 migration (ADR 0002 section 15.5)
+    "mig-after-intake",
+    "mig-mid-staging",
+    "mig-after-staging",
+    "mig-after-report",
+    "mig-mid-media-publish",
+    "mig-after-media-publish",
+    "mig-after-artifact-publish",
+    "mig-before-undo-commit",
 ];
 
 #[cfg(feature = "fault-injection")]

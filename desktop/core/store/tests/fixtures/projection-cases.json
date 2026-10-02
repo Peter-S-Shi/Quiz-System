@@ -99,21 +99,24 @@
       ],
       "idPointer": "/id",
       "name": "media_object",
-      "relations": []
+      "relations": [],
+      "role": "canonical"
     },
     {
       "canonical": true,
       "columns": [],
       "idPointer": null,
       "name": "setting",
-      "relations": []
+      "relations": [],
+      "role": "canonical"
     },
     {
       "canonical": false,
       "columns": [],
       "idPointer": null,
       "name": "recovery_session",
-      "relations": []
+      "relations": [],
+      "role": "recovery-only"
     },
     {
       "canonical": true,
@@ -176,7 +179,8 @@
           "pointer": "/mediaRefs",
           "table": "media_ref"
         }
-      ]
+      ],
+      "role": "canonical"
     },
     {
       "canonical": true,
@@ -190,7 +194,8 @@
       ],
       "idPointer": "/id",
       "name": "teacher_review",
-      "relations": []
+      "relations": [],
+      "role": "canonical"
     },
     {
       "canonical": true,
@@ -210,7 +215,8 @@
       ],
       "idPointer": "/id",
       "name": "remediation_doc",
-      "relations": []
+      "relations": [],
+      "role": "canonical"
     },
     {
       "canonical": true,
@@ -224,7 +230,8 @@
       ],
       "idPointer": "/id",
       "name": "history_entry",
-      "relations": []
+      "relations": [],
+      "role": "canonical"
     },
     {
       "canonical": true,
@@ -238,7 +245,8 @@
       ],
       "idPointer": "/id",
       "name": "uow_marker",
-      "relations": []
+      "relations": [],
+      "role": "canonical"
     }
   ],
   "valid": [

@@ -79,6 +79,88 @@ function confirmDialog(title, body, okLabel) {
   });
 }
 
+// ------------------------------------------------------------------------------ V1 migration (minimal)
+function diagnosticRow(d) {
+  const params = d.params && Object.keys(d.params).length ? ` ${JSON.stringify(d.params)}` : '';
+  return h('li', { class: d.severity === 'blocking' ? 'bad' : '' }, h('b', {}, d.code), d.pointer ? ` at ${d.pointer}` : '', params.length > 220 ? `${params.slice(0, 220)}...` : params);
+}
+
+function migrationPreview(result, box, say, done) {
+  const r = result.report;
+  box.replaceChildren();
+  const blocking = r.diagnostics.filter((d) => d.severity === 'blocking');
+  if (result.alreadyMigrated) {
+    box.append(h('p', {}, 'This exact backup was already imported. Nothing was changed.'));
+    return;
+  }
+  if (result.blocked) {
+    box.append(
+      h('div', { class: 'error-box', role: 'alert' }, `This backup cannot be imported (${blocking.length} blocking problem(s)). Nothing was changed and your file was not modified.`),
+      h('ul', { class: 'diag' }, blocking.map(diagnosticRow)),
+    );
+    return;
+  }
+  const rows = Object.entries(r.counts).map(([kind, c]) => h('tr', {}, h('td', {}, kind), h('td', {}, c.source), h('td', {}, c.carried ?? 0), h('td', {}, c.deduplicatedIdentical ?? 0), h('td', {}, (c.collapsed ?? 0) + (c.reportedUnmigrated ?? 0))));
+  const gaps = Object.entries(r.loss.gaps).map(([k, n]) => `${k}: ${n}`).join('; ');
+  box.append(
+    h('p', {}, `Preview of "${r.sourceName}" (${fmtBytes(r.sourceBytes)}). Review it, then confirm. Your file is never modified.`),
+    h('table', { class: 'counts' }, h('thead', {}, h('tr', {}, ['Kind', 'In backup', 'Imported', 'Already present', 'Duplicate / not imported'].map((t) => h('th', {}, t)))), h('tbody', {}, rows)),
+    h('p', {}, `Media: ${r.media.referenced} referenced file(s) (${fmtBytes(r.media.decodedBytes)}); ${r.media.unreferencedNotMigrated} unreferenced file(s) will not be imported.`),
+    h('details', {}, h('summary', {}, `What V1 never recorded stays unknown (${gaps || 'none'})`),
+      h('p', {}, `Never migrated: ${r.loss.notMigrated.join(', ')}.`)),
+    r.recoveryArtifact ? h('p', {}, `Recovery artifact ${r.recoveryArtifact.sha256.slice(0, 12)}... will be preserved byte-for-byte; it is never activated as library data.`) : '',
+    h('details', {}, h('summary', {}, `${r.diagnostics.length} note(s)`), h('ul', { class: 'diag' }, r.diagnostics.map(diagnosticRow))),
+    h('div', { class: 'row' },
+      h('button', { class: 'btn primary', type: 'button', onclick: async () => {
+        try {
+          const out = await port.migrationConfirm(result.reportHash);
+          box.replaceChildren(h('p', {}, out.result === 'done' ? 'Imported. You can undo this import below.' : 'Already imported.'));
+          say(`V1 import ${out.result}.`);
+          await done();
+        } catch (e) {
+          say(`Import failed - ${describe(e)}`);
+        }
+      } }, 'Confirm import'),
+      h('button', { class: 'btn', type: 'button', onclick: async () => {
+        await port.migrationCancel();
+        box.replaceChildren(h('p', {}, 'Cancelled. Nothing was changed.'));
+      } }, 'Cancel')),
+  );
+}
+
+function migrationCard(say, guarded, refreshAll) {
+  const box = h('div', { class: 'migration' });
+  const list = h('ul', { class: 'diag' });
+  const note = h('span', { class: 'mono' }, '');
+  const refreshRuns = async () => {
+    const st = await port.migrationStatus();
+    list.replaceChildren(...st.runs.map((run) => h('li', {}, `${run.undone ? 'Undone' : 'Active'} import ${run.activatedAt ?? ''} `,
+      run.undone ? '' : h('button', { class: 'btn', type: 'button', onclick: () => guarded('Undo', async () => {
+        if (!(await confirmDialog('Undo this import?', 'Removes exactly the records this import created. It refuses if any of them was edited since or something depends on them.', 'Undo import'))) return;
+        const out = await port.migrationUndo(run.opId);
+        say(out.result === 'done' ? `Import undone (${out.recordsDeleted} record(s) removed).` : `Undo refused: ${out.reasons.map((x) => x.reason).join('; ')}`);
+        await refreshRuns();
+        await refreshAll();
+      }) }, 'Undo'))));
+  };
+  refreshRuns().catch(() => {});
+  return h('section', { class: 'card', id: 'migrationCard' }, h('h2', {}, 'Import from Quiz Studio V1'),
+    h('p', {}, 'Choose a V1 full backup (JSON). You see a preview first; nothing is imported until you confirm.'),
+    h('div', { class: 'row' },
+      h('button', { class: 'btn', type: 'button', onclick: () => guarded('Recovery artifact', async () => {
+        const r = await invoke('native_migration_artifact');
+        if (r.ok && r.result) note.textContent = `artifact: ${r.result.name}`;
+      }) }, 'Add recovery artifact (optional)...'),
+      note,
+      h('button', { class: 'btn primary', type: 'button', onclick: () => guarded('V1 import', async () => {
+        const r = await invoke('native_migration_prepare');
+        if (!r.ok) return say(`V1 import failed - ${r.error.code}: ${r.error.message}`);
+        if (!r.result) return;
+        migrationPreview(r.result, box, say, async () => { await refreshRuns(); await refreshAll(); });
+      }) }, 'Choose V1 backup...')),
+    box, list);
+}
+
 // ----------------------------------------------------------------------------------- system view
 function renderSystem(main) {
   const out = h('div', { class: 'log', role: 'log', 'aria-live': 'polite' }, 'Ready.');
@@ -157,6 +239,7 @@ function renderSystem(main) {
         say(r.ok ? `Restored. Media added: ${r.result.mediaAdded}. Snapshot kept for rollback.` : `Restore failed - ${r.error.code}: ${r.error.message}`);
         await refresh();
       }) }, 'Restore from backup...'))),
+    migrationCard(say, guarded, refresh),
     h('section', { class: 'card' }, h('h2', {}, 'Activity'), out),
   );
 

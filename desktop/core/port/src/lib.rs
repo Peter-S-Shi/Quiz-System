@@ -14,6 +14,7 @@ pub mod webview;
 use qs_activation as activation;
 use qs_archive as archive;
 use qs_media::MediaStore;
+use qs_migrate_v1 as migrate;
 use qs_platform::identity::{APP_IDENTIFIER, APP_VERSION, PRODUCT_NAME};
 use qs_platform::{bail, Code, DataRoot, Error, Result};
 use qs_store::foundation::MEDIA_COLLECTION;
@@ -21,6 +22,7 @@ use qs_store::{Catalog, OpenOptions, Store};
 use serde_json::{json, Value};
 use std::collections::HashSet;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
@@ -56,7 +58,21 @@ impl StartupReport {
     }
 }
 
+/// RAII maintenance gate (ADR 0002 section 15.2): while it is held, every Store Port write and media GC is
+/// refused with `STORE_BUSY`; it is released on every exit path (drop), including unwinding.
+pub struct WriteGate<'a> {
+    flag: &'a AtomicBool,
+}
+impl Drop for WriteGate<'_> {
+    fn drop(&mut self) {
+        self.flag.store(false, Ordering::SeqCst);
+    }
+}
+
 pub struct Core {
+    /// The previewed migration waiting for the user's confirmation (the path-free report is what the UI sees).
+    pending: Mutex<Option<migrate::Prepared>>,
+    gate: AtomicBool,
     store: Mutex<Store>,
     root: DataRoot,
     catalog: Arc<Catalog>,
@@ -95,7 +111,11 @@ impl Core {
         } else {
             (0, 0)
         };
+        // nothing can be in flight at startup: staging directories no journal will resolve are leftovers
+        migrate::purge_orphan_staging(root);
         Ok(Core {
+            pending: Mutex::new(None),
+            gate: AtomicBool::new(false),
             store: Mutex::new(store),
             root: root.clone(),
             catalog,
@@ -107,7 +127,24 @@ impl Core {
     /// Media GC: Rust-owned lifecycle/maintenance only (never a WebView command), always with the fixed
     /// safety delay - callers cannot tune it.
     pub fn maintenance_gc(&self) -> Result<qs_media::GcReport> {
+        self.refuse_if_gated()?;
         gc_with_fixed_policy(&self.media, &self.store())
+    }
+
+    /// Open the maintenance gate. Fails with `STORE_BUSY` if another gate is already open. The holder performs its
+    /// own work through [`Core::with_store`] (which the gate does not block); everything else is refused.
+    pub fn write_gate(&self) -> Result<WriteGate<'_>> {
+        if self.gate.swap(true, Ordering::SeqCst) {
+            bail!(Code::StoreBusy, "another maintenance operation holds the write gate");
+        }
+        Ok(WriteGate { flag: &self.gate })
+    }
+
+    fn refuse_if_gated(&self) -> Result<()> {
+        if self.gate.load(Ordering::SeqCst) {
+            bail!(Code::StoreBusy, "the store is busy with a maintenance operation; try again shortly");
+        }
+        Ok(())
     }
 
     pub fn startup(&self) -> &StartupReport {
@@ -172,6 +209,7 @@ impl Core {
             }
             "store.count" => Ok(json!({"count": self.store().count(str_arg("collection")?)?})),
             "store.commit" => {
+                self.refuse_if_gated()?;
                 self.require_healthy()?;
                 let uow = args.get("uow").ok_or_else(|| Error::new(Code::RejectShape, "'uow' is required"))?;
                 Ok(self.store().commit(uow)?.to_json())
@@ -182,6 +220,7 @@ impl Core {
                 Ok(json!({"quickCheckOk": s.quick_check()?, "problems": problems.iter().map(|p| p.to_json()).collect::<Vec<_>>()}))
             }
             "media.ingest_file" => {
+                self.refuse_if_gated()?;
                 self.require_healthy()?;
                 let st = self.media.put_file(Path::new(str_arg("path")?))?;
                 Ok(json!({"hash": st.hash, "size": st.size, "deduplicated": st.deduplicated}))
@@ -211,12 +250,75 @@ impl Core {
                 )
             }
             "backup.restore" => {
+                self.refuse_if_gated()?;
                 let mut s = self.store();
                 Ok(archive::restore_archive(&mut s, Path::new(str_arg("path")?))?.to_json())
             }
+            "migration.prepare" => {
+                self.refuse_if_gated()?;
+                self.require_healthy()?;
+                let source = str_arg("source")?;
+                let artifact = args.get("artifact").and_then(Value::as_str).filter(|s| !s.is_empty());
+                let p = migrate::prepare(self, Path::new(source), artifact.map(Path::new), &migrate::PrepareOptions::default())?;
+                let out = json!({"report": p.report, "reportHash": p.report_hash, "blocked": p.blocked, "alreadyMigrated": p.already_migrated, "sourceId": p.source_id});
+                let previous = self.pending.lock().unwrap_or_else(|e| e.into_inner()).take();
+                if let Some(old) = previous {
+                    old.discard();
+                }
+                if p.blocked || p.already_migrated {
+                    p.discard();
+                } else {
+                    *self.pending.lock().unwrap_or_else(|e| e.into_inner()) = Some(p);
+                }
+                Ok(out)
+            }
+            "migration.status" => {
+                let mut v = migrate::status(self)?;
+                let pending = self.pending.lock().unwrap_or_else(|e| e.into_inner());
+                v["pending"] = match pending.as_ref() {
+                    Some(p) => json!({"report": p.report, "reportHash": p.report_hash, "sourceId": p.source_id}),
+                    None => Value::Null,
+                };
+                Ok(v)
+            }
+            "migration.confirm" => {
+                self.require_healthy()?;
+                let hash = str_arg("reportHash")?;
+                let p = self.pending.lock().unwrap_or_else(|e| e.into_inner()).take();
+                let Some(p) = p else { bail!(Code::NotFound, "no migration preview is waiting for confirmation") };
+                match migrate::activate(self, &p, hash) {
+                    Ok(migrate::Activation::Done(d)) => Ok(json!({"result": "done", "runOpId": d.run_op_id, "counts": d.counts})),
+                    Ok(migrate::Activation::AlreadyMigrated { run_op_id }) => {
+                        p.discard();
+                        Ok(json!({"result": "already-migrated", "runOpId": run_op_id}))
+                    }
+                    Err(e) => {
+                        if e.code == Code::RejectPrecondition || e.code == Code::StoreBusy {
+                            *self.pending.lock().unwrap_or_else(|x| x.into_inner()) = Some(p);
+                        // the preview is still valid
+                        } else {
+                            p.discard();
+                        }
+                        Err(e)
+                    }
+                }
+            }
+            "migration.cancel" => {
+                if let Some(p) = self.pending.lock().unwrap_or_else(|e| e.into_inner()).take() {
+                    p.discard();
+                }
+                Ok(json!({"cancelled": true}))
+            }
+            "migration.undo" => match migrate::undo(self, str_arg("runOpId")?)? {
+                migrate::UndoOutcome::Done { undo_op_id, records_deleted } => {
+                    Ok(json!({"result": "done", "undoOpId": undo_op_id, "recordsDeleted": records_deleted}))
+                }
+                migrate::UndoOutcome::Refused { reasons } => Ok(json!({"result": "refused", "reasons": reasons})),
+            },
             "snapshots.list" => Ok(json!({"snapshots": offline::list_snapshots(&self.root)?})),
             "snapshots.restore" => {
                 let name = str_arg("name")?;
+                self.refuse_if_gated()?;
                 let path = offline::snapshot_path(&self.root, name)?;
                 let mut s = self.store();
                 Ok(activation::restore_snapshot(&mut s, &path, &activation::new_operation_id(), "snapshot-restore")?.to_json())
@@ -245,4 +347,20 @@ fn referenced_hashes(store: &Store) -> Result<HashSet<String>> {
         .collect::<std::result::Result<_, _>>()
         .map_err(|e| Error::new(Code::Db, e.to_string()))?;
     Ok(v)
+}
+
+impl migrate::Host for Core {
+    type Gate<'a> = WriteGate<'a>;
+    fn root(&self) -> &DataRoot {
+        &self.root
+    }
+    fn catalog(&self) -> Arc<Catalog> {
+        self.catalog.clone()
+    }
+    fn with_store<T>(&self, f: impl FnOnce(&mut Store) -> T) -> T {
+        Core::with_store(self, f)
+    }
+    fn write_gate(&self) -> Result<WriteGate<'_>> {
+        Core::write_gate(self)
+    }
 }

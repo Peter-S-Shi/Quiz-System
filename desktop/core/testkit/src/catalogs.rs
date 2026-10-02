@@ -99,3 +99,25 @@ pub fn evidence_catalog_v2_failing() -> Catalog {
         )
         .expect("valid test catalog")
 }
+
+/// `evidence_catalog` plus a retained `recovery_artifact` index (ADR 0002 H-4 archive tests): the row id is the
+/// artifact's SHA-256, the payload carries its size.
+pub fn artifact_catalog() -> Catalog {
+    Catalog::foundation()
+        .extend(
+            vec![
+                Migration { version: 2, name: "test-evidence-tables".into(), sql: EVIDENCE_V2_SQL.into() },
+                Migration {
+                    version: 3,
+                    name: "test-recovery-artifact".into(),
+                    sql: "CREATE TABLE recovery_artifact(id TEXT PRIMARY KEY, rev INTEGER NOT NULL, payload TEXT NOT NULL CHECK(json_valid(payload)));".into(),
+                },
+            ],
+            {
+                let mut c = evidence_collections();
+                c.push(Collection::new("recovery_artifact").id_pointer("/id").retained());
+                c
+            },
+        )
+        .expect("valid test catalog")
+}

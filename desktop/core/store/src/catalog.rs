@@ -42,6 +42,31 @@ pub struct Relation {
     pub dedupe: bool,
 }
 
+/// What a collection is *for* (ADR 0002 section 7.1 / 15.5). Every role except `RecoveryOnly` travels through
+/// activation merges, snapshots, archives and state hashes; only `Canonical` is consumer-visible domain data.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Role {
+    /// Canonical learning/product data: the only role Evidence, Recommendation and other consumers read as domain data.
+    Canonical,
+    /// Durable metadata about operations (migration provenance, runs, undo records): preserved and archived, not learning data.
+    Metadata,
+    /// Durable recovery-only artifact index (e.g. a preserved raw V1 recovery blob): archived, never canonical.
+    Retained,
+    /// Recovery-only data (ADR 0001 section 5.5): excluded from activation, archives and canonical hashes.
+    RecoveryOnly,
+}
+
+impl Role {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Role::Canonical => "canonical",
+            Role::Metadata => "metadata",
+            Role::Retained => "retained",
+            Role::RecoveryOnly => "recovery-only",
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Collection {
     /// Table name == collection name.
@@ -52,11 +77,13 @@ pub struct Collection {
     pub relations: Vec<Relation>,
     /// False for recovery-only data (ADR 0001 section 5.5): excluded from activation, archives and canonical hashes.
     pub canonical: bool,
+    /// Finer classification; `canonical == (role != RecoveryOnly)` (i.e. "travels"), see [`Role`].
+    pub role: Role,
 }
 
 impl Collection {
     pub fn new(name: &str) -> Collection {
-        Collection { name: name.into(), id_pointer: None, columns: vec![], relations: vec![], canonical: true }
+        Collection { name: name.into(), id_pointer: None, columns: vec![], relations: vec![], canonical: true, role: Role::Canonical }
     }
     pub fn id_pointer(mut self, p: &str) -> Self {
         self.id_pointer = Some(p.into());
@@ -72,6 +99,17 @@ impl Collection {
     }
     pub fn recovery_only(mut self) -> Self {
         self.canonical = false;
+        self.role = Role::RecoveryOnly;
+        self
+    }
+    /// Durable operation metadata: travels everywhere, but is not domain data.
+    pub fn metadata(mut self) -> Self {
+        self.role = Role::Metadata;
+        self
+    }
+    /// Durable recovery-only artifact index: travels everywhere, never domain data.
+    pub fn retained(mut self) -> Self {
+        self.role = Role::Retained;
         self
     }
     pub fn has_projections(&self) -> bool {
@@ -135,6 +173,7 @@ impl Collection {
             "name": self.name,
             "idPointer": self.id_pointer,
             "canonical": self.canonical,
+            "role": self.role.as_str(),
             "columns": self.columns.iter().map(Column::to_json).collect::<Vec<_>>(),
             "relations": self.relations.iter().map(|r| serde_json::json!({
                 "table": r.table, "ownerColumn": r.owner_column, "pointer": r.pointer, "dedupe": r.dedupe,
@@ -204,7 +243,12 @@ impl Catalog {
     pub fn collection(&self, name: &str) -> Option<&Collection> {
         self.collections.iter().find(|c| c.name == name)
     }
+    /// Collections that travel (merge, snapshot, archive, state hash): every role except recovery-only.
     pub fn canonical_collections(&self) -> impl Iterator<Item = &Collection> {
         self.collections.iter().filter(|c| c.canonical)
+    }
+    /// Consumer-visible domain data only (role `Canonical`).
+    pub fn domain_collections(&self) -> impl Iterator<Item = &Collection> {
+        self.collections.iter().filter(|c| c.role == Role::Canonical)
     }
 }

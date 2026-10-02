@@ -26,6 +26,12 @@ pub const ALLOWLIST: &[&str] = &[
     "media.locate",
     "snapshots.list",
     "snapshots.restore",
+    // V1 migration (ADR 0002): only the path-free steps. `migration.prepare` carries a source path and is
+    // reachable only from the native Open flow in Rust.
+    "migration.status",
+    "migration.confirm",
+    "migration.cancel",
+    "migration.undo",
 ];
 
 /// Dispatch a WebView request: allowlist check, then the command, then diagnostic sanitization of a failure.

@@ -6,6 +6,7 @@ members = [
   "core/media",
   "core/activation",
   "core/archive",
+  "core/migrate_v1",
   "core/port",
   "core/testkit",
   "core/scenarios",
@@ -34,6 +35,7 @@ qs-store = { path = "core/store" }
 qs-media = { path = "core/media" }
 qs-activation = { path = "core/activation" }
 qs-archive = { path = "core/archive" }
+qs-migrate-v1 = { path = "core/migrate_v1" }
 qs-port = { path = "core/port" }
 qs-testkit = { path = "core/testkit" }
 
@@ -41,3 +43,12 @@ qs-testkit = { path = "core/testkit" }
 opt-level = 3
 debug = false
 lto = false
+
+# Dev/test builds hash and decode hundreds of MiB (ADR 0002 envelope tests); optimizing only the hot crates keeps
+# the debug-assertion tests fast without touching the release profile (A2 reproducibility is release-only).
+[profile.dev.package.sha2]
+opt-level = 3
+[profile.dev.package.qs-migrate-v1]
+opt-level = 3
+[profile.dev.package.qs-media]
+opt-level = 3

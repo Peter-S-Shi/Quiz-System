@@ -15,7 +15,7 @@ fn open(t: &TestRoot, c: &Arc<Catalog>) -> Core {
 
 #[test]
 fn allowlist_excludes_gc_and_every_path_carrying_command() {
-    for forbidden in ["media.gc", "media.ingest_file", "backup.create", "backup.verify", "backup.restore"] {
+    for forbidden in ["media.gc", "media.ingest_file", "backup.create", "backup.verify", "backup.restore", "migration.prepare"] {
         assert!(!ALLOWLIST.contains(&forbidden), "{forbidden} must not be WebView-callable");
     }
     assert!(ALLOWLIST.contains(&"store.commit") && ALLOWLIST.contains(&"schema.info"));
@@ -35,6 +35,7 @@ fn forbidden_commands_are_rejected_and_media_gc_never_touches_the_filesystem() {
         ("backup.create", json!({"dest": "C:/x.qsarchive"})),
         ("backup.verify", json!({"path": "C:/x.qsarchive"})),
         ("backup.restore", json!({"path": "C:/x.qsarchive"})),
+        ("migration.prepare", json!({"source": "C:/x.json"})),
     ] {
         let r = webview::dispatch(&core, cmd, &args);
         assert_eq!(r["ok"], false, "{cmd}");
@@ -90,6 +91,10 @@ fn no_webview_visible_response_exposes_an_absolute_or_local_path() {
         ("snapshots.list", json!({})),
         ("snapshots.restore", json!({"name": "../../evil.db"})), // error path
         ("snapshots.restore", json!({"name": "pre-manual.db"})),
+        ("migration.status", json!({})),
+        ("migration.confirm", json!({"reportHash": "none"})), // error path: nothing is waiting
+        ("migration.cancel", json!({})),
+        ("migration.undo", json!({"runOpId": "nope"})),
     ];
     assert_eq!(
         calls.iter().map(|c| c.0).collect::<std::collections::BTreeSet<_>>().len(),

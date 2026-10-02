@@ -395,7 +395,7 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 5. Desktop Architecture Gate. **PASSED — GO WITH AMENDMENT**; ADR 0001 is **ACCEPTED** (amendments A1–A8 absorbed; H8 reclassified by the Human Gate; H1 accepted with residual limitations; Electron fallback not triggered).
 6. Create the formal V2 development branch `v2`, then begin Desktop Foundation. **Branch created; Desktop Foundation ACCEPTED (Human Gate PASS)** ([milestone record](docs/V2_DESKTOP_FOUNDATION.md); Windows CI green; D1–D4 remain non-blocking packaged/manual acceptance debt).
 7. V1 Migration ADR ([ADR 0002](docs/adr/0002-v1-to-v2-migration-architecture.md)). **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02); documentation only.
-8. V1 Migration milestone (implementation). **NEXT — not yet authorized; implementation NOT STARTED.**
+8. V1 Migration milestone (implementation). **Implementation complete — awaiting Human Gate** ([record](docs/V2_MIGRATION.md); Windows CI and manual checks M1-M7 as listed there).
 
 ## Maintenance / Next Version
 
@@ -429,4 +429,4 @@ The current lifecycle route is:
 4. Complete Milestone 7 Product Hardening. **Complete.**
 5. Produce and validate the Milestone 8 Release Candidate. **Complete.**
 6. Release Candidate accepted (`v1.0.0-rc.1`), V1 release metadata finalized (`1.0.0`), and the V1 release line in maintenance hold. **Current V1 lifecycle state.**
-7. V2 Desktop Foundation (architecture validation complete and Desktop Architecture Gate passed; formal V2 development branch `v2` created; Desktop Foundation ACCEPTED; ADR 0002 ACCEPTED; next is the Migration milestone, not yet authorized, implementation not started). **Current V2 state** — see "Current V2 Route" above.
+7. V2 Desktop Foundation (architecture validation complete and Desktop Architecture Gate passed; formal V2 development branch `v2` created; Desktop Foundation ACCEPTED; ADR 0002 ACCEPTED; V1 Migration milestone implemented, awaiting Human Gate). **Current V2 state** — see "Current V2 Route" above.
