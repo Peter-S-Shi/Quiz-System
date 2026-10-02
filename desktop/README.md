@@ -1,0 +1,68 @@
+# Quiz Studio V2 — desktop (Tauri 2 + WebView2)
+
+Formal V2 Desktop Foundation (ADR 0001, `docs/V2_DESKTOP_FOUNDATION.md`). V1 (the repository root) is untouched and keeps its own `npm test` / CI.
+
+```text
+core/platform    error codes, data-root layout, durable file ops, process lock, memory probes, fault hook
+core/store       catalog-driven SQLite store, canonical JSON, Unit of Work, projections, schema ownership
+core/media       immutable content-addressed media
+core/activation  staging, validation, atomic activation, rollback, journal recovery
+core/archive     V2 backup archive (zip + SHA-256 manifest)
+core/port        runtime-neutral Store Port, health gate, offline recovery, self-test
+core/testkit     (test only) synthetic catalogs and data
+core/scenarios   (test only) child-process fault/crash scenarios
+app/src-tauri    the Tauri shell (binary `quiz-studio`)
+ui/web           the offline shell UI (shipped);  ui/tests  JS tests (not shipped)
+scripts          environment, vector generator, smoke and package acceptance, window capture
+```
+
+## Prerequisites (Windows)
+
+Rust MSVC toolchain (pinned by `rust-toolchain.toml`), Visual Studio Build Tools with the C++ workload, Node 22+, and for packaging the Tauri CLI (`cargo install tauri-cli --version 2.12.1 --locked`, or `npm i -g @tauri-apps/cli@2.12.1`). Git's `link.exe` shadows MSVC's, so always start with the environment script:
+
+```powershell
+. .\scripts\env.ps1     # MSVC on PATH first; ADR 0001 A2 flags (static CRT, /Brepro, path remap)
+```
+
+## Test
+
+```powershell
+node --test "ui/tests/*.spec.mjs"                         # JS: canonical JSON, projections, Store Port client, storage/offline boundary
+cargo fmt --all -- --check; cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace --exclude qs-desktop               # fast local defaults
+```
+
+The fault/crash suites scale to the ADR thresholds with environment variables (CI sets these):
+
+| Variable | Local default | ADR / CI value | Suite |
+|---|---|---|---|
+| `QS_KILLS` | 40 | 500 | forced-kill crash loop (H2) |
+| `QS_H3_REPEATS` | 1 | 3 | activation kill-point matrix (H3) |
+| `QS_HEAVY_MIB` | 160 | 400 | streaming ingest / archive / restore memory envelope (H4/H5) |
+| `QS_BITFLIPS` | 120 | 300 | archive bit-flip loop (H5) |
+| `QS_VECTORS` | checked-in 172 | 5,000+ | JS ↔ Rust ↔ DB fidelity vectors (`node scripts/gen-canonical-vectors.mjs <n> <out> [seed]`) |
+
+`QS_UPDATE_FIXTURES=1 cargo test -p qs-store --test projection_cases` regenerates the shared projection fixture.
+
+## Build, run, package
+
+```powershell
+cd app/src-tauri
+cargo tauri build --bundles nsis          # per-user NSIS installer under target/release/bundle/nsis
+cargo build -p qs-desktop --features custom-protocol   # plain exe for quick local runs
+```
+
+Never run a development build against your real data folder if you also have the disposable spike app installed: both use the permanent identifier `io.github.peter-s-shi.quiz-studio`. For local runs set `LOCALAPPDATA` to a scratch folder for the process (the app derives its data root from it), as `scripts/smoke.ps1` does:
+
+```powershell
+./scripts/smoke.ps1 -Exe target/release/quiz-studio.exe -Report smoke.json          # isolated launch smoke
+./scripts/package-test.ps1 -Installer <setup.exe> -Report pkg.json [-UpgradeInstaller <newer.exe>] [-RealData]
+quiz-studio.exe --self-test report.json    # headless end-to-end proof on an isolated temp root
+quiz-studio.exe --identity                 # prints the permanent identifier and version
+```
+
+`-RealData` (used on CI runners) lets the package test prove user data survives uninstall and upgrade; do not use it on a machine that holds data you care about.
+
+## Data layout
+
+`%LOCALAPPDATA%\io.github.peter-s-shi.quiz-studio\` — `data\quiz-studio.db` (+wal/shm), `data\media\<hh>\<sha256>`, `staging\`, `snapshots\`, `journal\`, `recovery-artifacts\`, `logs\`. Uninstall keeps it unless the interactive uninstaller checkbox is ticked.

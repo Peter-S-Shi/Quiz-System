@@ -393,7 +393,8 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 3. Desktop Runtime & Application Data ADR — Human Gate. **Complete** (approved for a bounded spike).
 4. Bounded Desktop Spike (disposable `spike/desktop-runtime`, never merged). **Complete** — evidence: [`docs/adr/evidence/0001-desktop-spike-report.md`](docs/adr/evidence/0001-desktop-spike-report.md).
 5. Desktop Architecture Gate. **PASSED — GO WITH AMENDMENT**; ADR 0001 is **ACCEPTED** (amendments A1–A8 absorbed; H8 reclassified by the Human Gate; H1 accepted with residual limitations; Electron fallback not triggered).
-6. Create the formal V2 development branch, then begin Desktop Foundation. **NEXT.** (Not yet created.)
+6. Create the formal V2 development branch `v2`, then begin Desktop Foundation. **Branch created; Desktop Foundation implementation complete — awaiting Human Gate** ([milestone record](docs/V2_DESKTOP_FOUNDATION.md); Windows CI green; acceptance debt D1–D4 listed there).
+7. V1 Migration ADR. **NOT STARTED** — begins only after the Desktop Foundation Human Gate and separate authorization.
 
 ## Maintenance / Next Version
 
@@ -427,4 +428,4 @@ The current lifecycle route is:
 4. Complete Milestone 7 Product Hardening. **Complete.**
 5. Produce and validate the Milestone 8 Release Candidate. **Complete.**
 6. Release Candidate accepted (`v1.0.0-rc.1`), V1 release metadata finalized (`1.0.0`), and the V1 release line in maintenance hold. **Current V1 lifecycle state.**
-7. V2 Architecture Validation (scope freeze, migration readiness, Desktop ADR, bounded desktop spike complete; Desktop Architecture Gate passed; formal V2 development branch and Desktop Foundation next). **Current V2 state** — see "Current V2 Route" above.
+7. V2 Desktop Foundation (architecture validation complete and Desktop Architecture Gate passed; formal V2 development branch `v2` created; Desktop Foundation implemented, awaiting Human Gate; Migration ADR not started). **Current V2 state** — see "Current V2 Route" above.

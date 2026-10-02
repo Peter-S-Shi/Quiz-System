@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-V1 Finalized / Maintenance Hold + V2 Desktop Architecture Gate Passed (Desktop Foundation next)
+V1 Finalized / Maintenance Hold + V2 Desktop Foundation (active on branch `v2`; implementation complete, awaiting Human Gate; Migration ADR not started)
 
 ## Active Milestone
 
-V1: None (maintenance hold). V2: Desktop Architecture Gate PASSED (GO WITH AMENDMENT); the formal V2 development branch has not been created yet and no V2 implementation milestone is active.
+V1: None (maintenance hold). V2: **Desktop Foundation** is the active milestone on the long-lived `v2` development branch (cut from `main@8eb6608`, pushed to `origin/v2`; no PR to `main` is open). Implementation is complete and awaiting the Human Gate; milestone record and evidence map: [`docs/V2_DESKTOP_FOUNDATION.md`](docs/V2_DESKTOP_FOUNDATION.md). The V1 Migration ADR has **not** been started.
 
 ## Most Recent Completed Milestone
 
@@ -162,7 +162,7 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 Quiz Studio V1 is finalized at version `1.0.0`. The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the immutable verification baseline with zero post-candidate runtime modifications. No V1 engineering milestone is currently scheduled. V1 follow-ups such as GitHub Pages deployment or a formal GitHub Release remain separately deferred and begin only upon explicit Product Owner authorization.
 
-Quiz Studio V2 has **passed the Desktop Architecture Gate**; the formal V2 development branch has not yet been created. The V1 release line above is unchanged and remains the immutable `v1.0.0` baseline; V2 work does not modify it.
+Quiz Studio V2 has **passed the Desktop Architecture Gate**; the formal V2 development branch `v2` exists and **Desktop Foundation is active**. The V1 release line above is unchanged and remains the immutable `v1.0.0` baseline; V2 work does not modify it.
 
 V2 progress (see the linked documents for authority; nothing here changes them):
 
@@ -173,9 +173,12 @@ V2 progress (see the linked documents for authority; nothing here changes them):
 - **Bounded desktop spike: complete.** Executed on the disposable `spike/desktop-runtime` branch (final HEAD `a79cea5c29d10f88c0a7f09c8a265a76dca17d23`, never merged); the long-term evidence is [`docs/adr/evidence/0001-desktop-spike-report.md`](docs/adr/evidence/0001-desktop-spike-report.md) with the amended [spike contract](docs/adr/0001-appendix-desktop-spike-contract.md).
 - **Desktop Architecture Gate: PASSED — GO WITH AMENDMENT** (Product Owner). H2–H7 PASS; H1 CONDITIONAL and accepted with residual limitations (runtime-less `downloadBootstrapper` check and the adapter-disable/`pktmon` run deferred); H8 CANCELLED / RECLASSIFIED BY HUMAN GATE (its remaining native Open dialog, OS drag-and-drop and OneDrive-redirected Desktop/Documents checks are deferred to Desktop Foundation / packaged acceptance).
 - **Typing constraint carried forward:** the third-party Sogou Pinyin IME emits no composition events in the packaged app; future Typing must not rely on `compositionend` as the only committed-text path and must accept non-composing committed input / `insertText`. This does not reopen the desktop architecture.
-- **No V2 production implementation exists, and no V2 development branch exists yet.**
+- **Desktop Foundation: implementation complete on `v2`, awaiting Human Gate.** Tauri 2 + WebView2 shell (single instance, strict CSP, allowlisted IPC, Rust-owned native dialogs/drag-and-drop), catalog-driven SQLite store with Unit of Work and payload/projection integrity, content-addressed media, one staging/activation/rollback primitive with journal recovery, V2 archive, stable identity/version/data root, per-user NSIS package. Code under [`desktop/`](desktop/README.md); the disposable spike code was not copied.
+- **Validation (Windows CI, `windows-latest`, MSVC + static CRT — [run](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37012332165), all steps green):** fmt + clippy `-D warnings`; 15 JS tests; Rust suites at the ADR thresholds — 500 forced-kill crash loop (0 violations), activation kill-point matrix 6 checkpoints × 2 modes × 3 repeats + kill during rollback (always exactly pre or post), 400 MiB streaming ingest/archive/restore (child peak well under the 300 MiB limit), 14 named archive mutations + 300 bit flips rejected before activation, 5,000 JS↔Rust↔DB fidelity vectors (0 mismatches); app binary reproducible (identical SHA-256 across two builds); shipped binary carries no fault-injection hook; installer built in `downloadBootstrapper` mode; installed-exe smoke (identity, self-test, launch, single instance, no listener / no remote connection from the app process, force-kill recovery); same-identifier upgrade preserves data; silent uninstall keeps user data.
+- **Acceptance debt carried to the Human Gate (explicit, not waived):** D1 native Open dialog automated round-trip, D2 OS drag-and-drop ≥ 1 GiB, D3 OneDrive-redirected Desktop/Documents, D4 runtime-less WebView2 `downloadBootstrapper` (static evidence only) — manual steps in [`manual-qa/v2-desktop-foundation.md`](manual-qa/v2-desktop-foundation.md). Also open: final app icon (neutral placeholder ships), bundled CJK fonts (shell uses system fonts, no network resource), code signing and auto-update (out of scope).
+- **Not started (unchanged):** V1 Migration ADR / migration implementation, Scheduler / Recommendation / Calendar, Objective / Translation / Typing domain integration, product views.
 
-**Next engineering objective: create the formal V2 development branch and begin Desktop Foundation** (Scope Freeze §24), implementing the accepted ADR 0001 architecture. The `spike/desktop-runtime` branch stays disposable and is never merged; spike code is not carried over wholesale.
+**Next action: Human Gate review of Desktop Foundation.** After acceptance, the next V2 step is the V1 Migration ADR, which is **not** started and needs separate authorization. The `spike/desktop-runtime` branch stays disposable and is never merged.
 
 Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.
 
@@ -183,7 +186,8 @@ Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFI
 
 - Default branch: `main`
 - Remote: `origin`
-- Repository lifecycle state: V1 Finalized / Maintenance Hold + V2 Desktop Architecture Gate Passed (Desktop Foundation next)
+- Repository lifecycle state: V1 Finalized / Maintenance Hold + V2 Desktop Foundation (branch `v2`, implementation complete, awaiting Human Gate)
+- V2 development branch: `v2` (from `main@8eb6608`; pushed; long-lived; no open PR to `main`)
 - Final release version: `1.0.0`
 - Accepted candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
 - Commit and merge tracking: Use Git history for `main` commit identity and PR merge history

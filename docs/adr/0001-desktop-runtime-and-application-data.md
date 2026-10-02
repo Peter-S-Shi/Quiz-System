@@ -238,3 +238,13 @@ Table schemas for Scheduling/Calendar/Typing; recommendation algorithm; migratio
 **Typing implementation acceptance constraint (H7 / Sogou Pinyin).** Microsoft Pinyin and Microsoft Japanese IME passed H7. The third-party **Sogou Pinyin** IME emitted **no composition events** in the packaged app (text inserted whole as non-composing `insertText`, content correct). Therefore future Typing must **not** treat `compositionend` as the only committed-text path and must also accept non-composing committed input / `insertText`. This is an implementation acceptance constraint, **not** a reason to reopen the Desktop Runtime architecture.
 
 **Not authorized by this record:** a V2 development branch, Desktop Foundation work, or any V2 production code - those start as the next step after this ADR's merge. The `spike/desktop-runtime` branch remains disposable and is never merged.
+
+## 15. Desktop Foundation implementation record (non-normative)
+
+The formal implementation lives on the long-lived `v2` branch (`desktop/`); the milestone record and evidence map are in [`docs/V2_DESKTOP_FOUNDATION.md`](../V2_DESKTOP_FOUNDATION.md). Nothing below changes a decision in sections 1-14; these are clarifications the implementation had to make, recorded so a reviewer can challenge them:
+
+1. **Catalog-driven store (section 5.2/5.3).** The store is parameterized by a *catalog* (forward-only migrations + declarative collection descriptions: typed projection columns, many-valued relationship rows, identity pointer, canonical vs recovery-only). No domain table is hard-coded; the foundation catalog contains only `media_object`, `setting` and `recovery_session`.
+2. **Failed schema upgrade (section 7; spike H6).** The spike let the app open on the old schema after a failed migration. The implementation instead refuses to open (`UPGRADE_FAILED`, store verified unchanged, snapshot restored if not) because running new code against an old schema contradicts the catalog contract. Data is never lost either way. Flagged for Product Owner review.
+3. **Canonical numbers (A4).** Number formatting follows ECMAScript `Number::toString` including its round-half-even tie rule; the JS<->Rust vectors exposed a divergence in Rust's shortest-digit formatter on exact decimal ties, now corrected in `desktop/core/store/src/canon.rs`.
+4. **Native flows (section 8).** Dialogs, drag-and-drop and streaming ingest run in Rust; the WebView receives no raw path and its IPC is an allowlist of path-free Store Port commands.
+5. **Fault injection (spike H2/H3).** The kill hook is a compile-time feature enabled only by the test scenario crate; CI asserts the shipped binary has none.
