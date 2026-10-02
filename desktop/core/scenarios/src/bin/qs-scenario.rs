@@ -14,7 +14,7 @@
 //!   qs-scenario migrate <root> <source> [artifact]     V1 migration: prepare + confirm + activate (prints JSON)
 //!   qs-scenario migrate-undo <root> <run-op-id>        undo an import (prints JSON)
 //!   qs-scenario port-serve <root>                     the product Store Port over stdin/stdout (JSON lines {command,args} -> envelope)
-//!   qs-scenario product-archive-create <root> <dest>   archive a schema-3 product store
+//!   qs-scenario product-archive-create <root> <dest>   archive the product store
 //!   qs-scenario product-archive-restore <root> <archive>
 //!   qs-scenario gen-big <path> <mib> <assets>          write a synthetic V1 backup with ~<mib> MiB of decoded media
 

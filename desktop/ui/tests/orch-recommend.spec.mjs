@@ -125,7 +125,7 @@ test('no numeric score anywhere: the output contains no number and no rank field
   };
   walk(recommend(s, TODAY));
   assert.ok(GROUPS.every((g) => typeof g === 'string'));
-  assert.equal(ALGORITHM_VERSION, 'v1');
+  assert.equal(ALGORITHM_VERSION, 'v2');
 });
 
 test('determinism: shuffled inputs and repeated runs serialize byte-identically, and match the committed golden file', () => {
@@ -162,7 +162,7 @@ test('explanations render from (code, params) for every registry code in both lo
   }
   assert.throws(() => explain({ code: 'MASTERY_PERCENT', params: {} }), /unknown reason code/);
   const rec = find(recommend(snap({ responses: [objResp('r1', 'paper-a', { q1: false })] }), TODAY), 'paper-a');
-  assert.deepEqual(selectionProvenance(rec), { source: 'recommended', reasons: [{ code: 'OBJECTIVE_INCORRECT_LATEST', params: {}, provenance: [{ collection: 'learner_response', id: 'r1', itemId: 'q1' }] }], algorithmVersion: 'v1' });
+  assert.deepEqual(selectionProvenance(rec), { source: 'recommended', reasons: [{ code: 'OBJECTIVE_INCORRECT_LATEST', params: {}, provenance: [{ collection: 'learner_response', id: 'r1', itemId: 'q1' }] }], algorithmVersion: 'v2' });
   assert.ok(!REASON_CODES.some((c) => /MASTERY|SCORE|PERCENT/.test(c)));
 });
 

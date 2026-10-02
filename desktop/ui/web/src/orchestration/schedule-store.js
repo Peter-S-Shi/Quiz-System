@@ -17,7 +17,7 @@ import {
 import { COLLECTIONS, assertValid, checkSlot, occurrenceId } from './schema.js';
 import { evidenceIdsForMaterial, loadSnapshot, materialAvailability } from './readers.js';
 import { plan } from './planner.js';
-import { SESSION_EVIDENCE_WRITABLE, validateSessionEvidenceOps } from './session-finalization.js';
+import { assertSlotMatches, validateSessionEvidenceOps } from './session-finalization.js';
 import { putOp, deleteOp } from '../projection.js';
 
 export class ScheduleError extends Error {
@@ -469,15 +469,16 @@ export class ScheduleStore {
    * The session-finalization Unit of Work seam: the caller supplies the evidence write (`evidenceOps`, owned by the
    * domain integration milestone); this commits it TOGETHER with the selection provenance and the fulfillment, so
    * evidence and fulfillment can never be separated (S-6).
-   * @param {{evidenceOps?: object[], session: {collection: string, id: string}, slot: object, selection?: object, scheduleRef?: {scheduleId: string, originalDate: string}}} input
+   * @param {{evidenceOps?: object[], session: {collection: string, id: string}, slot?: object, selection?: object, scheduleRef?: {scheduleId: string, originalDate: string}}} input
    */
   async completeSession({ evidenceOps = [], session, slot, selection, scheduleRef }) {
-    const errs = [];
-    checkSlot(slot, 'slot', errs);
-    if (errs.length) throw new ScheduleError('BAD_SLOT', errs.join('; '));
-    // closed write contract: create-only, approved collections, structurally validated before any Store Port access
+    // closed write contract: create-only, adapter collections, validated by the domain adapter before any Store Port access
     const creates = validateSessionEvidenceOps(evidenceOps);
-    if (!session || !SESSION_EVIDENCE_WRITABLE.includes(session.collection) || typeof session.id !== 'string') throw new ScheduleError('BAD_EVIDENCE_OPS', 'session must reference an approved session-evidence collection');
+    if (creates.length !== 1) throw new ScheduleError('BAD_EVIDENCE_OPS', 'a session finalization writes exactly one evidence record');
+    if (!session || session.collection !== creates[0].collection || session.id !== creates[0].id) throw new ScheduleError('BAD_EVIDENCE_OPS', 'session must reference the evidence record being created');
+    // the fulfilled slot is derived from the validated evidence; a caller-supplied slot must agree (ADR 0004 section 5.4)
+    assertSlotMatches(slot, creates[0].slot);
+    slot = creates[0].slot;
     // finalization CREATES evidence: a finalized record is never rewritten (E-1), so every evidence put must be new
     const evidenceNew = [];
     for (const { collection, id } of creates) {

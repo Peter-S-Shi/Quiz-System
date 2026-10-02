@@ -58,7 +58,7 @@ test('an existing learner_response can never be rewritten by finalization (E-1)'
   const ev = hard('r-1');
   await e.store.completeSession({ evidenceOps: [putOp(e.spec('learner_response'), ev.id, ev)], session: ref(ev.id), slot: slotA });
   const before = await e.digest(ALL);
-  const rewritten = { ...ev, durationMs: 1 };
+  const rewritten = { ...ev, finalizedAt: '2026-10-02T11:11:11.000Z' };
   await assert.rejects(e.store.completeSession({ evidenceOps: [putOp(e.spec('learner_response'), ev.id, rewritten)], session: ref(ev.id), slot: slotA }), bad('SESSION_ALREADY_RECORDED'));
   assert.equal(await e.digest(ALL), before);
   assert.ok(a.id);

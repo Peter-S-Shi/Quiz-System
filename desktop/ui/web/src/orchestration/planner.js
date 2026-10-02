@@ -4,7 +4,8 @@
 // v1), not a memory model and not claimed to be scientifically optimal. No FSRS, no stored mastery or state.
 
 import { addDays } from './dates.js';
-import { ALGORITHM_VERSION } from './recommend.js';
+/** The planner's own algorithm version: unchanged by the Typing Reader (ADR 0004 section 9.4). */
+export const PLANNER_ALGORITHM_VERSION = 'v1';
 import { isNative, materialKey, recordTime, domainOfMaterialType, ACTIONABLE_JUDGMENTS } from './readers.js';
 
 export const LADDER_DAYS = [1, 3, 7, 14, 30];
@@ -72,7 +73,7 @@ export function plan(snapshot, today) {
     const d = sessionDifficulty(snapshot, latest);
     const slot = { domain: domainOfMaterialType(latest.material.type), material: latest.material, intent: 'practice' };
     if (d.difficult) {
-      proposals.push({ slot, date: addDays(today, LADDER_DAYS[0]), reasons: d.reasons.map((code) => ({ code, params: {} })), basis: d.basis, algorithmVersion: ALGORITHM_VERSION });
+      proposals.push({ slot, date: addDays(today, LADDER_DAYS[0]), reasons: d.reasons.map((code) => ({ code, params: {} })), basis: d.basis, algorithmVersion: PLANNER_ALGORITHM_VERSION });
       continue;
     }
     if (!engineFulfilments.has(latest.id)) continue; // a clean session that was not a revisit proposes nothing
@@ -84,7 +85,7 @@ export function plan(snapshot, today) {
       c += 1;
     }
     if (c < LADDER_DAYS.length) {
-      proposals.push({ slot, date: addDays(today, LADDER_DAYS[c]), reasons: [{ code: 'SUCCESSFUL_RECOVERY', params: {} }], basis: [{ collection: 'learner_response', id: latest.id }], algorithmVersion: ALGORITHM_VERSION });
+      proposals.push({ slot, date: addDays(today, LADDER_DAYS[c]), reasons: [{ code: 'SUCCESSFUL_RECOVERY', params: {} }], basis: [{ collection: 'learner_response', id: latest.id }], algorithmVersion: PLANNER_ALGORITHM_VERSION });
     }
   }
   return proposals;

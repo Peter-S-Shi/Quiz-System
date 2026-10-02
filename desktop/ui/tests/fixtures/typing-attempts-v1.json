@@ -1,0 +1,363 @@
+[
+  {
+    "schemaVersion": 1,
+    "id": "fx-1",
+    "status": "finalized",
+    "material": {
+      "type": "typing-text",
+      "id": "typing-fx",
+      "title": "Fixture",
+      "snapshot": {
+        "text": "environment"
+      }
+    },
+    "session": {
+      "id": "sess-fx-1",
+      "startedAt": "2026-10-02T09:00:00.000Z",
+      "completedAt": "2026-10-02T09:05:00.000Z"
+    },
+    "intent": "practice",
+    "policy": {
+      "feedbackTiming": "live",
+      "corrections": "allowed"
+    },
+    "committed": {
+      "text": "enviroment"
+    },
+    "comparison": {
+      "version": "typing-compare/1",
+      "normalization": "NFC",
+      "segmentation": "extended-grapheme-cluster",
+      "offsetEncoding": "utf16-code-unit"
+    },
+    "counts": {
+      "referenceGraphemes": 11,
+      "committedGraphemes": 10
+    },
+    "errors": [
+      {
+        "kind": "omission",
+        "reference": {
+          "start": 6,
+          "end": 7
+        },
+        "committed": {
+          "start": 6,
+          "end": 6
+        }
+      }
+    ],
+    "provenance": {
+      "purpose": "practice",
+      "createdAt": "2026-10-02T09:05:00.000Z"
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "id": "fx-2",
+    "status": "finalized",
+    "material": {
+      "type": "typing-text",
+      "id": "typing-fx",
+      "title": "Fixture",
+      "snapshot": {
+        "text": "café"
+      }
+    },
+    "session": {
+      "id": "sess-fx-2",
+      "startedAt": "2026-10-02T09:00:00.000Z",
+      "completedAt": "2026-10-02T09:05:00.000Z"
+    },
+    "intent": "practice",
+    "policy": {
+      "feedbackTiming": "live",
+      "corrections": "allowed"
+    },
+    "committed": {
+      "text": "café"
+    },
+    "comparison": {
+      "version": "typing-compare/1",
+      "normalization": "NFC",
+      "segmentation": "extended-grapheme-cluster",
+      "offsetEncoding": "utf16-code-unit"
+    },
+    "counts": {
+      "referenceGraphemes": 4,
+      "committedGraphemes": 4
+    },
+    "errors": [],
+    "provenance": {
+      "purpose": "practice",
+      "createdAt": "2026-10-02T09:05:00.000Z"
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "id": "fx-3",
+    "status": "finalized",
+    "material": {
+      "type": "typing-text",
+      "id": "typing-fx",
+      "title": "Fixture",
+      "snapshot": {
+        "text": "👨‍👩‍👧"
+      }
+    },
+    "session": {
+      "id": "sess-fx-3",
+      "startedAt": "2026-10-02T09:00:00.000Z",
+      "completedAt": "2026-10-02T09:05:00.000Z"
+    },
+    "intent": "practice",
+    "policy": {
+      "feedbackTiming": "live",
+      "corrections": "allowed"
+    },
+    "committed": {
+      "text": "👨"
+    },
+    "comparison": {
+      "version": "typing-compare/1",
+      "normalization": "NFC",
+      "segmentation": "extended-grapheme-cluster",
+      "offsetEncoding": "utf16-code-unit"
+    },
+    "counts": {
+      "referenceGraphemes": 1,
+      "committedGraphemes": 1
+    },
+    "errors": [
+      {
+        "kind": "substitution",
+        "reference": {
+          "start": 0,
+          "end": 8
+        },
+        "committed": {
+          "start": 0,
+          "end": 2
+        }
+      }
+    ],
+    "provenance": {
+      "purpose": "practice",
+      "createdAt": "2026-10-02T09:05:00.000Z"
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "id": "fx-4",
+    "status": "finalized",
+    "material": {
+      "type": "typing-text",
+      "id": "typing-fx",
+      "title": "Fixture",
+      "snapshot": {
+        "text": "क्ष"
+      }
+    },
+    "session": {
+      "id": "sess-fx-4",
+      "startedAt": "2026-10-02T09:00:00.000Z",
+      "completedAt": "2026-10-02T09:05:00.000Z"
+    },
+    "intent": "practice",
+    "policy": {
+      "feedbackTiming": "live",
+      "corrections": "allowed"
+    },
+    "committed": {
+      "text": "कष"
+    },
+    "comparison": {
+      "version": "typing-compare/1",
+      "normalization": "NFC",
+      "segmentation": "extended-grapheme-cluster",
+      "offsetEncoding": "utf16-code-unit"
+    },
+    "counts": {
+      "referenceGraphemes": 1,
+      "committedGraphemes": 2
+    },
+    "errors": [
+      {
+        "kind": "substitution",
+        "reference": {
+          "start": 0,
+          "end": 3
+        },
+        "committed": {
+          "start": 0,
+          "end": 2
+        }
+      }
+    ],
+    "provenance": {
+      "purpose": "practice",
+      "createdAt": "2026-10-02T09:05:00.000Z"
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "id": "fx-5",
+    "status": "finalized",
+    "material": {
+      "type": "typing-text",
+      "id": "typing-fx",
+      "title": "Fixture",
+      "snapshot": {
+        "text": "🇩🇪🇫🇷"
+      }
+    },
+    "session": {
+      "id": "sess-fx-5",
+      "startedAt": "2026-10-02T09:00:00.000Z",
+      "completedAt": "2026-10-02T09:05:00.000Z"
+    },
+    "intent": "practice",
+    "policy": {
+      "feedbackTiming": "live",
+      "corrections": "allowed"
+    },
+    "committed": {
+      "text": "🇩🇪"
+    },
+    "comparison": {
+      "version": "typing-compare/1",
+      "normalization": "NFC",
+      "segmentation": "extended-grapheme-cluster",
+      "offsetEncoding": "utf16-code-unit"
+    },
+    "counts": {
+      "referenceGraphemes": 2,
+      "committedGraphemes": 1
+    },
+    "errors": [
+      {
+        "kind": "omission",
+        "reference": {
+          "start": 4,
+          "end": 8
+        },
+        "committed": {
+          "start": 4,
+          "end": 4
+        }
+      }
+    ],
+    "provenance": {
+      "purpose": "practice",
+      "createdAt": "2026-10-02T09:05:00.000Z"
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "id": "fx-6",
+    "status": "finalized",
+    "material": {
+      "type": "typing-text",
+      "id": "typing-fx",
+      "title": "Fixture",
+      "snapshot": {
+        "text": "مرحبا"
+      }
+    },
+    "session": {
+      "id": "sess-fx-6",
+      "startedAt": "2026-10-02T09:00:00.000Z",
+      "completedAt": "2026-10-02T09:05:00.000Z"
+    },
+    "intent": "practice",
+    "policy": {
+      "feedbackTiming": "live",
+      "corrections": "allowed"
+    },
+    "committed": {
+      "text": "مرحب"
+    },
+    "comparison": {
+      "version": "typing-compare/1",
+      "normalization": "NFC",
+      "segmentation": "extended-grapheme-cluster",
+      "offsetEncoding": "utf16-code-unit"
+    },
+    "counts": {
+      "referenceGraphemes": 5,
+      "committedGraphemes": 4
+    },
+    "errors": [
+      {
+        "kind": "omission",
+        "reference": {
+          "start": 4,
+          "end": 5
+        },
+        "committed": {
+          "start": 4,
+          "end": 4
+        }
+      }
+    ],
+    "provenance": {
+      "purpose": "practice",
+      "createdAt": "2026-10-02T09:05:00.000Z"
+    }
+  },
+  {
+    "schemaVersion": 1,
+    "id": "fx-7",
+    "status": "finalized",
+    "material": {
+      "type": "typing-text",
+      "id": "typing-fx",
+      "title": "Fixture",
+      "snapshot": {
+        "text": "hello world"
+      }
+    },
+    "session": {
+      "id": "sess-fx-7",
+      "startedAt": "2026-10-02T09:00:00.000Z",
+      "completedAt": "2026-10-02T09:05:00.000Z"
+    },
+    "intent": "test",
+    "policy": {
+      "feedbackTiming": "on-completion",
+      "corrections": "allowed"
+    },
+    "committed": {
+      "text": "hello"
+    },
+    "comparison": {
+      "version": "typing-compare/1",
+      "normalization": "NFC",
+      "segmentation": "extended-grapheme-cluster",
+      "offsetEncoding": "utf16-code-unit"
+    },
+    "counts": {
+      "referenceGraphemes": 11,
+      "committedGraphemes": 5
+    },
+    "errors": [
+      {
+        "kind": "omission",
+        "reference": {
+          "start": 5,
+          "end": 11
+        },
+        "committed": {
+          "start": 5,
+          "end": 5
+        }
+      }
+    ],
+    "provenance": {
+      "purpose": "retry",
+      "sourceAttemptId": "fx-1",
+      "sourceMaterialId": "typing-fx",
+      "createdAt": "2026-10-02T09:05:00.000Z"
+    }
+  }
+]

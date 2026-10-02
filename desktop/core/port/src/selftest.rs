@@ -14,7 +14,7 @@ use std::time::Instant;
 
 /// The catalog the product ships: the foundation's structural collections plus the V1 migration domain schema.
 pub fn product_catalog() -> Arc<Catalog> {
-    Arc::new(qs_orchestration::product_catalog())
+    Arc::new(qs_task_domains::product_catalog())
 }
 
 pub fn run(dir: &Path) -> Result<Value> {
@@ -114,7 +114,7 @@ pub fn run(dir: &Path) -> Result<Value> {
     })();
     step("migration", t, outcome);
 
-    // Learning Orchestration (ADR 0003): the shipped store is schema 3 and the database itself refuses a second
+    // Learning Orchestration (ADR 0003): the shipped store is schema 4 (Typing, ADR 0004) and the database itself refuses a second
     // active schedule in a slot
     let t = Instant::now();
     let schedule = |id: &str| {
@@ -128,8 +128,8 @@ pub fn run(dir: &Path) -> Result<Value> {
     };
     let outcome = (|| -> std::result::Result<Value, String> {
         let info = core_c.dispatch("schema.info", &json!({}));
-        if info["result"]["store"]["userVersion"] != 3 {
-            return Err(format!("expected store schema 3: {}", info["result"]["store"]));
+        if info["result"]["store"]["userVersion"] != 4 {
+            return Err(format!("expected store schema 4: {}", info["result"]["store"]));
         }
         let first = core_c.dispatch("store.commit", &schedule("s-selftest-1"));
         if first["ok"] != true {
@@ -139,7 +139,7 @@ pub fn run(dir: &Path) -> Result<Value> {
         if second["ok"] == true || second["error"]["code"] != "REJECT_CONSTRAINT" {
             return Err(format!("a second active schedule in the slot must be rejected by the database: {second}"));
         }
-        Ok(json!({"storeSchema": 3, "singleActiveSchedule": true}))
+        Ok(json!({"storeSchema": 4, "singleActiveSchedule": true}))
     })();
     step("scheduling", t, outcome);
 

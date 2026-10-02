@@ -1,16 +1,19 @@
-// The closed WRITE contract of session finalization. This is deliberately NOT readers.js EVIDENCE_SOURCES: that list is
-// what the Recommendation side may READ (it includes teacher_review and migrated legacy_history_entry); this one is the
-// only thing a completing session may CREATE. Typing's attempt collection is added by the Typing milestone, not here.
+// The closed WRITE contract of session finalization (ADR 0004 section 5). The collections a finalizing session may
+// CREATE come from the Domain Evidence Adapter registry (task-domains/adapters.js), never from readers.js
+// `EVIDENCE_SOURCES`: readers may read teacher_review and migrated legacy_history_entry, finalization may never write
+// them. A session writes exactly ONE evidence record, create-only, validated by its domain adapter before any Store
+// Port access; the fulfilled slot is derived from that validated record, not trusted from the caller.
 import { ScheduleError } from './schedule-store.js';
+import { SESSION_EVIDENCE_WRITABLE, adapterFor } from '../task-domains/adapters.js';
 
-export const SESSION_EVIDENCE_WRITABLE = Object.freeze(['learner_response']);
+export { SESSION_EVIDENCE_WRITABLE };
 
 const OP_KEYS = ['op', 'collection', 'id', 'payload', 'proj'];
 
 /**
- * Structural validation of the caller-supplied evidence write, before any Store Port access.
- * Only `put` of a brand-new record into an approved session-evidence collection; everything else fails closed.
- * Returns the (collection, id) pairs that must each carry an `absent` precondition.
+ * Structural + domain validation of the caller-supplied evidence write, before any Store Port access.
+ * Only `put` of a brand-new record into an adapter collection; everything else fails closed.
+ * Returns `[{collection, id, slot}]` (one entry per op): each must carry an `absent` precondition, `slot` is derived.
  */
 export function validateSessionEvidenceOps(evidenceOps) {
   if (!Array.isArray(evidenceOps)) throw new ScheduleError('BAD_EVIDENCE_OPS', 'evidenceOps must be an array');
@@ -27,6 +30,19 @@ export function validateSessionEvidenceOps(evidenceOps) {
     const key = `${op.collection}/${op.id}`;
     if (seen.has(key)) throw new ScheduleError('BAD_EVIDENCE_OPS', `${at}: duplicate ${key}`);
     seen.add(key);
-    return { collection: op.collection, id: op.id };
+    const adapter = adapterFor(op.collection, op.payload);
+    if (!adapter) throw new ScheduleError('BAD_EVIDENCE_OPS', `${at}: no domain adapter for ${op.collection} material type ${JSON.stringify(op.payload?.material?.type)}`);
+    const errors = adapter.validate(op.payload);
+    if (errors.length) throw new ScheduleError('BAD_EVIDENCE_PAYLOAD', `${at}: ${errors.join('; ')}`);
+    return { collection: op.collection, id: op.id, slot: adapter.slot(op.payload) };
   });
+}
+
+const slotKey = (s) => `${s.domain}|${s.material.type}|${s.material.id}|${s.intent}`;
+
+/** Throws SLOT_MISMATCH when a caller-supplied slot differs from the slot derived from the evidence. */
+export function assertSlotMatches(supplied, derived) {
+  if (supplied !== undefined && slotKey(supplied) !== slotKey(derived)) {
+    throw new ScheduleError('SLOT_MISMATCH', `the supplied slot ${slotKey(supplied)} is not the slot of the evidence (${slotKey(derived)})`);
+  }
 }

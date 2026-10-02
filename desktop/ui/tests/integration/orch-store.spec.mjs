@@ -8,7 +8,7 @@ import { calendarView, expandOccurrences, isGenerated, isUnresolved } from '../.
 import { putOp } from '../../web/src/projection.js';
 import { objResp, T } from '../orch-fixtures.mjs';
 import { collectionsDigest, counterIds } from './bridge.mjs';
-import { EVIDENCE, SCHED, every3, env, hard, hook, slotA, slotB, tagIs, withEnv } from './env.mjs';
+import { EVIDENCE, SCHED, every3, env, hard, hook, objEvidence, slotA, slotB, tagIs, withEnv } from './env.mjs';
 
 // ----------------------------------------------------------------------------------------------- O-1 create
 test('Create is only for an unoccupied slot: an occupied slot is refused with the existing schedule and NOTHING is rewritten (A-1)', withEnv(async (e) => {
@@ -233,7 +233,7 @@ test('recurrence through the store: this-only exception, this-and-future re-anch
   e.clock.set('2026-10-02');
   const a = await e.store.create({ slot: slotA, date: '2026-10-03', cadence: every3 });
   e.clock.set('2026-10-03');
-  const evidence = objResp('r-oct3', 'paper-a', { q1: true }, { time: '2026-10-03T09:00:00.000Z' }).payload;
+  const evidence = objEvidence('r-oct3', 'paper-a', { correct: true, time: '2026-10-03T09:00:00.000Z' });
   const done = await e.store.completeSession({ evidenceOps: [putOp(e.spec('learner_response'), evidence.id, evidence)], session: { collection: 'learner_response', id: evidence.id }, slot: slotA });
   assert.deepEqual(done.fulfilled, { scheduleId: a.id, originalDate: '2026-10-03', via: 'slot-match' });
   e.clock.set('2026-10-04');
@@ -333,7 +333,7 @@ test('property: random operation sequences never violate the scheduling invarian
         else if (act === 'cancel' && active) await e.store.cancel(active.id, rnd() < 0.5 ? { originalDate: pick(days) } : {});
         else if (act === 'complete') {
           n += 1;
-          const ev = objResp(`pr-${n}`, slot.material.id, { q1: rnd() < 0.5 }, { time: `${e.clock.today()}T08:${String(10 + (n % 50)).padStart(2, '0')}:00.000Z` }).payload;
+          const ev = objEvidence(`pr-${n}`, slot.material.id, { correct: rnd() < 0.5, time: `${e.clock.today()}T08:${String(10 + (n % 50)).padStart(2, '0')}:00.000Z` });
           await e.store.completeSession({ evidenceOps: [putOp(e.spec('learner_response'), ev.id, ev)], session: { collection: 'learner_response', id: ev.id }, slot, ...(active && rnd() < 0.5 ? { scheduleRef: { scheduleId: active.id, originalDate: pick(days) } } : {}) });
         } else if (act === 'evidence') {
           n += 1;

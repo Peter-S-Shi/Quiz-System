@@ -7,9 +7,10 @@
 
 import { domainOfMaterialType, materialKey, readObjective, readRecovery, readScheduling, readTeacherReview, readTranslation, readTyping } from './readers.js';
 
-export const ALGORITHM_VERSION = 'v1';
+/** `v2` activates the Typing Reader (ADR 0004 section 9.3); output for a snapshot without Typing rows equals `v1` modulo this label. */
+export const ALGORITHM_VERSION = 'v2';
 
-/** The closed reason registry (v1). `unknown`, `uncertain` and `should_know` stay three codes, never merged. */
+/** The closed reason registry (v2). `unknown`, `uncertain` and `should_know` stay three codes, never merged. */
 export const REASON_CODES = [
   'SCHEDULED_REVIEW_OVERDUE',
   'LEARNER_SCHEDULED_OVERDUE',
@@ -23,9 +24,8 @@ export const REASON_CODES = [
   'OBJECTIVE_INCORRECT_LATEST',
   'TEACHER_ACTIONABLE_REVIEW',
   'SUCCESSFUL_RECOVERY',
-  // reserved for the Typing integration (Scope 12.5); never produced without a Typing Reader
+  // produced only by the Typing Reader, only from typing_attempt (ADR 0004 section 9); TYPING_REVISIT_DUE is deliberately not introduced
   'TYPING_ERRORS_REMAIN',
-  'TYPING_REVISIT_DUE',
 ];
 
 /** Presentation groups (ADR 0003 section 12.3 tiers 1-3), named rather than numbered. */
@@ -40,9 +40,8 @@ const GROUP_OF = {
   LEARNER_UNKNOWN: 1,
   LEARNER_UNCERTAIN: 1,
   LEARNER_SHOULD_KNOW: 1,
-  TYPING_ERRORS_REMAIN: 1,
-  TYPING_REVISIT_DUE: 1,
   OBJECTIVE_INCORRECT_LATEST: 2,
+  TYPING_ERRORS_REMAIN: 2,
   TEACHER_ACTIONABLE_REVIEW: 2,
 };
 const ITEM_CODES = new Set(['OBJECTIVE_INCORRECT_REPEATED', 'OBJECTIVE_INCORRECT_LATEST', 'LEARNER_UNKNOWN', 'LEARNER_UNCERTAIN', 'LEARNER_SHOULD_KNOW', 'TEACHER_ACTIONABLE_REVIEW']);
@@ -145,8 +144,7 @@ const TEXT = {
     OBJECTIVE_INCORRECT_LATEST: 'Answered incorrectly in the latest recorded attempt.',
     TEACHER_ACTIONABLE_REVIEW: 'A teacher review judged part of this incorrect, partial or in need of review.',
     SUCCESSFUL_RECOVERY: 'A later retry recorded a successful recovery.',
-    TYPING_ERRORS_REMAIN: 'Typing errors remain in the latest attempt.',
-    TYPING_REVISIT_DUE: 'A typing revisit is due.',
+    TYPING_ERRORS_REMAIN: 'The latest copy of this text still had typing differences.',
   },
   'zh-CN': {
     SCHEDULED_REVIEW_OVERDUE: '已排定的复习已逾期。',
@@ -161,8 +159,7 @@ const TEXT = {
     OBJECTIVE_INCORRECT_LATEST: '最近一次已记录的作答中答错。',
     TEACHER_ACTIONABLE_REVIEW: '老师的评阅认为其中一部分错误、部分正确或需要复查。',
     SUCCESSFUL_RECOVERY: '之后的重做记录了成功恢复。',
-    TYPING_ERRORS_REMAIN: '最近一次打字仍有错误。',
-    TYPING_REVISIT_DUE: '打字复习到期。',
+    TYPING_ERRORS_REMAIN: '这段文字最近一次抄写仍有打字差异。',
   },
 };
 

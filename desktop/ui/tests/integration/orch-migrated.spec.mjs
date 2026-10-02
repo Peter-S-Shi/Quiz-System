@@ -29,9 +29,10 @@ async function migratedEnv() {
 const run = (fn) => async () => { const e = await migratedEnv(); try { await fn(e); } finally { await e.close(); } };
 const codesOf = (recs, id) => recs.find((r) => r.target.material.id === id)?.reasons.map((x) => x.code) ?? null;
 
-test('schema 2 -> 3: a migrated store upgrades with every record verbatim, empty scheduling collections and a clean consistency check', run(async (e) => {
+test('schema 2 -> 4 (the shipped catalog): a migrated store upgrades with every record verbatim, empty scheduling and typing collections and a clean consistency check', run(async (e) => {
   const info = await e.port.schemaInfo();
-  assert.equal(info.store.userVersion, 3);
+  assert.equal(info.store.userVersion, 4);
+  for (const c of ['typing_text', 'typing_attempt']) assert.equal(await e.port.count(c), 0, `${c}: a V1 import never produces Typing rows (gap v2.typing)`);
   for (const c of ['schedule', 'schedule_exception', 'schedule_fulfillment', 'schedule_suggestion', 'session_selection']) assert.equal(await e.port.count(c), 0, c);
   const check = await e.port.checkConsistency();
   assert.equal(check.quickCheckOk, true);
@@ -39,6 +40,8 @@ test('schema 2 -> 3: a migrated store upgrades with every record verbatim, empty
   const [lr] = await e.port.read('learner_response', { id: 'lr-obj-1' });
   assert.deepEqual(lr.payload, FIXTURE.learnerResponses[0], 'verbatim carry survives the upgrade');
   assert.ok((await e.port.count('migration_origin')) > 10);
+  const gaps = (await e.port.read('migration_origin')).flatMap((o) => o.payload.gaps ?? []);
+  assert.ok(gaps.includes('v2.typing'), 'migrated records still carry the v2.typing gap: V1 recorded no typing, so nothing is inferred');
 }));
 
 test('unknown is not negative: a migrated store yields no recovery, retry, scheduling or Typing signal, and twin history never counts', run(async (e) => {

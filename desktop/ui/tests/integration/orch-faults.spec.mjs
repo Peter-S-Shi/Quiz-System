@@ -4,50 +4,13 @@
 // Scale: QS_ORCH_KILLS (random kills, default 8; CI 100).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
-import { fixedClock } from '../../web/src/orchestration/dates.js';
 import { loadSnapshot } from '../../web/src/orchestration/readers.js';
 import { recommend, selectionProvenance } from '../../web/src/orchestration/recommend.js';
-import { ScheduleStore } from '../../web/src/orchestration/schedule-store.js';
 import { putOp } from '../../web/src/projection.js';
-import { objResp } from '../orch-fixtures.mjs';
-import { collectionsDigest, counterIds, openBridge, scenario, tempRoot } from './bridge.mjs';
-import { EVIDENCE, PAPERS, SCHED, every3, hard, paperPayload, slotA, slotB } from './env.mjs';
-
-const TODAY = '2026-10-02';
-const ALL = [...SCHED, ...EVIDENCE];
-const ref = (id) => ({ collection: 'learner_response', id });
-
-async function session(root, { env = {}, prefix = 'op' } = {}) {
-  const b = openBridge(root, { env });
-  const clock = fixedClock(TODAY);
-  const store = await ScheduleStore.open(b.port, { clock, newId: counterIds(prefix) });
-  const info = await b.port.schemaInfo();
-  const spec = (n) => info.collections.find((c) => c.name === n);
-  const putEvidence = (payload) => b.port.commit({ ops: [putOp(spec('learner_response'), payload.id, payload)] });
-  return { b, store, clock, port: b.port, spec, putEvidence };
-}
-
-async function prepared(prep) {
-  const t = tempRoot();
-  const s = await session(t.root, { prefix: 'prep' });
-  await s.b.port.commit({ ops: PAPERS.map((id) => putOp(s.spec('paper'), id, paperPayload(id))) });
-  await prep(s);
-  await s.b.close();
-  return t;
-}
-
-const clone = (t) => {
-  const dir = fs.mkdtempSync(path.join(path.dirname(t.dir), 'qs-orch-clone-'));
-  fs.cpSync(t.dir, dir, { recursive: true });
-  return { dir, root: path.join(dir, 'qs-data'), cleanup: () => fs.rmSync(dir, { recursive: true, force: true }) };
-};
-
-async function digestOf(root) {
-  const s = await session(root);
-  try { return await collectionsDigest(s.port, ALL); } finally { await s.b.close(); }
-}
+import { collectionsDigest, openBridge, scenario, tempRoot } from './bridge.mjs';
+import { SCHED, every3, hard, objEvidence, slotA, slotB } from './env.mjs';
+import { ALL, TODAY, clone, digestOf, prepared, ref, session } from './faults-kit.mjs';
 
 // One scenario per tagged operation: how to reach the state, and the operation itself.
 const withSuggestion = async (s) => {
@@ -138,7 +101,7 @@ async function chaos(s, rnd) {
       else if (act === 'cancel' && active) await s.store.cancel(active.id);
       else if (act === 'complete') {
         n += 1;
-        const ev = objResp(`k-${Math.floor(rnd() * 1e9)}-${n}`, slot.material.id, { q1: rnd() < 0.5 }, { time: `2026-10-02T08:${String(10 + (n % 50)).padStart(2, '0')}:00.000Z` }).payload;
+        const ev = objEvidence(`k-${Math.floor(rnd() * 1e9)}-${n}`, slot.material.id, { correct: rnd() < 0.5, time: `2026-10-02T08:${String(10 + (n % 50)).padStart(2, '0')}:00.000Z` });
         await s.store.completeSession({ evidenceOps: [putOp(s.spec('learner_response'), ev.id, ev)], session: ref(ev.id), slot, ...(active && rnd() < 0.5 ? { scheduleRef: { scheduleId: active.id, originalDate: pick(days) } } : {}) });
       } else if (act === 'sweep') await s.store.sweep();
       else if (act === 'evidence') { n += 1; await s.putEvidence(hard(`e-${Math.floor(rnd() * 1e9)}-${n}`, slot.material.id, `2026-10-01T0${n % 10}:00:00.000Z`)); }

@@ -3,11 +3,11 @@ import { fixedClock } from '../../web/src/orchestration/dates.js';
 import { ScheduleStore } from '../../web/src/orchestration/schedule-store.js';
 import { COLLECTIONS } from '../../web/src/orchestration/schema.js';
 import { putOp } from '../../web/src/projection.js';
-import { objResp } from '../orch-fixtures.mjs';
+import { nativeObjective } from '../task-fixtures.mjs';
 import { collectionsDigest, counterIds, openBridge, tempRoot } from './bridge.mjs';
 
 export const SCHED = Object.values(COLLECTIONS);
-export const EVIDENCE = ['learner_response', 'teacher_review', 'legacy_history_entry'];
+export const EVIDENCE = ['learner_response', 'teacher_review', 'legacy_history_entry', 'typing_attempt', 'typing_text'];
 export const slotA = { domain: 'objective', material: { type: 'quiz-paper', id: 'paper-a' }, intent: 'practice' };
 export const slotB = { domain: 'objective', material: { type: 'quiz-paper', id: 'paper-b' }, intent: 'practice' };
 export const every3 = { kind: 'every', unit: 'day', interval: 3 };
@@ -43,5 +43,7 @@ export const hook = (port, onFirstCommit) => {
 export const tagIs = (tag) => (uow) => uow.tag === tag;
 
 // A native (V2) difficult session: one incorrect objective item at a recorded time.
-export const hard = (id, paper = 'paper-a', time = '2026-10-01T10:00:00.000Z') => objResp(id, paper, { q1: false }, { time }).payload;
+export const hard = (id, paper = 'paper-a', time = '2026-10-01T10:00:00.000Z') => nativeObjective(id, paper, { wrong: ['q1'], items: ['q1'], time });
+/** A native Objective session of either result and intent (one item q1). */
+export const objEvidence = (id, paper, { correct = false, time = '2026-10-01T10:00:00.000Z', intent = 'practice' } = {}) => nativeObjective(id, paper, { wrong: correct ? [] : ['q1'], items: ['q1'], time, intent, feedbackTiming: intent === 'test' ? 'submit-at-end' : 'instant' });
 

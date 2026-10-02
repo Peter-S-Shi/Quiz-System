@@ -7,11 +7,11 @@ import { loadSnapshot } from '../../web/src/orchestration/readers.js';
 import { recommend, selectionProvenance } from '../../web/src/orchestration/recommend.js';
 import { putOp } from '../../web/src/projection.js';
 import { objResp } from '../orch-fixtures.mjs';
-import { every3, hard, slotA, slotB, withEnv } from './env.mjs';
+import { every3, hard, objEvidence, slotA, slotB, withEnv } from './env.mjs';
 
 const ref = (id) => ({ collection: 'learner_response', id });
 async function complete(e, id, extra = {}, { slot = slotA, evidence } = {}) {
-  const ev = evidence ?? hard(id, slot.material.id, `${e.clock.today()}T09:00:00.000Z`);
+  const ev = evidence ?? objEvidence(id, slot.material.id, { time: `${e.clock.today()}T09:00:00.000Z`, intent: slot.intent });
   return e.store.completeSession({ evidenceOps: [putOp(e.spec('learner_response'), ev.id, ev)], session: ref(ev.id), slot, ...extra });
 }
 const states = async (e, scheduleId, from, to) => {
@@ -50,6 +50,11 @@ test('intent, domain and material must match the slot; ended series fulfill noth
   assert.equal((await complete(e, 'r-other', {}, { slot: slotB })).fulfilled, null);
   const wrongRef = await complete(e, 'r-wrong-ref', { scheduleRef: { scheduleId: a.id, originalDate: '2026-10-02' } }, { slot: testSlot });
   assert.equal(wrongRef.fulfilled, null, 'a link to a schedule of another slot fulfills nothing');
+  // the slot is DERIVED from the evidence: a caller cannot claim another slot for a record (ADR 0004 section 5.4)
+  const digestBefore = await e.digest(['learner_response', 'schedule_fulfillment', 'session_selection']);
+  const liar = hard('r-liar', 'paper-a');
+  await assert.rejects(e.store.completeSession({ evidenceOps: [putOp(e.spec('learner_response'), liar.id, liar)], session: ref(liar.id), slot: slotB }), (err) => err.code === 'SLOT_MISMATCH');
+  assert.equal(await e.digest(['learner_response', 'schedule_fulfillment', 'session_selection']), digestBefore, 'a mismatching slot writes nothing');
   assert.equal((await e.rows('schedule_fulfillment')).length, 0);
   await e.store.cancel(a.id);
   assert.equal((await complete(e, 'r-after-cancel')).fulfilled, null);
@@ -75,11 +80,12 @@ test('one session fulfills at most one occurrence (database-enforced) and finali
   const evBefore = await e.digest(['learner_response']);
   // re-submitting the same finalized session is refused before anything is written
   await assert.rejects(complete(e, 'r-1'), (err) => err.code === 'SESSION_ALREADY_RECORDED');
-  // a DIFFERENT evidence record that claims the SAME session would satisfy a second occurrence: the database refuses it
+  // a DIFFERENT evidence record that claims the SAME session would satisfy a second occurrence: refused
+  // (the seam makes that unreachable: the session must reference the very evidence being created)
   const other = hard('r-2', 'paper-a', '2026-10-08T09:00:00.000Z');
   await assert.rejects(
     e.store.completeSession({ evidenceOps: [putOp(e.spec('learner_response'), other.id, other)], session: ref('r-1'), slot: slotA }),
-    (err) => err.code === 'REJECT_CONSTRAINT',
+    (err) => err.code === 'BAD_EVIDENCE_OPS',
   );
   assert.equal(await e.digest(), before);
   assert.equal(await e.digest(['learner_response']), evBefore, 'the evidence write of the rejected Unit of Work rolled back too');

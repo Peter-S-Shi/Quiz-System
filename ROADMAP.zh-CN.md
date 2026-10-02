@@ -396,7 +396,7 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 6. 创建正式 V2 开发分支 `v2`，随后开始 Desktop Foundation。**分支已创建；Desktop Foundation 已验收（Human Gate PASS）**（[里程碑记录](docs/V2_DESKTOP_FOUNDATION.zh-CN.md)；Windows CI 绿色；D1–D4 保持为不阻塞的打包/手动验收欠账）。
 7. V1 Migration ADR（[ADR 0002](docs/adr/0002-v1-to-v2-migration-architecture.md)）。**已验收 —— GO WITH AMENDMENT**（Human Gate，2026-10-02）；仅文档。
 8. V1 Migration 里程碑（实现）。**已验收（Human Gate PASS）**（[记录](docs/V2_MIGRATION.zh-CN.md)；手动打包检查 M1–M7 与 Desktop Foundation 的 D1–D4 继续保持 open、不阻塞、未通过、未豁免）。
-9. Scheduler / Recommendation / Calendar ADR（[ADR 0003](docs/adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)）。**ACCEPTED — GO WITH AMENDMENT**；仅文档。10. Learning Orchestration + Calendar 实现里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_ORCHESTRATION.zh-CN.md)；Windows CI 与 ADR 0003 §17 证据见该文档；按设计没有产品 UI）。11. Task-Domain Integration 与 Typing Evidence Contract ADR（[ADR 0004](docs/adr/0004-task-domain-integration-and-typing-evidence-contract.md)）。**ACCEPTED — GO WITH AMENDMENT**（固定版本的比较语义；单一 committed-text 输入路径；不做 Typing 自动排程）；仅文档。12. Task-Domain Integration 实现（Objective / Translation / Typing）。**未开始 —— 等待明确授权。**
+9. Scheduler / Recommendation / Calendar ADR（[ADR 0003](docs/adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)）。**ACCEPTED — GO WITH AMENDMENT**；仅文档。10. Learning Orchestration + Calendar 实现里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_ORCHESTRATION.zh-CN.md)；Windows CI 与 ADR 0003 §17 证据见该文档；按设计没有产品 UI）。11. Task-Domain Integration 与 Typing Evidence Contract ADR（[ADR 0004](docs/adr/0004-task-domain-integration-and-typing-evidence-contract.md)）。**ACCEPTED — GO WITH AMENDMENT**（固定版本的比较语义；单一 committed-text 输入路径；不做 Typing 自动排程）；仅文档。12. Task-Domain Integration 实现里程碑（Objective / Translation / Typing）。**实现完成 —— 等待 Human Gate**（[记录](docs/V2_TASK_DOMAINS.zh-CN.md)；Windows CI 与 ADR 0004 §13 证据见该文档；按设计没有产品 UI）。
 
 ## 维护 / 下一版本
 
@@ -430,4 +430,4 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 4. 完成 Milestone 7 Product Hardening。**已完成。**
 5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
 6. 候选版本已接受（`v1.0.0-rc.1`），V1 发布元数据已定版（`1.0.0`），V1 发布线进入维护保留状态。**当前 V1 生命周期状态。**
-7. V2 Desktop Foundation（架构验证已完成且已通过 Desktop Architecture Gate；正式 V2 开发分支 `v2` 已创建；Desktop Foundation 已验收；ADR 0002 已验收；V1 Migration 里程碑已验收；ADR 0003 已验收；Learning Orchestration + Calendar 里程碑已验收；ADR 0004 已验收；Task-Domain Integration 实现未开始，等待明确授权）。**当前 V2 状态** —— 见上文“当前 V2 路线”。
+7. V2 Desktop Foundation（架构验证已完成且已通过 Desktop Architecture Gate；正式 V2 开发分支 `v2` 已创建；Desktop Foundation 已验收；ADR 0002 已验收；V1 Migration 里程碑已验收；ADR 0003 已验收；Learning Orchestration + Calendar 里程碑已验收；ADR 0004 已验收；Task-Domain Integration 里程碑已实现，等待 Human Gate）。**当前 V2 状态** —— 见上文“当前 V2 路线”。

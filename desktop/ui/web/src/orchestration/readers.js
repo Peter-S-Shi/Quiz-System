@@ -14,12 +14,12 @@
 import { expandOccurrences, isUnresolved } from './occurrences.js';
 
 /** The closed Evidence Source Registry (adding a source needs an ADR amendment). */
-export const EVIDENCE_SOURCES = ['learner_response', 'teacher_review', 'legacy_history_entry'];
+export const EVIDENCE_SOURCES = ['learner_response', 'teacher_review', 'legacy_history_entry', 'typing_attempt'];
 
 export const ACTIONABLE_JUDGMENTS = ['incorrect', 'partial', 'needs-review'];
 const LEARNER_KINDS = { unknown: 'LEARNER_UNKNOWN', uncertain: 'LEARNER_UNCERTAIN', should_know: 'LEARNER_SHOULD_KNOW' };
 
-export const domainOfMaterialType = (type) => (type === 'quiz-paper' ? 'objective' : type === 'translation-document' ? 'translation' : null);
+export const domainOfMaterialType = (type) => (type === 'quiz-paper' ? 'objective' : type === 'translation-document' ? 'translation' : type === 'typing-text' ? 'typing' : null);
 export const materialKey = (m) => `${m.type}|${m.id}`;
 const byId = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 const refKey = (r) => `${r.collection}|${r.id}|${r.itemId ?? ''}`;
@@ -220,12 +220,35 @@ export function readScheduling(snapshot, today) {
   return { signals, notes };
 }
 
-/** Typing is a reserved Task Domain: its Reader arrives with the Typing integration (ADR 0003 section 12.1). */
-export function readTyping() {
-  return [];
+// ---------------------------------------------------------------------------------------------------- Typing
+/**
+ * The Typing Reader (ADR 0004 section 9.2). It reads `typing_attempt` and NOTHING else: a typing difference is
+ * transcription evidence about a Typing Text, never a knowledge judgment (Scope 4.8), so no Objective, Translation or
+ * Teacher signal can come from here and none of those can reach a Typing target. For each Typing Text only the LATEST
+ * finalized attempt speaks (ordering by recorded completion, ties by id; two attempts that cannot be ordered are
+ * unknown, rule 3): `TYPING_ERRORS_REMAIN` when it still has recorded differences. No count, no number.
+ */
+export function readTyping(snapshot) {
+  const byMaterial = new Map();
+  for (const a of snapshot.typingAttempts ?? []) {
+    const p = a.payload;
+    if (p?.material?.type !== 'typing-text' || typeof p.material.id !== 'string') continue;
+    if (!byMaterial.has(p.material.id)) byMaterial.set(p.material.id, []);
+    byMaterial.get(p.material.id).push({ id: a.id, time: recordTime(p), payload: p });
+  }
+  const signals = [];
+  for (const [materialId, list] of byMaterial) {
+    const latest = latestOf(list);
+    if (latest.unknown) continue;
+    const p = latest.item.payload;
+    if (Array.isArray(p.errors) && p.errors.length > 0) {
+      signals.push(sig('TYPING_ERRORS_REMAIN', { type: 'typing-text', id: materialId }, [{ collection: 'typing_attempt', id: latest.item.id }]));
+    }
+  }
+  return signals;
 }
 
-/** `(slot) => boolean`: does the slot's material still exist? Unknown material types (Typing, reserved) count as available. */
+/** `(slot) => boolean`: does the slot's material still exist? Unknown material types count as available. */
 export function materialAvailability(snapshot) {
   return (slot) => {
     const known = snapshot.materials?.[slot.material.type];
@@ -242,6 +265,7 @@ export function evidenceIdsForMaterial(snapshot, material) {
     const resp = responses.get(rv.payload.responseId);
     if (resp?.payload.material?.type === material.type && resp.payload.material.id === material.id) ids.push({ collection: 'teacher_review', id: rv.id });
   }
+  for (const a of snapshot.typingAttempts ?? []) if (material.type === 'typing-text' && a.payload?.material?.type === 'typing-text' && a.payload.material.id === material.id) ids.push({ collection: 'typing_attempt', id: a.id });
   if (material.type === 'quiz-paper') {
     for (const h of snapshot.history) if (h.payload.role === 'legacy-only' && h.payload.entry?.paperId === material.id) ids.push({ collection: 'legacy_history_entry', id: h.id });
   }
@@ -257,13 +281,15 @@ const readAll = async (port, collection, query = {}) => (await port.read(collect
 
 /** Load everything the Readers need through the Store Port (read-only). */
 export async function loadSnapshot(port) {
-  const [responses, reviews, history, origins, papers, documents, schedules, exceptions, fulfillments, suggestions] = await Promise.all([
+  const [responses, reviews, history, origins, papers, documents, typingAttempts, typingTexts, schedules, exceptions, fulfillments, suggestions] = await Promise.all([
     readAll(port, 'learner_response'),
     readAll(port, 'teacher_review'),
     readAll(port, 'legacy_history_entry'),
     readAll(port, 'migration_origin'),
     readAll(port, 'paper'),
     readAll(port, 'translation_document'),
+    readAll(port, 'typing_attempt'),
+    readAll(port, 'typing_text'),
     readAll(port, 'schedule'),
     readAll(port, 'schedule_exception'),
     readAll(port, 'schedule_fulfillment'),
@@ -274,8 +300,9 @@ export async function loadSnapshot(port) {
     responses: sortById(responses),
     reviews: sortById(reviews),
     history: sortById(history),
+    typingAttempts: sortById(typingAttempts),
     origins: originMap,
-    materials: { 'quiz-paper': new Set(papers.map((p) => p.id)), 'translation-document': new Set(documents.map((d) => d.id)) },
+    materials: { 'quiz-paper': new Set(papers.map((p) => p.id)), 'translation-document': new Set(documents.map((d) => d.id)), 'typing-text': new Set(typingTexts.map((t) => t.id)) },
     schedules: sortById(schedules).map((s) => ({
       rev: s.rev,
       payload: s.payload,

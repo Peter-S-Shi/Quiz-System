@@ -1,2 +1,8 @@
 *.bat text eol=crlf
 desktop/ui/tests/fixtures/*.golden.json text eol=lf
+
+# typing/unicode conformance and replay fixtures must stay byte-stable
+desktop/ui/tests/fixtures/**/*.json text eol=lf
+desktop/ui/tests/fixtures/**/*.txt text eol=lf
+desktop/ui/tests/fixtures/**/*.gz binary
+desktop/ui/web/src/task-domains/unicode/data.js text eol=lf

@@ -8,6 +8,8 @@ core/store       catalog-driven SQLite store, canonical JSON, Unit of Work, proj
 core/media       immutable content-addressed media
 core/activation  staging, validation, atomic activation, rollback, journal recovery
 core/archive     V2 backup archive (zip + SHA-256 manifest)
+core/orchestration  Learning Orchestration persistence (store schema 3, ADR 0003)
+core/task_domains   Task-Domain Integration persistence (store schema 4: typing_text, typing_attempt, ADR 0004)
 core/port        runtime-neutral Store Port, health gate, offline recovery, self-test
 core/testkit     (test only) synthetic catalogs and data
 core/scenarios   (test only) child-process fault/crash scenarios
@@ -74,3 +76,5 @@ quiz-studio.exe --identity                 # prints the permanent identifier and
 ## Learning Orchestration
 
 `core/orchestration` (`qs-orchestration`, store schema 3) and the pure JS/TS domain in `ui/web/src/orchestration` implement ADR 0003; see [`docs/V2_ORCHESTRATION.md`](../docs/V2_ORCHESTRATION.md). Suites: `cargo test -p qs-orchestration`, `node --test "ui/tests/*.spec.mjs"` (pure) and `node --test "ui/tests/integration/*.spec.mjs"` (the JS domain against the real Rust store through `qs-scenario port-serve`; `QS_ORCH_KILLS`, `QS_ORCH_SEQUENCES`).
+
+`core/task_domains` (`qs-task-domains`, store schema 4) and the pure JS domain in `ui/web/src/task-domains` implement ADR 0004 (Objective / Translation / Typing finalization, the Typing evidence and the project-controlled `typing-compare/1`); see [`docs/V2_TASK_DOMAINS.md`](../docs/V2_TASK_DOMAINS.md). Suites: `cargo test -p qs-task-domains`, the same two `node --test` globs; `node ui/tools/gen-unicode-data.mjs` regenerates the pinned Unicode tables (inputs under `ui/tools/ucd-cache/`, not committed).

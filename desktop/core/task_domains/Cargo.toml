@@ -1,0 +1,18 @@
+[package]
+name = "qs-task-domains"
+description = "Task-Domain Integration persistence (ADR 0004): store schema 4, the typing_text and typing_attempt collections"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+qs-store.workspace = true
+qs-orchestration.workspace = true
+
+[dev-dependencies]
+qs-platform.workspace = true
+qs-archive.workspace = true
+qs-testkit.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true

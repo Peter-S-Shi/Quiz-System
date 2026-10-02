@@ -1,0 +1,176 @@
+[
+  {
+    "target": {
+      "domain": "translation",
+      "material": {
+        "type": "translation-document",
+        "id": "doc-1"
+      },
+      "focus": [
+        {
+          "itemId": "ti-1"
+        },
+        {
+          "itemId": "ti-2"
+        }
+      ]
+    },
+    "group": "overdue-or-remediation",
+    "reasons": [
+      {
+        "code": "LEARNER_SCHEDULED_OVERDUE",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "schedule",
+            "id": "s2"
+          }
+        ]
+      },
+      {
+        "code": "REMEDIATION_UNRESOLVED",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "teacher_review",
+            "id": "tr-1"
+          }
+        ]
+      },
+      {
+        "code": "LEARNER_UNKNOWN",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "learner_response",
+            "id": "lr-t",
+            "itemId": "ti-1"
+          }
+        ]
+      },
+      {
+        "code": "LEARNER_SHOULD_KNOW",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "learner_response",
+            "id": "lr-t",
+            "itemId": "ti-2"
+          }
+        ]
+      },
+      {
+        "code": "TEACHER_ACTIONABLE_REVIEW",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "teacher_review",
+            "id": "tr-1",
+            "itemId": "ti-1"
+          }
+        ]
+      }
+    ],
+    "scheduling": {
+      "scheduleId": "s2",
+      "state": "overdue"
+    },
+    "algorithmVersion": "v1"
+  },
+  {
+    "target": {
+      "domain": "objective",
+      "material": {
+        "type": "quiz-paper",
+        "id": "paper-a"
+      },
+      "focus": [
+        {
+          "itemId": "q1"
+        }
+      ]
+    },
+    "group": "due-or-learner-flagged",
+    "reasons": [
+      {
+        "code": "SCHEDULED_REVIEW_DUE",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "schedule",
+            "id": "s1"
+          }
+        ]
+      },
+      {
+        "code": "OBJECTIVE_INCORRECT_REPEATED",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "learner_response",
+            "id": "r1",
+            "itemId": "q1"
+          },
+          {
+            "collection": "learner_response",
+            "id": "r2",
+            "itemId": "q1"
+          }
+        ]
+      },
+      {
+        "code": "OBJECTIVE_INCORRECT_LATEST",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "learner_response",
+            "id": "r2",
+            "itemId": "q1"
+          }
+        ]
+      }
+    ],
+    "scheduling": {
+      "scheduleId": "s1",
+      "state": "due"
+    },
+    "algorithmVersion": "v1"
+  },
+  {
+    "target": {
+      "domain": "objective",
+      "material": {
+        "type": "quiz-paper",
+        "id": "paper-b"
+      },
+      "focus": [
+        {
+          "itemId": "q1"
+        },
+        {
+          "itemId": "q9"
+        }
+      ]
+    },
+    "group": "incorrect-or-teacher-flagged",
+    "reasons": [
+      {
+        "code": "OBJECTIVE_INCORRECT_LATEST",
+        "params": {},
+        "provenance": [
+          {
+            "collection": "learner_response",
+            "id": "r3",
+            "itemId": "q1"
+          },
+          {
+            "collection": "legacy_history_entry",
+            "id": "h1",
+            "itemId": "q9"
+          }
+        ]
+      }
+    ],
+    "algorithmVersion": "v1"
+  }
+]

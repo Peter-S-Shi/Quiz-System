@@ -41,8 +41,9 @@ export const history = (id, role, paperId, { missed = [], results } = {}) => ({
 export function snap(parts = {}) {
   return {
     responses: parts.responses ?? [], reviews: parts.reviews ?? [], history: parts.history ?? [],
+    typingAttempts: parts.typing ?? [],
     origins: new Map((parts.migrated ?? []).map(([collection, id, gaps = []]) => [`${collection}:${id}`, { collection, recordId: id, gaps }])),
-    materials: { 'quiz-paper': new Set(parts.papers ?? ['paper-a', 'paper-b']), 'translation-document': new Set(parts.docs ?? ['doc-1', 'doc-2']) },
+    materials: { 'quiz-paper': new Set(parts.papers ?? ['paper-a', 'paper-b']), 'translation-document': new Set(parts.docs ?? ['doc-1', 'doc-2']), 'typing-text': new Set(parts.texts ?? ['typing-1']) },
     schedules: parts.schedules ?? [],
   };
 }

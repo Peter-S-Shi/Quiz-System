@@ -2812,6 +2812,7 @@ dependencies = [
  "qs-orchestration",
  "qs-platform",
  "qs-store",
+ "qs-task-domains",
  "qs-testkit",
  "rusqlite",
  "serde",
@@ -2852,6 +2853,19 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "tempfile",
+]
+
+[[package]]
+name = "qs-task-domains"
+version = "2.0.0-dev.0"
+dependencies = [
+ "qs-archive",
+ "qs-orchestration",
+ "qs-platform",
+ "qs-store",
+ "qs-testkit",
+ "serde_json",
  "tempfile",
 ]
 
