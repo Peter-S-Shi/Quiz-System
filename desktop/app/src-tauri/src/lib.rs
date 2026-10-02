@@ -13,7 +13,7 @@ use serde_json::{json, Value};
 use state::AppState;
 use tauri::{Manager, State};
 
-/// The ONLY WebView entry into the core: the allowlist, dispatch and path scrubbing live in
+/// The ONLY WebView entry into the core: the allowlist, dispatch and diagnostic sanitization live in
 /// `qs_port::webview` so the boundary is unit-tested without Tauri.
 #[tauri::command]
 fn port(state: State<'_, AppState>, command: String, args: Value) -> Value {
@@ -26,7 +26,7 @@ fn port(state: State<'_, AppState>, command: String, args: Value) -> Value {
 /// Boot status for the UI: ready, or failed with the reason and the snapshots that could restore it.
 #[tauri::command]
 fn app_status(state: State<'_, AppState>) -> Value {
-    state.scrubbed(state.status_json())
+    state.status_json()
 }
 
 /// The UI reports that it rendered and talked to the core (diagnostics + CI smoke evidence).
@@ -40,7 +40,7 @@ fn ui_ready(state: State<'_, AppState>, info: Value) -> Value {
 #[tauri::command]
 fn recovery_restore_snapshot(state: State<'_, AppState>, name: String) -> Value {
     let r = state.recover_from_snapshot(&name);
-    state.scrubbed(r)
+    state.sanitized(r)
 }
 
 /// Run the foundation proof against an isolated temp root and write the JSON report. Never touches user data.

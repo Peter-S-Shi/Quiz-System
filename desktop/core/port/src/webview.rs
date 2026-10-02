@@ -1,11 +1,16 @@
 //! The WebView-facing surface of the Store Port.
 //!
-//! Boundary rules (ADR 0001 sections 4 and 8):
+//! Structured boundary contract (ADR 0001 sections 4 and 8):
 //! * the WebView may call only [`ALLOWLIST`] - commands that carry no filesystem path and cannot trigger
 //!   filesystem maintenance (media GC is Rust-owned and runs under a fixed safety policy);
-//! * no response that crosses into the WebView may contain an absolute/local filesystem path. Responses
-//!   are built path-free, and [`scrub`] is a defense-in-depth pass that redacts any path that slips into an
-//!   error message.
+//! * **system-generated results are path-free by construction** (`schema.info`, `media.locate`, native
+//!   media/backup results, snapshot names, ...) and are tested to be so - they are never post-processed;
+//! * **canonical/domain content is never rewritten.** `store.read` payloads, projections and user-authored
+//!   text that merely *looks* like a path (`C:\Windows\System32`, `/home/alice/file`, `\\server\share`)
+//!   round-trip losslessly;
+//! * the only text sanitized is the system-generated diagnostic: `error.message` of a failure envelope (and
+//!   the same field where the app builds boot/recovery status), so an internal path in an I/O or database
+//!   error can never leak.
 
 use crate::Core;
 use serde_json::{json, Value};
@@ -23,13 +28,13 @@ pub const ALLOWLIST: &[&str] = &[
     "snapshots.restore",
 ];
 
-/// Dispatch a WebView request: allowlist check, then the command, then path scrubbing of the envelope.
+/// Dispatch a WebView request: allowlist check, then the command, then diagnostic sanitization of a failure.
 pub fn dispatch(core: &Core, command: &str, args: &Value) -> Value {
     if !ALLOWLIST.contains(&command) {
         return json!({"ok": false, "error": {"code": "REJECT_SHAPE", "message": format!("command '{command}' is not available to the WebView")}});
     }
     let mut out = core.dispatch(command, args);
-    scrub(&mut out, &core.root().path().display().to_string());
+    sanitize_envelope(&mut out, &core.root().path().display().to_string());
     out
 }
 
@@ -38,56 +43,99 @@ pub fn media_ingest_result(id: &str, hash: &str, size: u64, name: &str, mime: &s
     json!({"ok": true, "result": {"id": id, "hash": hash, "size": size, "name": name, "mimeType": mime, "deduplicated": deduplicated}})
 }
 
-fn token_is_abs_path(tok: &str) -> bool {
-    let t = tok.trim_matches(|c: char| matches!(c, '"' | '\'' | '(' | ')' | '[' | ']' | ',' | ';' | ':' | '<' | '>'));
-    let b = t.as_bytes();
-    t.starts_with(r"\\") // UNC and \\?\ verbatim
-        || t.starts_with("/Users/")
-        || t.starts_with("/home/")
-        || (b.len() >= 3 && b[0].is_ascii_alphabetic() && b[1] == b':' && (b[2] == b'\\' || b[2] == b'/'))
+const UNIX_ROOTS: &[&str] = &["/Users/", "/home/", "/tmp/", "/var/", "/etc/", "/mnt/", "/root/", "/opt/", "/usr/"];
+
+fn prev_blocks_path_start(prev: Option<char>) -> bool {
+    prev.is_some_and(|c| c.is_alphanumeric() || c == '.' || c == '_' || c == '-')
 }
 
-fn tokens(s: &str) -> impl Iterator<Item = &str> {
-    s.split(|c: char| c.is_whitespace())
+/// Byte spans of absolute/local filesystem paths inside a diagnostic string: drive paths (`C:\..`, `C:/..`,
+/// spaces allowed), UNC and verbatim paths (`\\server\share`, `\\?\C:\..`), and common Unix roots. A path
+/// extends to the first character that cannot be part of one in a diagnostic (a quote, `<>|*?`, a line
+/// break) or to a `: ` / `:` + end that separates it from the message.
+pub fn path_spans(s: &str) -> Vec<(usize, usize)> {
+    let b = s.as_bytes();
+    let mut spans = vec![];
+    let mut i = 0;
+    while i < b.len() {
+        let prev = s[..i].chars().next_back();
+        let drive = i + 2 < b.len()
+            && b[i].is_ascii_alphabetic()
+            && b[i + 1] == b':'
+            && matches!(b[i + 2], b'\\' | b'/')
+            && !prev_blocks_path_start(prev);
+        let unc = i + 1 < b.len() && b[i] == b'\\' && b[i + 1] == b'\\' && prev != Some('\\');
+        let unix = s.is_char_boundary(i) && UNIX_ROOTS.iter().any(|r| s[i..].starts_with(r)) && !prev_blocks_path_start(prev);
+        if !(drive || unc || unix) {
+            i += 1;
+            continue;
+        }
+        let mut j = i;
+        while j < b.len() {
+            let c = b[j];
+            if matches!(c, b'"' | b'\'' | b'<' | b'>' | b'|' | b'*' | b'?' | b'\n' | b'\r' | b'\t') {
+                break;
+            }
+            if c == b':' && j > i + 1 && (j + 1 == b.len() || b[j + 1] == b' ' || b[j + 1] == b'\n') {
+                break;
+            }
+            if c == b' ' && b[j..].starts_with(b" (os error") {
+                break; // the standard I/O error suffix follows the path
+            }
+            j += 1;
+        }
+        while j > i && matches!(b[j - 1], b'.' | b',' | b';' | b')' | b' ') {
+            j -= 1;
+        }
+        if j > i + 2 {
+            spans.push((i, j));
+            i = j;
+        } else {
+            i += 1;
+        }
+    }
+    spans
 }
 
-fn string_has_path(s: &str) -> bool {
-    tokens(s).any(token_is_abs_path)
+/// Redact internal paths from a system-generated diagnostic: the literal data root first, then any path.
+pub fn sanitize_message(msg: &str, root: &str) -> String {
+    let mut text = msg.to_string();
+    if !root.is_empty() {
+        text = text.replace(root, "<data folder>").replace(&root.replace('\\', "/"), "<data folder>");
+    }
+    let spans = path_spans(&text);
+    if spans.is_empty() {
+        return text;
+    }
+    let mut out = String::with_capacity(text.len());
+    let mut at = 0;
+    for (s, e) in spans {
+        out.push_str(&text[at..s]);
+        out.push_str("<path>");
+        at = e;
+    }
+    out.push_str(&text[at..]);
+    out
 }
 
-/// First string anywhere in `v` that contains an absolute/local filesystem path.
-pub fn find_absolute_path(v: &Value) -> Option<String> {
-    match v {
-        Value::String(s) => string_has_path(s).then(|| s.clone()),
-        Value::Array(a) => a.iter().find_map(find_absolute_path),
-        Value::Object(m) => m.values().find_map(find_absolute_path),
-        _ => None,
+/// Sanitize ONLY the diagnostic field of a failure envelope (`{"ok":false,"error":{"message":..}}`).
+/// Success results and any canonical/domain content are never touched.
+pub fn sanitize_envelope(v: &mut Value, root: &str) {
+    if v.get("ok") != Some(&Value::Bool(false)) {
+        return;
+    }
+    if let Some(Value::String(m)) = v.get_mut("error").and_then(|e| e.get_mut("message")) {
+        *m = sanitize_message(m, root);
     }
 }
 
-/// Redact absolute paths (and the literal data root) from every string in the envelope.
-pub fn scrub(v: &mut Value, root: &str) {
+/// First string anywhere in `v` that contains an absolute/local path (used by the "responses are
+/// path-free" regression tests on system-generated results; never applied to canonical content).
+pub fn find_absolute_path(v: &Value) -> Option<String> {
     match v {
-        Value::String(s) => {
-            let mut text = if !root.is_empty() && s.contains(root) { s.replace(root, "<data folder>") } else { s.clone() };
-            if string_has_path(&text) {
-                text = text
-                    .split_inclusive(|c: char| c.is_whitespace())
-                    .map(|part| {
-                        let trimmed = part.trim_end();
-                        let ws = &part[trimmed.len()..];
-                        if token_is_abs_path(trimmed) {
-                            format!("<path>{ws}")
-                        } else {
-                            part.to_string()
-                        }
-                    })
-                    .collect();
-            }
-            *s = text;
-        }
-        Value::Array(a) => a.iter_mut().for_each(|x| scrub(x, root)),
-        Value::Object(m) => m.values_mut().for_each(|x| scrub(x, root)),
-        _ => {}
+        Value::String(s) => (!path_spans(s).is_empty()).then(|| s.clone()),
+        Value::Array(a) => a.iter().find_map(find_absolute_path),
+        Value::Object(m) => m.values().find_map(find_absolute_path),
+        _ => None,
     }
 }

@@ -91,7 +91,7 @@ pub async fn native_pick_media(app: AppHandle, state: State<'_, AppState>) -> Re
         .add_filter("All files", &["*"])
         .blocking_pick_file();
     let Some(p) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
-    Ok(state.scrubbed(ingest(&app, &state, &p)))
+    Ok(state.sanitized(ingest(&app, &state, &p)))
 }
 
 fn default_backup_name() -> String {
@@ -116,7 +116,7 @@ pub async fn native_backup_save(app: AppHandle, state: State<'_, AppState>) -> R
     let Some(dest) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
     let r = core.dispatch("backup.create", &json!({"dest": dest.display().to_string()}));
     state.log(&format!("backup.create ok={}", r["ok"]));
-    Ok(state.scrubbed(r))
+    Ok(state.sanitized(r))
 }
 
 /// Step 1 of restore: choose and fully verify the archive (nothing is changed). The UI asks for
@@ -130,9 +130,9 @@ pub async fn native_backup_pick(app: AppHandle, state: State<'_, AppState>) -> R
     if v["ok"] == true {
         *state.pending_backup.lock().unwrap() = Some(path.clone());
         let name = path.file_name().map(|n| n.to_string_lossy().into_owned());
-        return Ok(state.scrubbed(json!({"ok": true, "result": {"name": name, "verified": v["result"]}})));
+        return Ok(state.sanitized(json!({"ok": true, "result": {"name": name, "verified": v["result"]}})));
     }
-    Ok(state.scrubbed(v))
+    Ok(state.sanitized(v))
 }
 
 #[tauri::command]
@@ -143,7 +143,7 @@ pub async fn native_backup_restore_pending(state: State<'_, AppState>) -> Result
     };
     let r = core.dispatch("backup.restore", &json!({"path": path.display().to_string()}));
     state.log(&format!("backup.restore ok={}", r["ok"]));
-    Ok(state.scrubbed(r))
+    Ok(state.sanitized(r))
 }
 
 /// OS drag-and-drop is handled here, in Rust: dropped files are streamed into the media store on a
@@ -164,7 +164,7 @@ pub fn on_window_event(window: &Window, event: &WindowEvent) {
             std::thread::spawn(move || {
                 let state = app.state::<AppState>();
                 for p in paths.iter().filter(|p| p.is_file()) {
-                    let r = state.scrubbed(ingest(&app, &state, p));
+                    let r = state.sanitized(ingest(&app, &state, p));
                     let _ = app.emit("qs://ingested", r);
                 }
             });

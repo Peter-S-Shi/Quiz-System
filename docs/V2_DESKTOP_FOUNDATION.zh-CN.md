@@ -91,9 +91,19 @@ qs-port   与运行时无关的 Store Port（JSON 入、envelope 出）、健康
 Human Gate 发现首版违反了已声明的边界“原始文件系统路径不进入 WebView/JS”：`schema.info` 返回绝对数据根，原生入库结果返回绝对媒体路径并被 `app.js` 传给 `convertFileSrc`，且 `media.gc`（含 WebView 提供的 `minAgeSeconds`）可由 WebView 调用。修复（范围严格受限，无新增架构）：
 
 - `schema.info` 不再返回数据根；`media.locate` 不再返回路径；原生媒体结果以无路径方式构造（`webview::media_ingest_result`）；外壳不显示路径，也取消了媒体预览（移除 asset protocol 及其作用域，不透明媒体服务推迟到首个需要显示媒体的里程碑）。
-- WebView 入口为 `qs_port::webview::dispatch`：白名单（已移除 `media.gc`）→ 命令 → 对 envelope 做路径清洗；原生命令结果与启动状态同样清洗。
+- WebView 入口为 `qs_port::webview::dispatch`：白名单（已移除 `media.gc`）→ 命令 → 仅对失败诊断信息做清洗（见第 9 节）。
 - 媒体 GC 仅由 `Core::maintenance_gc` / 启动流程执行，固定 24 小时安全延迟；`media.gc` 命令已不存在。
 - 删除 JS `verifyBackup(path)`；测试断言 JS Store Port 接口与白名单一致且不带路径参数。
 - 回归测试：`core/port/tests/webview_contract.rs` 与 `ui/tests`；现有 store/media/activation/archive 契约不变。
 - ADR 0001：升级失败时拒绝运行已写入第 7 节（规范性文本），第 15 节标记为已接受的实现澄清。
 - D1–D4 仍为未执行的验收欠账（未标 PASS，不阻塞）。
+
+## 9. Human Gate HOLD 跟进：结构化契约取代整体脱敏
+
+第 8 节的修复引入了一个保真缺陷：`dispatch` 对**整个** envelope 做通用 scrub，导致用户写入的、仅仅“长得像路径”的文本（`C:\Windows\System32`、`/home/alice/file`、`\\server\share\doc`）在 `store.read` 的 payload 中被改写为 `<path>`。两条约束必须同时成立——内部路径不泄露、用户内容无损往返——因此边界改为结构化契约：
+
+- 系统生成的结果（`schema.info`、`media.locate`、快照列表、原生媒体/备份结果）**按构造即无路径**并有测试保证，不做后处理。
+- 规范 payload、projection 和任何用户内容**永不改写**。
+- 只清洗系统生成的诊断信息：失败 envelope 的 `error.message`（`sanitize_envelope`），以及应用构造启动/恢复状态和一致性问题详情时的同一字段（`sanitize_message`）。清洗器先替换字面数据根，再处理盘符路径（允许空格）、UNC 与 `\\?\` verbatim 路径及常见 Unix 根目录。
+- 回归测试（`core/port/tests/webview_contract.rs`）：包含 Windows/Unix/UNC 路径样式文本（也作为对象键、以及用户自己的 `error.message` 字段）的规范 payload 经 WebView 提交并读回，规范哈希一致且无任何 `<path>`/`<data folder>`（该测试对旧的整体 scrub 为红）；含空格 Windows、verbatim、UNC、Unix 路径的错误诊断被清洗且保留上下文；成功结果及失败 envelope 的 `result` 永不被触碰；系统响应不含真实数据根；禁用命令仍被拒绝。
+- store/media/activation/archive 语义未变；D1–D4 仍为未执行验收欠账；里程碑仍等待 Human Gate 复审。

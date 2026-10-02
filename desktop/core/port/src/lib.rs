@@ -69,7 +69,23 @@ impl Core {
         let store = Store::open(root, catalog.clone(), opts)?;
         let recovered = activation::recover(&store)?.into_iter().map(|r| (r.op_id, format!("{:?}", r.resolution).to_lowercase())).collect();
         let quick_check_ok = store.quick_check()?;
-        let consistency_problems = if quick_check_ok { store.check_consistency()?.iter().map(|p| p.to_json()).collect() } else { vec![] };
+        let consistency_problems = if quick_check_ok {
+            let root_s = root.path().display().to_string();
+            store
+                .check_consistency()?
+                .iter()
+                .map(|p| {
+                    let mut j = p.to_json();
+                    if let Some(d) = j["detail"].as_str() {
+                        j["detail"] = Value::String(webview::sanitize_message(d, &root_s));
+                        // system-generated diagnostic
+                    }
+                    j
+                })
+                .collect()
+        } else {
+            vec![]
+        };
         let upgrade = store.upgrade_notice().map(|u| (u.from, u.to));
         let snapshots_pruned = activation::prune_snapshots(root, SNAPSHOTS_KEPT)?;
         let media = MediaStore::new(root.media_dir());

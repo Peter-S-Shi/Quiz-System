@@ -180,6 +180,8 @@ V2 progress (see the linked documents for authority; nothing here changes them):
 
 **Human Gate HOLD / repair:** the Human Gate found that raw filesystem paths crossed into the WebView (absolute data root, absolute media path, WebView-callable `media.gc`). Repaired in scope: path-free responses, `media.gc` removed from the WebView allowlist (Rust-owned fixed-policy GC only), `verifyBackup(path)` removed, asset protocol/preview removed, regression tests added (`core/port/tests/webview_contract.rs`, `desktop/ui/tests`); ADR 0001 section 7 now states the failed-upgrade refusal as accepted behavior and section 15 is marked accepted. D1-D4 remain open acceptance debt.
 
+**Follow-up fix (fidelity):** the first repair's blanket path scrub rewrote user-authored path-like text in `store.read` payloads. The WebView boundary is now a structured contract: system results are path-free by construction, canonical/user content is never rewritten, and only the failure diagnostic (`error.message`) is sanitized (spaced Windows, UNC/verbatim and Unix paths); regression tests prove both lossless round-trip and no leak.
+
 **Next action: Human Gate re-review of Desktop Foundation.** After acceptance, the next V2 step is the V1 Migration ADR, which is **not** started and needs separate authorization. The `spike/desktop-runtime` branch stays disposable and is never merged.
 
 Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.

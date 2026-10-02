@@ -111,14 +111,34 @@ fn native_media_result_shape_carries_no_path() {
 }
 
 #[test]
-fn scrubbing_redacts_paths_that_slip_into_messages() {
-    let mut v = json!({"ok": false, "error": {"code": "IO", "message": "failed to open C:\\Users\\someone\\AppData\\x.db: denied"},
-                        "list": ["fine", "\\\\?\\C:\\very\\long", "see /Users/someone/file and D:/data/y.bin"]});
-    assert!(webview::find_absolute_path(&v).is_some());
-    webview::scrub(&mut v, "unused-root");
-    assert!(webview::find_absolute_path(&v).is_none(), "{v}");
-    assert!(v["error"]["message"].as_str().unwrap().contains("denied"), "context text is kept");
-    assert_eq!(v["list"][0], "fine");
+fn error_diagnostics_have_internal_paths_redacted_including_spaces_unc_verbatim_and_unix() {
+    let root = r"C:\Users\Jane Doe\AppData\Local\io.github.example.app";
+    let cases: &[(&str, &str)] = &[
+        (r"failed to open C:\Users\Jane Doe\AppData\Local\x y\quiz.db: Access is denied", "Access is denied"),
+        (r"rename C:/Users/Jane Doe/data/a b.tmp failed (os error 5)", "(os error 5)"),
+        (r"cannot create \\?\C:\very long\segment\file.db: path not found", "path not found"),
+        (r"share \\fileserver\team share\backup.qsarchive: unreachable", "unreachable"),
+        ("could not read /home/jane doe/notes/x.db: permission denied", "permission denied"),
+        (&format!(r"snapshot {root}\snapshots\pre-op.db is damaged"), "is damaged"),
+        (r#"open "C:\Program Files\App Name\app.exe" failed"#, "failed"),
+    ];
+    for (msg, kept) in cases {
+        let mut env = json!({"ok": false, "error": {"code": "IO", "message": msg}});
+        webview::sanitize_envelope(&mut env, root);
+        let out = env["error"]["message"].as_str().unwrap();
+        assert!(webview::path_spans(out).is_empty(), "path left in {out:?} (from {msg:?})");
+        assert!(!out.contains("Jane") && !out.contains("fileserver") && !out.contains("Program Files"), "{out:?}");
+        assert!(out.contains(kept), "diagnostic context lost: {out:?}");
+        assert!(out.contains("<path>") || out.contains("<data folder>"), "{out:?}");
+    }
+    // only the diagnostic field of a FAILURE envelope is ever touched
+    let mut ok = json!({"ok": true, "result": {"title": r"C:\Windows\System32", "error": {"message": r"\\server\share\doc"}}});
+    let before = ok.clone();
+    webview::sanitize_envelope(&mut ok, root);
+    assert_eq!(ok, before, "success results (canonical/user content) are never rewritten");
+    let mut bad = json!({"ok": false, "error": {"code": "X", "message": "m"}, "result": {"title": r"C:\Windows\System32"}});
+    webview::sanitize_envelope(&mut bad, root);
+    assert_eq!(bad["result"]["title"], r"C:\Windows\System32");
 }
 
 #[test]
@@ -135,4 +155,44 @@ fn the_js_store_port_surface_equals_the_allowlist() {
         assert!(ALLOWLIST.contains(&cmd.as_str()), "store-port.js calls '{cmd}' which is not WebView-allowlisted");
     }
     assert!(!src.contains("verifyBackup"), "path-carrying verifyBackup must be gone from the JS surface");
+}
+
+const PATH_LIKE_TEXT: &[&str] = &[
+    r"C:\Windows\System32",
+    r"c:/Program Files/App Name/file.txt",
+    r"/home/alice/file",
+    r"/Users/bob/My Documents/x.md",
+    r"\\server\share\doc",
+    r"\\?\C:\very\long\path",
+    r"see C:\Windows\System32 and /home/alice/file for details",
+    r"D:\Users\Jane Doe\AppData\Local\note.txt: not an error",
+];
+
+#[test]
+fn user_authored_path_like_text_round_trips_losslessly_through_the_webview() {
+    let t = temp_root();
+    let c = arc(evidence_catalog());
+    let core = open(&t, &c);
+    let mut payload = response_payload(1, 2, &[]);
+    payload["title"] = json!(PATH_LIKE_TEXT[0]);
+    payload["notes"] = json!(PATH_LIKE_TEXT);
+    payload["nested"] =
+        json!({"p": PATH_LIKE_TEXT[4], "error": {"message": PATH_LIKE_TEXT[6], "code": "USER"}, PATH_LIKE_TEXT[2]: PATH_LIKE_TEXT[5]});
+    let uw = uow(vec![put_op(&c, "learner_response", "resp-1", payload.clone())]);
+    let commit = webview::dispatch(&core, "store.commit", &json!({"uow": uw}));
+    assert_eq!(commit["ok"], true, "{commit}");
+    let read = webview::dispatch(&core, "store.read", &json!({"collection": "learner_response", "query": {"id": "resp-1"}}));
+    assert_eq!(read["ok"], true);
+    let back = &read["result"]["records"][0]["payload"];
+    assert_eq!(qs_store::canon::canonical(back), qs_store::canon::canonical(&payload), "payload must round-trip byte-for-byte");
+    assert_eq!(back["title"], PATH_LIKE_TEXT[0]);
+    assert_eq!(back["notes"], json!(PATH_LIKE_TEXT));
+    assert!(!read.to_string().contains("<path>") && !read.to_string().contains("<data folder>"), "no user string may be scrubbed");
+    // the projection column derived from user text is untouched too
+    let q = webview::dispatch(
+        &core,
+        "store.read",
+        &json!({"collection": "learner_response", "query": {"where": [{"column": "paper_id", "value": "paper-1"}]}}),
+    );
+    assert_eq!(q["result"]["records"].as_array().unwrap().len(), 1);
 }

@@ -180,6 +180,8 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 
 **Human Gate HOLD / 修复：** Human Gate 发现原始文件系统路径进入了 WebView（绝对数据根、绝对媒体路径、WebView 可调用的 `media.gc`）。已在限定范围内修复：响应不含路径、`media.gc` 移出 WebView 白名单（仅 Rust 以固定策略执行 GC）、删除 `verifyBackup(path)`、移除 asset protocol 与预览、新增回归测试；ADR 0001 第 7 节现明确升级失败拒绝运行为已接受行为，第 15 节标记为已接受。D1–D4 仍为未执行的验收欠账。
 
+**跟进修复（保真）：** 第一次修复的整体路径 scrub 会改写 `store.read` payload 中用户写入的、形似路径的文本。WebView 边界现为结构化契约：系统结果按构造无路径，规范/用户内容永不改写，只清洗失败诊断信息（`error.message`，覆盖含空格 Windows、UNC/verbatim 与 Unix 路径）；回归测试同时证明无损往返与无泄露。
+
 **下一步行动：Desktop Foundation 的 Human Gate 复审。** 通过后，V2 下一步是 V1 Migration ADR，该步骤**尚未**开始，需另行授权。`spike/desktop-runtime` 分支保持一次性且永不合并。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。

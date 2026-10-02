@@ -56,11 +56,19 @@ impl AppState {
         }
     }
 
-    /// Every value returned to the WebView passes through here: no absolute path may cross the boundary.
-    pub fn scrubbed(&self, mut v: Value) -> Value {
-        let root = self.root.as_ref().map(|r| r.path().display().to_string()).unwrap_or_default();
-        qs_port::webview::scrub(&mut v, &root);
+    fn root_str(&self) -> String {
+        self.root.as_ref().map(|r| r.path().display().to_string()).unwrap_or_default()
+    }
+
+    /// Failure envelopes returned to the WebView get their diagnostic (`error.message`) sanitized; results are
+    /// path-free by construction and are never rewritten.
+    pub fn sanitized(&self, mut v: Value) -> Value {
+        qs_port::webview::sanitize_envelope(&mut v, &self.root_str());
         v
+    }
+
+    fn error_json(&self, e: &Error) -> Value {
+        json!({"code": e.code.as_str(), "message": qs_port::webview::sanitize_message(&e.message, &self.root_str())})
     }
 
     pub fn status_json(&self) -> Value {
@@ -70,7 +78,7 @@ impl AppState {
             (None, err) => {
                 let snapshots = self.root.as_ref().and_then(|r| offline::list_snapshots(r).ok()).unwrap_or_default();
                 json!({"status": "failed", "identity": identity,
-                       "error": err.map(|e| json!({"code": e.code.as_str(), "message": e.message})),
+                       "error": err.map(|e| self.error_json(&e)),
                        "snapshots": snapshots})
             }
         }
@@ -95,7 +103,7 @@ impl AppState {
                 self.try_open(&root);
                 json!({"ok": true, "result": {"preservedDamaged": preserved.file_name().map(|n| n.to_string_lossy().into_owned()), "status": self.status_json()}})
             }
-            Err(e) => json!({"ok": false, "error": {"code": e.code.as_str(), "message": e.message}}),
+            Err(e) => json!({"ok": false, "error": self.error_json(&e)}),
         }
     }
 }
