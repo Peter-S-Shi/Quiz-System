@@ -72,7 +72,7 @@ qs-migrate-v1
 
 本地（开发机，debug 测试配置；阈值取默认缩放值）：完整 workspace 套件通过，`clippy -D warnings` 干净，`rustfmt` 干净，18 个 JS 测试，（debug 构建的）启动冒烟通过，其 8 步 `--self-test` 含一次迁移导入 + 撤销。完整的 400 MiB 包络运行（533 MiB 备份文件）本地耗时 21 秒，迁移进程工作集峰值 10.3 MiB（上限 300 MiB）；dev profile 仅对 `sha2`、`qs-media`、`qs-migrate-v1` 开启优化，使此类测试保持快速。
 
-CI（`windows-latest` 上的 `Desktop (V2)`，ADR 级阈值 `QS_MIG_KILLS=200`、`QS_H3_REPEATS=3`、`QS_HEAVY_MIB=400`）：见 `PROJECT_STATUS.md` 中链接的运行记录 —— 运行完成后补记。
+CI（`windows-latest` 上的 `Desktop (V2)`，ADR 级阈值 `QS_MIG_KILLS=200`、`QS_H3_REPEATS=3`、`QS_HEAVY_MIB=400`）：提交 `4a2ad03` 上**全绿**：[run 37034644764](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37034644764)。首次运行（`3802ac6`）在随机 kill 套件中失败：身份探测用只读连接，无法在首次建库被杀后恢复遗留 WAL；已在 `4a2ad03` 修复（改为读写、不创建的探测）。
 
 ## 5. 提交 Human Gate 的实现澄清
 
