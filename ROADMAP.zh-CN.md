@@ -384,16 +384,16 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 - **最终 V1 发布线**：最终 `1.0.0` 版本元数据与证据驱动的作品集展示资产已闭环并合入 `main`。
 - **维护保留状态**：V1 发布线继续处于维护保留状态，当前未安排任何活跃 V1 工程里程碑。
 - **可选 V1 后续事项**：未来任何 V1 发布分发、正式 GitHub Release 或 GitHub Pages 部署均保持可选，并需经 Product Owner 另行授权。
-- **V2 架构验证（进行中）**：Product Owner 已授权 V2 并进入架构验证阶段。这不改变仍处于维护保留状态的 V1 发布线。当前 V2 路线如下。
+- **V2 Desktop Architecture Gate（已通过）**：Product Owner 已授权 V2，并已通过架构验证（Desktop Architecture Gate：PASS —— GO WITH AMENDMENT）。这不改变仍处于维护保留状态的 V1 发布线。当前 V2 路线如下。
 
 ### 当前 V2 路线
 
 1. V2 产品范围冻结（Revision 1）。**已完成。**
 2. V1 Migration Readiness Inventory。**已完成。**
-3. Desktop Runtime & Application Data ADR —— Human Gate。**已完成**（获准进行 bounded spike；该 ADR 尚未成为已接受的架构）。
-4. Bounded Desktop Spike（一次性 `spike/desktop-runtime`，永不合并）。**下一步。**
-5. Desktop Architecture Gate。**待通过**（尚未通过）。
-6. 创建正式 V2 开发分支，随后开始 Desktop Foundation。**在第 5 步通过前保持阻塞。**
+3. Desktop Runtime & Application Data ADR —— Human Gate。**已完成**（获准进行 bounded spike）。
+4. Bounded Desktop Spike（一次性 `spike/desktop-runtime`，永不合并）。**已完成** —— 证据：[`docs/adr/evidence/0001-desktop-spike-report.md`](docs/adr/evidence/0001-desktop-spike-report.md)。
+5. Desktop Architecture Gate。**已通过 —— GO WITH AMENDMENT**；ADR 0001 **已接受（ACCEPTED）**（已并入修订 A1–A8；H8 已由 Human Gate 重新分类；H1 带残余限制被接受；Electron fallback 未触发）。
+6. 创建正式 V2 开发分支，随后开始 Desktop Foundation。**下一步。**（尚未创建。）
 
 ## 维护 / 下一版本
 
@@ -427,4 +427,4 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 4. 完成 Milestone 7 Product Hardening。**已完成。**
 5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
 6. 候选版本已接受（`v1.0.0-rc.1`），V1 发布元数据已定版（`1.0.0`），V1 发布线进入维护保留状态。**当前 V1 生命周期状态。**
-7. V2 架构验证（范围冻结、迁移就绪盘点、Desktop ADR Human Gate 已完成；下一步为 bounded desktop spike；Desktop Architecture Gate 待通过）。**当前 V2 状态** —— 见上文“当前 V2 路线”。
+7. V2 架构验证（范围冻结、迁移就绪盘点、Desktop ADR、bounded desktop spike 已完成；Desktop Architecture Gate 已通过；下一步为创建正式 V2 开发分支并开始 Desktop Foundation）。**当前 V2 状态** —— 见上文“当前 V2 路线”。
