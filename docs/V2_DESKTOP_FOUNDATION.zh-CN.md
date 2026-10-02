@@ -106,7 +106,7 @@ Human Gate 发现首版违反了已声明的边界“原始文件系统路径不
 - 规范 payload、projection 和任何用户内容**永不改写**。
 - 只清洗系统生成的诊断信息：失败 envelope 的 `error.message`（`sanitize_envelope`），以及应用构造启动/恢复状态和一致性问题详情时的同一字段（`sanitize_message`）。清洗器先替换字面数据根，再处理盘符路径（允许空格）、UNC 与 `\\?\` verbatim 路径及常见 Unix 根目录。
 - 回归测试（`core/port/tests/webview_contract.rs`）：包含 Windows/Unix/UNC 路径样式文本（也作为对象键、以及用户自己的 `error.message` 字段）的规范 payload 经 WebView 提交并读回，规范哈希一致且无任何 `<path>`/`<data folder>`（该测试对旧的整体 scrub 为红）；含空格 Windows、verbatim、UNC、Unix 路径的错误诊断被清洗且保留上下文；成功结果及失败 envelope 的 `result` 永不被触碰；系统响应不含真实数据根；禁用命令仍被拒绝。
-- store/media/activation/archive 语义未变；D1–D4 仍为未执行验收欠账；里程碑仍等待 Human Gate 复审。
+- store/media/activation/archive 语义未变；D1–D4 仍为未执行验收欠账；当时里程碑仍等待 Human Gate 复审（历史记录；已被第 10 节取代：已验收）。
 
 ## 10. Human Gate 结论：ACCEPTED
 

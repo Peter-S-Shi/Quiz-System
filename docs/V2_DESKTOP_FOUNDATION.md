@@ -120,7 +120,7 @@ The section 8 repair introduced a fidelity defect: `dispatch` ran a generic scru
 - Canonical payloads, projections and any user content are **never rewritten**.
 - Only the system-generated diagnostic is sanitized: `error.message` of a failure envelope (`sanitize_envelope`), the same field where the app builds boot/recovery status and consistency-problem detail (`sanitize_message`). The sanitizer redacts the literal data root first, then drive paths (spaces allowed), UNC and `\\?\` verbatim paths and common Unix roots.
 - Regression tests (`core/port/tests/webview_contract.rs`): a canonical payload full of Windows/Unix/UNC path-like literals (also as object keys and inside a user `error.message` field) is committed through the WebView and read back with an identical canonical hash and no `<path>`/`<data folder>` anywhere (this test was red against the blanket scrub); error diagnostics with spaced Windows, verbatim, UNC and Unix paths are redacted while context text is kept; success results and the `result` of a failure envelope are never touched; system responses stay free of the real data root; forbidden commands are still rejected.
-- No change to store/media/activation/archive semantics. D1-D4 remain open acceptance debt; the milestone remains awaiting Human Gate re-review.
+- No change to store/media/activation/archive semantics. D1-D4 remain open acceptance debt; the milestone remained awaiting Human Gate re-review at that point (historical; superseded by section 10: ACCEPTED).
 
 ## 10. Human Gate outcome: ACCEPTED
 
