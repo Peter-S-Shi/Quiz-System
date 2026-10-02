@@ -61,6 +61,34 @@ impl Env {
     pub fn state_hash(&self) -> String {
         self.host.with_store(|s| s.state_hash(true).unwrap())
     }
+    /// Hash of every canonical record, media object and origin row (not the run/undo bookkeeping or artifacts).
+    pub fn canonical_hash(&self) -> String {
+        use sha2::{Digest, Sha256};
+        self.host.with_store(|s| {
+            let mut h = Sha256::new();
+            for t in [
+                "paper",
+                "library_categories",
+                "learner_response",
+                "teacher_review",
+                "translation_folder",
+                "translation_document",
+                "legacy_history_entry",
+                "legacy_residue",
+                "media_object",
+                "migration_origin",
+            ] {
+                let mut st = s.conn().prepare(&format!("SELECT id, payload FROM {t} ORDER BY id")).unwrap();
+                let rows: Vec<(String, String)> = st.query_map([], |r| Ok((r.get(0)?, r.get(1)?))).unwrap().map(|r| r.unwrap()).collect();
+                for (i, p) in rows {
+                    h.update(t.as_bytes());
+                    h.update(i.as_bytes());
+                    h.update(p.as_bytes());
+                }
+            }
+            hex::encode(h.finalize())
+        })
+    }
     pub fn count(&self, coll: &str) -> i64 {
         self.host.with_store(|s| s.count(coll).unwrap())
     }

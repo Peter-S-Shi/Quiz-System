@@ -244,6 +244,9 @@ pub fn origin_row(r: &PlanRow, ctx: &OriginCtx) -> (String, Value) {
     o.insert("sourcePointer".into(), json!(r.pointer));
     o.insert("sourcePosition".into(), json!(r.position));
     o.insert("disposition".into(), json!(r.disposition.as_str()));
+    // current deletion ownership, separate from the immutable disposition: only the run that created the record
+    // owns its deletion; undo may move ownership to another active holder but never rewrites the disposition
+    o.insert("deletionOwner".into(), json!(r.disposition == Disposition::Carried));
     o.insert("mappingVersion".into(), json!(MAPPING_VERSION));
     o.insert("canonHash".into(), json!(r.canon_hash));
     o.insert("kind".into(), json!(r.kind));

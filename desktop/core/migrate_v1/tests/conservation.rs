@@ -328,6 +328,14 @@ fn the_verifier_catches_every_class_of_mapper_defect() {
     edit_payload(&p, ORIGIN, &id, |v| v["sourcePosition"] = json!(7));
     expect_failure(&p, "origin position", "C-3");
 
+    // deletion ownership that contradicts the original disposition (a deduplicated record owning its deletion)
+    let (_e, p) = staged_fixture(|_| {});
+    let c = Connection::open(p.staging_db()).unwrap();
+    let id: String = c.query_row("SELECT id FROM migration_origin WHERE record_id='paper-b'", [], |r| r.get(0)).unwrap();
+    drop(c);
+    edit_payload(&p, ORIGIN, &id, |v| v["deletionOwner"] = json!(false));
+    expect_failure(&p, "origin ownership", "C-7");
+
     // history role that does not recompute
     let (_e, p) = staged_fixture(|_| {});
     let c = Connection::open(p.staging_db()).unwrap();

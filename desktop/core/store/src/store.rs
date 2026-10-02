@@ -79,7 +79,8 @@ pub fn peek_identity(db: &Path) -> Result<Option<(i32, i32, i64)>> {
     }
     // read-write without CREATE: a read-only connection cannot run WAL recovery, so a store whose writer was killed
     // (hot -wal, stale -shm) would fail to open with "readonly database" instead of recovering
-    let c = Connection::open_with_flags(fsx::sqlite_path(db)?, OpenFlags::SQLITE_OPEN_READ_WRITE).ctx(Code::Db, "open for identity peek")?;
+    let c =
+        Connection::open_with_flags(fsx::sqlite_path(db)?, OpenFlags::SQLITE_OPEN_READ_WRITE).ctx(Code::Db, "open for identity peek")?;
     c.busy_timeout(std::time::Duration::from_secs(5)).code(Code::Db)?;
     let app: i32 = c.query_row("PRAGMA application_id", [], |r| r.get(0)).code(Code::Db)?;
     let ver: i32 = c.query_row("PRAGMA user_version", [], |r| r.get(0)).code(Code::Db)?;

@@ -58,11 +58,11 @@ qs-migrate-v1
 | 16.2-5 缺失 / gap | `conservation`：缺失保持缺失（从不 null/默认值）、gap 已声明、不产生 V2 独有行或字段、偏移编码标签只出现在迁移的含锚点记录上、payload 逐字不变 |
 | 16.2-6 历史 | `history`：twin / divergent / legacy-only、计数公式、折叠与冲突、内容派生键、翻译 twin 不匹配、恰好 100 条的上限标记 |
 | 16.2-7 媒体 | `media`：逐字节相同的文件、不存储 base64、共享内容、孤儿媒体被报告而非迁移（含 id 提及告警）、`data:` 前缀与无填充 base64、staging 媒体在 72 小时旧 GC 下仍存活、400 MiB 内存包络（`migration_faults`） |
-| 16.2-8 幂等 / 重复 | `idempotence`：同字节两次导入是零写入空操作；两个预览只激活一次；重叠去重；导入 → 撤销 → 再导入；被修改/被依赖时撤销被拒；撤销某一来源时共享记录保留；缺失 section 从不删除；提交后缺陷 → 自动撤销 |
+| 16.2-8 幂等 / 重复 | `idempotence`：同字节两次导入是零写入空操作；两个预览只激活一次；重叠去重；导入 → 撤销 → 再导入；被修改/被依赖时撤销被拒；撤销某一来源时共享记录保留；**所有权与处置分离**（X carried + Y deduplicated：撤销 X 后记录与 Y 的 disposition 保留，撤销 Y 后移除；反序；被两次迁移去重的 V2 原生记录在两次撤销后都保留）；缺失 section 从不删除；提交后缺陷 → 自动撤销 |
 | 16.2-9 Fail-closed | `blocking`：40 个变异源 + 5 个选项/live 用例覆盖注册表中**每一个**阻断代码（缺一个测试就失败）；每个用例结束时 live store 物理不变、无 staging 残留、用户文件逐字节相同 |
 | 16.2-10 预览契约 | `preview`：独立运行间 `reportHash` 确定、无路径、§12.1 各部分齐全、过期/外来的确认被拒、被阻断的预览无可确认内容 |
 | 16.2-11 源不可变 / TOCTOU | `preview`：只读文件（任何写模式打开都会失败）可迁移；用户文件被改动并删除后该次尝试仍完成；staging 副本哈希 == `sourceId`；OS 元数据不是不变量 |
-| 16.2-12 Recovery artifact | `artifact`：逐字节（CRLF、BOM）、从不 canonical、可解析为库的 `rawValue` 保持惰性、无法识别则阻断、archive 往返、撤销删除行但从不删除文件 |
+| 16.2-12 Recovery artifact | `artifact`：逐字节（CRLF、BOM）、从不 canonical、可解析为库的 `rawValue` 保持惰性、无法识别则阻断、archive 往返、撤销删除行但从不删除文件；**首次导入无 artifact → 同一 source 之后带 artifact → artifact-only 保存且 canonical 状态哈希不变 → archive 往返 → 重复为 no-op → 撤销 attach**；事后提供非法 artifact 会阻断且无任何改变 |
 | 16.3 崩溃/故障矩阵 | `migration_faults`：每个检查点（13 个，另有 4 个带 artifact）× `QS_H3_REPEATS` 次 kill → 恰好 pre 或恰好 post、恢复幂等、用户文件不变、重试完成；随机时刻 kill（`QS_MIG_KILLS`）；撤销期间 kill（迁移检查点与 `uow-before-commit` 两种）；预览→提交之间的竞态由提交守卫捕获（`idempotence`）；失败/更旧的 schema（`catalog_upgrade`） |
 | 内存包络 | `migration_faults::a_large_backup…`：对 CI 规模，迁移进程峰值工作集低于 300 MiB（见第 4 节） |
 
@@ -72,7 +72,7 @@ qs-migrate-v1
 
 本地（开发机，debug 测试配置；阈值取默认缩放值）：完整 workspace 套件通过，`clippy -D warnings` 干净，`rustfmt` 干净，18 个 JS 测试，（debug 构建的）启动冒烟通过，其 8 步 `--self-test` 含一次迁移导入 + 撤销。完整的 400 MiB 包络运行（533 MiB 备份文件）本地耗时 21 秒，迁移进程工作集峰值 10.3 MiB（上限 300 MiB）；dev profile 仅对 `sha2`、`qs-media`、`qs-migrate-v1` 开启优化，使此类测试保持快速。
 
-CI（`windows-latest` 上的 `Desktop (V2)`，ADR 级阈值 `QS_MIG_KILLS=200`、`QS_H3_REPEATS=3`、`QS_HEAVY_MIB=400`）：提交 `4a2ad03` 上**全绿**：[run 37034644764](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37034644764)。首次运行（`3802ac6`）在随机 kill 套件中失败：身份探测用只读连接，无法在首次建库被杀后恢复遗留 WAL；已在 `4a2ad03` 修复（改为读写、不创建的探测）。
+CI（`windows-latest` 上的 `Desktop (V2)`，ADR 级阈值 `QS_MIG_KILLS=200`、`QS_H3_REPEATS=3`、`QS_HEAVY_MIB=400`）：Human Gate HOLD 收口的运行在其完成后记录于下（待运行）。HOLD 之前的实现：提交 `4a2ad03` 上**全绿**，[run 37034644764](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37034644764)。首次运行（`3802ac6`）在随机 kill 套件中失败：身份探测用只读连接，无法在首次建库被杀后恢复遗留 WAL；已在 `4a2ad03` 修复（改为读写、不创建的探测）。
 
 ## 5. 提交 Human Gate 的实现澄清
 
@@ -84,11 +84,13 @@ CI（`windows-latest` 上的 `Desktop (V2)`，ADR 级阈值 `QS_MIG_KILLS=200`�
 4. **比 ADR 文本更严格的地方**（均为阻断而非猜测）：超出 ±(2^53 − 1) 的整数 token 视为不安全；带首尾空白的 asset id 或媒体引用 id；缺失/非整数的声明 asset `size`；`mediaAssets` 与 `assets` 同时非空；文档没有可解析的 `folderId`；翻译条目位置不连续。差分 oracle 测试列出了 V1 接受而 ADR 要求阻断的三种情形。
 5. **`MIG_OFFSET_SPLITS_SURROGATE` 对真实数据不可达。** 拆分代理对的偏移需要锚定文本内含孤立代理项，而 H-1 在 reader 即阻断（`MIG_SOURCE_LONE_SURROGATE`）；`blocking` 证明了该路径。为完整起见保留该可报告代码。
 6. **额外诊断** `MIG_HISTORY_RESPONSE_KIND_MISMATCH`（`responseId` 解析到非 Objective response 的历史条目没有 twin）。`MIG_UNDO_REFUSED` 是一种*结果*（`Refused { reasons }`），不是注册表代码。
-7. **撤销的所有权转移。** 撤销 run X 将要删除的某条记录若同时被另一个活动 run Y 包含，则该记录保留，且 Y 对它的 origin 变为 `carried`，使之后撤销 Y 时可将其移除（否则共享记录将永远成为孤儿）。
+7. **撤销：所有权与处置分离**（*Human Gate HOLD 后修订，ADR §21 G-2*）。`migration_origin.disposition` 永远是原始迁移事实。当前删除所有权是单独的 origin 字段 `deletionOwner`（初始为 `disposition == carried`）。撤销某个 run 时，若它拥有的记录仍被另一活动 run 包含，则记录保留，并把 `deletionOwner` 置给这些持有者；它们的 `disposition` 不变。没有任何 origin 拥有的记录（迁移只做了去重的 V2 原生数据）永远不会被任何撤销删除。
 8. **撤销的依赖检测** 覆盖硬外键与已登记的软探针（`teacher_review.response_id`、历史 `twin_response_id`、媒体引用）。*未来*领域的软依赖会在这些里程碑登记探针后变得可检测。
 9. **Corrections 冲突规则。** V1 的“重叠的内容修改型 correction 冲突”规则不再重复校验（只按 ADR 0002 的规定校验 UTF-16 下的锚点/文本一致性）。
 10. **非媒体 JSON 上限** 为固定常量 128 MiB（`MIG_SOURCE_TOO_LARGE`）；对被测的媒体密集型 fixture，实测进程峰值远低于该值。
 11. **预检空间** 要求 staging 所在卷剩余 `2 × 源文件 + 64 MiB`（`MIG_INSUFFICIENT_SPACE`）；复制阶段的磁盘已满错误映射到同一代码。
+12. **事后补 artifact**（*ADR §21 G-1*）。已迁移的 source 之后再提供一个合法、尚未保存的 recovery artifact 时，只做 artifact-only 保存：`plan.mode = "artifact-only"`，持久链接是一条 `migration_run` 行 `kind: "artifact-attach"`（`sourceId`、`recoveryId`、`attachedTo`），不写任何 canonical 记录、origin 或 import run。artifact 已保存则为 no-op；非法 artifact 仍然阻断。Settings 卡片有专门的“Preserve artifact”预览，run 列表会标出 attach 运行。
+13. **包装记录**（*ADR §21 G-3*）。`library_categories`（`{categories}`）、`legacy_history_entry`（`{entry, role, ...}`）、`legacy_residue`（`{pointer, value}`）是保值的结构性映射：内部值被精确保留（验证器 C-2(b)）；不声称整份 payload 与源 JSON 哈希相等。
 
 ## 6. 未决事项（明确列出，未豁免）
 

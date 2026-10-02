@@ -100,6 +100,27 @@ function migrationPreview(result, box, say, done) {
     );
     return;
   }
+  if (r.plan.mode === 'artifact-only') {
+    box.append(
+      h('p', {}, `This backup ("${r.sourceName}") was already imported; none of its library data will change. Only the recovery artifact ${r.recoveryArtifact.sha256.slice(0, 12)}... will be preserved byte-for-byte; it is never activated as library data.`),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn primary', type: 'button', onclick: async () => {
+          try {
+            const out = await port.migrationConfirm(result.reportHash);
+            box.replaceChildren(h('p', {}, out.result === 'done' ? 'Recovery artifact preserved. You can undo this below.' : 'Already preserved.'));
+            say(`Recovery artifact ${out.result}.`);
+            await done();
+          } catch (e) {
+            say(`Preserving the artifact failed - ${describe(e)}`);
+          }
+        } }, 'Preserve artifact'),
+        h('button', { class: 'btn', type: 'button', onclick: async () => {
+          await port.migrationCancel();
+          box.replaceChildren(h('p', {}, 'Cancelled. Nothing was changed.'));
+        } }, 'Cancel')),
+    );
+    return;
+  }
   const rows = Object.entries(r.counts).map(([kind, c]) => h('tr', {}, h('td', {}, kind), h('td', {}, c.source), h('td', {}, c.carried ?? 0), h('td', {}, c.deduplicatedIdentical ?? 0), h('td', {}, (c.collapsed ?? 0) + (c.reportedUnmigrated ?? 0))));
   const gaps = Object.entries(r.loss.gaps).map(([k, n]) => `${k}: ${n}`).join('; ');
   box.append(
@@ -134,7 +155,7 @@ function migrationCard(say, guarded, refreshAll) {
   const note = h('span', { class: 'mono' }, '');
   const refreshRuns = async () => {
     const st = await port.migrationStatus();
-    list.replaceChildren(...st.runs.map((run) => h('li', {}, `${run.undone ? 'Undone' : 'Active'} import ${run.activatedAt ?? ''} `,
+    list.replaceChildren(...st.runs.map((run) => h('li', {}, `${run.undone ? 'Undone' : 'Active'} ${run.kind === 'artifact-attach' ? 'recovery artifact' : 'import'} ${run.activatedAt ?? ''} `,
       run.undone ? '' : h('button', { class: 'btn', type: 'button', onclick: () => guarded('Undo', async () => {
         if (!(await confirmDialog('Undo this import?', 'Removes exactly the records this import created. It refuses if any of them was edited since or something depends on them.', 'Undo import'))) return;
         const out = await port.migrationUndo(run.opId);

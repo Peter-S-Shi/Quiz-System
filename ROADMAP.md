@@ -395,7 +395,7 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 5. Desktop Architecture Gate. **PASSED — GO WITH AMENDMENT**; ADR 0001 is **ACCEPTED** (amendments A1–A8 absorbed; H8 reclassified by the Human Gate; H1 accepted with residual limitations; Electron fallback not triggered).
 6. Create the formal V2 development branch `v2`, then begin Desktop Foundation. **Branch created; Desktop Foundation ACCEPTED (Human Gate PASS)** ([milestone record](docs/V2_DESKTOP_FOUNDATION.md); Windows CI green; D1–D4 remain non-blocking packaged/manual acceptance debt).
 7. V1 Migration ADR ([ADR 0002](docs/adr/0002-v1-to-v2-migration-architecture.md)). **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02); documentation only.
-8. V1 Migration milestone (implementation). **Implementation complete — awaiting Human Gate** ([record](docs/V2_MIGRATION.md); Windows CI and manual checks M1-M7 as listed there).
+8. V1 Migration milestone (implementation). **Implementation complete — awaiting Human Gate (HOLD close-out implemented, awaiting re-review)** ([record](docs/V2_MIGRATION.md); Windows CI and manual checks M1-M7 as listed there).
 
 ## Maintenance / Next Version
 

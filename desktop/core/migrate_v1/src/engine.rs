@@ -77,6 +77,9 @@ pub struct Prepared {
     pub report_hash: String,
     pub blocked: bool,
     pub already_migrated: bool,
+    /// The source is already migrated and the user supplied a legal, not-yet-preserved recovery artifact: confirming only
+    /// preserves that artifact (ADR 0002 section 10.3); no canonical record is touched.
+    pub artifact_only: bool,
     stage_dir: PathBuf,
     stage_root: DataRoot,
     catalog: Arc<Catalog>,
@@ -230,7 +233,7 @@ fn recognize_artifact(bytes: &[u8]) -> Option<Value> {
 fn active_run_for<H: Host>(host: &H, source_id: &str) -> Result<Option<String>> {
     host.with_store(|s| {
         let r: rusqlite::Result<String> = s.conn().query_row(
-            "SELECT r.id FROM migration_run r WHERE r.source_id=?1 AND NOT EXISTS (SELECT 1 FROM migration_undo u WHERE u.undoes=r.id) ORDER BY r.id LIMIT 1",
+            "SELECT r.id FROM migration_run r WHERE r.source_id=?1 AND COALESCE(json_extract(r.payload,'$.kind'),'import')='import' AND NOT EXISTS (SELECT 1 FROM migration_undo u WHERE u.undoes=r.id) ORDER BY r.id LIMIT 1",
             [source_id],
             |x| x.get(0),
         );
@@ -239,6 +242,14 @@ fn active_run_for<H: Host>(host: &H, source_id: &str) -> Result<Option<String>> 
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
             Err(e) => Err(Error::new(Code::Db, e.to_string())),
         }
+    })
+}
+
+fn artifact_row_exists<H: Host>(host: &H, hash: &str) -> Result<bool> {
+    host.with_store(|s| {
+        s.conn()
+            .query_row("SELECT EXISTS(SELECT 1 FROM recovery_artifact WHERE id=?1)", [hash], |r| r.get::<_, bool>(0))
+            .map_err(|e| Error::new(Code::Db, e.to_string()))
     })
 }
 
@@ -324,6 +335,7 @@ fn finish_blocked(
         report_hash: h,
         blocked: true,
         already_migrated: false,
+        artifact_only: false,
         stage_dir: stage_dir.to_path_buf(),
         stage_root: DataRoot::at(stage_dir.join("s")),
         catalog,
@@ -414,9 +426,49 @@ pub fn prepare<H: Host>(host: &H, source: &Path, artifact: Option<&Path>, opts: 
         }
     }
 
-    // ---- idempotence: the same bytes already imported is a no-op
+    // ---- idempotence: the same bytes already imported is a no-op for the canonical records. Recovery-artifact
+    // preservation is an independent semantic: a legal artifact that is not yet preserved is still attached.
     if let Some(run) = active_run_for(host, &source_id)? {
         d.add("MIG_ALREADY_MIGRATED", None, json!({"runOpId": run}));
+        let attach = match &artifact_in {
+            Some(a) => !artifact_row_exists(host, &a.hash)?,
+            None => false,
+        };
+        if attach {
+            let a = artifact_in.take().expect("checked above");
+            let stage_root = DataRoot::at(stage_dir.join("s"));
+            let ctx = OriginCtx { source_id: &source_id, op_id: &op_id };
+            let extra = vec![(ARTIFACT, a.hash.clone(), a.row.clone())];
+            if let Err(e) = stage::write_staging(&stage_root, &catalog, &[], &ctx, &extra) {
+                d.add("MIG_STAGING_INVALID", None, json!({"code": e.code.as_str(), "reason": e.message}));
+                return Ok(blocked(d, source_id, recovery_id, source_bytes, None));
+            }
+            d.add("MIG_RECOVERY_ARTIFACT_PRESERVED", None, json!({"sha256": a.hash}));
+            let mut report = build_report(&source_id, &source_name, source_bytes, Some(&a), &d, None, &[], &[], (0, 0));
+            report["plan"] = json!({"mode": "artifact-only", "canonicalRecordsTouched": 0, "snapshotBeforeActivation": true, "undo": "targeted-inverse"});
+            let h = report_hash(&report);
+            return Ok(Prepared {
+                op_id,
+                source_id,
+                recovery_id,
+                report,
+                report_hash: h,
+                blocked: false,
+                already_migrated: false,
+                artifact_only: true,
+                stage_dir,
+                stage_root,
+                catalog,
+                blobs: vec![],
+                artifact: Some(a),
+                ledger: vec![],
+                envelope: Value::Null,
+                counts: Value::Null,
+                source_copy,
+                source_bytes,
+                app_version: opts.app_version.clone(),
+            });
+        }
         let mut p = blocked(d, source_id, recovery_id, source_bytes, None);
         p.blocked = false;
         p.already_migrated = true;
@@ -554,6 +606,7 @@ pub fn prepare<H: Host>(host: &H, source: &Path, artifact: Option<&Path>, opts: 
         report_hash: h,
         blocked: false,
         already_migrated: false,
+        artifact_only: false,
         stage_dir,
         stage_root,
         catalog,
@@ -604,6 +657,9 @@ pub fn activate<H: Host>(host: &H, p: &Prepared, confirmed_report_hash: &str) ->
     }
     let root = host.root().clone();
     let _gate = host.write_gate()?;
+    if p.artifact_only {
+        return activate_artifact_only(host, p, &root);
+    }
     if let Some(run) = active_run_for(host, &p.source_id)? {
         return Ok(Activation::AlreadyMigrated { run_op_id: run });
     }
@@ -611,6 +667,7 @@ pub fn activate<H: Host>(host: &H, p: &Prepared, confirmed_report_hash: &str) ->
     // the run record (operational metadata, written into the staging store so it commits atomically)
     let mut run = Map::new();
     run.insert("opId".into(), json!(p.op_id));
+    run.insert("kind".into(), json!("import"));
     run.insert("sourceId".into(), json!(p.source_id));
     if let Some(r) = &p.recovery_id {
         run.insert("recoveryId".into(), json!(r));
@@ -657,6 +714,44 @@ pub fn activate<H: Host>(host: &H, p: &Prepared, confirmed_report_hash: &str) ->
     Ok(Activation::Done(Activated { run_op_id: p.op_id.clone(), report_hash: p.report_hash.clone(), counts: p.counts.clone() }))
 }
 
+/// Preserve a recovery artifact for an already-migrated source. The only durable link is an `artifact-attach` run
+/// record (`recoveryId` + `sourceId`); the canonical records, their origins and the earlier run are never written.
+fn activate_artifact_only<H: Host>(host: &H, p: &Prepared, root: &DataRoot) -> Result<Activation> {
+    let a = p.artifact.as_ref().ok_or_else(|| Error::new(Code::Internal, "artifact-only preview without an artifact"))?;
+    let Some(run) = active_run_for(host, &p.source_id)? else {
+        bail!(Code::RejectPrecondition, "the source is no longer migrated; prepare the import again");
+    };
+    if artifact_row_exists(host, &a.hash)? {
+        return Ok(Activation::AlreadyMigrated { run_op_id: run });
+    }
+    let mut rec = Map::new();
+    rec.insert("opId".into(), json!(p.op_id));
+    rec.insert("kind".into(), json!("artifact-attach"));
+    rec.insert("sourceId".into(), json!(p.source_id));
+    rec.insert("recoveryId".into(), json!(a.hash));
+    rec.insert("attachedTo".into(), json!(run));
+    rec.insert("reportHash".into(), json!(p.report_hash));
+    rec.insert("activatedAt".into(), json!(now_rfc3339()));
+    rec.insert("appVersion".into(), json!(p.app_version));
+    stage::add_run_row(&p.stage_root, &p.catalog, &stage::normalized(&Value::Object(rec)))?;
+    publish_artifact(root, a)?;
+    fault::point("mig-after-artifact-publish");
+    let mode = Mode::Merge(MergePolicy::KeepExisting);
+    let guards = Guard::no_conflicting_ids(&p.catalog, mode);
+    let opts = Options { kind: "migration".into(), deep_media_check: true, guards, ..Options::default() };
+    let db = p.stage_root.db_path();
+    host.with_store(|s| activation::activate(s, &db, mode, &p.op_id, &opts))?;
+    if fsx::sha256_file(&root.recovery_artifacts_dir().join(format!("{}.artifact", a.hash))).ok().as_deref() != Some(a.hash.as_str()) {
+        let _ = host.with_store(|s| undo_run(s, &p.op_id, true));
+        bail!(
+            Code::ValidationFailed,
+            "ACTIVATION_POST_VERIFY_FAILED: C-11: the preserved recovery artifact does not hash to the supplied bytes"
+        );
+    }
+    fsx::remove_dir_all_quiet(&p.stage_dir);
+    Ok(Activation::Done(Activated { run_op_id: p.op_id.clone(), report_hash: p.report_hash.clone(), counts: Value::Null }))
+}
+
 fn post_verify<H: Host>(host: &H, p: &Prepared) -> Vec<String> {
     let reread = match read_source(
         &p.source_copy,
@@ -692,6 +787,12 @@ fn post_verify<H: Host>(host: &H, p: &Prepared) -> Vec<String> {
 }
 
 // ------------------------------------------------------------------------------------------------- undo
+
+/// Current deletion ownership of an origin row. Rows without the field (none exist in a released build) fall back
+/// to the original fact: only a carried record was created by its run.
+fn owns_deletion(origin: &Value) -> bool {
+    origin["deletionOwner"].as_bool().unwrap_or(origin["disposition"] == json!("carried"))
+}
 
 fn json_get(conn: &Connection, table: &str, id: &str) -> Option<Value> {
     let t: String = conn.query_row(&format!("SELECT payload FROM {table} WHERE id=?1"), [id], |r| r.get(0)).ok()?;
@@ -736,12 +837,15 @@ fn undo_run(store: &mut Store, run_op_id: &str, force: bool) -> Result<UndoOutco
             origins.push((id, serde_json::from_str(&t).map_err(|e| Error::new(Code::Db, e.to_string()))?));
         }
     }
-    // candidates: created by this run, shared with no other active run
+    // candidates: records this run currently owns for deletion and no other active run still contains.
+    // Ownership (`deletionOwner`) is separate from `disposition`, which stays the original migration fact: the
+    // creating run owns what it carried; when it is undone while another active run still holds the record,
+    // ownership moves to those holders and nothing else about their origins changes. A record nobody owns
+    // (native V2 data that migrations only deduplicated against) is never deleted.
     let mut candidates: BTreeMap<(String, String), Value> = BTreeMap::new();
-    // origins of other active runs that must inherit "carried" because the creating run is being undone
-    let mut inherit: Vec<(String, Value)> = vec![];
+    let mut transfer: Vec<(String, Value)> = vec![];
     for (_, o) in &origins {
-        if o["disposition"] != json!("carried") {
+        if !owns_deletion(o) {
             continue;
         }
         let (c, id) = (o["collection"].as_str().unwrap_or_default().to_string(), o["recordId"].as_str().unwrap_or_default().to_string());
@@ -759,11 +863,10 @@ fn undo_run(store: &mut Store, run_op_id: &str, force: bool) -> Result<UndoOutco
             .filter(|(_, v)| v["runOpId"].as_str().is_some_and(|r| active.contains(r)))
             .collect();
         if !holders.is_empty() {
-            // another active import still contains this record: it stays, and those imports now own it
             for (oid, mut v) in holders {
-                if v["disposition"] != json!("carried") {
-                    v["disposition"] = json!("carried");
-                    inherit.push((oid, v));
+                if !owns_deletion(&v) {
+                    v["deletionOwner"] = json!(true);
+                    transfer.push((oid, v));
                 }
             }
             continue;
@@ -821,7 +924,7 @@ fn undo_run(store: &mut Store, run_op_id: &str, force: bool) -> Result<UndoOutco
     for (oid, _) in &origins {
         ops.push(json!({"op": "delete", "collection": ORIGIN, "id": oid}));
     }
-    for (oid, v) in &inherit {
+    for (oid, v) in &transfer {
         ops.push(stage::put_op(&catalog, ORIGIN, oid, &stage::normalized(v))?);
     }
     if let Some(rid) = run["recoveryId"].as_str() {
@@ -862,7 +965,7 @@ pub fn status<H: Host>(host: &H) -> Result<Value> {
             .into_iter()
             .map(|(id, t)| {
                 let v: Value = serde_json::from_str(&t).unwrap_or(Value::Null);
-                json!({"opId": id, "sourceId": v["sourceId"], "undone": !active.contains(&id), "reportHash": v["reportHash"], "activatedAt": v["activatedAt"], "counts": v["counts"]})
+                json!({"opId": id, "kind": v.get("kind").cloned().unwrap_or(json!("import")), "sourceId": v["sourceId"], "undone": !active.contains(&id), "reportHash": v["reportHash"], "activatedAt": v["activatedAt"], "counts": v["counts"]})
             })
             .collect();
         Ok(json!({"runs": runs}))

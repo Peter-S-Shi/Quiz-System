@@ -276,3 +276,101 @@ fn a_live_record_that_appears_between_preview_and_commit_is_caught_by_the_commit
     let again = e.prepare(&e.source("v1-again.json", &fixture_bytes("r-full.json")));
     assert!(again.blocked && blocking_codes(&again).contains(&"MIG_LIVE_CONFLICT".to_string()));
 }
+
+fn origin_of(e: &Env, source_id: &str, coll: &str, id: &str) -> Option<Value> {
+    e.host.with_store(|s| s.read(ORIGIN, &json!({"id": format!("{source_id}:{coll}:{id}")})).unwrap().first().map(|r| r.payload.clone()))
+}
+
+fn paper_y() -> Value {
+    json!({"schemaVersion": 1, "id": "paper-y", "title": "Y", "description": "", "category": "", "tags": [],
+           "createdAt": "2025-05-01T00:00:00.000Z", "updatedAt": "2025-05-01T00:00:00.000Z", "lastOpenedAt": "2025-05-01T00:00:00.000Z",
+           "questions": [{"id": "qy", "type": "truefalse", "prompt": "Y?", "answer": true}]})
+}
+
+#[test]
+fn undo_moves_deletion_ownership_but_never_rewrites_the_original_disposition() {
+    let e = env();
+    let (px, a) = e.import("x.json", &fixture("r-full.json"));
+    let x = run_id(a);
+    let mut v = fixture("r-full.json");
+    v["library"]["papers"].as_array_mut().unwrap().push(paper_y());
+    let (py, b) = e.import("y.json", &v);
+    let y = run_id(b);
+
+    // X carried paper-a, Y only deduplicated it: the facts and the owners
+    let ox = origin_of(&e, &px.source_id, "paper", "paper-a").unwrap();
+    let oy = origin_of(&e, &py.source_id, "paper", "paper-a").unwrap();
+    assert_eq!((ox["disposition"].as_str(), ox["deletionOwner"].as_bool()), (Some("carried"), Some(true)));
+    assert_eq!((oy["disposition"].as_str(), oy["deletionOwner"].as_bool()), (Some("deduplicated-identical"), Some(false)));
+
+    // undo X: the record stays because Y still contains it; Y now owns its deletion, its disposition is untouched
+    let UndoOutcome::Done { .. } = qs_migrate_v1::undo(&e.host, &x).unwrap() else { panic!("undo X") };
+    assert_eq!(e.count("paper"), 3);
+    assert!(origin_of(&e, &px.source_id, "paper", "paper-a").is_none(), "X's origin rows are gone with X");
+    let oy = origin_of(&e, &py.source_id, "paper", "paper-a").unwrap();
+    assert_eq!(oy["disposition"], "deduplicated-identical", "the historical migration fact is never rewritten");
+    assert_eq!(oy["deletionOwner"], true, "only the current deletion ownership moved");
+    assert_eq!(oy["canonHash"], ox["canonHash"]);
+    // Y's own new record stays Y's: carried, owner
+    let ony = origin_of(&e, &py.source_id, "paper", "paper-y").unwrap();
+    assert_eq!((ony["disposition"].as_str(), ony["deletionOwner"].as_bool()), (Some("carried"), Some(true)));
+
+    // undo Y: nobody else holds them any more, so the records are removed safely
+    let UndoOutcome::Done { .. } = qs_migrate_v1::undo(&e.host, &y).unwrap() else { panic!("undo Y") };
+    assert_eq!(e.count("paper"), 0);
+    assert_eq!(e.count("media_object"), 0);
+    assert_eq!(e.count("migration_origin"), 0);
+    assert!(e.host.with_store(|s| s.check_consistency().unwrap()).is_empty());
+}
+
+#[test]
+fn undoing_the_deduplicating_run_first_changes_neither_the_record_nor_the_owner() {
+    let e = env();
+    let (px, a) = e.import("x.json", &fixture("r-full.json"));
+    let x = run_id(a);
+    let mut v = fixture("r-full.json");
+    v["library"]["papers"].as_array_mut().unwrap().push(paper_y());
+    let (_py, b) = e.import("y.json", &v);
+    let y = run_id(b);
+    let UndoOutcome::Done { .. } = qs_migrate_v1::undo(&e.host, &y).unwrap() else { panic!("undo Y") };
+    assert_eq!(e.count("paper"), 2, "only Y's own paper-y is gone");
+    let ox = origin_of(&e, &px.source_id, "paper", "paper-a").unwrap();
+    assert_eq!((ox["disposition"].as_str(), ox["deletionOwner"].as_bool()), (Some("carried"), Some(true)));
+    let UndoOutcome::Done { .. } = qs_migrate_v1::undo(&e.host, &x).unwrap() else { panic!("undo X") };
+    assert_eq!(e.count("paper"), 0);
+}
+
+#[test]
+fn a_native_v2_record_that_migrations_only_deduplicated_survives_every_undo() {
+    let e = env();
+    // a V2-native paper exists first (no migration origin); it has no media, so it can stand alone
+    let native = paper_y();
+    e.host.with_store(|s| {
+        let c = s.catalog().clone();
+        s.commit(&json!({"ops": [stage::put_op(&c, PAPER, "paper-y", &stage::normalized(&native)).unwrap()]})).unwrap();
+    });
+    assert_eq!(e.count("paper"), 1);
+
+    // two different sources both contain it, so both only deduplicate against it
+    let mut v1 = fixture("r-full.json");
+    v1["library"]["papers"].as_array_mut().unwrap().push(native.clone());
+    let (p1, a1) = e.import("one.json", &v1);
+    let r1 = run_id(a1);
+    let mut v2 = v1.clone();
+    let mut extra = native.clone();
+    extra["id"] = json!("paper-z");
+    extra["questions"][0]["id"] = json!("qz");
+    v2["library"]["papers"].as_array_mut().unwrap().push(extra);
+    let (p2, a2) = e.import("two.json", &v2);
+    let r2 = run_id(a2);
+    for src in [&p1.source_id, &p2.source_id] {
+        let o = origin_of(&e, src, "paper", "paper-y").unwrap();
+        assert_eq!((o["disposition"].as_str(), o["deletionOwner"].as_bool()), (Some("deduplicated-identical"), Some(false)), "{src}");
+    }
+    let UndoOutcome::Done { .. } = qs_migrate_v1::undo(&e.host, &r1).unwrap() else { panic!("undo 1") };
+    let UndoOutcome::Done { .. } = qs_migrate_v1::undo(&e.host, &r2).unwrap() else { panic!("undo 2") };
+    assert_eq!(e.count("paper"), 1, "only the native record is left: every migrated paper is gone, the native one is never deleted");
+    let kept = e.host.with_store(|s| s.read(PAPER, &json!({"id": "paper-y"})).unwrap()[0].payload.clone());
+    assert_eq!(kept, stage::normalized(&native), "and it is unchanged");
+    assert_eq!(e.count("migration_origin"), 0);
+}

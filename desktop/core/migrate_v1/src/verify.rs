@@ -324,6 +324,9 @@ pub fn verify(i: &VerifyInput) -> Vec<String> {
         if origin["disposition"] != json!(e.disposition) {
             bad.push(format!("C-7: origin of {coll}/{id} disposition differs from the ledger"));
         }
+        if origin["deletionOwner"] != json!(e.disposition == "carried") {
+            bad.push(format!("C-7: origin of {coll}/{id} claims a deletion ownership that the original disposition does not give it"));
+        }
         if i.run_op_id.is_none() && origin["canonHash"] != json!(stored_hash) {
             bad.push(format!("C-7: origin canonHash of {coll}/{id} differs from the stored payload"));
         }
