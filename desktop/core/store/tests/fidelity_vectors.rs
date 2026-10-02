@@ -12,7 +12,8 @@ use qs_testkit::*;
 use serde_json::{json, Value};
 
 fn load() -> Vec<Value> {
-    let path = std::env::var("QS_VECTORS").unwrap_or_else(|_| format!("{}/tests/fixtures/canonical-vectors.json", env!("CARGO_MANIFEST_DIR")));
+    let path =
+        std::env::var("QS_VECTORS").unwrap_or_else(|_| format!("{}/tests/fixtures/canonical-vectors.json", env!("CARGO_MANIFEST_DIR")));
     let doc: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}"))).unwrap();
     doc["vectors"].as_array().expect("vectors").clone()
 }

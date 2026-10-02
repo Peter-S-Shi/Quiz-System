@@ -69,7 +69,7 @@ fn setup(mode_name: &'static str, tag: &str) -> Setup {
 
 #[test]
 fn kill_at_every_activation_checkpoint_leaves_exactly_pre_or_exactly_post() {
-    assert!(qs_platform::fault::ENABLED, "fault injection must be compiled into the scenario binary");
+    assert!(std::hint::black_box(qs_platform::fault::ENABLED), "fault injection must be compiled into the scenario binary");
     let repeats = env_usize("QS_H3_REPEATS", 1);
     let points = ["before-snapshot", "after-snapshot", "mid-copy", "before-commit", "after-commit", "after-journal-done"];
     assert!(points.iter().all(|p| CHECKPOINTS.contains(p)));
@@ -79,7 +79,12 @@ fn kill_at_every_activation_checkpoint_leaves_exactly_pre_or_exactly_post() {
             for rep in 0..repeats {
                 let s = setup(mode_name, &format!("{mode_name}-{cp}-{rep}").replace('_', "-"));
                 let out = run(&["activate", &root_str(&s.t.root), &s.staging_db.display().to_string(), s.mode_name, &s.op], Some(cp));
-                assert_eq!(out.status.code(), Some(99), "{mode_name}/{cp}: the process must have been killed at the checkpoint: {}", String::from_utf8_lossy(&out.stderr));
+                assert_eq!(
+                    out.status.code(),
+                    Some(99),
+                    "{mode_name}/{cp}: the process must have been killed at the checkpoint: {}",
+                    String::from_utf8_lossy(&out.stderr)
+                );
 
                 let store = open(&s.t.root);
                 assert!(store.quick_check().unwrap(), "{mode_name}/{cp}: quick_check");
@@ -118,7 +123,11 @@ fn kill_at_every_activation_checkpoint_leaves_exactly_pre_or_exactly_post() {
             }
         }
     }
-    eprintln!("H3: {} kills at {} checkpoints x 2 modes x {repeats}: {pre_n} pre, {post_n} post, 0 intermediate", points.len() * 2 * repeats, points.len());
+    eprintln!(
+        "H3: {} kills at {} checkpoints x 2 modes x {repeats}: {pre_n} pre, {post_n} post, 0 intermediate",
+        points.len() * 2 * repeats,
+        points.len()
+    );
 }
 
 #[test]

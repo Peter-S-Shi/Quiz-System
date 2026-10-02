@@ -150,7 +150,15 @@ fn tables_for(catalog: &Catalog, mode: Mode) -> Vec<&qs_store::Collection> {
     catalog.collections().iter().filter(|c| matches!(mode, Mode::Replace) || c.canonical).collect()
 }
 
-fn activate_inner(store: &mut Store, staging_db: &Path, mode: Mode, op_id: &str, opts: &Options, mid: &str, snapshot_live: bool) -> Result<Report> {
+fn activate_inner(
+    store: &mut Store,
+    staging_db: &Path,
+    mode: Mode,
+    op_id: &str,
+    opts: &Options,
+    mid: &str,
+    snapshot_live: bool,
+) -> Result<Report> {
     let root = store.root().clone();
     if staging_db.as_os_str().len() > 240 {
         bail!(Code::ActivationFailed, "staging path is too long to attach safely");
@@ -307,7 +315,8 @@ pub fn recover(store: &Store) -> Result<Vec<Recovered>> {
         let op = j["opId"].as_str().unwrap_or("").to_string();
         let kind = j["kind"].as_str().unwrap_or("").to_string();
         let mode = j["mode"].as_str().unwrap_or("").to_string();
-        let applied: i64 = store.conn().query_row("SELECT count(*) FROM operation_journal WHERE op_id=?1", [&op], |r| r.get(0)).code(Code::Db)?;
+        let applied: i64 =
+            store.conn().query_row("SELECT count(*) FROM operation_journal WHERE op_id=?1", [&op], |r| r.get(0)).code(Code::Db)?;
         let resolution = if applied > 0 {
             journal::write(root, &op, &kind, &mode, "done", json!({"resolvedBy": "recovery: committed -> complete-forward"}))?;
             Resolution::Committed
@@ -328,7 +337,7 @@ pub fn prune_snapshots(root: &DataRoot, keep: usize) -> Result<usize> {
         .filter(|e| e.path().extension().is_some_and(|x| x == "db"))
         .filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path())))
         .collect();
-    files.sort_by(|a, b| b.0.cmp(&a.0));
+    files.sort_by_key(|f| std::cmp::Reverse(f.0));
     let mut n = 0;
     for (_, p) in files.into_iter().skip(keep) {
         fs::remove_file(p)?;

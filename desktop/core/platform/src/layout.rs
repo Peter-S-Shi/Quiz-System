@@ -23,8 +23,7 @@ pub struct DataRoot {
 impl DataRoot {
     /// `%LOCALAPPDATA%\<app-id>` - never roaming, never OneDrive-redirected, never under the install directory.
     pub fn default_for_user() -> Result<DataRoot> {
-        let base = std::env::var_os("LOCALAPPDATA")
-            .ok_or_else(|| Error::new(Code::Internal, "LOCALAPPDATA is not set"))?;
+        let base = std::env::var_os("LOCALAPPDATA").ok_or_else(|| Error::new(Code::Internal, "LOCALAPPDATA is not set"))?;
         Ok(DataRoot { root: PathBuf::from(base).join(APP_IDENTIFIER) })
     }
 

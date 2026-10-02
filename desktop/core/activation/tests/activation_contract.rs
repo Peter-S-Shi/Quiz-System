@@ -50,7 +50,8 @@ fn replace_on_an_empty_store_makes_it_equal_to_the_staging_set() {
     let mut live = open_live(&t, &c);
     let (st, staged_hash) = build_staging(&live, &c, "op-r1", fill_n(1..=25));
     let before = std::fs::read(&st.db).unwrap();
-    let rep = activate(&mut live, &st.db, Mode::Replace, "op-r1", &Options { verify_staging_untouched: true, ..Options::default() }).unwrap();
+    let rep =
+        activate(&mut live, &st.db, Mode::Replace, "op-r1", &Options { verify_staging_untouched: true, ..Options::default() }).unwrap();
     assert_eq!(hash(&live), staged_hash);
     assert_eq!(live.count("learner_response").unwrap(), 25);
     assert!(live.check_consistency().unwrap().is_empty());

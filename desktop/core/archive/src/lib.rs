@@ -88,7 +88,8 @@ pub fn snapshot_for_archive(store: &Store, op_id: &str) -> Result<SnapshotHandle
     let (schema_version, media) = {
         let c = Connection::open(fsx::sqlite_path(&db)?).code(Code::Db)?;
         let v: i32 = c.query_row("PRAGMA user_version", [], |r| r.get(0)).code(Code::Db)?;
-        let mut st = c.prepare(&format!("SELECT DISTINCT content_hash, size FROM {MEDIA_COLLECTION} ORDER BY content_hash")).code(Code::Db)?;
+        let mut st =
+            c.prepare(&format!("SELECT DISTINCT content_hash, size FROM {MEDIA_COLLECTION} ORDER BY content_hash")).code(Code::Db)?;
         let m: Vec<(String, u64)> = st
             .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)? as u64)))
             .code(Code::Db)?
@@ -240,7 +241,8 @@ fn read_manifest(zip: &mut ZipArchive<File>) -> Result<(Manifest, i64)> {
         bail!(Code::ArchiveWrongFormat, "not a Quiz Studio archive (format {:?})", v["format"]);
     }
     let fv = v["formatVersion"].as_i64().unwrap_or(-1);
-    let schema = v["storeSchemaVersion"].as_i64().ok_or_else(|| Error::new(Code::ArchiveWrongFormat, "manifest lacks storeSchemaVersion"))? as i32;
+    let schema =
+        v["storeSchemaVersion"].as_i64().ok_or_else(|| Error::new(Code::ArchiveWrongFormat, "manifest lacks storeSchemaVersion"))? as i32;
     let mut entries = BTreeMap::new();
     for e in v["entries"].as_array().ok_or_else(|| Error::new(Code::ArchiveWrongFormat, "manifest lacks entries"))? {
         let (Some(p), Some(s), Some(h)) = (e["path"].as_str(), e["size"].as_u64(), e["sha256"].as_str()) else {
@@ -272,7 +274,11 @@ pub fn verify_archive(path: &Path, max_schema: i32) -> Result<Manifest> {
         bail!(Code::ArchiveWrongFormat, "unsupported archive format version {fv}");
     }
     if mf.store_schema_version > max_schema {
-        bail!(Code::ArchiveNewerSchema, "archive was written by a newer store schema (v{}); this build supports v{max_schema}", mf.store_schema_version);
+        bail!(
+            Code::ArchiveNewerSchema,
+            "archive was written by a newer store schema (v{}); this build supports v{max_schema}",
+            mf.store_schema_version
+        );
     }
     if mf.store_schema_version < 1 {
         bail!(Code::ArchiveWrongFormat, "archive has an invalid store schema version");

@@ -119,8 +119,7 @@ pub struct Catalog {
 
 fn ident_ok(s: &str) -> bool {
     let mut c = s.chars();
-    matches!(c.next(), Some(f) if f.is_ascii_lowercase() || f == '_')
-        && c.all(|x| x.is_ascii_lowercase() || x.is_ascii_digit() || x == '_')
+    matches!(c.next(), Some(f) if f.is_ascii_lowercase() || f == '_') && c.all(|x| x.is_ascii_lowercase() || x.is_ascii_digit() || x == '_')
 }
 
 impl Column {

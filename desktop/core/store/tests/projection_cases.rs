@@ -17,7 +17,11 @@ fn cases() -> (Value, Vec<Value>, Vec<Value>) {
     let valid = vec![
         ok("learner_response", "resp-1", response_payload(1, 4, &["m1".into(), "m2".into(), "m1".into()])),
         ok("learner_response", "resp-2", json!({"id": "resp-2", "paperId": "p", "itemCount": 0, "items": []})),
-        ok("learner_response", "resp-3", json!({"id": "resp-3", "paperId": "p", "title": null, "itemCount": 2, "items": ["a", "b"], "mediaRefs": ["x", "x"]})),
+        ok(
+            "learner_response",
+            "resp-3",
+            json!({"id": "resp-3", "paperId": "p", "title": null, "itemCount": 2, "items": ["a", "b"], "mediaRefs": ["x", "x"]}),
+        ),
         ok("teacher_review", "rev-1", review_payload("rev-1", "resp-1")),
         ok("remediation_doc", "rem-1", json!({"id": "rem-1", "sourceResponseId": "resp-1"})),
         ok("remediation_doc", "rem-2", json!({"id": "rem-2", "sourceResponseId": "resp-1", "sourceReviewId": "rev-1"})),
@@ -51,8 +55,13 @@ fn projection_fixture_is_current_and_invalid_payloads_are_rejected() {
         std::fs::create_dir_all(std::path::Path::new(&fixture_path()).parent().unwrap()).unwrap();
         std::fs::write(fixture_path(), serde_json::to_string_pretty(&doc).unwrap()).unwrap();
     }
-    let on_disk: Value = serde_json::from_str(&std::fs::read_to_string(fixture_path()).expect("fixture missing - run with QS_UPDATE_FIXTURES=1")).unwrap();
-    assert_eq!(qs_store::canon::canonical(&on_disk), qs_store::canon::canonical(&doc), "fixture is stale; regenerate with QS_UPDATE_FIXTURES=1");
+    let on_disk: Value =
+        serde_json::from_str(&std::fs::read_to_string(fixture_path()).expect("fixture missing - run with QS_UPDATE_FIXTURES=1")).unwrap();
+    assert_eq!(
+        qs_store::canon::canonical(&on_disk),
+        qs_store::canon::canonical(&doc),
+        "fixture is stale; regenerate with QS_UPDATE_FIXTURES=1"
+    );
     let c = evidence_catalog();
     for bad in on_disk["invalid"].as_array().unwrap() {
         let coll = c.collection(bad["collection"].as_str().unwrap()).unwrap();

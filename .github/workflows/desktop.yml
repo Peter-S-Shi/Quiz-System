@@ -1,0 +1,143 @@
+name: Desktop (V2)
+
+# Windows build, test and packaging pipeline for the V2 desktop line (ADR 0001 section 10, amendment A2).
+# The V1 workflow (ci.yml) is untouched. The authoritative toolchain is MSVC + static CRT on windows-latest.
+
+on:
+  push:
+    branches: [v2]
+    paths: ["desktop/**", ".github/workflows/desktop.yml"]
+  pull_request:
+    branches: [v2, main]
+    paths: ["desktop/**", ".github/workflows/desktop.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop-windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: desktop
+    env:
+      CARGO_INCREMENTAL: "0"
+      # ADR 0001 acceptance thresholds (locally lower defaults keep the dev loop fast)
+      QS_KILLS: "500"
+      QS_H3_REPEATS: "3"
+      QS_HEAVY_MIB: "400"
+      QS_BITFLIPS: "300"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Rust toolchain (MSVC)
+        run: |
+          rustup toolchain install stable-x86_64-pc-windows-msvc --profile minimal --component clippy,rustfmt
+          rustup default stable-x86_64-pc-windows-msvc
+          rustc -vV
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            desktop/target
+          key: desktop-${{ runner.os }}-${{ hashFiles('desktop/Cargo.lock', 'desktop/rust-toolchain.toml') }}
+          restore-keys: desktop-${{ runner.os }}-
+
+      - name: Format and lint
+        run: |
+          . ./scripts/env.ps1
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: JS tests (canonical JSON, projections, Store Port client, storage/offline boundary)
+        run: node --test "ui/tests/*.spec.mjs"
+
+      - name: Generate 5,000 cross-language fidelity vectors
+        run: node scripts/gen-canonical-vectors.mjs 5000 "$env:RUNNER_TEMP/canonical-vectors-5000.json" 20261002
+
+      - name: Rust tests (store, media, activation, archive, port + H2/H3/H4/H5 fault and memory suites)
+        run: |
+          . ./scripts/env.ps1
+          $env:QS_VECTORS = "$env:RUNNER_TEMP/canonical-vectors-5000.json"
+          cargo test --workspace --exclude qs-desktop -- --nocapture
+
+      - name: Install Tauri CLI
+        run: npm install --global @tauri-apps/cli@2.12.1
+
+      - name: Release build + reproducibility of the app binary (A2)
+        run: |
+          . ./scripts/env.ps1
+          cargo build --release -p qs-desktop --features custom-protocol
+          $exe = "target/release/quiz-studio.exe"
+          $h1 = (Get-FileHash $exe -Algorithm SHA256).Hash
+          cargo clean --release -p qs-desktop
+          cargo build --release -p qs-desktop --features custom-protocol
+          $h2 = (Get-FileHash $exe -Algorithm SHA256).Hash
+          "build1=$h1`nbuild2=$h2" | Tee-Object -FilePath "$env:RUNNER_TEMP/repro.txt"
+          if ($h1 -ne $h2) { throw "app binary is not reproducible" }
+
+      - name: Shipped binary carries no fault-injection hook
+        run: |
+          . ./scripts/env.ps1
+          $tree = cargo tree -p qs-desktop -e features
+          if ($tree -match "fault-injection") { throw "qs-platform/fault-injection is enabled for the app" }
+          $bytes = [IO.File]::ReadAllBytes("target/release/quiz-studio.exe")
+          $text = [Text.Encoding]::ASCII.GetString($bytes)
+          if ($text.Contains("QS_FAULT_AT")) { throw "fault-injection hook found in the release binary" }
+
+      - name: Build NSIS installer (v2.0.0-dev.0) and an upgrade installer (v2.0.1-dev.0)
+        run: |
+          . ./scripts/env.ps1
+          Push-Location app/src-tauri
+          tauri build --bundles nsis
+          Copy-Item "../../target/release/bundle/nsis/*_2.0.0-dev.0_x64-setup.exe" "$env:RUNNER_TEMP/base-setup.exe"
+          tauri build --bundles nsis --config '{"version":"2.0.1-dev.0"}'
+          Copy-Item "../../target/release/bundle/nsis/*_2.0.1-dev.0_x64-setup.exe" "$env:RUNNER_TEMP/upgrade-setup.exe"
+          Pop-Location
+          Get-FileHash "$env:RUNNER_TEMP/base-setup.exe", "$env:RUNNER_TEMP/upgrade-setup.exe" -Algorithm SHA256 | Format-Table Hash, Path -AutoSize
+
+      - name: Installer uses the downloadBootstrapper WebView2 mode (static check)
+        run: |
+          $nsi = Get-Content "target/release/nsis/x64/installer.nsi" -Raw
+          if ($nsi -notmatch 'INSTALLWEBVIEW2MODE "downloadBootstrapper"') { throw "WebView2 install mode is not downloadBootstrapper" }
+          if ($nsi -notmatch 'currentUser|perUser|PERUSER') { Write-Host "note: per-user mode is verified at install time (no machine-wide registry key)" }
+
+      - name: Package acceptance (install, installed-exe smoke, upgrade, silent uninstall keeps data)
+        run: |
+          ./scripts/package-test.ps1 -Installer "$env:RUNNER_TEMP/base-setup.exe" -UpgradeInstaller "$env:RUNNER_TEMP/upgrade-setup.exe" -Report "$env:RUNNER_TEMP/package-report.json" -RealData
+
+      - name: Collect evidence
+        if: always()
+        run: |
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/evidence" | Out-Null
+          foreach ($f in "package-report.json", "repro.txt") { if (Test-Path "$env:RUNNER_TEMP/$f") { Copy-Item "$env:RUNNER_TEMP/$f" "$env:RUNNER_TEMP/evidence/" } }
+          if (Test-Path "$env:RUNNER_TEMP/base-setup.exe") { (Get-FileHash "$env:RUNNER_TEMP/base-setup.exe" -Algorithm SHA256).Hash | Set-Content "$env:RUNNER_TEMP/evidence/installer.sha256" }
+          rustc -vV | Set-Content "$env:RUNNER_TEMP/evidence/rustc.txt"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-foundation-evidence
+          path: ${{ runner.temp }}/evidence
+          retention-days: 14
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiz-studio-installer-dev
+          path: ${{ runner.temp }}/base-setup.exe
+          retention-days: 7

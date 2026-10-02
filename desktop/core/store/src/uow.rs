@@ -92,7 +92,11 @@ impl Store {
                             }
                         }
                         _ if coll.has_projections() => {
-                            bail!(Code::RejectProjection, "{}/{id}: projection missing for a collection that declares projections", coll.name)
+                            bail!(
+                                Code::RejectProjection,
+                                "{}/{id}: projection missing for a collection that declares projections",
+                                coll.name
+                            )
                         }
                         _ => {}
                     }
@@ -143,7 +147,10 @@ fn check_precondition(tx: &Transaction, catalog: &crate::Catalog, p: &Value, i: 
         Some("absent") if rev.is_some() => bail!(Code::RejectPrecondition, "{name}/{id} must not exist"),
         Some("exists") if rev.is_none() => bail!(Code::RejectPrecondition, "{name}/{id} must exist"),
         Some("rev") => {
-            let want = p.get("equals").and_then(Value::as_i64).ok_or_else(|| Error::new(Code::RejectShape, format!("{what}: 'equals' must be an integer")))?;
+            let want = p
+                .get("equals")
+                .and_then(Value::as_i64)
+                .ok_or_else(|| Error::new(Code::RejectShape, format!("{what}: 'equals' must be an integer")))?;
             if rev != Some(want) {
                 bail!(Code::RejectPrecondition, "{name}/{id} is at revision {rev:?}, expected {want}");
             }

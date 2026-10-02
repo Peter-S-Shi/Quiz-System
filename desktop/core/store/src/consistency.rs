@@ -68,7 +68,12 @@ pub fn check(conn: &Connection, catalog: &Catalog) -> Result<Vec<Problem>> {
             };
             let have_cols = stored_columns(coll, r, 2).code(Code::Db)?;
             if have_cols != expected.columns {
-                bad.push(Problem { kind: "column-mismatch", collection: coll.name.clone(), id: Some(id.clone()), detail: "stored columns differ from the payload projection".into() });
+                bad.push(Problem {
+                    kind: "column-mismatch",
+                    collection: coll.name.clone(),
+                    id: Some(id.clone()),
+                    detail: "stored columns differ from the payload projection".into(),
+                });
             }
             for (rel, (stmt, (_, want))) in coll.relations.iter().zip(rel_stmts.iter_mut().zip(&expected.relations)) {
                 let width = rel.columns.len() + rel.ordinal_column.is_some() as usize;
@@ -83,7 +88,12 @@ pub fn check(conn: &Connection, catalog: &Catalog) -> Result<Vec<Problem>> {
                         kind: "relation-mismatch",
                         collection: coll.name.clone(),
                         id: Some(id.clone()),
-                        detail: format!("relation rows in '{}' differ from the payload (db {} vs payload {})", rel.table, have.len(), want.len()),
+                        detail: format!(
+                            "relation rows in '{}' differ from the payload (db {} vs payload {})",
+                            rel.table,
+                            have.len(),
+                            want.len()
+                        ),
                     });
                 }
             }
@@ -97,13 +107,23 @@ pub fn check(conn: &Connection, catalog: &Catalog) -> Result<Vec<Problem>> {
                 )
                 .code(Code::Db)?;
             if n > 0 {
-                bad.push(Problem { kind: "orphan-relation-rows", collection: coll.name.clone(), id: None, detail: format!("{n} row(s) in '{}' have no owner", rel.table) });
+                bad.push(Problem {
+                    kind: "orphan-relation-rows",
+                    collection: coll.name.clone(),
+                    id: None,
+                    detail: format!("{n} row(s) in '{}' have no owner", rel.table),
+                });
             }
         }
     }
     let fk: i64 = conn.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |r| r.get(0)).code(Code::Db)?;
     if fk > 0 {
-        bad.push(Problem { kind: "foreign-key-violation", collection: String::new(), id: None, detail: format!("{fk} foreign key violation(s)") });
+        bad.push(Problem {
+            kind: "foreign-key-violation",
+            collection: String::new(),
+            id: None,
+            detail: format!("{fk} foreign key violation(s)"),
+        });
     }
     Ok(bad)
 }

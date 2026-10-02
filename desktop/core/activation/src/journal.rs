@@ -3,7 +3,7 @@
 //! (`operation_journal` row written in the activation transaction), so the two can never disagree about
 //! whether an operation was applied.
 
-use qs_platform::{fsx, Code, DataRoot, ResultExt, Result};
+use qs_platform::{fsx, Code, DataRoot, Result, ResultExt};
 use serde_json::{json, Value};
 use std::fs;
 

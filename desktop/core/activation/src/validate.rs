@@ -36,7 +36,10 @@ pub fn validate_file(catalog: &qs_store::Catalog, staging_db: &Path, media: &Med
     }
     let ver: i32 = c.query_row("PRAGMA user_version", [], |r| r.get(0)).code(Code::Db)?;
     if ver != catalog.schema_version() {
-        bad.push(format!("store schema v{ver} does not match the live schema v{} (staging must be migrated first)", catalog.schema_version()));
+        bad.push(format!(
+            "store schema v{ver} does not match the live schema v{} (staging must be migrated first)",
+            catalog.schema_version()
+        ));
         return Ok(bad);
     }
     if let Err(e) = verify_catalog(&c, catalog) {
@@ -48,8 +51,11 @@ pub fn validate_file(catalog: &qs_store::Catalog, staging_db: &Path, media: &Med
     }
     // media presence (fail closed): every media_object must exist in the content-addressed store
     let mut st = c.prepare(&format!("SELECT id, content_hash, size FROM {MEDIA_COLLECTION}")).code(Code::Db)?;
-    let rows: Vec<(String, String, i64)> =
-        st.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).code(Code::Db)?.collect::<std::result::Result<_, _>>().code(Code::Db)?;
+    let rows: Vec<(String, String, i64)> = st
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
+        .code(Code::Db)?
+        .collect::<std::result::Result<_, _>>()
+        .code(Code::Db)?;
     for (id, hash, size) in rows {
         match media.size_of(&hash) {
             Ok(s) if s as i64 == size => {

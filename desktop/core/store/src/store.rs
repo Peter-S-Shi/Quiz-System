@@ -222,9 +222,7 @@ impl Store {
     }
 
     pub fn info(&self) -> Result<StoreInfo> {
-        let meta = |k: &str| -> Option<String> {
-            self.conn.query_row("SELECT value FROM meta WHERE key=?1", [k], |r| r.get(0)).ok()
-        };
+        let meta = |k: &str| -> Option<String> { self.conn.query_row("SELECT value FROM meta WHERE key=?1", [k], |r| r.get(0)).ok() };
         Ok(StoreInfo {
             application_id: self.conn.query_row("PRAGMA application_id", [], |r| r.get(0)).code(Code::Db)?,
             user_version: self.conn.query_row("PRAGMA user_version", [], |r| r.get(0)).code(Code::Db)?,
@@ -259,7 +257,6 @@ impl Store {
     }
 }
 
-
 /// Migrate a standalone (staging) database file forward to the catalog's schema, in one transaction.
 /// Used when restoring an archive written by an older build. Returns `(from, to)` when it migrated.
 pub fn migrate_file(db: &Path, catalog: &Catalog) -> Result<Option<(i32, i32)>> {
@@ -290,14 +287,10 @@ pub fn migrate_file(db: &Path, catalog: &Catalog) -> Result<Option<(i32, i32)>> 
 /// aborted upgrade left the database exactly as it was.
 pub(crate) fn physical_hash(conn: &Connection) -> Result<String> {
     let mut h = Sha256::new();
-    let mut tables = conn
-        .prepare("SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
-        .code(Code::Db)?;
-    let list: Vec<(String, String)> = tables
-        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
-        .code(Code::Db)?
-        .collect::<std::result::Result<_, _>>()
-        .code(Code::Db)?;
+    let mut tables =
+        conn.prepare("SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").code(Code::Db)?;
+    let list: Vec<(String, String)> =
+        tables.query_map([], |r| Ok((r.get(0)?, r.get(1)?))).code(Code::Db)?.collect::<std::result::Result<_, _>>().code(Code::Db)?;
     for (name, sql) in list {
         h.update(name.as_bytes());
         h.update(sql.as_bytes());
@@ -320,7 +313,8 @@ pub(crate) fn physical_hash(conn: &Connection) -> Result<String> {
 pub fn verify_catalog(conn: &Connection, catalog: &Catalog) -> Result<()> {
     let cols = |table: &str| -> Result<Vec<String>> {
         let mut st = conn.prepare("SELECT name FROM pragma_table_info(?1)").code(Code::Db)?;
-        let v = st.query_map([table], |r| r.get::<_, String>(0)).code(Code::Db)?.collect::<std::result::Result<Vec<_>, _>>().code(Code::Db)?;
+        let v =
+            st.query_map([table], |r| r.get::<_, String>(0)).code(Code::Db)?.collect::<std::result::Result<Vec<_>, _>>().code(Code::Db)?;
         Ok(v)
     };
     let need = |have: &[String], table: &str, want: &str| -> Result<()> {
@@ -358,11 +352,8 @@ pub fn verify_catalog(conn: &Connection, catalog: &Catalog) -> Result<()> {
     let mut st = conn
         .prepare("SELECT name, sql FROM sqlite_master WHERE type='table' AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'")
         .code(Code::Db)?;
-    let tables: Vec<(String, String)> = st
-        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
-        .code(Code::Db)?
-        .collect::<std::result::Result<_, _>>()
-        .code(Code::Db)?;
+    let tables: Vec<(String, String)> =
+        st.query_map([], |r| Ok((r.get(0)?, r.get(1)?))).code(Code::Db)?.collect::<std::result::Result<_, _>>().code(Code::Db)?;
     for (name, sql) in tables {
         let up = sql.to_ascii_uppercase();
         let refs = up.matches("REFERENCES").count();

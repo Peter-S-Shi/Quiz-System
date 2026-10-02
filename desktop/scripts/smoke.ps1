@@ -33,7 +33,8 @@ try {
 
   # headless self-test (isolated temp root, same Store Port)
   $selfOut = Join-Path $Work "selftest.json"
-  & $Exe --self-test $selfOut
+  $sp = Start-Process $Exe -ArgumentList "--self-test", "`"$selfOut`"" -Wait -PassThru -WindowStyle Hidden   # GUI-subsystem exe: must be waited on explicitly
+  Check "selftest.exit_code" ($sp.ExitCode -eq 0) ("exit " + $sp.ExitCode)
   $st = Get-Content $selfOut -Raw | ConvertFrom-Json
   Check "selftest" ($st.ok -eq $true) ("steps=" + $st.steps.Count)
 

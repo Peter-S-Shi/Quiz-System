@@ -86,7 +86,12 @@ fn ingest(app: &AppHandle, state: &AppState, path: &Path) -> Value {
 
 #[tauri::command]
 pub async fn native_pick_media(app: AppHandle, state: State<'_, AppState>) -> Result<Value, ()> {
-    let picked = app.dialog().file().add_filter("Images and audio", &["png", "jpg", "jpeg", "gif", "webp", "svg", "mp3", "wav", "ogg", "m4a", "flac"]).add_filter("All files", &["*"]).blocking_pick_file();
+    let picked = app
+        .dialog()
+        .file()
+        .add_filter("Images and audio", &["png", "jpg", "jpeg", "gif", "webp", "svg", "mp3", "wav", "ogg", "m4a", "flac"])
+        .add_filter("All files", &["*"])
+        .blocking_pick_file();
     let Some(p) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
     Ok(ingest(&app, &state, &p))
 }
@@ -108,7 +113,8 @@ fn default_backup_name() -> String {
 #[tauri::command]
 pub async fn native_backup_save(app: AppHandle, state: State<'_, AppState>) -> Result<Value, ()> {
     let Some(core) = state.core() else { return Ok(err_msg("STORE_UNAVAILABLE", "the data store is not open")) };
-    let picked = app.dialog().file().set_file_name(default_backup_name()).add_filter("Quiz Studio backup", &["qsarchive"]).blocking_save_file();
+    let picked =
+        app.dialog().file().set_file_name(default_backup_name()).add_filter("Quiz Studio backup", &["qsarchive"]).blocking_save_file();
     let Some(dest) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
     let r = core.dispatch("backup.create", &json!({"dest": dest.display().to_string()}));
     state.log(&format!("backup.create ok={}", r["ok"]));
@@ -134,7 +140,9 @@ pub async fn native_backup_pick(app: AppHandle, state: State<'_, AppState>) -> R
 #[tauri::command]
 pub async fn native_backup_restore_pending(state: State<'_, AppState>) -> Result<Value, ()> {
     let Some(core) = state.core() else { return Ok(err_msg("STORE_UNAVAILABLE", "the data store is not open")) };
-    let Some(path) = state.pending_backup.lock().unwrap().take() else { return Ok(err_msg("NOT_FOUND", "no verified backup is waiting to be restored")) };
+    let Some(path) = state.pending_backup.lock().unwrap().take() else {
+        return Ok(err_msg("NOT_FOUND", "no verified backup is waiting to be restored"));
+    };
     let r = core.dispatch("backup.restore", &json!({"path": path.display().to_string()}));
     state.log(&format!("backup.restore ok={}", r["ok"]));
     Ok(r)

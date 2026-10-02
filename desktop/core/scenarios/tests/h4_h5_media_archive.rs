@@ -25,7 +25,8 @@ fn a_kill_mid_media_write_leaves_only_complete_files_or_discardable_temps() {
     assert_eq!(out.status.code(), Some(99));
     let media = MediaStore::new(t.root.media_dir());
     assert!(media.list().unwrap().is_empty(), "no final-named file may exist for an incomplete write");
-    let temps: Vec<_> = std::fs::read_dir(media.dir()).unwrap().map(|e| e.unwrap().path()).filter(|p| p.to_string_lossy().ends_with(".tmp")).collect();
+    let temps: Vec<_> =
+        std::fs::read_dir(media.dir()).unwrap().map(|e| e.unwrap().path()).filter(|p| p.to_string_lossy().ends_with(".tmp")).collect();
     assert_eq!(temps.len(), 1, "exactly one discardable temp file");
     // the orphan is collected by gc (no references)
     let rep = media.gc(&Default::default(), std::time::Duration::ZERO).unwrap();
@@ -87,7 +88,9 @@ fn streaming_ingest_archive_and_restore_stay_within_the_memory_envelope() {
             .unwrap()
             .iter()
             .enumerate()
-            .map(|(i, h)| put_op(&c, "media_object", &format!("m-{i}"), media_object_payload(&format!("m-{i}"), h, media.size_of(h).unwrap())))
+            .map(|(i, h)| {
+                put_op(&c, "media_object", &format!("m-{i}"), media_object_payload(&format!("m-{i}"), h, media.size_of(h).unwrap()))
+            })
             .collect();
         s.commit(&uow(ops)).unwrap();
     }

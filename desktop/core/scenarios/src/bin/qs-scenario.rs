@@ -53,7 +53,8 @@ fn main() {
             let ack_path = &args[3];
             let mut store = open(&root);
             let c = Arc::clone(store.catalog());
-            let last: u64 = std::fs::read_to_string(ack_path).ok().and_then(|t| t.lines().last().and_then(|l| l.trim().parse().ok())).unwrap_or(0);
+            let last: u64 =
+                std::fs::read_to_string(ack_path).ok().and_then(|t| t.lines().last().and_then(|l| l.trim().parse().ok())).unwrap_or(0);
             let mut ack = FsOpen::new().create(true).append(true).open(ack_path).expect("ack file");
             println!("ready");
             let mut n = last + 1;

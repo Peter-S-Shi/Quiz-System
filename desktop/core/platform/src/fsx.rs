@@ -98,9 +98,7 @@ impl ProcessLock {
         let file = File::options().create(true).truncate(false).write(true).open(path)?;
         match file.try_lock() {
             Ok(()) => Ok(ProcessLock { _file: file }),
-            Err(fs::TryLockError::WouldBlock) => {
-                Err(Error::new(Code::Locked, "another process owns the Quiz Studio data store"))
-            }
+            Err(fs::TryLockError::WouldBlock) => Err(Error::new(Code::Locked, "another process owns the Quiz Studio data store")),
             Err(fs::TryLockError::Error(e)) => Err(Error::new(Code::Io, format!("lock failed: {e}"))),
         }
     }

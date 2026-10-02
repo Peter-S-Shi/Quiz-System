@@ -55,7 +55,11 @@ pub fn run(dir: &Path) -> Result<Value> {
                 "payload": {"id": "m-1", "contentHash": hash, "size": size, "mimeType": "application/octet-stream", "name": "blob.bin"},
                 "proj": {"columns": {"content_hash": hash, "size": size, "mime": "application/octet-stream", "name": "blob.bin"}, "relations": {}}}]}}),
         );
-        if reg["ok"] == true { Ok(ing["result"].clone()) } else { Err(reg.to_string()) }
+        if reg["ok"] == true {
+            Ok(ing["result"].clone())
+        } else {
+            Err(reg.to_string())
+        }
     } else {
         Err(ing.to_string())
     };
@@ -63,7 +67,8 @@ pub fn run(dir: &Path) -> Result<Value> {
 
     let t = Instant::now();
     let cc = core_a.dispatch("store.check_consistency", &json!({}));
-    let clean = cc["ok"] == true && cc["result"]["quickCheckOk"] == true && cc["result"]["problems"].as_array().is_some_and(|p| p.is_empty());
+    let clean =
+        cc["ok"] == true && cc["result"]["quickCheckOk"] == true && cc["result"]["problems"].as_array().is_some_and(|p| p.is_empty());
     step("consistency", t, if clean { Ok(cc["result"].clone()) } else { Err(cc.to_string()) });
 
     let t = Instant::now();

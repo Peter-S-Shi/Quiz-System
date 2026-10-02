@@ -66,10 +66,7 @@ pub struct Core {
 impl Core {
     pub fn open(root: &DataRoot, catalog: Arc<Catalog>, opts: &OpenOptions) -> Result<Core> {
         let store = Store::open(root, catalog.clone(), opts)?;
-        let recovered = activation::recover(&store)?
-            .into_iter()
-            .map(|r| (r.op_id, format!("{:?}", r.resolution).to_lowercase()))
-            .collect();
+        let recovered = activation::recover(&store)?.into_iter().map(|r| (r.op_id, format!("{:?}", r.resolution).to_lowercase())).collect();
         let quick_check_ok = store.quick_check()?;
         let consistency_problems = if quick_check_ok { store.check_consistency()?.iter().map(|p| p.to_json()).collect() } else { vec![] };
         let upgrade = store.upgrade_notice().map(|u| (u.from, u.to));
@@ -117,14 +114,20 @@ impl Core {
 
     fn require_healthy(&self) -> Result<()> {
         if !self.startup.healthy() {
-            bail!(Code::IntegrityFailed, "the store failed its startup integrity check; writes are disabled until it is restored from a snapshot or backup");
+            bail!(
+                Code::IntegrityFailed,
+                "the store failed its startup integrity check; writes are disabled until it is restored from a snapshot or backup"
+            );
         }
         Ok(())
     }
 
     pub fn call(&self, command: &str, args: &Value) -> Result<Value> {
         let str_arg = |k: &str| -> Result<&str> {
-            args.get(k).and_then(Value::as_str).filter(|s| !s.is_empty()).ok_or_else(|| Error::new(Code::RejectShape, format!("'{k}' must be a non-empty string")))
+            args.get(k)
+                .and_then(Value::as_str)
+                .filter(|s| !s.is_empty())
+                .ok_or_else(|| Error::new(Code::RejectShape, format!("'{k}' must be a non-empty string")))
         };
         match command {
             "schema.info" => {
@@ -166,7 +169,9 @@ impl Core {
                 let rec = recs.first().ok_or_else(|| Error::new(Code::NotFound, "unknown media id"))?;
                 let hash = rec.payload["contentHash"].as_str().unwrap_or_default();
                 let size = self.media.size_of(hash)?;
-                Ok(json!({"hash": hash, "size": size, "mimeType": rec.payload["mimeType"], "relativePath": format!("data/media/{}/{hash}", &hash[..2])}))
+                Ok(
+                    json!({"hash": hash, "size": size, "mimeType": rec.payload["mimeType"], "relativePath": format!("data/media/{}/{hash}", &hash[..2])}),
+                )
             }
             "media.gc" => {
                 let age = args.get("minAgeSeconds").and_then(Value::as_u64).unwrap_or(MEDIA_GC_SAFETY_DELAY.as_secs());
@@ -187,7 +192,9 @@ impl Core {
             }
             "backup.verify" => {
                 let m = archive::verify_archive(Path::new(str_arg("path")?), self.catalog.schema_version())?;
-                Ok(json!({"storeSchemaVersion": m.store_schema_version, "appVersion": m.app_version, "mediaCount": m.media_count, "entries": m.entries.len()}))
+                Ok(
+                    json!({"storeSchemaVersion": m.store_schema_version, "appVersion": m.app_version, "mediaCount": m.media_count, "entries": m.entries.len()}),
+                )
             }
             "backup.restore" => {
                 let mut s = self.store();
@@ -210,7 +217,10 @@ pub fn envelope_err(e: &Error) -> Value {
 }
 
 fn referenced_hashes(store: &Store) -> Result<HashSet<String>> {
-    let mut st = store.conn().prepare(&format!("SELECT DISTINCT content_hash FROM {MEDIA_COLLECTION}")).map_err(|e| Error::new(Code::Db, e.to_string()))?;
+    let mut st = store
+        .conn()
+        .prepare(&format!("SELECT DISTINCT content_hash FROM {MEDIA_COLLECTION}"))
+        .map_err(|e| Error::new(Code::Db, e.to_string()))?;
     let v: HashSet<String> = st
         .query_map([], |r| r.get::<_, String>(0))
         .map_err(|e| Error::new(Code::Db, e.to_string()))?

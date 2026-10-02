@@ -100,7 +100,10 @@ fn revisions_and_preconditions() {
     assert_eq!(err_code(put(&mut s, json!([{"kind":"absent","collection":"teacher_review","id":"rev-1"}]))), Code::RejectPrecondition);
     let r = put(&mut s, json!([{"kind":"exists","collection":"teacher_review","id":"rev-1"},{"kind":"rev","collection":"teacher_review","id":"rev-1","equals":1}])).unwrap();
     assert_eq!(r.writes[0].rev, 2);
-    assert_eq!(err_code(put(&mut s, json!([{"kind":"rev","collection":"teacher_review","id":"rev-1","equals":1}]))), Code::RejectPrecondition);
+    assert_eq!(
+        err_code(put(&mut s, json!([{"kind":"rev","collection":"teacher_review","id":"rev-1","equals":1}]))),
+        Code::RejectPrecondition
+    );
     assert_eq!(s.read("teacher_review", &json!({"id":"rev-1"})).unwrap()[0].rev, 2);
 }
 
@@ -150,12 +153,32 @@ fn drift_probe_every_inconsistent_unit_of_work_is_rejected_whole() {
         ("column disagrees (paperId)", mutate(&|o| o["proj"]["columns"]["paper_id"] = json!("paper-B")), Code::RejectProjection),
         ("column disagrees (itemCount)", mutate(&|o| o["proj"]["columns"]["item_count"] = json!(99)), Code::RejectProjection),
         ("relation rows missing", mutate(&|o| o["proj"]["relations"]["response_item"] = json!([])), Code::RejectProjection),
-        ("relation rows extra", mutate(&|o| o["proj"]["relations"]["media_ref"].as_array_mut().unwrap().push(json!({"media_id":"m-extra"}))), Code::RejectProjection),
-        ("relation order differs", mutate(&|o| o["proj"]["relations"]["response_item"].as_array_mut().unwrap().reverse()), Code::RejectProjection),
+        (
+            "relation rows extra",
+            mutate(&|o| o["proj"]["relations"]["media_ref"].as_array_mut().unwrap().push(json!({"media_id":"m-extra"}))),
+            Code::RejectProjection,
+        ),
+        (
+            "relation order differs",
+            mutate(&|o| o["proj"]["relations"]["response_item"].as_array_mut().unwrap().reverse()),
+            Code::RejectProjection,
+        ),
         ("payload changed, projection stale", mutate(&|o| o["payload"]["paperId"] = json!("paper-C")), Code::RejectProjection),
         ("payload identity differs from record id", mutate(&|o| o["payload"]["id"] = json!("resp-OTHER")), Code::RejectProjection),
-        ("projection omitted", mutate(&|o| { o.as_object_mut().unwrap().remove("proj"); }), Code::RejectProjection),
-        ("required field missing", mutate(&|o| { o["payload"].as_object_mut().unwrap().remove("paperId"); }), Code::RejectProjection),
+        (
+            "projection omitted",
+            mutate(&|o| {
+                o.as_object_mut().unwrap().remove("proj");
+            }),
+            Code::RejectProjection,
+        ),
+        (
+            "required field missing",
+            mutate(&|o| {
+                o["payload"].as_object_mut().unwrap().remove("paperId");
+            }),
+            Code::RejectProjection,
+        ),
         ("wrong type for a typed column", mutate(&|o| o["payload"]["itemCount"] = json!("three")), Code::RejectProjection),
         ("payload is not an object", mutate(&|o| o["payload"] = json!([1, 2])), Code::RejectShape),
         ("unknown collection", mutate(&|o| o["collection"] = json!("nope")), Code::RejectShape),
@@ -224,11 +247,7 @@ fn hard_relationships_are_enforced_and_soft_provenance_may_dangle() {
     // soft provenance: a history entry may reference a response that does not exist
     s.commit(&uow(vec![put_op(&c, "history_entry", "hist-x", history_payload("hist-x", "long-gone"))])).unwrap();
     // ...and may outlive its source
-    s.commit(&uow(vec![
-        delete_op("teacher_review", "rev-1"),
-        delete_op("learner_response", "resp-1"),
-    ]))
-    .unwrap();
+    s.commit(&uow(vec![delete_op("teacher_review", "rev-1"), delete_op("learner_response", "resp-1")])).unwrap();
     assert_eq!(s.count("history_entry").unwrap(), 2);
     assert!(s.check_consistency().unwrap().is_empty());
 }
@@ -260,7 +279,8 @@ fn upgrade_is_snapshotted_transactional_and_preserves_every_record() {
     for n in 1..=10u64 {
         s.commit(&finalize_uow(&v2, n, &[])).unwrap();
     }
-    let hashes: Vec<String> = (1..=10).map(|n| canon::hash_hex(&s.read("learner_response", &json!({"id": format!("resp-{n}")})).unwrap()[0].payload)).collect();
+    let hashes: Vec<String> =
+        (1..=10).map(|n| canon::hash_hex(&s.read("learner_response", &json!({"id": format!("resp-{n}")})).unwrap()[0].payload)).collect();
     drop(s);
 
     let v3 = arc(evidence_catalog_v2());
@@ -288,7 +308,7 @@ fn a_failing_migration_leaves_the_store_exactly_as_it_was() {
     let hash = s.state_hash(true).unwrap();
     drop(s);
 
-    let e = Store::open(&t.root, arc(evidence_catalog_v2_failing()), &OpenOptions::default()).err().expect("must fail");
+    let e = Store::open(&t.root, arc(evidence_catalog_v2_failing()), &OpenOptions::default()).expect_err("must fail");
     assert_eq!(e.code, Code::UpgradeFailed, "{e}");
     assert!(e.message.contains("no data was lost"));
 
@@ -314,7 +334,7 @@ fn catalog_lint_rejects_non_deferrable_foreign_keys() {
             vec![qs_store::Collection::new("parent_c"), qs_store::Collection::new("child_c")],
         )
         .unwrap();
-    let e = Store::open(&t.root, Arc::new(bad), &OpenOptions::default()).err().expect("must fail");
+    let e = Store::open(&t.root, Arc::new(bad), &OpenOptions::default()).expect_err("must fail");
     assert_eq!(e.code, Code::CatalogMismatch, "{e}");
 }
 
@@ -326,7 +346,10 @@ fn malformed_units_of_work_are_rejected_before_touching_the_database() {
         ("no ops", json!({})),
         ("unknown op", json!({"ops":[{"op":"merge","collection":"setting","id":"x"}]})),
         ("missing id", json!({"ops":[{"op":"delete","collection":"setting"}]})),
-        ("bad precondition kind", json!({"preconditions":[{"kind":"maybe","collection":"setting","id":"x"}],"ops":[{"op":"delete","collection":"setting","id":"x"}]})),
+        (
+            "bad precondition kind",
+            json!({"preconditions":[{"kind":"maybe","collection":"setting","id":"x"}],"ops":[{"op":"delete","collection":"setting","id":"x"}]}),
+        ),
     ] {
         let e = s.commit(&u).expect_err(what);
         assert!(matches!(e.code, Code::RejectShape), "{what}: {e}");
@@ -353,7 +376,8 @@ fn database_under_a_very_long_path_opens_and_commits() {
     }
     let root = qs_platform::DataRoot::at(p.join("data-root"));
     // creating the tree needs the verbatim form on Windows
-    let verbatim = if cfg!(windows) { std::path::PathBuf::from(format!(r"\\?\{}", root.path().display())) } else { root.path().to_path_buf() };
+    let verbatim =
+        if cfg!(windows) { std::path::PathBuf::from(format!(r"\\?\{}", root.path().display())) } else { root.path().to_path_buf() };
     std::fs::create_dir_all(&verbatim).unwrap();
     let c = arc(evidence_catalog());
     let mut s = Store::open(&root, c.clone(), &OpenOptions::default()).unwrap();

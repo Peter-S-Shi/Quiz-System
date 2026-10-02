@@ -178,64 +178,120 @@ fn every_named_mutation_is_rejected_before_activation_with_a_specific_code() {
 
     type Mutator = Box<dyn Fn(&mut BTreeMap<String, Vec<u8>>)>;
     let cases: Vec<(&str, Code, Mutator)> = vec![
-        ("flip a byte in a media entry", Code::ArchiveHashMismatch, Box::new(move |e| {
-            let k = media_name(e);
-            e.get_mut(&k).unwrap()[10] ^= 0x01;
-        })),
-        ("flip a byte in the database", Code::ArchiveHashMismatch, Box::new(|e| {
-            let d = e.get_mut("db/quiz-studio.db").unwrap();
-            let i = d.len() / 2;
-            d[i] ^= 0x01;
-        })),
-        ("drop a media entry", Code::ArchiveMissingEntry, Box::new(move |e| {
-            let k = media_name(e);
-            e.remove(&k);
-        })),
-        ("drop the database", Code::ArchiveMissingEntry, Box::new(|e| {
-            e.remove("db/quiz-studio.db");
-        })),
-        ("add an unlisted entry", Code::ArchiveUnlistedEntry, Box::new(|e| {
-            e.insert("media/ab/".to_string() + &"ab".repeat(32), b"smuggled".to_vec());
-        })),
-        ("add an entry outside the layout", Code::ArchiveUnlistedEntry, Box::new(|e| {
-            e.insert("../evil.txt".into(), b"x".to_vec());
-        })),
-        ("manifest checksum altered", Code::ArchiveHashMismatch, Box::new(|e| {
-            let mut m = manifest(e);
-            m["entries"][0]["sha256"] = json!("0".repeat(64));
-            set_manifest(e, &m);
-        })),
-        ("manifest size altered", Code::ArchiveHashMismatch, Box::new(|e| {
-            let mut m = manifest(e);
-            m["entries"][0]["size"] = json!(1);
-            set_manifest(e, &m);
-        })),
-        ("newer store schema", Code::ArchiveNewerSchema, Box::new(|e| {
-            let mut m = manifest(e);
-            m["storeSchemaVersion"] = json!(99);
-            set_manifest(e, &m);
-        })),
-        ("wrong format marker", Code::ArchiveWrongFormat, Box::new(|e| {
-            let mut m = manifest(e);
-            m["format"] = json!("something-else");
-            set_manifest(e, &m);
-        })),
-        ("unsupported format version", Code::ArchiveWrongFormat, Box::new(|e| {
-            let mut m = manifest(e);
-            m["formatVersion"] = json!(2);
-            set_manifest(e, &m);
-        })),
-        ("manifest missing", Code::ArchiveWrongFormat, Box::new(|e| {
-            e.remove("manifest.json");
-        })),
-        ("manifest is not JSON", Code::ArchiveCorrupt, Box::new(|e| {
-            e.insert("manifest.json".into(), b"{ not json".to_vec());
-        })),
-        ("manifest lists a path outside the layout", Code::ArchiveWrongFormat, Box::new(|e| {
-            let mut m = manifest(e);
-            m["entries"].as_array_mut().unwrap().push(json!({"path":"../x","size":1,"sha256":"00"}));
-            set_manifest(e, &m);
-        })),
+        (
+            "flip a byte in a media entry",
+            Code::ArchiveHashMismatch,
+            Box::new(move |e| {
+                let k = media_name(e);
+                e.get_mut(&k).unwrap()[10] ^= 0x01;
+            }),
+        ),
+        (
+            "flip a byte in the database",
+            Code::ArchiveHashMismatch,
+            Box::new(|e| {
+                let d = e.get_mut("db/quiz-studio.db").unwrap();
+                let i = d.len() / 2;
+                d[i] ^= 0x01;
+            }),
+        ),
+        (
+            "drop a media entry",
+            Code::ArchiveMissingEntry,
+            Box::new(move |e| {
+                let k = media_name(e);
+                e.remove(&k);
+            }),
+        ),
+        (
+            "drop the database",
+            Code::ArchiveMissingEntry,
+            Box::new(|e| {
+                e.remove("db/quiz-studio.db");
+            }),
+        ),
+        (
+            "add an unlisted entry",
+            Code::ArchiveUnlistedEntry,
+            Box::new(|e| {
+                e.insert("media/ab/".to_string() + &"ab".repeat(32), b"smuggled".to_vec());
+            }),
+        ),
+        (
+            "add an entry outside the layout",
+            Code::ArchiveUnlistedEntry,
+            Box::new(|e| {
+                e.insert("../evil.txt".into(), b"x".to_vec());
+            }),
+        ),
+        (
+            "manifest checksum altered",
+            Code::ArchiveHashMismatch,
+            Box::new(|e| {
+                let mut m = manifest(e);
+                m["entries"][0]["sha256"] = json!("0".repeat(64));
+                set_manifest(e, &m);
+            }),
+        ),
+        (
+            "manifest size altered",
+            Code::ArchiveHashMismatch,
+            Box::new(|e| {
+                let mut m = manifest(e);
+                m["entries"][0]["size"] = json!(1);
+                set_manifest(e, &m);
+            }),
+        ),
+        (
+            "newer store schema",
+            Code::ArchiveNewerSchema,
+            Box::new(|e| {
+                let mut m = manifest(e);
+                m["storeSchemaVersion"] = json!(99);
+                set_manifest(e, &m);
+            }),
+        ),
+        (
+            "wrong format marker",
+            Code::ArchiveWrongFormat,
+            Box::new(|e| {
+                let mut m = manifest(e);
+                m["format"] = json!("something-else");
+                set_manifest(e, &m);
+            }),
+        ),
+        (
+            "unsupported format version",
+            Code::ArchiveWrongFormat,
+            Box::new(|e| {
+                let mut m = manifest(e);
+                m["formatVersion"] = json!(2);
+                set_manifest(e, &m);
+            }),
+        ),
+        (
+            "manifest missing",
+            Code::ArchiveWrongFormat,
+            Box::new(|e| {
+                e.remove("manifest.json");
+            }),
+        ),
+        (
+            "manifest is not JSON",
+            Code::ArchiveCorrupt,
+            Box::new(|e| {
+                e.insert("manifest.json".into(), b"{ not json".to_vec());
+            }),
+        ),
+        (
+            "manifest lists a path outside the layout",
+            Code::ArchiveWrongFormat,
+            Box::new(|e| {
+                let mut m = manifest(e);
+                m["entries"].as_array_mut().unwrap().push(json!({"path":"../x","size":1,"sha256":"00"}));
+                set_manifest(e, &m);
+            }),
+        ),
     ];
     let live_clean = temp_root();
     let mut target = open(&live_clean, &c);

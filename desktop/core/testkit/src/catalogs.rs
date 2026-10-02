@@ -45,9 +45,7 @@ fn evidence_collections() -> Vec<Collection> {
             .column("item_count", "/itemCount", ColumnKind::Integer, true)
             .relation(Relation::new("response_item", "response_id", "/items").column("item_id", "", ColumnKind::Text, true).ordinal("ord"))
             .relation(Relation::new("media_ref", "owner_id", "/mediaRefs").column("media_id", "", ColumnKind::Text, true).dedupe()),
-        Collection::new("teacher_review")
-            .id_pointer("/id")
-            .column("response_id", "/responseId", ColumnKind::Text, true),
+        Collection::new("teacher_review").id_pointer("/id").column("response_id", "/responseId", ColumnKind::Text, true),
         Collection::new("remediation_doc")
             .id_pointer("/id")
             .column("source_response_id", "/sourceResponseId", ColumnKind::Text, true)
@@ -60,10 +58,7 @@ fn evidence_collections() -> Vec<Collection> {
 /// Foundation + synthetic evidence tables (store schema v2 of the *test* lineage).
 pub fn evidence_catalog() -> Catalog {
     Catalog::foundation()
-        .extend(
-            vec![Migration { version: 2, name: "test-evidence-tables".into(), sql: EVIDENCE_V2_SQL.into() }],
-            evidence_collections(),
-        )
+        .extend(vec![Migration { version: 2, name: "test-evidence-tables".into(), sql: EVIDENCE_V2_SQL.into() }], evidence_collections())
         .expect("valid test catalog")
 }
 
