@@ -1,0 +1,72 @@
+{
+    "runnerIsElevated":  false,
+    "installerSha256":  "bacf6b954b88735d047601d2c9441d04f7a8cec39c3c5467419ea87f6de63d58",
+    "installerBytes":  3092828,
+    "preexistingInstall":  false,
+    "preexistingData":  true,
+    "installExitCode":  0,
+    "installSeconds":  1.7,
+    "installDirExists":  true,
+    "installedExe":  true,
+    "uninstallKeyInHKCU":  true,
+    "uninstallKeyInHKLM":  false,
+    "programFilesTouched":  false,
+    "installedFileCount":  2,
+    "launch":  {
+                   "finished":  true,
+                   "seconds":  1.7,
+                   "socketSamples":  1,
+                   "tcpOrUdpListeners":  [
+
+                                         ],
+                   "nonLoopbackRemotes":  [
+
+                                          ],
+                   "processNamesInTree":  [
+                                              "quiz-studio-spike.exe"
+                                          ]
+               },
+    "h1Result":  {
+                     "info":  {
+                                  "identifier":  "io.github.peter-s-shi.quiz-studio",
+                                  "appVersion":  "0.1.0",
+                                  "pid":  17492,
+                                  "storeSchemaVersion":  1,
+                                  "notice":  null,
+                                  "startupError":  null,
+                                  "dataRootUnderLocalAppData":  true,
+                                  "dataRootInsideOneDrive":  false,
+                                  "dataRootRedacted":  "%LOCALAPPDATA%/io.github.peter-s-shi.quiz-studio",
+                                  "args":  [
+                                               "--auto",
+                                               "h1",
+                                               "--result-dir",
+                                               "<SPIKE>\\work\\h1-installed",
+                                               "--tag",
+                                               "_installed"
+                                           ]
+                              },
+                     "locationOrigin":  "http://tauri.localhost",
+                     "locationProtocol":  "http:",
+                     "outboundProbes":  {
+                                            "fetchExternal":  "blocked",
+                                            "fetchHttpLocal":  "blocked",
+                                            "websocket":  "blocked",
+                                            "imgExternal":  "blocked"
+                                        },
+                     "cspViolationsSeen":  4,
+                     "cspViolations":  [
+                                           "connect-src:https://example.com/",
+                                           "connect-src:http://127.0.0.1:9/",
+                                           "connect-src:ws://127.0.0.1:9/",
+                                           "img-src:https://example.com/x.png"
+                                       ]
+                 },
+    "dataDirCreated":  true,
+    "dbExists":  true,
+    "webviewProfileInsideDataDir":  true,
+    "uninstallKeepExit":  0,
+    "afterKeep_installDirRemoved":  true,
+    "afterKeep_dataKept":  true,
+    "afterKeep_uninstallKeyRemoved":  true
+}

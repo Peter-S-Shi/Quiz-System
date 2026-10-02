@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz Studio Spike Harness</title>
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; margin: 12px; background: #faf6ee; color: #2b2620; }
+  h1 { font-size: 16px; margin: 0 0 8px; }
+  .row { margin: 6px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button { padding: 4px 10px; }
+  pre { background: #fff; border: 1px solid #d9cfbd; padding: 8px; max-height: 220px; overflow: auto; font-size: 12px; }
+  #pane { height: 260px; width: 640px; overflow: auto; font: 18px/30px Georgia, serif; border: 1px solid #b9ad97; padding: 4px 8px; background: #fffdf8; position: relative; }
+  #pane span { white-space: pre-wrap; }
+  #pane span.cur { background: #f0c987; }
+  #typebox { position: absolute; opacity: 0; left: -9999px; }
+  #imebox { width: 640px; height: 80px; font-size: 18px; }
+</style>
+</head>
+<body>
+<h1>Quiz Studio Spike harness (disposable; synthetic data only)</h1>
+<div class="row" id="status">starting…</div>
+<div class="row">
+  <button id="btnInfo">app_info</button>
+  <button id="btnUnicode">Unicode</button>
+  <button id="btnLong">Long text</button>
+  <button id="btnResize">Resize x200</button>
+  <button id="btnSave">Save big file…</button>
+  <button id="btnOpen">Open big file…</button>
+</div>
+<div class="row"><div id="pane"></div><input id="typebox" aria-label="typing focus target"></div>
+<div class="row"><textarea id="imebox" placeholder="IME test: type here (composition events are logged)"></textarea></div>
+<div class="row"><audio id="aud" controls preload="metadata"></audio><img id="img" width="64" height="64" alt=""></div>
+<pre id="log"></pre>
+<script src="harness.js"></script>
+</body>
+</html>

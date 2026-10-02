@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = ["core", "app/src-tauri"]
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = false

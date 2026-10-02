@@ -1,0 +1,54 @@
+{
+    "commit_on_2500":  {
+                           "n":  2000,
+                           "synchronous":  "FULL",
+                           "p50ms":  2.3645,
+                           "p95ms":  4.95,
+                           "p99ms":  11.020999999999999,
+                           "maxMs":  42.4001
+                       },
+    "history10000_page50":  {
+                                "rows":  50,
+                                "limit":  50,
+                                "iters":  200,
+                                "p50ms":  0.1105,
+                                "p95ms":  0.1918,
+                                "maxMs":  0.4973,
+                                "note":  "includes JSON serialization, excludes IPC hop"
+                            },
+    "commit_on_10000":  {
+                            "n":  2000,
+                            "synchronous":  "FULL",
+                            "p50ms":  3.6457,
+                            "p95ms":  5.9239999999999995,
+                            "p99ms":  11.8594,
+                            "maxMs":  44.9884
+                        },
+    "history2500_page50":  {
+                               "rows":  50,
+                               "limit":  50,
+                               "iters":  200,
+                               "p50ms":  0.10289999999999999,
+                               "p95ms":  0.1436,
+                               "maxMs":  0.5455,
+                               "note":  "includes JSON serialization, excludes IPC hop"
+                           },
+    "history2500_full":  {
+                             "rows":  2500,
+                             "limit":  100000,
+                             "iters":  200,
+                             "p50ms":  12.166400000000001,
+                             "p95ms":  13.1645,
+                             "maxMs":  20.3896,
+                             "note":  "includes JSON serialization, excludes IPC hop"
+                         },
+    "history10000_full":  {
+                              "rows":  10000,
+                              "limit":  100000,
+                              "iters":  100,
+                              "p50ms":  50.8303,
+                              "p95ms":  125.3922,
+                              "maxMs":  127.98280000000001,
+                              "note":  "includes JSON serialization, excludes IPC hop"
+                          }
+}

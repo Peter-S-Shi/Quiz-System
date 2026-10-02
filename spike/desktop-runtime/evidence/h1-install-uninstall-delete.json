@@ -1,0 +1,11 @@
+{
+    "runnerIsElevated":  false,
+    "installerSha256":  "bacf6b954b88735d047601d2c9441d04f7a8cec39c3c5467419ea87f6de63d58",
+    "installerBytes":  3092828,
+    "beforeDelete_dataExists":  true,
+    "uninstallDialogFound":  true,
+    "deleteCheckboxFound":  true,
+    "afterDelete_installDirRemoved":  true,
+    "afterDelete_dataRemoved":  true,
+    "afterDelete_dataDirGone":  true
+}

@@ -1,0 +1,11 @@
+# disposable spike: build output and generated data never committed
+target/
+work/
+dist/
+node_modules/
+*.db
+*.db-wal
+*.db-shm
+*.bin
+*.exe
+*.msi
