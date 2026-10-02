@@ -1,0 +1,4 @@
+[target.x86_64-pc-windows-msvc]
+# ADR 0001 A2 release flags. /Brepro makes the app binary reproducible; the NSIS installer is not.
+# --remap-path-prefix is applied by scripts/env.ps1 (needs the absolute workspace path).
+rustflags = ["-C", "target-feature=+crt-static", "-C", "link-arg=/Brepro"]

@@ -1,0 +1,23 @@
+[package]
+name = "qs-platform"
+description = "Quiz Studio platform primitives: error codes, data-root layout, durable file operations, fault-injection hook"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+# Test-only. Lets a child process terminate itself at a named checkpoint (ADR 0001 H2/H3 methods).
+# Must never be enabled for the shipped app; CI asserts this.
+fault-injection = []
+
+[dependencies]
+sha2.workspace = true
+hex.workspace = true
+fastrand.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows-sys.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

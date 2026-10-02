@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = [
+  "core/platform",
+  "core/store",
+  "core/media",
+  "core/activation",
+  "core/archive",
+  "core/port",
+  "core/testkit",
+  "core/scenarios",
+  "app/src-tauri",
+]
+
+[workspace.package]
+version = "2.0.0-dev.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+# arbitrary_precision keeps every JSON number exactly as written (ADR 0001 A4: lossless on the Rust side).
+serde_json = { version = "1", features = ["arbitrary_precision"] }
+rusqlite = { version = "0.37", features = ["bundled", "backup"] }
+sha2 = "0.10"
+hex = "0.4"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+windows-sys = { version = "0.59", features = ["Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_Foundation", "Win32_Storage_FileSystem"] }
+fastrand = "2"
+tempfile = "3"
+qs-platform = { path = "core/platform" }
+qs-store = { path = "core/store" }
+qs-media = { path = "core/media" }
+qs-activation = { path = "core/activation" }
+qs-archive = { path = "core/archive" }
+qs-port = { path = "core/port" }
+qs-testkit = { path = "core/testkit" }
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = false

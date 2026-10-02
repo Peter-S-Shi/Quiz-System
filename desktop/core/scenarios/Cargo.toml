@@ -1,0 +1,26 @@
+[package]
+name = "qs-scenarios"
+description = "Child-process fault scenarios and crash-loop acceptance tests (H2/H3/H5 methods). Never shipped."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "qs-scenario"
+path = "src/bin/qs-scenario.rs"
+
+[dependencies]
+qs-platform = { workspace = true, features = ["fault-injection"] }
+qs-store.workspace = true
+qs-media.workspace = true
+qs-activation.workspace = true
+qs-archive.workspace = true
+qs-port.workspace = true
+qs-testkit.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+sha2.workspace = true
+hex.workspace = true
+fastrand.workspace = true
+tempfile.workspace = true

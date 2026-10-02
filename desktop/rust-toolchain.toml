@@ -1,0 +1,4 @@
+[toolchain]
+# ADR 0001 A2: the authoritative Windows build is the MSVC target with a static CRT.
+channel = "stable-x86_64-pc-windows-msvc"
+profile = "minimal"

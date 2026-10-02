@@ -42,3 +42,8 @@ dist/
 build/
 .env
 .env.*
+
+# V2 desktop (Rust/Tauri) build output
+desktop/target/
+desktop/app/src-tauri/target/
+desktop/app/src-tauri/gen/
