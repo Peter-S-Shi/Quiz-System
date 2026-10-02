@@ -80,6 +80,8 @@ Each row: **A** assumption · **M** method · **PASS** · **FAIL / consequence**
 - **FAIL / consequence:** IME or focus/caret defects attributable to WebView2/Tauri ⇒ Tauri **FAIL** for the product's Typing requirement → §5 Electron re-run (H7 + H1 + H4 only).
 
 ### H8 — Process model, native file flows, path hazards
+> **AMENDED BY HUMAN GATE (2026-10-02): CANCELLED / RECLASSIFIED — no longer an independent Desktop Architecture Gate hypothesis. The original definition below is preserved unchanged as the historical record; see §9.**
+
 - **A:** Single-instance + single-writer hold; native dialogs and drag-drop stream large files without blocking the UI; OneDrive-redirected and Unicode/long paths are safe.
 - **M:** Launch twice (second must focus the first and must not open the DB); attempt a second raw DB open from another process; save/open a **1 GB** file via native dialogs and drag-drop with a frame-time probe in the WebView; save/open via OneDrive-redirected Desktop/Documents, CJK folder names, and a >260-char path (long-path-aware manifest); confirm the data root is **not** under any redirected/synced folder.
 - **PASS:** second instance never opens the DB and activates the first window; main-thread stall **≤100 ms** during streaming (progress UI stays responsive); all path cases round-trip; data root is under `%LOCALAPPDATA%`.
@@ -109,3 +111,11 @@ The spike report (`spike/desktop-runtime/REPORT.md`, plus raw logs/scripts, **sy
 
 ## 8. Explicit non-goals
 V1 migration logic, recommendation/scheduler/Calendar data models, Typing evidence tables, any production UI, code signing, auto-update, macOS, performance beyond the stated budgets, and any change to the existing V1 application, tests, or CI.
+
+## 9. Governance amendment log
+
+### Amendment 1 — H8 cancelled / reclassified by Human Gate (2026-10-02)
+- **Decision:** H8 is **CANCELLED / RECLASSIFIED BY HUMAN GATE**. It is no longer an independent hypothesis of the Desktop Architecture Gate and does not block it. It is **not** recorded as PASS, and the §4 H8 text, the tests already run and their evidence stay in place as historical audit record.
+- **Rationale:** the H8 properties that carry architecture-decision value — single-instance, single-writer/exclusive lock, large-file streaming without UI stalls, UI responsiveness, long-path support, and the `%LOCALAPPDATA%` data root — were verified (see `spike/desktop-runtime/REPORT.md`, H8 section). The remaining items (native **Open** dialog, OS **drag-and-drop**, **OneDrive-redirected Desktop/Documents** file flows) are packaged-app manual acceptance. They cannot change the Tauri + Rust durability boundary + SQLite architecture choice, so they are not Gate-blocking.
+- **Deferred to Desktop Foundation Acceptance (not deleted, not waived):** (1) native Open dialog round-trip; (2) OS drag-and-drop of a >= 1 GiB file with the UI responsive; (3) Save/Open through OneDrive-redirected Desktop and Documents.
+- **Effect on §7:** the GO condition "H1-H8 PASS (or CONDITIONAL with accepted mitigations)" is evaluated over H1-H7; H8 is excluded by this amendment.

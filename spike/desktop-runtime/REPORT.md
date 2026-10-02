@@ -8,10 +8,9 @@ workflow `.github/workflows/spike-desktop-runtime.yml` (triggered only by pushes
 
 ## Verdict
 
-**Recommendation: GO WITH AMENDMENT — provisional.** On everything the environment could test autonomously, no hypothesis failed,
-no corruption/partial-unit/identity failure occurred, and neither the Tauri→Electron fallback (H1/H7) nor an architecture NO-GO was triggered.
-Remaining items need the Product Owner or an environment this machine lacks (a runtime-less WebView2 machine, OS drag-drop/OneDrive dialogs; the elevated network-isolation run was waived — see §4), so **H1 and
-H8 are CONDITIONAL; H7 is PASS (with the Sogou caveat in §5)**, and the Gate should not finalize until those are executed. ADR amendments forced by evidence are in §3.
+**Recommendation: GO WITH AMENDMENT.** No hypothesis failed, no corruption / partial-unit / identity failure occurred, and neither the Tauri->Electron fallback (H1/H7) nor an architecture NO-GO was triggered.
+Gate status after the Human Gate reclassification (§8): **H2-H7 PASS; H1 CONDITIONAL with residual limitations (no runtime-less WebView2 machine for the bootstrapper path; packet-level/adapter-disabled run waived - see §4); H8 CANCELLED / RECLASSIFIED BY HUMAN GATE (not PASS, history retained; remaining checks deferred to Desktop Foundation Acceptance).**
+Under contract §7 (Gate outcomes), GO requires H1-H7 PASS "or CONDITIONAL with accepted mitigations": the Gate must explicitly accept the H1 residual limitation (mitigation: verify the bootstrapper path on a runtime-less machine as the first Desktop Foundation packaging check; the per-process socket sampling and dead-proxy runs already cover the offline claim). ADR amendments forced by evidence are in §3. The Sogou Pinyin composition-event caveat is an open product risk (§5), not a Gate failure.
 
 | H | Hypothesis | Result | Headline evidence |
 |---|---|---|---|
@@ -22,7 +21,7 @@ H8 are CONDITIONAL; H7 is PASS (with the Sogou caveat in §5)**, and the Gate sh
 | H5 | Backup archive / restore | **PASS** | 11/11 named mutations + 300/300 random bit flips rejected before activation; ≤ 12 MiB; failed restore leaves live untouched |
 | H6 | Upgrade / schema ownership | **PASS** | upgrade payload-hash equal; failing migration rolled back; downgrade refused with no write |
 | H7 | WebView2 fitness | **PASS** | Unicode 34/34, long-text 0 invisible / 0 jumps / 0 focus loss, 200 resize+fullscreen cycles × 3 scale factors 0 breaks, identical to Edge 154 baseline; **Microsoft Pinyin: 3/3 runs, 20/20 compositionstart/end, 0 premature commits, identical to Edge; Microsoft Japanese IME: 3/3 runs, 20/20, identical to Edge; Sogou Pinyin (third-party) emits no composition events in the packaged app (risk, §5)** |
-| H8 | Process model / native flows / paths | **CONDITIONAL** | single-instance + exclusive lock verified; 1 GiB streamed copy max frame gap 4.7 ms; long path round-trip; Save-dialog (plain, CJK) automated; Open dialog / drag-drop / OneDrive dialogs not completed |
+| H8 | Process model / native flows / paths | **CANCELLED / RECLASSIFIED BY HUMAN GATE** (not PASS; see §8) | single-instance + exclusive lock verified; 1 GiB streamed copy max frame gap 4.7 ms; long path round-trip; Save-dialog (plain, CJK) automated; Open dialog / drag-drop / OneDrive dialogs not completed |
 
 ## 1. Environment manifest (contract §2)
 
@@ -101,7 +100,7 @@ Real NSIS installers of three builds (0.1.0 schema 1; 0.2.0 schema 2 with `ADD C
   - **Microsoft Japanese IME (hiragana, Space converts, Enter commits; IME switched on with VK_KANJI because it starts in direct-input mode — a first attempt without it typed raw Latin and is not valid evidence): packaged app, 3 runs - 20 starts / 170 updates / 20 ends each, 0 premature commits, 0 order violations, committed text equals the textarea value (45 chars), 0 blur events. Edge control: 20 / 170 / 20, 45 chars.** Identical. Evidence: `evidence/h7-ime-ja-app-run{1,2,3}.json`, `evidence/h7-ime-ja-edge-control.json`.
   - Scripts: `scripts/h7-set-tip.ps1`, `scripts/h7-ime.ps1`, `scripts/h7-ime-edge.mjs`, `scripts/h7-ime-sendkeys.ps1`. The Electron re-run is **not** triggered by this evidence.
 
-### H8 — Process model, native file flows, path hazards — CONDITIONAL
+### H8 — Process model, native file flows, path hazards — CANCELLED / RECLASSIFIED BY HUMAN GATE (historical record, results below unchanged)
 - **Single instance:** second launch exited in **39 ms** (code 0), first instance stayed alive; a raw store open from another process while the app runs → `LOCKED` (exclusive lock file); opens normally after exit.
 - **Streaming:** 1 GiB file generated and copied by Rust off the UI thread with progress events; SHA-256 identical; WebView frame-gap probe **max 4.7 ms** (limit 100 ms; caveat: probe measured rAF gaps in an automated, possibly unfocused window).
 - **Paths:** 333-char destination path round-trips (Rust `std`); data root is under `%LOCALAPPDATA%`, not under OneDrive (`dataRootInsideOneDrive:false`). Native **Save** dialog, driven through Win32/UIA, wrote the file for the plain and CJK-folder cases. The **Open** dialog automation and the OneDrive-redirected Desktop/Documents cases were not completed (dialog automation proved fragile; no harness defect found); **drag-and-drop** cannot be automated here. → §4.
@@ -121,11 +120,11 @@ Real NSIS installers of three builds (0.1.0 schema 1; 0.2.0 schema 2 with `ADD C
 
 None of these changes the runtime, store, activation or backup decisions; the Electron fallback and the generation-swap fallback were not exercised.
 
-## 4. Product Owner / elevated actions still required (the only reason H1/H8 are CONDITIONAL)
+## 4. Product Owner / elevated actions (status after the Human Gate reclassification)
 1. **IME (H7-a): DONE** - Microsoft Pinyin and Microsoft Japanese IME both pass (3/3 each). Open decision only: whether third-party IMEs such as Sogou Pinyin must be supported for Typing (§5).
 2. **Elevated PowerShell (H1-4/5): WAIVED by the Product Owner, not executed.** `scripts/h1-elevated.ps1` (pktmon + adapters disabled) failed three times on environment issues (pktmon stderr, wrong account's `%LOCALAPPDATA%`, exe path) and was judged unnecessary: the per-process socket sampling (app process: 0 listeners, 0 outbound) and the dead-proxy run already cover the same claim, so the result is *weaker corroboration*, not a different verdict. Residual gap: no packet-level capture and no true adapter-disabled run.
 3. **Clean profile without WebView2 (H1-9):** run the installer on a machine/VM lacking the runtime (Windows Sandbox/VM) and confirm the bootstrapper download then launch.
-4. **Drag-and-drop + OneDrive-redirected dialogs (H8):** drop a ≥ 1 GiB file on the harness window, and Save/Open once via Desktop/Documents.
+4. ~~Drag-and-drop + OneDrive-redirected dialogs (H8)~~ -> **moved to Deferred to Desktop Foundation Acceptance (§8)**; no longer Gate-blocking.
 5. Optionally a **fresh standard user** account install (not creatable here without admin).
 
 ## 5. Open risks
@@ -141,3 +140,12 @@ None of these changes the runtime, store, activation or backup decisions; the El
 
 ## 7. Repro
 `README.md`; datasets are generated (`scripts/gen-*.mjs`, `spikectl gen-media`); headless H2–H5: `scripts/run-core-evidence.ps1`; H6: `scripts/build-variants.ps1` then `scripts/h6-upgrade.ps1`; H1: `scripts/h1-install.ps1`; app scenarios: `scripts/run-app.ps1`; baseline: `scripts/baseline-browser.mjs`; CI: `.github/workflows/spike-desktop-runtime.yml`.
+
+## 8. Governance amendment: H8 CANCELLED / RECLASSIFIED BY HUMAN GATE (2026-10-02)
+H8 is no longer an independent Desktop Architecture Gate hypothesis (contract §9, Amendment 1). It is **not** marked PASS; its original definition, the completed tests and their evidence (`evidence/h8-*.json`, the H8 section above) are kept as historical audit record, and nothing was rewritten.
+- **Rationale:** the architecture-relevant H8 properties are verified - single instance (second launch exited in 39 ms), single-writer/exclusive lock (`LOCKED` from a second process), 1 GiB streaming with max frame gap 4.7 ms, long path (333 chars) round-trip, `%LOCALAPPDATA%` data root. What remains is native-dialog / OS-integration acceptance that cannot change the Tauri + Rust durability boundary + SQLite choice.
+- **Deferred to Desktop Foundation Acceptance (kept open, not waived):**
+  1. Native **Open** dialog round-trip (automation was not completed; Save was verified for plain and CJK folders).
+  2. OS **drag-and-drop** of a >= 1 GiB file with the UI responsive.
+  3. Save/Open through **OneDrive-redirected Desktop and Documents**.
+- **Gate status re-summary:** H2-H7 PASS (unchanged evidence); H1 CONDITIONAL with the residual limitations listed in §4; H8 CANCELLED / RECLASSIFIED. No test results were modified and no new tests were run for this amendment.
