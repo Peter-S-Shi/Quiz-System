@@ -15,8 +15,9 @@ import {
   suggestionTarget,
 } from './occurrences.js';
 import { COLLECTIONS, assertValid, checkSlot, occurrenceId } from './schema.js';
-import { EVIDENCE_SOURCES, evidenceIdsForMaterial, loadSnapshot, materialAvailability } from './readers.js';
+import { evidenceIdsForMaterial, loadSnapshot, materialAvailability } from './readers.js';
 import { plan } from './planner.js';
+import { SESSION_EVIDENCE_WRITABLE, validateSessionEvidenceOps } from './session-finalization.js';
 import { putOp, deleteOp } from '../projection.js';
 
 export class ScheduleError extends Error {
@@ -474,13 +475,15 @@ export class ScheduleStore {
     const errs = [];
     checkSlot(slot, 'slot', errs);
     if (errs.length) throw new ScheduleError('BAD_SLOT', errs.join('; '));
+    // closed write contract: create-only, approved collections, structurally validated before any Store Port access
+    const creates = validateSessionEvidenceOps(evidenceOps);
+    if (!session || !SESSION_EVIDENCE_WRITABLE.includes(session.collection) || typeof session.id !== 'string') throw new ScheduleError('BAD_EVIDENCE_OPS', 'session must reference an approved session-evidence collection');
     // finalization CREATES evidence: a finalized record is never rewritten (E-1), so every evidence put must be new
     const evidenceNew = [];
-    for (const op of evidenceOps) {
-      if (op.op !== 'put' || !EVIDENCE_SOURCES.includes(op.collection)) continue;
-      const [existing] = await this.#read(op.collection, [], { id: op.id });
-      if (existing) throw new ScheduleError('SESSION_ALREADY_RECORDED', `${op.collection}/${op.id} already exists; finalized evidence is never rewritten`);
-      evidenceNew.push({ kind: 'absent', collection: op.collection, id: op.id });
+    for (const { collection, id } of creates) {
+      const [existing] = await this.#read(collection, [], { id });
+      if (existing) throw new ScheduleError('SESSION_ALREADY_RECORDED', `${collection}/${id} already exists; finalized evidence is never rewritten`);
+      evidenceNew.push({ kind: 'absent', collection, id });
     }
     let lastError;
     for (let attempt = 0; attempt < 3; attempt += 1) {

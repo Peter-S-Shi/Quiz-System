@@ -60,3 +60,17 @@ test('the module is pure JS over the Store Port: it imports no SQL, file-system 
     assert.ok(!/from ['"]node:|require\(|from ['"]fs['"]|__TAURI__|invoke\(/.test(src), `${f} must stay capability-free`);
   }
 });
+
+test('the Evidence Reader registry and the session-finalization write registry are different, closed interfaces', async () => {
+  const { EVIDENCE_SOURCES } = await import('../web/src/orchestration/readers.js');
+  const { SESSION_EVIDENCE_WRITABLE } = await import('../web/src/orchestration/session-finalization.js');
+  assert.deepEqual([...SESSION_EVIDENCE_WRITABLE], ['learner_response'], 'only the formal session evidence collection is creatable');
+  assert.ok(Object.isFrozen(SESSION_EVIDENCE_WRITABLE));
+  assert.notStrictEqual(SESSION_EVIDENCE_WRITABLE, EVIDENCE_SOURCES);
+  assert.ok(EVIDENCE_SOURCES.length > SESSION_EVIDENCE_WRITABLE.length, 'readers read more than finalization may write');
+  for (const c of ['teacher_review', 'legacy_history_entry']) assert.ok(EVIDENCE_SOURCES.includes(c) && !SESSION_EVIDENCE_WRITABLE.includes(c), `${c} is readable, not writable`);
+  const store = read(path.join(orch, 'schedule-store.js'));
+  assert.ok(!/EVIDENCE_SOURCES/.test(store), 'ScheduleStore never derives its write permission from the Reader registry');
+  assert.ok(/validateSessionEvidenceOps\(evidenceOps\)/.test(store), 'completeSession validates evidenceOps through the closed contract');
+  assert.ok(!/typing/i.test(read(path.join(orch, 'session-finalization.js'))), 'no Typing schema is pre-created');
+});
