@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const out = process.argv[2];
 const n = Number(process.argv[3] || 20);
+const lang = process.argv[5] || "zh";
 const edge = process.argv[4] || "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 const uiDir = fileURLToPath(new URL("../app/ui/", import.meta.url));
 const psHelper = fileURLToPath(new URL("./h7-ime-sendkeys.ps1", import.meta.url));
@@ -32,7 +33,7 @@ const evalJs = async (expr) => { const r = await call("Runtime.evaluate", { expr
 await call("Page.bringToFront");
 for (let i = 0; i < 40 && !(await evalJs("!!window.__scenarios")); i++) await new Promise((r) => setTimeout(r, 250));
 await evalJs(`document.getElementById("imebox").value=""; document.getElementById("imebox").focus(); window.__imeLog.length=0; 1`);
-const ps = spawnSync("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psHelper, "-ProcessId", String(proc.pid), "-Phrases", String(n)], { encoding: "utf8" });
+const ps = spawnSync("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psHelper, "-ProcessId", String(proc.pid), "-Phrases", String(n), "-Lang", lang], { encoding: "utf8" });
 const sendInfo = ps.stdout.trim();
 await new Promise((r) => setTimeout(r, 1500));
 const res = await evalJs(`(() => { const l = window.__imeLog; return { phrasesRequested: ${n}, compositionStarts: l.filter(e=>e.t==="compositionstart").length, compositionUpdates: l.filter(e=>e.t==="compositionupdate").length, compositionEnds: l.filter(e=>e.t==="compositionend").length, inputEvents: l.filter(e=>e.t==="input").length, composingInputEvents: l.filter(e=>e.t==="input" && e.isComposing).length, textareaLength: document.getElementById("imebox").value.length, sample: l.slice(0,6) }; })()`);

@@ -1,0 +1,84 @@
+{
+ "phrasesRequested": 20,
+ "compositionStarts": 20,
+ "compositionUpdates": 170,
+ "compositionEnds": 20,
+ "orderViolations": 0,
+ "prematureCommitEvents": 0,
+ "committedFromCompositionEnd": "こんにちはありがとう日本語学校先生勉強食べ物名前友達車電車時計音楽写真魚野菜果物本手紙会社",
+ "textareaValue": "こんにちはありがとう日本語学校先生勉強食べ物名前友達車電車時計音楽写真魚野菜果物本手紙会社",
+ "committedEqualsValue": true,
+ "blurEvents": 0,
+ "sampleEvents": [
+  {
+   "t": "compositionstart",
+   "data": "",
+   "value": ""
+  },
+  {
+   "t": "compositionupdate",
+   "data": "ｋ",
+   "value": ""
+  },
+  {
+   "t": "input",
+   "inputType": "insertCompositionText",
+   "isComposing": true,
+   "data": "ｋ",
+   "value": "ｋ"
+  },
+  {
+   "t": "compositionupdate",
+   "data": "こ",
+   "value": "ｋ"
+  },
+  {
+   "t": "input",
+   "inputType": "insertCompositionText",
+   "isComposing": true,
+   "data": "こ",
+   "value": "こ"
+  },
+  {
+   "t": "compositionupdate",
+   "data": "こｎ",
+   "value": "こ"
+  },
+  {
+   "t": "input",
+   "inputType": "insertCompositionText",
+   "isComposing": true,
+   "data": "こｎ",
+   "value": "こｎ"
+  },
+  {
+   "t": "compositionupdate",
+   "data": "こん",
+   "value": "こｎ"
+  },
+  {
+   "t": "input",
+   "inputType": "insertCompositionText",
+   "isComposing": true,
+   "data": "こん",
+   "value": "こん"
+  },
+  {
+   "t": "compositionupdate",
+   "data": "こんい",
+   "value": "こん"
+  },
+  {
+   "t": "input",
+   "inputType": "insertCompositionText",
+   "isComposing": true,
+   "data": "こんい",
+   "value": "こんい"
+  },
+  {
+   "t": "compositionupdate",
+   "data": "こんいｃ",
+   "value": "こんい"
+  }
+ ]
+}
