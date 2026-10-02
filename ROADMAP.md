@@ -382,12 +382,22 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 
 - **Immutable Verification Candidate**: The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the verified product and runtime baseline.
 - **Final V1 Release Line**: Final `1.0.0` version metadata and evidence-driven portfolio presentation assets are closed and integrated into `main`.
-- **Maintenance Hold**: The repository is in Maintenance Hold with no active engineering milestone.
-- **Optional Future Work**: Any future release distribution, formal GitHub Release, GitHub Pages deployment, or next-version (V2) planning remains optional and requires separate Product Owner authorization.
+- **Maintenance Hold**: The V1 release line remains in Maintenance Hold with no active V1 engineering milestone.
+- **Optional V1 Follow-ups**: Any future V1 release distribution, formal GitHub Release, or GitHub Pages deployment remains optional and requires separate Product Owner authorization.
+- **V2 Architecture Validation (Active)**: V2 has been authorized by the Product Owner and has entered architecture validation. This does not alter the V1 release line, which stays in Maintenance Hold. The current V2 route is below.
+
+### Current V2 Route
+
+1. V2 Product Scope Freeze (Revision 1). **Complete.**
+2. V1 Migration Readiness Inventory. **Complete.**
+3. Desktop Runtime & Application Data ADR — Human Gate. **Complete** (approved for a bounded spike; the ADR is not yet an accepted architecture).
+4. Bounded Desktop Spike (disposable `spike/desktop-runtime`, never merged). **NEXT.**
+5. Desktop Architecture Gate. **Pending** (not passed).
+6. Create the formal V2 development branch, then begin Desktop Foundation. **Blocked until step 5 passes.**
 
 ## Maintenance / Next Version
 
-Future work upon separate Product Owner authorization will focus on:
+V1 maintenance work, upon separate Product Owner authorization, will focus on:
 
 - Critical defect and compatibility maintenance.
 - Explicitly selected next-version features.
@@ -416,4 +426,5 @@ The current lifecycle route is:
 3. Pass Review V3, declare V1 Feature Complete, and activate Feature Freeze. **Complete.**
 4. Complete Milestone 7 Product Hardening. **Complete.**
 5. Produce and validate the Milestone 8 Release Candidate. **Complete.**
-6. Release Candidate accepted (`v1.0.0-rc.1`), V1 release metadata finalized (`1.0.0`), and repository in maintenance hold. Future maintenance or V2 iterations remain under separate Product Owner authorization. **Current lifecycle state.**
+6. Release Candidate accepted (`v1.0.0-rc.1`), V1 release metadata finalized (`1.0.0`), and the V1 release line in maintenance hold. **Current V1 lifecycle state.**
+7. V2 Architecture Validation (scope freeze, migration readiness, Desktop ADR Human Gate complete; bounded desktop spike next; Desktop Architecture Gate pending). **Current V2 state** — see "Current V2 Route" above.

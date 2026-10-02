@@ -382,12 +382,22 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 
 - **不可变验证基线**：已接受的候选版本 `v1.0.0-rc.1`（提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）作为验证通过的产品与运行时基线保持不变。
 - **最终 V1 发布线**：最终 `1.0.0` 版本元数据与证据驱动的作品集展示资产已闭环并合入 `main`。
-- **维护保留状态**：仓库处于维护保留状态，当前未安排任何活跃工程里程碑。
-- **可选后续工作**：未来任何发布分发、正式 GitHub Release、GitHub Pages 部署或下一版本（V2）规划均保持可选，并需经 Product Owner 另行授权。
+- **维护保留状态**：V1 发布线继续处于维护保留状态，当前未安排任何活跃 V1 工程里程碑。
+- **可选 V1 后续事项**：未来任何 V1 发布分发、正式 GitHub Release 或 GitHub Pages 部署均保持可选，并需经 Product Owner 另行授权。
+- **V2 架构验证（进行中）**：Product Owner 已授权 V2 并进入架构验证阶段。这不改变仍处于维护保留状态的 V1 发布线。当前 V2 路线如下。
+
+### 当前 V2 路线
+
+1. V2 产品范围冻结（Revision 1）。**已完成。**
+2. V1 Migration Readiness Inventory。**已完成。**
+3. Desktop Runtime & Application Data ADR —— Human Gate。**已完成**（获准进行 bounded spike；该 ADR 尚未成为已接受的架构）。
+4. Bounded Desktop Spike（一次性 `spike/desktop-runtime`，永不合并）。**下一步。**
+5. Desktop Architecture Gate。**待通过**（尚未通过）。
+6. 创建正式 V2 开发分支，随后开始 Desktop Foundation。**在第 5 步通过前保持阻塞。**
 
 ## 维护 / 下一版本
 
-经 Product Owner 另行授权后，未来工作将聚焦于：
+经 Product Owner 另行授权后，V1 维护工作将聚焦于：
 
 - 严重缺陷与兼容性维护。
 - 已明确选择的下一版本功能。
@@ -416,4 +426,5 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 3. 通过 Review V3、宣布 V1 Feature Complete 并激活 Feature Freeze。**已完成。**
 4. 完成 Milestone 7 Product Hardening。**已完成。**
 5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
-6. 候选版本已接受（`v1.0.0-rc.1`），V1 发布元数据已定版（`1.0.0`），仓库进入维护保留状态。未来维护与 V2 规划保持由 Product Owner 独立授权。**当前生命周期状态。**
+6. 候选版本已接受（`v1.0.0-rc.1`），V1 发布元数据已定版（`1.0.0`），V1 发布线进入维护保留状态。**当前 V1 生命周期状态。**
+7. V2 架构验证（范围冻结、迁移就绪盘点、Desktop ADR Human Gate 已完成；下一步为 bounded desktop spike；Desktop Architecture Gate 待通过）。**当前 V2 状态** —— 见上文“当前 V2 路线”。

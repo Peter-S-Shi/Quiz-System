@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiz Studio — Typing Practice Demo</title>
+
+<style>
+:root{
+  --bg:#f4f1e9;
+  --paper:#fffdf7;
+  --ink:#1f2933;
+  --muted:#7a7f87;
+  --line:#ddd7c9;
+  --blue:#315d8a;
+  --blue-soft:#e8f0f7;
+  --green:#27734a;
+  --green-soft:#e6f3eb;
+  --red:#b94a48;
+  --red-soft:#fae8e6;
+  --amber:#a66b13;
+  --shadow:0 18px 60px rgba(39,45,51,.08);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,255,255,.9),transparent 35%),
+    var(--bg);
+  color:var(--ink);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",
+    "PingFang SC","Microsoft YaHei",sans-serif;
+}
+
+button,select,textarea{font:inherit}
+
+button{cursor:pointer}
+
+.app{
+  width:min(1180px,calc(100% - 36px));
+  margin:0 auto;
+  padding:28px 0 50px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:34px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+
+.mark{
+  width:38px;
+  height:38px;
+  border:1px solid #27384a;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  font-family:Georgia,serif;
+  font-weight:700;
+  color:#27384a;
+  background:rgba(255,255,255,.55);
+}
+
+.brand strong{
+  display:block;
+  font-size:15px;
+  letter-spacing:.02em;
+}
+
+.brand span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.demo-label{
+  color:var(--muted);
+  font-size:12px;
+  border:1px solid var(--line);
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.45);
+}
+
+.shell{
+  max-width:960px;
+  margin:0 auto;
+}
+
+.session-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+  margin-bottom:20px;
+}
+
+.eyebrow{
+  color:var(--blue);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  margin-bottom:7px;
+}
+
+h1{
+  font-family:Georgia,"Noto Serif SC",serif;
+  font-size:29px;
+  font-weight:500;
+  margin:0;
+}
+
+.subtitle{
+  color:var(--muted);
+  margin-top:6px;
+  font-size:13px;
+}
+
+.controls{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+select{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.6);
+  color:var(--ink);
+  border-radius:9px;
+  padding:9px 12px;
+  outline:none;
+}
+
+.segmented{
+  display:flex;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.45);
+  padding:3px;
+  border-radius:10px;
+}
+
+.segmented button{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  padding:7px 12px;
+  border-radius:7px;
+}
+
+.segmented button.active{
+  background:var(--ink);
+  color:white;
+}
+
+.paper{
+  background:var(--paper);
+  border:1px solid rgba(165,154,132,.28);
+  box-shadow:var(--shadow);
+  border-radius:14px;
+  overflow:hidden;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  border-bottom:1px solid var(--line);
+  background:rgba(248,246,239,.7);
+}
+
+.stat{
+  padding:15px 18px;
+  border-right:1px solid var(--line);
+}
+
+.stat:last-child{border-right:0}
+
+.stat-label{
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+.stat-value{
+  margin-top:4px;
+  font-size:18px;
+  font-variant-numeric:tabular-nums;
+}
+
+.progress-track{
+  height:3px;
+  background:#ece8df;
+}
+
+.progress-bar{
+  height:100%;
+  width:0;
+  background:var(--blue);
+  transition:width .12s linear;
+}
+
+.workspace{
+  padding:38px 46px 32px;
+}
+
+.section-label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:15px;
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.mode-hint{
+  text-transform:none;
+  letter-spacing:0;
+  font-size:12px;
+}
+
+.reference{
+  font-family:Georgia,"Noto Serif SC","Songti SC",serif;
+  font-size:25px;
+  line-height:1.9;
+  letter-spacing:.012em;
+  min-height:175px;
+  margin-bottom:32px;
+  user-select:none;
+  white-space:pre-wrap;
+}
+
+.char{
+  border-radius:3px;
+  transition:color .08s,background .08s;
+}
+
+.char.correct{
+  color:var(--green);
+  background:var(--green-soft);
+}
+
+.char.wrong{
+  color:var(--red);
+  background:var(--red-soft);
+  text-decoration:underline;
+  text-decoration-color:rgba(185,74,72,.45);
+  text-underline-offset:4px;
+}
+
+.char.current{
+  background:var(--blue-soft);
+  box-shadow:inset 0 -2px var(--blue);
+}
+
+.char.done-neutral{
+  color:#5f6871;
+}
+
+.char.pending{
+  color:#9b9a94;
+}
+
+.input-wrap{
+  position:relative;
+}
+
+textarea{
+  display:block;
+  width:100%;
+  min-height:145px;
+  resize:vertical;
+  border:1px solid #cbc5b7;
+  border-radius:11px;
+  background:#fffefa;
+  padding:19px 20px;
+  color:var(--ink);
+  outline:none;
+  font-family:Georgia,"Noto Serif SC","Songti SC",serif;
+  font-size:20px;
+  line-height:1.65;
+  caret-color:var(--blue);
+  transition:border .15s,box-shadow .15s;
+}
+
+textarea:focus{
+  border-color:#7894ae;
+  box-shadow:0 0 0 3px rgba(49,93,138,.09);
+}
+
+textarea::placeholder{
+  color:#b0aca3;
+}
+
+.input-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:13px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.actions{
+  display:flex;
+  gap:9px;
+}
+
+.btn{
+  border:1px solid var(--line);
+  background:#fffefa;
+  color:var(--ink);
+  padding:9px 14px;
+  border-radius:9px;
+}
+
+.btn:hover{background:#f6f3eb}
+
+.btn.primary{
+  background:var(--ink);
+  border-color:var(--ink);
+  color:white;
+}
+
+.btn.primary:hover{background:#34404b}
+
+.result{
+  display:none;
+  border-top:1px solid var(--line);
+  padding:30px 46px 38px;
+  background:#faf8f2;
+}
+
+.result.show{display:block}
+
+.result-title{
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:flex-start;
+}
+
+.result h2{
+  margin:0;
+  font-family:Georgia,"Noto Serif SC",serif;
+  font-size:23px;
+  font-weight:500;
+}
+
+.result-note{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:6px;
+}
+
+.result-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:24px;
+}
+
+.result-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:16px;
+}
+
+.result-card small{
+  color:var(--muted);
+  display:block;
+  margin-bottom:6px;
+}
+
+.result-card strong{
+  font-size:23px;
+  font-weight:500;
+}
+
+.errors{
+  margin-top:25px;
+}
+
+.errors h3{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  margin:0 0 12px;
+}
+
+.error-row{
+  display:grid;
+  grid-template-columns:54px 1fr 1fr;
+  gap:12px;
+  align-items:center;
+  padding:9px 0;
+  border-bottom:1px solid #e7e2d7;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:13px;
+}
+
+.error-row:last-child{border-bottom:0}
+
+.error-pos{color:var(--muted)}
+.expected{color:var(--green)}
+.actual{color:var(--red)}
+
+.empty-errors{
+  color:var(--green);
+  font-size:13px;
+  padding:8px 0;
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:28px;
+  transform:translate(-50%,20px);
+  opacity:0;
+  pointer-events:none;
+  background:#252d35;
+  color:white;
+  padding:10px 15px;
+  border-radius:9px;
+  font-size:12px;
+  transition:.2s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+kbd{
+  border:1px solid #ccc6ba;
+  background:#f7f4ed;
+  border-radius:4px;
+  padding:2px 5px;
+  font-size:10px;
+}
+
+@media(max-width:760px){
+  .app{width:min(100% - 20px,960px)}
+  .session-head{align-items:flex-start;flex-direction:column}
+  .controls{width:100%;flex-wrap:wrap}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat{border-bottom:1px solid var(--line)}
+  .workspace,.result{padding:28px 22px}
+  .reference{font-size:21px}
+  .result-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">Q</div>
+      <div>
+        <strong>Quiz Studio</strong>
+        <span>Focused Practice</span>
+      </div>
+    </div>
+    <div class="demo-label">Typing prototype · standalone</div>
+  </header>
+
+  <main class="shell">
+
+    <div class="session-head">
+      <div>
+        <div class="eyebrow">Typing Practice</div>
+        <h1 id="materialTitle">Quiet Progress</h1>
+        <div class="subtitle" id="materialMeta">English · Copy typing</div>
+      </div>
+
+      <div class="controls">
+        <select id="materialSelect" aria-label="选择练习材料"></select>
+
+        <div class="segmented" aria-label="练习模式">
+          <button id="practiceBtn" class="active">Practice</button>
+          <button id="testBtn">Test</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="paper">
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value" id="accuracy">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Raw accuracy</div>
+          <div class="stat-value" id="rawAccuracy">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">WPM</div>
+          <div class="stat-value" id="wpm">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">CPM</div>
+          <div class="stat-value" id="cpm">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Time</div>
+          <div class="stat-value" id="time">0:00</div>
+        </div>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div class="workspace">
+
+        <div class="section-label">
+          <span>Reference text</span>
+          <span class="mode-hint" id="modeHint">
+            Practice · 实时显示输入是否匹配
+          </span>
+        </div>
+
+        <div
+          id="reference"
+          class="reference"
+          aria-label="参考文本">
+        </div>
+
+        <div class="section-label">
+          <span>Your typing</span>
+          <span id="compositionState">Ready</span>
+        </div>
+
+        <div class="input-wrap">
+          <textarea
+            id="typingInput"
+            spellcheck="false"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            placeholder="从这里开始输入…"
+            aria-label="打字输入区"></textarea>
+        </div>
+
+        <div class="input-footer">
+          <div>
+            <span id="progressText">0 / 0</span>
+            &nbsp;·&nbsp;
+            <kbd>Ctrl</kbd> + <kbd>Enter</kbd> 完成
+          </div>
+
+          <div class="actions">
+            <button class="btn" id="resetBtn">重新开始</button>
+            <button class="btn primary" id="finishBtn">完成练习</button>
+          </div>
+        </div>
+
+      </div>
+
+      <section class="result" id="resultPanel">
+
+        <div class="result-title">
+          <div>
+            <h2>Practice complete</h2>
+            <div class="result-note" id="resultNote">
+              这是本次输入的结果，不代表知识掌握程度。
+            </div>
+          </div>
+
+          <button class="btn" id="retryBtn">再练一次</button>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-card">
+            <small>Final accuracy</small>
+            <strong id="finalAccuracy">—</strong>
+          </div>
+
+          <div class="result-card">
+            <small>Raw accuracy</small>
+            <strong id="finalRaw">—</strong>
+          </div>
+
+          <div class="result-card">
+            <small>Speed</small>
+            <strong id="finalWpm">—</strong>
+          </div>
+
+          <div class="result-card">
+            <small>Duration</small>
+            <strong id="finalTime">—</strong>
+          </div>
+        </div>
+
+        <div class="errors">
+          <h3>Typing differences</h3>
+          <div id="errorList"></div>
+        </div>
+
+      </section>
+
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const materials = [
+  {
+    id: "quiet-progress",
+    title: "Quiet Progress",
+    locale: "en",
+    label: "English · Short",
+    dir: "ltr",
+    text:
+`Real progress is often quiet. A learner returns to difficult material, notices a small mistake, corrects it, and tries again. Practice becomes useful when each attempt leaves behind evidence that can guide the next one.`
+  },
+  {
+    id: "deliberate-practice",
+    title: "Deliberate Practice",
+    locale: "en",
+    label: "English · Medium",
+    dir: "ltr",
+    text:
+`Learning is not simply the repetition of familiar actions. Deliberate practice asks us to notice where performance breaks down, make a focused correction, and return later to see whether the improvement remains. The purpose of feedback is not to control the learner, but to make the next decision clearer.`
+  },
+  {
+    id: "chinese",
+    title: "安静的进步",
+    locale: "zh-Hans",
+    label: "中文 · IME 测试",
+    dir: "ltr",
+    text:
+`真正的进步往往很安静。学习者重新面对困难的内容，发现一个小错误，完成修正，然后再次尝试。每一次练习留下的证据，都可以帮助我们更清楚地决定下一步应该练习什么。`
+  }
+];
+
+const els = {
+  materialSelect: document.querySelector("#materialSelect"),
+  materialTitle: document.querySelector("#materialTitle"),
+  materialMeta: document.querySelector("#materialMeta"),
+  practiceBtn: document.querySelector("#practiceBtn"),
+  testBtn: document.querySelector("#testBtn"),
+  reference: document.querySelector("#reference"),
+  input: document.querySelector("#typingInput"),
+  accuracy: document.querySelector("#accuracy"),
+  rawAccuracy: document.querySelector("#rawAccuracy"),
+  wpm: document.querySelector("#wpm"),
+  cpm: document.querySelector("#cpm"),
+  time: document.querySelector("#time"),
+  progressBar: document.querySelector("#progressBar"),
+  progressText: document.querySelector("#progressText"),
+  modeHint: document.querySelector("#modeHint"),
+  compositionState: document.querySelector("#compositionState"),
+  finishBtn: document.querySelector("#finishBtn"),
+  resetBtn: document.querySelector("#resetBtn"),
+  retryBtn: document.querySelector("#retryBtn"),
+  resultPanel: document.querySelector("#resultPanel"),
+  finalAccuracy: document.querySelector("#finalAccuracy"),
+  finalRaw: document.querySelector("#finalRaw"),
+  finalWpm: document.querySelector("#finalWpm"),
+  finalTime: document.querySelector("#finalTime"),
+  errorList: document.querySelector("#errorList"),
+  toast: document.querySelector("#toast")
+};
+
+let currentMaterial = materials[0];
+let mode = "practice";
+
+let startedAt = null;
+let finishedAt = null;
+let timer = null;
+let composing = false;
+let finished = false;
+
+let previousTyped = [];
+let rawTypedCount = 0;
+let rawErrorCount = 0;
+
+function normalizeText(text) {
+  return text.normalize("NFC").replace(/\r\n/g, "\n");
+}
+
+function graphemes(text, locale = currentMaterial.locale) {
+  const normalized = normalizeText(text);
+
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter(locale, {
+      granularity: "grapheme"
+    });
+
+    return [...segmenter.segment(normalized)].map(x => x.segment);
+  }
+
+  return Array.from(normalized);
+}
+
+function targetChars() {
+  return graphemes(currentMaterial.text);
+}
+
+function typedChars() {
+  return graphemes(els.input.value);
+}
+
+function escapeVisible(char) {
+  if (char === " ") return "␠";
+  if (char === "\n") return "↵";
+  if (char === "\t") return "⇥";
+  return char;
+}
+
+function startIfNeeded() {
+  if (startedAt || finished) return;
+
+  startedAt = Date.now();
+
+  timer = setInterval(() => {
+    updateStats();
+  }, 250);
+}
+
+function elapsedMs() {
+  if (!startedAt) return 0;
+  return (finishedAt || Date.now()) - startedAt;
+}
+
+function formatTime(ms) {
+  const total = Math.floor(ms / 1000);
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function comparison() {
+  const target = targetChars();
+  const typed = typedChars();
+
+  const maxLength = Math.max(target.length, typed.length);
+
+  let correct = 0;
+  let errors = [];
+
+  for (let i = 0; i < maxLength; i++) {
+    const expected = target[i];
+    const actual = typed[i];
+
+    if (expected !== undefined && actual === expected) {
+      correct++;
+    } else {
+      errors.push({
+        index: i,
+        expected,
+        actual
+      });
+    }
+  }
+
+  const denominator = Math.max(target.length, typed.length, 1);
+
+  return {
+    target,
+    typed,
+    correct,
+    errors,
+    accuracy: correct / denominator * 100
+  };
+}
+
+function trackRawInput() {
+  const target = targetChars();
+  const typed = typedChars();
+
+  /*
+    Demo-level raw accuracy:
+    only newly committed graphemes are counted.
+    Correcting an earlier mistake does not erase the original raw error.
+    No raw keydown/keyup timing is stored.
+  */
+  if (typed.length > previousTyped.length) {
+    for (let i = previousTyped.length; i < typed.length; i++) {
+      rawTypedCount++;
+
+      if (typed[i] !== target[i]) {
+        rawErrorCount++;
+      }
+    }
+  }
+
+  previousTyped = typed.slice();
+}
+
+function rawAccuracyValue() {
+  if (!rawTypedCount) return 100;
+
+  return Math.max(
+    0,
+    (rawTypedCount - rawErrorCount) / rawTypedCount * 100
+  );
+}
+
+function updateStats() {
+  const result = comparison();
+
+  const minutes = Math.max(elapsedMs() / 60000, 1 / 60000);
+  const typedCount = result.typed.length;
+
+  const cpm = startedAt ? typedCount / minutes : 0;
+  const wpm = startedAt ? typedCount / 5 / minutes : 0;
+
+  const progress =
+    Math.min(result.typed.length / Math.max(result.target.length, 1), 1) * 100;
+
+  const hideCorrectness = mode === "test" && !finished;
+
+  els.accuracy.textContent =
+    hideCorrectness
+      ? "—"
+      : `${result.accuracy.toFixed(0)}%`;
+
+  els.rawAccuracy.textContent =
+    hideCorrectness
+      ? "—"
+      : `${rawAccuracyValue().toFixed(0)}%`;
+
+  els.wpm.textContent =
+    startedAt ? Math.round(wpm) : "0";
+
+  els.cpm.textContent =
+    startedAt ? Math.round(cpm) : "0";
+
+  els.time.textContent = formatTime(elapsedMs());
+
+  els.progressBar.style.width = `${progress}%`;
+
+  els.progressText.textContent =
+    `${Math.min(result.typed.length, result.target.length)} / ${result.target.length}`;
+}
+
+function renderReference() {
+  const target = targetChars();
+  const typed = typedChars();
+
+  els.reference.innerHTML = "";
+  els.reference.dir = currentMaterial.dir || "auto";
+
+  target.forEach((char, index) => {
+    const span = document.createElement("span");
+
+    span.className = "char";
+    span.textContent = char;
+
+    if (finished) {
+      if (typed[index] === char) {
+        span.classList.add("correct");
+      } else {
+        span.classList.add("wrong");
+      }
+    } else if (mode === "practice") {
+      if (index < typed.length) {
+        span.classList.add(
+          typed[index] === char ? "correct" : "wrong"
+        );
+      } else if (index === typed.length) {
+        span.classList.add("current");
+      } else {
+        span.classList.add("pending");
+      }
+    } else {
+      /*
+        Test mode deliberately does not reveal correctness.
+        Only the current position is shown.
+      */
+      if (index < typed.length) {
+        span.classList.add("done-neutral");
+      } else if (index === typed.length) {
+        span.classList.add("current");
+      } else {
+        span.classList.add("pending");
+      }
+    }
+
+    els.reference.appendChild(span);
+  });
+}
+
+function update() {
+  renderReference();
+  updateStats();
+}
+
+function handleCommittedInput() {
+  if (finished) return;
+
+  startIfNeeded();
+  trackRawInput();
+  update();
+}
+
+function finishSession() {
+  if (finished) return;
+
+  if (!startedAt && els.input.value.length === 0) {
+    showToast("先输入一些内容再完成练习。");
+    els.input.focus();
+    return;
+  }
+
+  finished = true;
+  finishedAt = Date.now();
+
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+
+  els.input.disabled = true;
+
+  const result = comparison();
+  const minutes = Math.max(elapsedMs() / 60000, 1 / 60000);
+  const wpm = result.typed.length / 5 / minutes;
+
+  els.finalAccuracy.textContent =
+    `${result.accuracy.toFixed(1)}%`;
+
+  els.finalRaw.textContent =
+    `${rawAccuracyValue().toFixed(1)}%`;
+
+  els.finalWpm.textContent =
+    `${Math.round(wpm)} WPM`;
+
+  els.finalTime.textContent =
+    formatTime(elapsedMs());
+
+  renderErrors(result.errors);
+
+  els.resultPanel.classList.add("show");
+
+  update();
+
+  setTimeout(() => {
+    els.resultPanel.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+  }, 80);
+}
+
+function renderErrors(errors) {
+  els.errorList.innerHTML = "";
+
+  if (!errors.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-errors";
+    empty.textContent = "没有发现差异。";
+    els.errorList.appendChild(empty);
+    return;
+  }
+
+  errors.slice(0, 12).forEach(error => {
+    const row = document.createElement("div");
+    row.className = "error-row";
+
+    const pos = document.createElement("div");
+    pos.className = "error-pos";
+    pos.textContent = `#${error.index + 1}`;
+
+    const expected = document.createElement("div");
+    expected.className = "expected";
+    expected.textContent =
+      `应为：${error.expected === undefined ? "∅" : escapeVisible(error.expected)}`;
+
+    const actual = document.createElement("div");
+    actual.className = "actual";
+    actual.textContent =
+      `输入：${error.actual === undefined ? "∅" : escapeVisible(error.actual)}`;
+
+    row.append(pos, expected, actual);
+    els.errorList.appendChild(row);
+  });
+
+  if (errors.length > 12) {
+    const more = document.createElement("div");
+    more.className = "result-note";
+    more.style.marginTop = "10px";
+    more.textContent =
+      `另有 ${errors.length - 12} 处差异未在 Demo 中展开。`;
+
+    els.errorList.appendChild(more);
+  }
+}
+
+function resetSession({focus = true} = {}) {
+  if (timer) clearInterval(timer);
+
+  startedAt = null;
+  finishedAt = null;
+  timer = null;
+  composing = false;
+  finished = false;
+
+  previousTyped = [];
+  rawTypedCount = 0;
+  rawErrorCount = 0;
+
+  els.input.disabled = false;
+  els.input.value = "";
+
+  els.resultPanel.classList.remove("show");
+  els.compositionState.textContent = "Ready";
+
+  update();
+
+  if (focus) {
+    setTimeout(() => els.input.focus(), 30);
+  }
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+
+  els.practiceBtn.classList.toggle(
+    "active",
+    mode === "practice"
+  );
+
+  els.testBtn.classList.toggle(
+    "active",
+    mode === "test"
+  );
+
+  if (mode === "practice") {
+    els.modeHint.textContent =
+      "Practice · 实时显示输入是否匹配";
+  } else {
+    els.modeHint.textContent =
+      "Test · 完成前不显示正确或错误";
+  }
+
+  resetSession({focus:true});
+}
+
+function setMaterial(id) {
+  currentMaterial =
+    materials.find(item => item.id === id) || materials[0];
+
+  els.materialTitle.textContent = currentMaterial.title;
+  els.materialMeta.textContent =
+    `${currentMaterial.label} · Copy typing`;
+
+  els.input.lang = currentMaterial.locale;
+  els.input.dir = currentMaterial.dir || "auto";
+
+  resetSession({focus:false});
+}
+
+function showToast(message) {
+  els.toast.textContent = message;
+  els.toast.classList.add("show");
+
+  clearTimeout(showToast.timer);
+
+  showToast.timer = setTimeout(() => {
+    els.toast.classList.remove("show");
+  }, 1800);
+}
+
+/* Build material picker */
+materials.forEach(material => {
+  const option = document.createElement("option");
+  option.value = material.id;
+  option.textContent = material.label;
+  els.materialSelect.appendChild(option);
+});
+
+/*
+  IME:
+  Do not score intermediate composition text.
+  Only update comparison after compositionend.
+*/
+els.input.addEventListener("compositionstart", () => {
+  composing = true;
+  els.compositionState.textContent = "IME composing…";
+});
+
+els.input.addEventListener("compositionend", () => {
+  composing = false;
+  els.compositionState.textContent = "Committed";
+  handleCommittedInput();
+});
+
+els.input.addEventListener("input", () => {
+  if (composing) return;
+
+  els.compositionState.textContent = "Ready";
+  handleCommittedInput();
+});
+
+/* Typing practice should not be completed by paste/drop. */
+els.input.addEventListener("beforeinput", event => {
+  if (
+    event.inputType === "insertFromPaste" ||
+    event.inputType === "insertFromDrop"
+  ) {
+    event.preventDefault();
+    showToast("这个 Demo 暂不允许粘贴或拖入文本。");
+  }
+});
+
+els.input.addEventListener("paste", event => {
+  event.preventDefault();
+});
+
+els.input.addEventListener("drop", event => {
+  event.preventDefault();
+});
+
+/* Controls */
+els.practiceBtn.addEventListener("click", () => {
+  setMode("practice");
+});
+
+els.testBtn.addEventListener("click", () => {
+  setMode("test");
+});
+
+els.materialSelect.addEventListener("change", event => {
+  setMaterial(event.target.value);
+});
+
+els.finishBtn.addEventListener("click", finishSession);
+
+els.resetBtn.addEventListener("click", () => {
+  resetSession({focus:true});
+});
+
+els.retryBtn.addEventListener("click", () => {
+  resetSession({focus:true});
+  window.scrollTo({
+    top: Math.max(0, els.reference.offsetTop - 180),
+    behavior: "smooth"
+  });
+});
+
+document.addEventListener("keydown", event => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    event.preventDefault();
+    finishSession();
+  }
+});
+
+/* Initial render */
+setMaterial(materials[0].id);
+</script>
+
+</body>
+</html>
