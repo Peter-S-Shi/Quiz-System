@@ -259,6 +259,33 @@ impl Store {
     }
 }
 
+
+/// Migrate a standalone (staging) database file forward to the catalog's schema, in one transaction.
+/// Used when restoring an archive written by an older build. Returns `(from, to)` when it migrated.
+pub fn migrate_file(db: &Path, catalog: &Catalog) -> Result<Option<(i32, i32)>> {
+    let (app, ver, _) = peek_identity(db)?.ok_or_else(|| Error::new(Code::NotAStore, "database file is empty or missing"))?;
+    if app != APPLICATION_ID {
+        bail!(Code::NotAStore, "database is not a Quiz Studio store (application_id {app:#x})");
+    }
+    let to = catalog.schema_version();
+    if ver > to {
+        bail!(Code::SchemaNewer, "store schema v{ver} is newer than this build supports (v{to})");
+    }
+    if ver == to {
+        return Ok(None);
+    }
+    let mut conn = Connection::open(fsx::sqlite_path(db)?).code(Code::Db)?;
+    conn.pragma_update(None, "foreign_keys", "ON").code(Code::Db)?;
+    let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate).code(Code::Db)?;
+    for m in catalog.migrations().iter().filter(|m| m.version > ver) {
+        tx.execute_batch(&m.sql).ctx(Code::UpgradeFailed, &format!("migration {} ({})", m.version, m.name))?;
+    }
+    verify_catalog(&tx, catalog).map_err(|e| Error::new(Code::UpgradeFailed, e.message))?;
+    tx.pragma_update(None, "user_version", to).code(Code::Db)?;
+    tx.commit().code(Code::Db)?;
+    Ok(Some((ver, to)))
+}
+
 /// Hash of the entire physical content (schema text + every row of every table) - used to prove an
 /// aborted upgrade left the database exactly as it was.
 pub(crate) fn physical_hash(conn: &Connection) -> Result<String> {
