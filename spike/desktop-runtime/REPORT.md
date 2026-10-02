@@ -119,7 +119,7 @@ None of these changes the runtime, store, activation or backup decisions; the El
 
 ## 4. Product Owner / elevated actions still required (the only reason H1/H7/H8 are CONDITIONAL)
 1. **IME (H7-a):** from a quiet machine run `scripts/h7-ime.ps1 -Exe "<installed exe>" -Phrases 20` hands-off (~1 min; aborts without typing if the app is not foreground), or type ≥ 20 phrases in the harness textarea. Repeat with **Microsoft Japanese IME** (not installed here; needs a language-pack install).
-2. **Elevated PowerShell (H1-4/5):** `scripts/h1-elevated.ps1` (pktmon capture + all adapters disabled; re-enables in `finally`).
+2. **Elevated PowerShell (H1-4/5): WAIVED by the Product Owner, not executed.** `scripts/h1-elevated.ps1` (pktmon + adapters disabled) failed three times on environment issues (pktmon stderr, wrong account's `%LOCALAPPDATA%`, exe path) and was judged unnecessary: the per-process socket sampling (app process: 0 listeners, 0 outbound) and the dead-proxy run already cover the same claim, so the result is *weaker corroboration*, not a different verdict. Residual gap: no packet-level capture and no true adapter-disabled run.
 3. **Clean profile without WebView2 (H1-9):** run the installer on a machine/VM lacking the runtime (Windows Sandbox/VM) and confirm the bootstrapper download then launch.
 4. **Drag-and-drop + OneDrive-redirected dialogs (H8):** drop a ≥ 1 GiB file on the harness window, and Save/Open once via Desktop/Documents.
 5. Optionally a **fresh standard user** account install (not creatable here without admin).

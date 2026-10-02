@@ -2,17 +2,20 @@
 # 1) pktmon capture of the app run, with a per-process socket sample for attribution;
 # 2) the same scenarios with ALL network adapters disabled (re-enabled in `finally`).
 # Output: evidence\h1-elevated-*.json  (no usernames/paths are written; review before committing)
-param([string]$ResultDir = "work\h1-elevated")
+param([string]$ResultDir = "work\h1-elevated", [string]$Exe = (Join-Path $env:LOCALAPPDATA "Quiz Studio Spike\quiz-studio-spike.exe"))
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $PSScriptRoot; Set-Location $here
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw "Run this from an elevated PowerShell." }
-$exe = Join-Path $env:LOCALAPPDATA "Quiz Studio Spike\quiz-studio-spike.exe"
+$exe = $Exe
+if (-not (Test-Path -LiteralPath $exe)) { throw "App exe not found. Pass -Exe with the installed quiz-studio-spike.exe path (the elevated shell may belong to a different account)." }
 $extra = @("--ndjson", "$here\work\ev2500.ndjson", "--envelope", "$here\work\media-envelope.json")
 New-Item -ItemType Directory -Force $ResultDir, evidence | Out-Null
 
 # ---- (1) packet capture while the app runs
+$ErrorActionPreference = "Continue"   # pktmon writes "not running" to stderr during cleanup
 pktmon stop 2>$null | Out-Null; pktmon reset 2>$null | Out-Null
 pktmon filter remove 2>$null | Out-Null
+$ErrorActionPreference = "Stop"
 pktmon start --capture --pkt-size 0 --file-name "$ResultDir\capture.etl" | Out-Null
 $run1 = & "$here\scripts\run-app.ps1" -Exe $exe -Auto "h1,h2,h4,h7unicode" -Tag _pktmon -ResultDir $ResultDir -TimeoutSec 300 -Extra $extra | ConvertFrom-Json
 pktmon stop | Out-Null

@@ -38,6 +38,6 @@ foreach ($ph in ($wordList | Select-Object -First $Phrases)) {
   $sent++
 }
 $sw = [Diagnostics.Stopwatch]::StartNew()
-while (-not (Test-Path "$ResultDir\done$Tag.json") -and $sw.Elapsed.TotalSeconds -lt 120) { Start-Sleep -Milliseconds 500 }
+while (-not (Test-Path "$ResultDir\done$Tag.json") -and $sw.Elapsed.TotalSeconds -lt 190) { Start-Sleep -Milliseconds 500 }
 if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
 [ordered]@{ activeLayoutLangId = ("{0:X4}" -f $layout); keystrokePhrasesSent = $sent; resultFile = "$ResultDir\ime$Tag.json" } | ConvertTo-Json
