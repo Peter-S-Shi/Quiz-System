@@ -145,7 +145,7 @@ test('determinism: shuffled inputs and repeated runs serialize byte-identically,
   }
   const goldenPath = path.join(here, 'fixtures', 'orch-recommend.golden.json');
   if (process.env.UPDATE_GOLDEN) fs.writeFileSync(goldenPath, `${JSON.stringify(recommend(base, TODAY), null, 2)}\n`);
-  assert.equal(`${JSON.stringify(recommend(base, TODAY), null, 2)}\n`, fs.readFileSync(goldenPath, 'utf8'));
+  assert.equal(`${JSON.stringify(recommend(base, TODAY), null, 2)}\n`, fs.readFileSync(goldenPath, 'utf8').replaceAll('\r\n', '\n'));
 });
 
 test('the pure domain modules read no clock, randomness or locale (static)', () => {
