@@ -176,14 +176,14 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 - **Desktop Foundation：已验收（Human Gate PASS，2026-10-02）。** 在 `v2` 上实现： Tauri 2 + WebView2 外壳（单实例、严格 CSP、白名单 IPC、由 Rust 持有的原生对话框/拖放）、catalog 驱动的 SQLite store（Unit of Work 与 payload/projection 一致性）、内容寻址媒体、带 journal 恢复的统一 staging/activation/rollback 原语、V2 archive、稳定的身份/版本/数据根、按用户 NSIS 安装包。代码位于 [`desktop/`](desktop/README.md)；一次性 spike 代码未被复制。
 - **验证（Windows CI，`windows-latest`，MSVC + 静态 CRT —— [运行记录](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37012332165)，全部步骤通过）：** fmt + clippy `-D warnings`；15 个 JS 测试；按 ADR 阈值运行的 Rust 套件 —— 500 次强制 kill 崩溃循环（0 违规）、activation 检查点矩阵 6 个检查点 × 2 模式 × 3 次 + 回滚中 kill（状态恒为 pre 或 post）、400 MiB 流式写入/归档/恢复（子进程峰值远低于 300 MiB 上限）、14 种命名 archive 篡改 + 300 次位翻转均在激活前被拒绝、5,000 个 JS↔Rust↔DB 保真向量（0 不一致）；应用二进制可复现（两次构建 SHA-256 相同）；发布二进制不含故障注入钩子；安装包为 `downloadBootstrapper` 模式；已安装 exe 冒烟（标识、自测、启动、单实例、应用进程无监听/无远程连接、强制结束后恢复）；同标识升级保留数据；静默卸载保留用户数据。
 - **验收欠账（不阻塞的打包/手动欠账；保持开放，未标 PASS，未删除）：** D1 原生打开对话框自动化往返、D2 ≥ 1 GiB OS 拖放、D3 OneDrive 重定向桌面/文档、D4 无运行时 WebView2 的 `downloadBootstrapper`（仅静态证据）—— 手动步骤见 [`manual-qa/v2-desktop-foundation.zh-CN.md`](manual-qa/v2-desktop-foundation.zh-CN.md)。其他未决项：最终应用图标（目前为中性占位图标）、内置 CJK 字体（外壳使用系统字体，不引用网络资源）、代码签名与自动更新（范围外）。
-- **当前阶段：** V1 Migration ADR（ADR 0002）—— Migration Readiness Inventory 的 Human Gate 决策 D-1 至 D-15 为权威输入。
+- **当前阶段：** V1 Migration ADR —— [`docs/adr/0002-v1-to-v2-migration-architecture.md`](docs/adr/0002-v1-to-v2-migration-architecture.md) 已撰写，状态 **PROPOSED，等待 Human Gate**（仅文档：无损优先的接收/检测优先级、逐字携带式映射与 `migration_origin` 来源记录、历史记录计数契约、操作标识与幂等、阻断/可报告诊断、激活与恢复语义、守恒证明及自动化验证契约；提交 Human Gate 的六项决策为 H-1 至 H-6）。Inventory 决策 D-1 至 D-15 为权威输入。
 - **尚未开始（保持不变）：** Migration 实现、Scheduler / Recommendation / Calendar、Objective / Translation / Typing 领域集成、产品视图。
 
 **Human Gate HOLD / 修复：** Human Gate 发现原始文件系统路径进入了 WebView（绝对数据根、绝对媒体路径、WebView 可调用的 `media.gc`）。已在限定范围内修复：响应不含路径、`media.gc` 移出 WebView 白名单（仅 Rust 以固定策略执行 GC）、删除 `verifyBackup(path)`、移除 asset protocol 与预览、新增回归测试；ADR 0001 第 7 节现明确升级失败拒绝运行为已接受行为，第 15 节标记为已接受。D1–D4 仍为未执行的验收欠账。
 
 **跟进修复（保真）：** 第一次修复的整体路径 scrub 会改写 `store.read` payload 中用户写入的、形似路径的文本。WebView 边界现为结构化契约：系统结果按构造无路径，规范/用户内容永不改写，只清洗失败诊断信息（`error.message`，覆盖含空格 Windows、UNC/verbatim 与 Unix 路径）；回归测试同时证明无损往返与无泄露。
 
-**下一步行动：完成 V1 Migration ADR（ADR 0002），然后停在其 Human Gate。** Migration 里程碑由该 ADR 约束，并需另行授权。`spike/desktop-runtime` 分支保持一次性且永不合并。
+**下一步行动：ADR 0002（PROPOSED）的 Human Gate 评审。** Migration 里程碑由该 ADR 约束，并需另行授权；尚未编写任何迁移器或测试代码。`spike/desktop-runtime` 分支保持一次性且永不合并。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 

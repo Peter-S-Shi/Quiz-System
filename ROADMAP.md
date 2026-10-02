@@ -394,7 +394,7 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 4. Bounded Desktop Spike (disposable `spike/desktop-runtime`, never merged). **Complete** — evidence: [`docs/adr/evidence/0001-desktop-spike-report.md`](docs/adr/evidence/0001-desktop-spike-report.md).
 5. Desktop Architecture Gate. **PASSED — GO WITH AMENDMENT**; ADR 0001 is **ACCEPTED** (amendments A1–A8 absorbed; H8 reclassified by the Human Gate; H1 accepted with residual limitations; Electron fallback not triggered).
 6. Create the formal V2 development branch `v2`, then begin Desktop Foundation. **Branch created; Desktop Foundation ACCEPTED (Human Gate PASS)** ([milestone record](docs/V2_DESKTOP_FOUNDATION.md); Windows CI green; D1–D4 remain non-blocking packaged/manual acceptance debt).
-7. V1 Migration ADR (ADR 0002). **ACTIVE** — authored on `v2`, status PROPOSED until its Human Gate; Migration implementation has **not** started.
+7. V1 Migration ADR ([ADR 0002](docs/adr/0002-v1-to-v2-migration-architecture.md)). **PROPOSED — awaiting Human Gate**; documentation only, Migration implementation has **not** started.
 
 ## Maintenance / Next Version
 

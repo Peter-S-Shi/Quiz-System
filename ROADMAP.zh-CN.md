@@ -394,7 +394,7 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 4. Bounded Desktop Spike（一次性 `spike/desktop-runtime`，永不合并）。**已完成** —— 证据：[`docs/adr/evidence/0001-desktop-spike-report.md`](docs/adr/evidence/0001-desktop-spike-report.md)。
 5. Desktop Architecture Gate。**已通过 —— GO WITH AMENDMENT**；ADR 0001 **已接受（ACCEPTED）**（已并入修订 A1–A8；H8 已由 Human Gate 重新分类；H1 带残余限制被接受；Electron fallback 未触发）。
 6. 创建正式 V2 开发分支 `v2`，随后开始 Desktop Foundation。**分支已创建；Desktop Foundation 已验收（Human Gate PASS）**（[里程碑记录](docs/V2_DESKTOP_FOUNDATION.zh-CN.md)；Windows CI 绿色；D1–D4 保持为不阻塞的打包/手动验收欠账）。
-7. V1 Migration ADR（ADR 0002）。**进行中** —— 在 `v2` 上撰写，状态 PROPOSED，直至其 Human Gate；Migration 实现**尚未**开始。
+7. V1 Migration ADR（[ADR 0002](docs/adr/0002-v1-to-v2-migration-architecture.md)）。**PROPOSED —— 等待 Human Gate**；仅文档，Migration 实现**尚未**开始。
 
 ## 维护 / 下一版本
 
