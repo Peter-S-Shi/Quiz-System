@@ -67,6 +67,10 @@ jobs:
           cargo fmt --all -- --check
           cargo clippy --workspace --all-targets -- -D warnings
 
+      - name: Install the locked JS dev dependencies (the adapter differential test compiles the public schema with ajv)
+        working-directory: .
+        run: npm ci --ignore-scripts
+
       - name: JS tests (canonical JSON, projections, Store Port client, storage/offline boundary)
         run: node --test "ui/tests/*.spec.mjs"
 
