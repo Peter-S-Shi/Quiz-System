@@ -52,6 +52,9 @@ pub enum Role {
     Metadata,
     /// Durable recovery-only artifact index (e.g. a preserved raw V1 recovery blob): archived, never canonical.
     Retained,
+    /// Scheduling Context (ADR 0003 section 5): durable user data that is archived and restored but is never Evidence
+    /// and is outside the evidence-domain view (`domain_collections`).
+    Context,
     /// Recovery-only data (ADR 0001 section 5.5): excluded from activation, archives and canonical hashes.
     RecoveryOnly,
 }
@@ -62,6 +65,7 @@ impl Role {
             Role::Canonical => "canonical",
             Role::Metadata => "metadata",
             Role::Retained => "retained",
+            Role::Context => "context",
             Role::RecoveryOnly => "recovery-only",
         }
     }
@@ -105,6 +109,11 @@ impl Collection {
     /// Durable operation metadata: travels everywhere, but is not domain data.
     pub fn metadata(mut self) -> Self {
         self.role = Role::Metadata;
+        self
+    }
+    /// Scheduling Context: travels everywhere (archive, snapshot, state hash), is not Evidence and not domain data.
+    pub fn context(mut self) -> Self {
+        self.role = Role::Context;
         self
     }
     /// Durable recovery-only artifact index: travels everywhere, never domain data.

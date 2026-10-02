@@ -123,7 +123,15 @@ impl Store {
             }
         }
         fault::point("uow-before-commit");
+        // an optional operation tag exposes named checkpoints around the commit (test builds only, ADR 0003 section 15)
+        let tag = uow.get("tag").and_then(Value::as_str).filter(|t| t.len() <= 32 && t.chars().all(|c| c.is_ascii_lowercase() || c == '-'));
+        if let Some(t) = tag {
+            fault::point(&format!("sched-before-commit:{t}"));
+        }
         tx.commit().map_err(db_err)?; // deferred foreign keys are checked here; a failure leaves nothing committed
+        if let Some(t) = tag {
+            fault::point(&format!("sched-after-commit:{t}"));
+        }
         Ok(CommitReceipt { ops: planned.len(), writes, micros: started.elapsed().as_micros() as u64 })
     }
 }

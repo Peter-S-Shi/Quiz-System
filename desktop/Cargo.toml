@@ -7,6 +7,7 @@ members = [
   "core/activation",
   "core/archive",
   "core/migrate_v1",
+  "core/orchestration",
   "core/port",
   "core/testkit",
   "core/scenarios",
@@ -36,6 +37,7 @@ qs-media = { path = "core/media" }
 qs-activation = { path = "core/activation" }
 qs-archive = { path = "core/archive" }
 qs-migrate-v1 = { path = "core/migrate_v1" }
+qs-orchestration = { path = "core/orchestration" }
 qs-port = { path = "core/port" }
 qs-testkit = { path = "core/testkit" }
 

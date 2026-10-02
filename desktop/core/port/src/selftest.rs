@@ -14,7 +14,7 @@ use std::time::Instant;
 
 /// The catalog the product ships: the foundation's structural collections plus the V1 migration domain schema.
 pub fn product_catalog() -> Arc<Catalog> {
-    Arc::new(qs_migrate_v1::product_catalog())
+    Arc::new(qs_orchestration::product_catalog())
 }
 
 pub fn run(dir: &Path) -> Result<Value> {
@@ -113,6 +113,35 @@ pub fn run(dir: &Path) -> Result<Value> {
         Ok(json!({"imported": 1, "undone": true}))
     })();
     step("migration", t, outcome);
+
+    // Learning Orchestration (ADR 0003): the shipped store is schema 3 and the database itself refuses a second
+    // active schedule in a slot
+    let t = Instant::now();
+    let schedule = |id: &str| {
+        let payload = json!({"schemaVersion": 1, "id": id,
+            "slot": {"domain": "objective", "material": {"type": "quiz-paper", "id": "paper-selftest"}, "intent": "practice"},
+            "owner": "user", "status": "active", "cadence": {"kind": "once"}, "segments": [{"anchor": "2099-01-01"}],
+            "createdAt": "2026-10-02T00:00:00Z", "updatedAt": "2026-10-02T00:00:00Z"});
+        json!({"uow": {"ops": [{"op": "put", "collection": "schedule", "id": id, "payload": payload,
+            "proj": {"columns": {"domain": "objective", "material_type": "quiz-paper", "material_id": "paper-selftest",
+                                 "intent": "practice", "owner": "user", "status": "active"}, "relations": {}}}]}})
+    };
+    let outcome = (|| -> std::result::Result<Value, String> {
+        let info = core_c.dispatch("schema.info", &json!({}));
+        if info["result"]["store"]["userVersion"] != 3 {
+            return Err(format!("expected store schema 3: {}", info["result"]["store"]));
+        }
+        let first = core_c.dispatch("store.commit", &schedule("s-selftest-1"));
+        if first["ok"] != true {
+            return Err(first.to_string());
+        }
+        let second = core_c.dispatch("store.commit", &schedule("s-selftest-2"));
+        if second["ok"] == true || second["error"]["code"] != "REJECT_CONSTRAINT" {
+            return Err(format!("a second active schedule in the slot must be rejected by the database: {second}"));
+        }
+        Ok(json!({"storeSchema": 3, "singleActiveSchedule": true}))
+    })();
+    step("scheduling", t, outcome);
 
     Ok(json!({"ok": all_ok, "steps": steps, "appVersion": qs_platform::identity::APP_VERSION}))
 }

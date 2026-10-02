@@ -18,7 +18,7 @@ fn self_test_passes_end_to_end_on_an_isolated_root() {
     let d = tempfile::tempdir().unwrap();
     let r = selftest::run(d.path()).unwrap();
     assert_eq!(r["ok"], true, "{}", serde_json::to_string_pretty(&r).unwrap());
-    assert_eq!(r["steps"].as_array().unwrap().len(), 8);
+    assert_eq!(r["steps"].as_array().unwrap().len(), 9);
 }
 
 #[test]

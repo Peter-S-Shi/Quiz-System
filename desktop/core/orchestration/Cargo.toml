@@ -1,0 +1,19 @@
+[package]
+name = "qs-orchestration"
+description = "Learning Orchestration persistence (ADR 0003): store schema 3, Scheduling Context collections and their database-level constraints"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+qs-store.workspace = true
+qs-migrate-v1.workspace = true
+
+[dev-dependencies]
+qs-platform.workspace = true
+qs-archive.workspace = true
+qs-testkit.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+tempfile.workspace = true

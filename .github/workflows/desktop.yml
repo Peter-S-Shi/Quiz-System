@@ -33,6 +33,9 @@ jobs:
       QS_BITFLIPS: "300"
       # ADR 0002 section 16.3 thresholds (V1 migration): randomly timed kills; checkpoint repeats reuse QS_H3_REPEATS
       QS_MIG_KILLS: "200"
+      # ADR 0003 section 17 thresholds (Learning Orchestration): randomly timed kills and random operation sequences
+      QS_ORCH_KILLS: "100"
+      QS_ORCH_SEQUENCES: "60"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -81,6 +84,12 @@ jobs:
           . ./scripts/env.ps1
           $env:QS_VECTORS = "$env:RUNNER_TEMP/canonical-vectors-5000.json"
           cargo test --workspace --exclude qs-desktop -- --nocapture
+
+      - name: Learning Orchestration integration (JS domain against the real Rust store - races, sched-* fault matrix, random kills, archive, 2 to 3 upgrade)
+        run: |
+          . ./scripts/env.ps1
+          cargo build -p qs-scenarios --bin qs-scenario
+          node --test "ui/tests/integration/*.spec.mjs"
 
       - name: Install Tauri CLI
         run: npm install --global @tauri-apps/cli@2.12.1

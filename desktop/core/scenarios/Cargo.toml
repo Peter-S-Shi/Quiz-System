@@ -17,6 +17,7 @@ qs-media.workspace = true
 qs-activation.workspace = true
 qs-archive.workspace = true
 qs-migrate-v1.workspace = true
+qs-orchestration.workspace = true
 qs-port.workspace = true
 qs-testkit.workspace = true
 serde_json.workspace = true

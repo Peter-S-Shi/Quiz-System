@@ -1,5 +1,5 @@
 ---
-status: ACCEPTED — GO WITH AMENDMENT (Human Gate, 2026-10-02); implementation NOT STARTED, awaiting explicit authorization
+status: ACCEPTED — GO WITH AMENDMENT (Human Gate, 2026-10-02); Learning Orchestration + Calendar milestone implemented, awaiting its Human Gate (section 23)
 decision-date: 2026-10-02
 gates: Learning Orchestration + Calendar milestone (implementation)
 depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runtime-and-application-data.md (ACCEPTED), docs/adr/0002-v1-to-v2-migration-architecture.md (ACCEPTED), Desktop Foundation (ACCEPTED), V1 Migration milestone (ACCEPTED)
@@ -7,7 +7,7 @@ depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runti
 
 # ADR 0003 — Learning Orchestration: Scheduling, Recommendation and Calendar Architecture
 
-**Status:** **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02; the review outcome and the four amendments are recorded in §22 and already folded into the text below). This ADR turns the frozen product semantics of Scope Freeze Revision 1 (§3.2, §3.6, §4.4–§4.6, §6, §7, §8, §12.5, §14, §23) into an implementable and verifiable data and behavior contract. It writes **no scheduler, recommender or Calendar code and no schema migration**. Scheduler / Recommendation / Calendar **implementation is NOT STARTED and is not authorized by this document**: the Learning Orchestration + Calendar milestone needs its own explicit authorization (Scope §24). Nothing here reopens Scope Freeze Revision 1; §18 maps every frozen boundary to the mechanism that keeps it.
+**Status:** **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02; the review outcome and the four amendments are recorded in §22 and already folded into the text below). This ADR turns the frozen product semantics of Scope Freeze Revision 1 (§3.2, §3.6, §4.4–§4.6, §6, §7, §8, §12.5, §14, §23) into an implementable and verifiable data and behavior contract. It writes **no scheduler, recommender or Calendar code and no schema migration**. Scheduler / Recommendation / Calendar **implementation is not authorized by this document**: the Learning Orchestration + Calendar milestone was authorized separately (Scope §24) and is **implemented and awaiting its own Human Gate** (section 23). Nothing here reopens Scope Freeze Revision 1; §18 maps every frozen boundary to the mechanism that keeps it.
 
 ## 1. Decision summary
 
@@ -446,7 +446,7 @@ None reopens Scope Freeze Revision 1. These are the engineering choices the Gate
 
 ## 21. Not authorized by this ADR
 
-Accepting this ADR does not by itself start the Learning Orchestration + Calendar milestone: **implementation is NOT STARTED and awaits its own explicit authorization.** It also does not authorize schemas or code beyond the requirements of §15, Objective/Translation/Typing domain integration, Answer Explanation or Focused Practice, any change to a frozen scope item, or any touch of the V1 production line. Each remains a separate, explicitly authorized step (Scope §24).
+Accepting this ADR did not by itself start the Learning Orchestration + Calendar milestone (that needed, and received, its own explicit authorization; section 23). It also did not authorize schemas or code beyond the requirements of §15, Objective/Translation/Typing domain integration, Answer Explanation or Focused Practice, any change to a frozen scope item, or any touch of the V1 production line. Each remains a separate, explicitly authorized step (Scope §24).
 
 ## 22. Human Gate record — ACCEPTED, GO WITH AMENDMENT (2026-10-02)
 
@@ -458,3 +458,7 @@ The Product Owner accepted this ADR. **P-2, P-4, P-6, P-7, P-8, P-9 and P-10 are
 | A-2 | **No minimum date difference.** `MATERIAL_DELTA_DAYS` and the "differs by less than 2 days is ignored" rule are removed: any engine date that differs from a user-owned or Overdue engine-owned schedule's current active/display date is a conflict needing the learner's choice; only an equal date is a no-op; repeat reminders are prevented solely by the covered-basis (no new evidence id ⇒ no nag) rule. | §1, §8, §11.4, P-3, L-2, §17.1 item 4 |
 | A-3 | **Suggestions are bound to a schedule revision.** `schedule_suggestion.scheduleRev` records the revision it was computed against; accept/keep verify it; every explicit learner change (and every schedule-row write) closes the pending suggestion as `superseded` in the same Unit of Work; the sweep recomputes against the new revision; kept and superseded bases are both covered for anti-nagging. Added to the learner-wins-race invariants (L-3) and the conflict/race tests. | §7.5, §8, §11.4, §14, L-3, §17.1 items 5a–5c |
 | A-4 | **One occurrence identity.** The only identity is `(scheduleId, originalDate)`; `movedTo`/`displayDate` is never an identity or a key. `occurrenceDate` is renamed `originalDate` in `schedule_fulfillment`, `session_selection.scheduleRef`, calendar entries and `schedule_suggestion.targetOriginalDate`; a moved-occurrence fulfillment/provenance regression case is added. | §3, §7.3, §7.5, §7.6, §7.8, S-7, §17.4 item 13a |
+
+## 23. Implementation record (Learning Orchestration + Calendar milestone)
+
+The milestone is implemented on `v2`; its record, the section 17 evidence map and the implementation clarifications that need Human Gate review are in [`docs/V2_ORCHESTRATION.md`](../V2_ORCHESTRATION.md). Nothing there changes a decision of sections 1-22; the clarifications are choices the implementation had to make (for example the slot stored as four projected columns instead of a `slot_key`, an optional Unit-of-Work `tag` that names the `sched-*` fault checkpoints, `accepted` suggestions joining the covered basis, and the same-basis rule that keeps an engine-owned date from creeping forward every day).

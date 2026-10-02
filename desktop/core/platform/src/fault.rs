@@ -23,6 +23,27 @@ pub const CHECKPOINTS: &[&str] = &[
     "mig-after-media-publish",
     "mig-after-artifact-publish",
     "mig-before-undo-commit",
+    // Learning Orchestration (ADR 0003 section 15): the Unit-of-Work boundary of each scheduling operation. A
+    // Unit of Work carrying `"tag": "<op>"` exposes `sched-before-commit:<op>` (all writes done, not committed)
+    // and `sched-after-commit:<op>` (committed).
+    "sched-before-commit:create",
+    "sched-before-commit:move-once",
+    "sched-before-commit:move-occurrence",
+    "sched-before-commit:move-future",
+    "sched-before-commit:cancel",
+    "sched-before-commit:apply-plan",
+    "sched-before-commit:decide-accept",
+    "sched-before-commit:decide-keep",
+    "sched-before-commit:session-complete",
+    "sched-after-commit:create",
+    "sched-after-commit:move-once",
+    "sched-after-commit:move-occurrence",
+    "sched-after-commit:move-future",
+    "sched-after-commit:cancel",
+    "sched-after-commit:apply-plan",
+    "sched-after-commit:decide-accept",
+    "sched-after-commit:decide-keep",
+    "sched-after-commit:session-complete",
 ];
 
 #[cfg(feature = "fault-injection")]

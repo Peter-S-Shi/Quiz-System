@@ -13,6 +13,9 @@
 //!   qs-scenario archive-restore <root> <archive>       prints peak working set
 //!   qs-scenario migrate <root> <source> [artifact]     V1 migration: prepare + confirm + activate (prints JSON)
 //!   qs-scenario migrate-undo <root> <run-op-id>        undo an import (prints JSON)
+//!   qs-scenario port-serve <root>                     the product Store Port over stdin/stdout (JSON lines {command,args} -> envelope)
+//!   qs-scenario product-archive-create <root> <dest>   archive a schema-3 product store
+//!   qs-scenario product-archive-restore <root> <archive>
 //!   qs-scenario gen-big <path> <mib> <assets>          write a synthetic V1 backup with ~<mib> MiB of decoded media
 
 use qs_activation::{MergePolicy, Mode, Options};
@@ -104,6 +107,40 @@ fn main() {
             let mut store = open(&root);
             let r = qs_archive::restore_archive(&mut store, std::path::Path::new(&args[3])).expect("restore");
             println!("{{\"peakMiB\":{:.1},\"mediaAdded\":{}}}", mem::peak_mib(), r.media_added);
+        }
+        "port-serve" => {
+            // The WebView-facing dispatch (allowlist included) over a pipe, so Node tests drive the JS domain layer
+            // against the real Rust store, constraints, archive and fault checkpoints.
+            let core = qs_port::Core::open(&root, qs_port::selftest::product_catalog(), &OpenOptions::default()).expect("open core");
+            let mut line = String::new();
+            let stdin = std::io::stdin();
+            loop {
+                line.clear();
+                if stdin.read_line(&mut line).unwrap_or(0) == 0 {
+                    break;
+                }
+                let req: serde_json::Value = match serde_json::from_str(line.trim()) {
+                    Ok(v) => v,
+                    Err(_) => continue,
+                };
+                let out = qs_port::webview::dispatch(
+                    &core,
+                    req["command"].as_str().unwrap_or(""),
+                    req.get("args").unwrap_or(&serde_json::Value::Null),
+                );
+                println!("{}", serde_json::to_string(&out).unwrap());
+                std::io::stdout().flush().ok();
+            }
+        }
+        "product-archive-create" => {
+            let store = Store::open(&root, qs_port::selftest::product_catalog(), &OpenOptions::default()).expect("open store");
+            let sum = qs_archive::create_archive(&store, std::path::Path::new(&args[3])).expect("archive");
+            println!("{{\"bytes\":{},\"mediaCount\":{}}}", sum.bytes, sum.media_count);
+        }
+        "product-archive-restore" => {
+            let mut store = Store::open(&root, qs_port::selftest::product_catalog(), &OpenOptions::default()).expect("open store");
+            let r = qs_archive::restore_archive(&mut store, std::path::Path::new(&args[3])).expect("restore");
+            println!("{{\"migratedFrom\":{}}}", r.migrated_from.map(|v| v.to_string()).unwrap_or_else(|| "null".into()));
         }
         "migrate" => {
             let store = Store::open(&root, Arc::new(qs_migrate_v1::product_catalog()), &OpenOptions::default()).expect("open store");

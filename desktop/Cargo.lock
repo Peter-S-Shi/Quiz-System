@@ -2776,6 +2776,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "qs-orchestration"
+version = "2.0.0-dev.0"
+dependencies = [
+ "qs-archive",
+ "qs-migrate-v1",
+ "qs-platform",
+ "qs-store",
+ "qs-testkit",
+ "rusqlite",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
 name = "qs-platform"
 version = "2.0.0-dev.0"
 dependencies = [
@@ -2795,6 +2809,7 @@ dependencies = [
  "qs-archive",
  "qs-media",
  "qs-migrate-v1",
+ "qs-orchestration",
  "qs-platform",
  "qs-store",
  "qs-testkit",
@@ -2815,6 +2830,7 @@ dependencies = [
  "qs-archive",
  "qs-media",
  "qs-migrate-v1",
+ "qs-orchestration",
  "qs-platform",
  "qs-port",
  "qs-store",
