@@ -382,7 +382,7 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 
 - **Immutable Verification Candidate**: The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the verified product and runtime baseline.
 - **Final V1 Release Line**: Final `1.0.0` version metadata and evidence-driven portfolio presentation assets are closed and integrated into `main`.
-- **Maintenance Hold**: The repository is in Maintenance Hold with no active engineering milestone.
+- **Maintenance Hold**: The V1 release line remains in Maintenance Hold with no active V1 engineering milestone.
 - **Optional V1 Follow-ups**: Any future V1 release distribution, formal GitHub Release, or GitHub Pages deployment remains optional and requires separate Product Owner authorization.
 - **V2 Architecture Validation (Active)**: V2 has been authorized by the Product Owner and has entered architecture validation. This does not alter the V1 release line, which stays in Maintenance Hold. The current V2 route is below.
 
