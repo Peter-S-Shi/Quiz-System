@@ -113,4 +113,4 @@ cargo test -p qs-scenarios --test migration_faults -- --nocapture
 
 ## 9. Human Gate 结论：已验收
 
-里程碑已验收。**手动打包检查 M1–M7（§6）与 Desktop Foundation 的 D1–D4 继续保持 open、不阻塞的验收欠账：未通过（not PASS）、未豁免、未删除。** Scheduler / Recommendation / Calendar 的实现**未获授权**；下一阶段是架构决策 [ADR 0003](adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)（PROPOSED，等待其自身的 Human Gate）。
+里程碑已验收。**手动打包检查 M1–M7（§6）与 Desktop Foundation 的 D1–D4 继续保持 open、不阻塞的验收欠账：未通过（not PASS）、未豁免、未删除。** Scheduler / Recommendation / Calendar 的实现**未获授权**；架构决策 [ADR 0003](adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)（ACCEPTED — GO WITH AMENDMENT；Learning Orchestration + Calendar 的实现尚未开始，等待明确授权）。

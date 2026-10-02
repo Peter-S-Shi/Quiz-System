@@ -113,4 +113,4 @@ Implementation complete; ADR 0002 §16 is implemented as automated tests that pa
 
 ## 9. Human Gate outcome: ACCEPTED
 
-The milestone is accepted. **Manual packaged checks M1–M7 (§6) and the Desktop Foundation's D1–D4 remain open, non-blocking acceptance debt: not PASS, not waived, not deleted.** Scheduler / Recommendation / Calendar implementation is **not authorized**; the next stage is the architecture decision [ADR 0003](adr/0003-learning-orchestration-scheduling-recommendation-calendar.md) (PROPOSED, awaiting its own Human Gate).
+The milestone is accepted. **Manual packaged checks M1–M7 (§6) and the Desktop Foundation's D1–D4 remain open, non-blocking acceptance debt: not PASS, not waived, not deleted.** Scheduler / Recommendation / Calendar implementation is **not authorized**; the architecture decision [ADR 0003](adr/0003-learning-orchestration-scheduling-recommendation-calendar.md) is ACCEPTED — GO WITH AMENDMENT, and the Learning Orchestration + Calendar implementation is not started and awaits explicit authorization.

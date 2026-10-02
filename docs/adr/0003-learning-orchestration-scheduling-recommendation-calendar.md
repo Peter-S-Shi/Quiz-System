@@ -1,5 +1,5 @@
 ---
-status: PROPOSED — awaiting Human Gate
+status: ACCEPTED — GO WITH AMENDMENT (Human Gate, 2026-10-02); implementation NOT STARTED, awaiting explicit authorization
 decision-date: 2026-10-02
 gates: Learning Orchestration + Calendar milestone (implementation)
 depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runtime-and-application-data.md (ACCEPTED), docs/adr/0002-v1-to-v2-migration-architecture.md (ACCEPTED), Desktop Foundation (ACCEPTED), V1 Migration milestone (ACCEPTED)
@@ -7,7 +7,7 @@ depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runti
 
 # ADR 0003 — Learning Orchestration: Scheduling, Recommendation and Calendar Architecture
 
-**Status:** **PROPOSED — awaiting Human Gate.** This ADR turns the frozen product semantics of Scope Freeze Revision 1 (§3.2, §3.6, §4.4–§4.6, §6, §7, §8, §12.5, §14, §23) into an implementable and verifiable data and behavior contract. It writes **no scheduler, recommender or Calendar code and no schema migration**. Scheduler / Recommendation / Calendar **implementation is not authorized** by this document; the Learning Orchestration + Calendar milestone needs this ADR's Human Gate **and** its own explicit authorization (Scope §24). Nothing here reopens Scope Freeze Revision 1; §18 maps every frozen boundary to the mechanism that keeps it.
+**Status:** **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02; the review outcome and the four amendments are recorded in §22 and already folded into the text below). This ADR turns the frozen product semantics of Scope Freeze Revision 1 (§3.2, §3.6, §4.4–§4.6, §6, §7, §8, §12.5, §14, §23) into an implementable and verifiable data and behavior contract. It writes **no scheduler, recommender or Calendar code and no schema migration**. Scheduler / Recommendation / Calendar **implementation is NOT STARTED and is not authorized by this document**: the Learning Orchestration + Calendar milestone needs its own explicit authorization (Scope §24). Nothing here reopens Scope Freeze Revision 1; §18 maps every frozen boundary to the mechanism that keeps it.
 
 ## 1. Decision summary
 
@@ -16,8 +16,8 @@ depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runti
 | Where it lives | Domain semantics (planner, recommender, occurrence projection, validators) are **pure JS/TS modules** with an injected clock; **Rust** persists, constrains and archives them through the Store Port (ADR 0001 §4). Rust enforces only structural invariants: identity, uniqueness (partial unique indexes), foreign keys, atomic Units of Work. |
 | Data classes | Three, never mixed: **Evidence** (native evidence-bearing records, untouched), **Scheduling Context** (new durable, archived user data: `schedule`, `schedule_exception`, `schedule_fulfillment`, `schedule_suggestion`, `session_selection`), **Derived** (Recommendations, occurrences, Due/Overdue, Calendar view: computed, never stored as canonical). A new catalog role `context` expresses the middle class (§5, §15). |
 | Schedule identity | A **Scheduling Slot** = (Task Domain, material, Intent). **At most one `active` schedule per slot**, enforced by a **partial unique index**, not just by domain code. |
-| Ownership | Every schedule is `owner: engine` or `owner: user`. Any explicit learner create/move/cancel makes it user-owned **in place** (same row, the new date is the authority). The engine can write only schedules that were engine-owned when it read them (revision precondition), so overwriting a user-owned date is structurally impossible. |
-| Conflict | A new-evidence proposal that differs materially from a user-owned (or Overdue) schedule is stored as an **inert `schedule_suggestion`** (never a second schedule, never Due/Overdue). The learner's decision is **one atomic Unit of Work**: accept (re-anchor) or keep; at most one pending suggestion per schedule (partial unique index). |
+| Ownership | Every schedule is `owner: engine` or `owner: user`. Any explicit learner **move or cancel** of an existing schedule makes it user-owned **in place** (same row, the new date is the authority); a learner **create** is only possible in a slot with no active schedule and makes a new user-owned schedule. The engine can write only schedules that were engine-owned when it read them (revision precondition), so overwriting a user-owned date is structurally impossible. |
+| Conflict | Whenever a new-evidence proposal **differs** from the current active/display date of a user-owned (or Overdue engine-owned) schedule, it is stored as an **inert `schedule_suggestion`** bound to the **schedule revision** it was computed against (never a second schedule, never Due/Overdue); the same date is a no-op. The learner's decision is **one atomic Unit of Work** that verifies the binding: accept (re-anchor) or keep; at most one pending suggestion per schedule (partial unique index); every explicit learner change closes the pending suggestion as `superseded` in the same Unit of Work. |
 | Dates | **Local calendar dates** `YYYY-MM-DD`, no time, no zone. "Today" is injected at read time. Due / Overdue / Scheduled are **derived**, never stored, so clock changes and time zones cannot corrupt data. |
 | Recurrence | A schedule is a **series**: `once`, or `every {N day(s)|N week(s)}` with an optional `until` date. The cadence is anchored; **segments** record re-anchors; per-occurrence **exceptions** record `moved` / `cancelled`. Occurrences are **derived**, identified by `(scheduleId, original date)`. |
 | Fulfillment | A completed session is recorded in **the same Unit of Work as its evidence** as a `schedule_fulfillment` keyed by the occurrence (unique) and by the session (unique): one session fulfills at most one occurrence, an occurrence is fulfilled at most once, so no duplicate debt. |
@@ -41,10 +41,10 @@ depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runti
 - **Scheduling Context** — facts about *when the learner or engine intends a session*. Never Evidence (Scope §4.5).
 - **Scheduling Slot** — the identity of an intended session: `(domain, material, intent)`.
 - **Schedule (series)** — the one authoritative arrangement for a slot: owner, cadence, anchors.
-- **Occurrence** — one derived date of a series, identified by `(scheduleId, originalDate)`; `displayDate` differs from `originalDate` only when moved.
+- **Occurrence** — one derived date of a series. Its **only identity is `(scheduleId, originalDate)`** (§7.8); `displayDate` (= `movedTo` when moved) is a presentation/state attribute and is **never an identity or a key**.
 - **Exception** — a stored per-occurrence override (`moved` or `cancelled`).
 - **Fulfillment** — the stored fact that a real completed session satisfied an occurrence.
-- **Suggestion** — an engine proposal competing with a user-owned or Overdue schedule, stored inert until the learner decides.
+- **Suggestion** — an engine proposal competing with a user-owned or Overdue schedule, stored inert and **bound to the schedule revision it was computed against** until the learner decides or an explicit change supersedes it.
 - **Signal** — a derived, ephemeral, domain-native fact read from Evidence or Context by an Evidence Reader; never persisted as canonical, never a universal record.
 - **Reason** — a closed-registry code + primitive params + provenance pointers attached to a Recommendation.
 - **Selection provenance** — the stored snapshot of the reasons that were shown when the learner started a session from a recommendation.
@@ -118,7 +118,7 @@ The material reference is **soft** (a schedule may refer to a Typing text that d
 
 ### 7.3 `schedule_fulfillment`
 
-`{ schemaVersion, id: "<scheduleId>#<occurrenceDate>", scheduleId, occurrenceDate, session: { collection, id }, fulfilledOn, via: "linked" | "slot-match" }`. Projections: `schedule_id` (**hard FK**), `occurrence_date`, `session_collection`, `session_id`; **`UNIQUE(session_collection, session_id)`** so a session fulfills at most one occurrence (S-6). The session reference is soft (a Learner Response today, a Typing Attempt later).
+`{ schemaVersion, id: "<scheduleId>#<originalDate>", scheduleId, originalDate, session: { collection, id }, fulfilledOn, via: "linked" | "slot-match" }`. `originalDate` is the occurrence's identity date (§7.8) **even when the occurrence was moved and completed on its `displayDate`**; `fulfilledOn` is merely the local date of the completion and is never an identity. Projections: `schedule_id` (**hard FK**), `original_date`, `session_collection`, `session_id`; **`UNIQUE(session_collection, session_id)`** so a session fulfills at most one occurrence (S-6). The session reference is soft (a Learner Response today, a Typing Attempt later).
 
 ### 7.4 Segments, anchors and re-anchoring
 
@@ -126,31 +126,39 @@ A series' dates are the union over its **segments**. Segment *i* generates `anch
 
 ### 7.5 `schedule_suggestion`
 
-`{ schemaVersion, id, scheduleId, targetOccurrence, currentDate, suggestedDate, reasons: [..], algorithmVersion, basis: [ {collection, id} ], status: "pending" | "accepted" | "kept", createdAt, decidedAt? }`. Projections: `schedule_id` (**hard FK**), `status`; **`UNIQUE INDEX ux_suggestion_pending ON schedule_suggestion(schedule_id) WHERE status='pending'`** (S-3). A suggestion is **inert**: it is not a schedule, has no Due/Overdue state, and never appears as a session.
+`{ schemaVersion, id, scheduleId, scheduleRev, targetOriginalDate, currentDate, suggestedDate, reasons: [..], algorithmVersion, basis: [ {collection, id} ], status: "pending" | "accepted" | "kept" | "superseded", createdAt, decidedAt? }`. **`scheduleRev` is the revision of the `schedule` row the suggestion was computed against** (the catalog `rev`); `targetOriginalDate` is the identity date (§7.8) of the occurrence the suggestion concerns (the schedule's only occurrence for `once`); `currentDate` is that occurrence's `displayDate` at creation. Projections: `schedule_id` (**hard FK**), `status`; **`UNIQUE INDEX ux_suggestion_pending ON schedule_suggestion(schedule_id) WHERE status='pending'`** (S-3). A suggestion is **inert**: it is not a schedule, has no Due/Overdue state, and never appears as a session. A suggestion is **valid to decide only while `schedule.rev == scheduleRev`**; an old suggestion can never be applied to a schedule that has since changed (L-3).
 
 ### 7.6 `session_selection` (selection provenance and the fulfillment link)
 
-`{ schemaVersion, id: "<collection>:<sessionId>", session: { collection, id }, selection: { source: "manual" | "recommended", reasons?: [ {code, params, provenance} ], algorithmVersion? }, scheduleRef?: { scheduleId, occurrenceDate }, createdAt }`. `selection.source` keeps the frozen two values (Scope §8): starting a session from a schedule is a **Manual** selection that carries a `scheduleRef`; "Today", "Scheduled" or "Overdue" never become Selection or domain enums. Projections: `session_collection`, `session_id`, `source`, `schedule_id` (nullable, **hard FK**). It is written in the **same Unit of Work as the session's evidence** (§10). Migrated sessions have **no** row: absence means *unknown*, never "manual".
+`{ schemaVersion, id: "<collection>:<sessionId>", session: { collection, id }, selection: { source: "manual" | "recommended", reasons?: [ {code, params, provenance} ], algorithmVersion? }, scheduleRef?: { scheduleId, originalDate }, createdAt }`. `scheduleRef.originalDate` is the occurrence's identity date (§7.8), **never** the date it was displayed or moved to. `selection.source` keeps the frozen two values (Scope §8): starting a session from a schedule is a **Manual** selection that carries a `scheduleRef`; "Today", "Scheduled" or "Overdue" never become Selection or domain enums. Projections: `session_collection`, `session_id`, `source`, `schedule_id` (nullable, **hard FK**). It is written in the **same Unit of Work as the session's evidence** (§10). Migrated sessions have **no** row: absence means *unknown*, never "manual".
+
+### 7.7 Slot occupancy (normative)
+
+A slot is *occupied* while it has an `active` schedule. **Create is defined only for an unoccupied slot.** For an occupied slot the learner is shown the existing schedule and changes it through an explicit move / re-anchor / cancel (O-2…O-5). A schedule's `segments`, `exceptions`, `fulfillments` and history of intent are **never rewritten by a Create**. Replacing a schedule's cadence wholesale is *cancel the old series, then create a new schedule with a new identity*; the old series keeps its history and may be the learner's explicit first half of a single Unit of Work that also inserts the new one.
+
+### 7.8 Occurrence identity (normative)
+
+The identity of an occurrence is **always `(scheduleId, originalDate)`**, where `originalDate` is the date the cadence/segments generated for it (§7.4). It is the key of `schedule_exception` and `schedule_fulfillment`, the value of `schedule_suggestion.targetOriginalDate` and `session_selection.scheduleRef.originalDate`, and the `originalDate` of every calendar entry. `movedTo` / `displayDate` only determine **where and in what state** the occurrence is presented (Due/Overdue/Scheduled); they are never stored as an identity, never part of a key, and never referenced by another record. Consequently an occurrence moved from Oct 6 to Oct 8 is still `(scheduleId, Oct 6)`: its fulfillment, its selection provenance and its exception all use Oct 6, and no second occurrence can come into existence on Oct 8 by moving (a move onto a date already displaying another unresolved occurrence of the series is rejected).
 
 ## 8. Operations (each is exactly one Unit of Work)
 
-All carry **revision preconditions** on every row read to decide (`schedule`, `schedule_suggestion`). A failed precondition aborts with no change; user operations reload and ask again, the engine sweep recomputes (§14).
+All carry **revision preconditions** on every row read to decide (`schedule`, `schedule_suggestion`). A failed precondition aborts with no change; user operations reload and ask again, the engine sweep recomputes (§14). **Every operation that changes a schedule's state or dates (O-2…O-5, O-6, O-7, fulfillment) also writes the `schedule` row, so its revision advances, and closes the schedule's pending suggestion as `superseded` in the same Unit of Work** (L-3); O-8 (keep) leaves the schedule row alone and decides only the suggestion.
 
 | # | Operation | Effect |
 |---|---|---|
-| O-1 | **Create (learner)** `{date, material, domain, intent, cadence?}` | If an active schedule exists in the slot, the learner is shown it and the operation **replaces** it (same row, `owner: user`, new anchor/cadence); otherwise insert `owner: user`. Exactly one active schedule results (S-1). |
-| O-2 | **Move a `once` schedule** | Replace the anchor with the new date; `owner: user`. The previous date stops existing: it can never be Overdue (Scope §7.4). |
-| O-3 | **Move one occurrence only** (recurring) | Upsert `schedule_exception{kind: moved, movedTo}`; the rest of the series keeps its anchor. `movedTo >= today`, `movedTo != originalDate`, and no other unresolved occurrence of the series is displayed on `movedTo`. `owner: user`. |
-| O-4 | **Move this and future** (recurring) | Append a segment `{anchor: newDate, takesOverAt: X's original date}`; delete exceptions whose `originalDate >= X` (the learner chose to recalculate the future; the confirmation states their count); `owner: user`. The product **asks** (this only / this and future) and never guesses (Scope §7.8). |
-| O-5 | **Cancel** (a `once` series, one occurrence, or the whole series) | `once`/whole series: `status: cancelled` with `cancellation{by: user, considered}`; one occurrence: `schedule_exception{kind: cancelled}`. `owner: user`. Reaching zero unresolved occurrences completes the series (§9.3). |
+| O-1 | **Create (learner)** `{date, material, domain, intent, cadence?}` | **Only for a slot with no active schedule**: insert a new `owner: user` schedule with a new identity. If the slot is occupied the operation is **refused** (`SLOT_OCCUPIED`, returning the existing schedule); it never alters the existing schedule's cadence, segments, exceptions, fulfillments or history. A racing create loses to the partial unique index (S-1) and reloads. A full cadence change is **cancel (O-5) the old series, then create** a new schedule (§7.7). |
+| O-2 | **Move a `once` schedule** | Replace the anchor with the new date; `owner: user`; supersedes a pending suggestion. The previous date stops existing: it can never be Overdue (Scope §7.4). |
+| O-3 | **Move one occurrence only** (recurring) | Upsert `schedule_exception{kind: moved, movedTo}` keyed by the occurrence's `originalDate`; the rest of the series keeps its anchor. `movedTo >= today`, `movedTo != originalDate`, and no other unresolved occurrence of the series is displayed on `movedTo`. Touches the `schedule` row (`owner: user`, `updatedAt`) so its revision advances and a pending suggestion is superseded. |
+| O-4 | **Move this and future** (recurring) | Append a segment `{anchor: newDate, takesOverAt: X's original date}`; delete exceptions whose `originalDate >= X` (the learner chose to recalculate the future; the confirmation states their count); `owner: user`; supersedes a pending suggestion. The product **asks** (this only / this and future) and never guesses (Scope §7.8). |
+| O-5 | **Cancel** (a `once` series, one occurrence, or the whole series) | `once`/whole series: `status: cancelled` with `cancellation{by: user, considered}`; one occurrence: `schedule_exception{kind: cancelled}` (and a touch of the `schedule` row). `owner: user`; supersedes a pending suggestion. Reaching zero unresolved occurrences completes the series (§9.3). |
 | O-6 | **Engine apply** (§11) | For each proposal: create an engine-owned schedule, update an engine-owned non-Overdue schedule **in place**, or upsert the single pending suggestion. Every write carries the revision read while `owner = engine` (sovereignty). |
-| O-7 | **Decide suggestion — accept** | One UoW: (recurring) append the segment cutting at `targetOccurrence` with `anchor = suggestedDate`, or (once) replace the anchor; `owner: user`; suggestion `accepted`. **The accepted date becomes the new anchor** (Scope §7.7). Precondition on both rows, so a stale decision aborts. |
-| O-8 | **Decide suggestion — keep** | One UoW: suggestion `kept` (its `basis` is the considered set, §11.4); the schedule is unchanged. |
+| O-7 | **Decide suggestion — accept** | One UoW, **valid only if the suggestion is `pending` and `schedule.rev == suggestion.scheduleRev`** (otherwise it aborts with no change): (recurring) append the segment cutting at `targetOriginalDate` with `anchor = suggestedDate`, or (once) replace the anchor; `owner: user`; suggestion `accepted`. **The accepted date becomes the new anchor** (Scope §7.7). |
+| O-8 | **Decide suggestion — keep** | One UoW, valid under the same revision check as O-7: suggestion `kept` (its `basis` is the considered set, §11.4); the schedule is unchanged. |
 | O-9 | **Record fulfillment** (§10) | In the session's evidence UoW. |
 
-Ownership transitions: `engine →(O-1,2,3,4,5,7)→ user` in place; `user` never becomes `engine` by itself. A user-owned schedule stays user-owned for life; the engine can only *suggest* against it. Dismissing a suggestion (`kept`) never changes ownership.
+Ownership transitions: `engine →(O-2,3,4,5,7)→ user` in place; a learner Create produces a new user-owned schedule and never transitions an existing one; `user` never becomes `engine` by itself. A user-owned schedule stays user-owned for life; the engine can only *suggest* against it. Dismissing a suggestion (`kept`) never changes ownership.
 
-Materially different (§7.5/O-6): a proposal is stored as a suggestion only when its date differs from the target occurrence's `displayDate` by `>= MATERIAL_DELTA_DAYS` (provisional **2**); a smaller difference is ignored, so the learner is not nagged over a day.
+**What is a conflict (normative).** Whenever the engine's proposed date `P` **differs** from the current active/display date of the target occurrence of a user-owned schedule, or of an Overdue engine-owned schedule, that is a conflict that needs the learner's choice (Scope §4.5.1, §7.5); **there is no minimum difference**. Only an **equal** date is a no-op. Repeat reminders are prevented **only** by the covered-basis rule (§11.4): without a new evidence id a decided or superseded basis never raises a suggestion again.
 
 ## 9. Derived states
 
@@ -167,7 +175,7 @@ For occurrence `O = (S, originalDate)`, in this precedence:
 
 ### 9.2 Recurring series and Overdue volume
 
-Occurrences are **expanded lazily** for a requested window plus all *unresolved* occurrences at or before today. Presentation may group a series' Overdue occurrences, but the data model stays per occurrence. The enumeration of unresolved past occurrences is bounded by `OVERDUE_ENUMERATION_CAP` (provisional 366 per series) and reports `overdueTruncated: true` plus the exact count when the cap bites, so truncation is **never silent**; a bulk learner action "skip earlier missed occurrences of this series" is a batch of O-5 occurrence cancels.
+Occurrences are **expanded lazily** for a requested window plus all *unresolved* occurrences at or before today. Presentation may group a series' Overdue occurrences, but the data model stays per occurrence. `OVERDUE_ENUMERATION_CAP` (provisional 366 per series) is an **explicit projection-enumeration safety limit only**: it bounds how many unresolved past occurrences one projection call lists, reports `overdueTruncated: true` plus the exact count when it bites, and **never deletes, cancels or alters any schedule or occurrence**, so truncation is never silent and never destructive; a bulk learner action "skip earlier missed occurrences of this series" is a batch of O-5 occurrence cancels.
 
 ### 9.3 Series status
 
@@ -179,7 +187,7 @@ If a schedule's material no longer resolves, the schedule is **kept and shown as
 
 ### 9.5 The Calendar projection
 
-`calendarView(range, today)` is a pure function `expandOccurrences(schedules, exceptions, fulfillments, window, today)` returning, per date, entries `{scheduleId, occurrenceDate, displayDate, slot, owner, state, hasPendingSuggestion}`. It supports exactly Scope §7.2: inspect future schedules, see Due/Overdue, reschedule an existing one (O-2/3/4), schedule a currently unscheduled material (O-1). `Today` is the same projection with `displayDate <= today` plus due items; it adds no data. There is **no calendar entity, store or sync**.
+`calendarView(range, today)` is a pure function `expandOccurrences(schedules, exceptions, fulfillments, window, today)` returning, per date, entries `{scheduleId, originalDate, displayDate, slot, owner, state, hasPendingSuggestion}` (the entry is placed on `displayDate`; its identity is `(scheduleId, originalDate)`, §7.8). It supports exactly Scope §7.2: inspect future schedules, see Due/Overdue, reschedule an existing one (O-2/3/4), schedule a currently unscheduled material (O-1, unoccupied slots only). `Today` is the same projection with `displayDate <= today` plus due items; it adds no data. There is **no calendar entity, store or sync**.
 
 ## 10. Fulfillment: one real session, one occurrence, no duplicate debt
 
@@ -216,7 +224,7 @@ For a material, let the latest native session (ordered by its recorded completio
 - Else if `L` is the fulfilling session of an engine-owned revisit and was clean ⇒ with `c` = the number of consecutive clean engine-revisit fulfillments of the slot (counted from `schedule_fulfillment` + session signals), if `c < LEN(LADDER)` ⇒ `planningDate + LADDER[c]`; else **no proposal** (the ladder is complete; the learner may schedule further).
 - `LADDER = [1, 3, 7, 14, 30]` days (provisional). Dates are always relative to the **planning date** (today), never to historical evidence dates; the minimum is one day ("wait").
 
-This is a lightweight interval ladder, **not** a memory model: no stability/difficulty variables, no FSRS (deferred), no stored mastery. The rung is *derived* from fulfillment facts and never stored as state.
+This is a **versioned, provisional, lightweight heuristic** (an interval ladder), **not** a memory model and **not claimed to be scientifically optimal**: no stability/difficulty variables, no FSRS (deferred), no stored mastery. The rung is *derived* from fulfillment facts and never stored as state; the values may change only through a new `algorithmVersion`.
 
 ### 11.4 Applying a proposal
 
@@ -227,16 +235,16 @@ For each slot with a proposal `P` and the slot's active schedule `S` (read with 
 | no active schedule, and the slot is not user-cancelled-with-unchanged-basis | create engine-owned `S` (`engine.basis` = the evidence ids that justify it) |
 | `S` engine-owned, **not Overdue** | update **in place** (anchor, reasons, basis, `algorithmVersion`) — allowed recalculation, Scope §4.5.1 |
 | `S` engine-owned **and Overdue** | **no silent move** (Scope §7.9): store a suggestion instead |
-| `S` user-owned | store a suggestion if `|P - displayDate(target)| >= MATERIAL_DELTA_DAYS` (§8); else nothing |
+| `S` user-owned | `P` **differs** from the target occurrence's `displayDate` ⇒ store a suggestion bound to `S.rev` (no minimum difference, §8); `P` equals it ⇒ nothing |
 | `P` equals the current date, or a pending suggestion already carries the same date and a basis that covers `P.basis` | nothing (idempotent) |
-| a `kept` suggestion's `basis` already covers `P.basis` | nothing (no re-nagging): only **new evidence ids** can raise it again |
-| a pending suggestion exists with an older basis | update that single pending row in place |
+| the **covered basis** of `S` (the union of `basis` over its `kept` **and** `superseded` suggestions) already contains `P.basis` | nothing (**no re-nagging**): only **new evidence ids** can raise a suggestion again, including after an explicit learner change closed an earlier one |
+| a pending suggestion exists, bound to `S.rev`, with an older basis | update that single pending row in place (same `scheduleRev`); a pending suggestion bound to an **older** revision is first closed as `superseded` (§8) and the sweep recomputes against the current revision |
 
 **Cancellation tombstone:** a cancelled slot stores `cancellation.considered` (the evidence ids known at cancel time). The engine may create a new engine-owned schedule in that slot only from evidence ids **not** in `considered`; it appears as an ordinary visible engine-owned schedule the learner can cancel again. Newness is decided by **identity sets**, not timestamps, so clock skew and back-dated imports cannot misfire.
 
 ### 11.5 Sweep, triggers and idempotence
 
-The planner runs after a session's evidence commits, at app start, and after a restore or migration (re-planning from scratch is always safe). Each sweep is a pure `plan(snapshot, clock) → proposals` followed by O-6 with revision preconditions: a lost race with a learner action aborts that slot's write (the learner wins) and the next sweep recomputes. The planner is **time-triggered by nothing**: the passage of time alone never changes a schedule.
+The planner runs after a session's evidence commits, at app start, and after a restore or migration (re-planning from scratch is always safe). Each sweep is a pure `plan(snapshot, clock) → proposals` followed by O-6 with revision preconditions: a lost race with a learner action aborts that slot's write (the learner wins) and the next sweep **recomputes against the schedule's new revision**. The planner is **time-triggered by nothing**: the passage of time alone never changes a schedule.
 
 ## 12. The Recommendation contract
 
@@ -297,7 +305,7 @@ Recommendation { target: { domain, material: {type, id}, focus?: [ {itemId} ] },
 | Precondition (revision) mismatch | Abort, no change; a learner operation reloads and re-asks, an engine write is dropped and recomputed. **Learner wins every race.** |
 | Evidence committed but a fulfillment is missing | Impossible by construction (same UoW, §10); if a store is found inconsistent, `check_consistency` reports it. |
 | Two pending suggestions / two active schedules for a slot | Impossible: partial unique indexes reject the commit (S-1, S-3). |
-| Accepting a stale suggestion (schedule changed since) | Revision precondition fails; the suggestion is re-evaluated against the current schedule on the next sweep. |
+| Accepting or keeping a stale suggestion (the schedule's revision no longer equals `scheduleRev`, or the suggestion is no longer `pending`) | The decision aborts with **no change** (L-3); an explicit learner change has already closed the suggestion as `superseded` in its own Unit of Work, and the next sweep recomputes against the current revision. |
 | Re-anchor would overlap the previous segment | Validator rejects (`SCHEDULE_REANCHOR_OVERLAP`), no change; engine proposals are clamped to `> previous date`. |
 | Material removed | §9.4: kept as `unavailable`; engine-owned retired; user-owned never auto-removed. |
 | Restore / import / migration after schedules exist | Scheduling Context travels in the archive (§15); a sweep re-plans; migrated evidence creates no schedule (§11.2). |
@@ -318,15 +326,16 @@ For the implementation milestone (additive; nothing existing changes):
 
 | ID | Invariant |
 |---|---|
-| **L-1** Learner sovereignty | The engine never overwrites, moves or silently replaces a user-owned date; engine writes require the revision read while `owner = engine`. Any learner create/move/cancel makes the schedule user-owned in place. |
-| **L-2** Learner authority on conflict | A conflict is resolved only by an explicit learner decision (O-7/O-8); the engine never decides for them. |
-| **S-1** Single active schedule | At most one `active` schedule per slot, enforced by the database. |
+| **L-1** Learner sovereignty | The engine never overwrites, moves or silently replaces a user-owned date; engine writes require the revision read while `owner = engine`. Any learner move/cancel makes the schedule user-owned in place; Create never touches an existing schedule. |
+| **L-2** Learner authority on conflict | A conflict (any difference from the current active/display date) is resolved only by an explicit learner decision (O-7/O-8); the engine never decides for them. |
+| **L-3** Learner wins races / no stale suggestion | A suggestion is bound to the schedule revision it was computed against; it can be accepted or kept only while that revision is current; every explicit learner change closes the pending suggestion as `superseded` in the same Unit of Work; the engine recomputes against the new revision and cannot re-nag without a new evidence id. |
+| **S-1** Single active schedule | At most one `active` schedule per slot, enforced by the database; Create is defined only for an unoccupied slot. |
 | **S-2** Authoritative new date | After a learner change the new date is the only authoritative date; the old date generates no Overdue and no occurrence. |
 | **S-3** One pending suggestion | A suggestion is inert, at most one pending per schedule, and never a second schedule. |
 | **S-4** No silent disappearance | Overdue occurrences are never dropped, moved or auto-cancelled by time or by the engine. |
 | **S-5** Derived states | Due/Overdue/Scheduled are functions of `(data, today)` and are never stored. |
 | **S-6** No duplicate debt | One session fulfills at most one occurrence; an occurrence is fulfilled at most once; fulfillment commits with the evidence. |
-| **S-7** Recurrence identity | Occurrences are identified by `(scheduleId, originalDate)`; segments never overlap; anything before a cut is unchanged. |
+| **S-7** Recurrence identity | An occurrence is identified **only** by `(scheduleId, originalDate)`; `movedTo`/`displayDate` is never an identity or a key; segments never overlap; anything before a cut is unchanged. |
 | **E-1** Evidence immutability | No scheduling/recommendation operation writes or alters Evidence; scheduling facts are sidecars. |
 | **E-2** Scheduling is not evidence | No Reader treats a schedule, fulfillment, suggestion or selection as evidence of knowledge. |
 | **R-1** Derived, replaceable | Recommendations are recomputed, never canonical, and carry an `algorithmVersion`. |
@@ -343,10 +352,13 @@ Implemented by the Learning Orchestration milestone; **not written by this ADR**
 ### 17.1 Learner sovereignty and single-active-schedule (L-1, L-2, S-1, S-2, S-3)
 
 1. **Ownership matrix:** for every operation (O-1…O-8) × initial owner, the resulting owner and date match §8; the engine apply path against a user-owned schedule never alters its row (hash-compared) and only stores a suggestion.
-2. **Racing writers:** engine apply versus learner move at every interleaving the harness can force (revision precondition): the learner's date always survives; the engine write is dropped and recomputed.
+2. **Racing writers:** engine apply versus learner move at every interleaving the harness can force (revision precondition): the learner's date always survives; the engine write is dropped and recomputed against the new revision.
 3. **Database enforcement:** direct commits that create a second `active` schedule in a slot, a second `pending` suggestion, or a second fulfillment of one occurrence/session are rejected by the constraint (not by domain code).
-4. **Conflict choice:** user date Oct 6 + engine date Oct 8 ⇒ exactly one active schedule after accept (anchor Oct 8, suggestion `accepted`) or keep (anchor Oct 6, suggestion `kept`); never two active dates, never Overdue from the discarded date; a `kept` basis is not re-suggested until a new evidence id appears.
-5. **Slot replacement:** creating a schedule in an occupied slot replaces, never duplicates.
+4. **Conflict choice:** user date Oct 6 + engine date Oct 8 ⇒ exactly one active schedule after accept (anchor Oct 8, suggestion `accepted`) or keep (anchor Oct 6, suggestion `kept`); never two active dates, never Overdue from the discarded date. **Any** differing date is a conflict (a 1-day difference included); only an equal date is a no-op.
+5. **Occupied slot:** Create in an occupied slot is refused with the existing schedule returned and **changes no row** (segments, exceptions, fulfillments, history hash-compared); a racing create is rejected by the partial unique index; cancel-then-create yields a **new schedule identity** while the old series' history is byte-identical.
+5a. **Stale suggestion cannot apply:** a suggestion bound to revision *r*, then a learner move/re-anchor/cancel (O-2…O-5) ⇒ in that same Unit of Work the suggestion becomes `superseded` and the schedule revision advances; a later accept/keep of the old suggestion aborts with no change; killed at every `sched-*` checkpoint around it, the store is exactly pre (pending, old revision) or post (superseded, new revision).
+5b. **Recompute after supersede:** the next sweep recomputes against the new revision; it creates a new suggestion only if the proposal differs from the new date **and** its basis contains an evidence id not covered by any `kept` or `superseded` suggestion of the schedule; with only already-covered evidence nothing is raised (no re-nag).
+5c. **Learner-wins race:** engine apply/suggestion write versus learner move/cancel versus suggestion decision at every forced interleaving: no state with two active schedules, two pending suggestions, an applied stale suggestion, or an overwritten user date.
 
 ### 17.2 Recurrence edge cases (S-7)
 
@@ -364,6 +376,7 @@ Implemented by the Learning Orchestration milestone; **not written by this ADR**
 
 12. **Linked and slot-match fulfillment** over the §10 matrix (Due, Overdue, future, early linked start, wrong intent/domain, cancelled/completed series, abandoned session); every case ends with exactly one fulfillment or none as specified.
 13. **No duplicate debt:** after a completed session no occurrence it satisfied remains Due; one session never fulfills two occurrences; several Overdue occurrences stay individually Overdue.
+13a. **Moved occurrence regression:** occurrence `(S, Oct 6)` moved to Oct 8, started from the schedule on Oct 8 and completed ⇒ the fulfillment id and `originalDate` are Oct 6, `session_selection.scheduleRef.originalDate` is Oct 6, `fulfilledOn` is the completion date; no record is keyed by Oct 8; the same session cannot fulfill a second occurrence; moving onto a date that already displays another unresolved occurrence is rejected; a slot-match completion of a moved occurrence resolves by `displayDate <= fulfilledOn` yet still writes `originalDate`; the keys survive an archive round trip.
 14. **Atomicity:** kills at every `sched-*` checkpoint around session finalization leave exactly pre (no evidence, no fulfillment) or post (both), never evidence without fulfillment.
 
 ### 17.5 Evidence boundary and recommendation (E-1, E-2, R-1…R-4, M-1)
@@ -392,7 +405,7 @@ Implemented by the Learning Orchestration milestone; **not written by this ADR**
 | Frozen boundary (Scope) | How it is kept |
 |---|---|
 | Scheduling is not Evidence (§4.5) | separate collections, `context` role, E-1/E-2, evidence-hash property test |
-| Learner sovereignty, one active schedule (§4.5.1, §7.4, §7.5) | ownership model, revision preconditions, partial unique indexes, inert suggestions, O-7/O-8 |
+| Learner sovereignty, one active schedule (§4.5.1, §7.4, §7.5) | ownership model, revision-bound suggestions (L-3), Create only for unoccupied slots, partial unique indexes, inert suggestions, O-7/O-8 |
 | Recommendation derived, no mastery score (§4.4, §6) | pure recompute, tiers not scores, closed registry, R-1/R-2 |
 | Heterogeneous evidence, unknown ≠ uncertain ≠ should_know (§4.2, §6.1) | per-domain Readers, three distinct codes, §12.2 |
 | Calendar internal, date-level, Quiz Studio sessions only (§3.6, §7.3, §7.10) | closed schemas (CAL-1), slot = (domain, material, intent), date strings, no time/reminder/external fields |
@@ -405,7 +418,7 @@ Implemented by the Learning Orchestration milestone; **not written by this ADR**
 
 ## 19. Consequences, risks and honest limitations
 
-- **One schedule per slot is restrictive.** A learner who wants Paper A Practice on two dates must use a recurrence or an occurrence exception; this is the cost of "no duplicate competing dates for the same intended session". If user testing shows otherwise it reopens one decision (a slot-level multiplicity), not the scope.
+- **One schedule per slot is restrictive.** A learner who wants Paper A Practice on two dates must use a recurrence or an occurrence exception, or cancel the series and create a new one; Create never overwrites an occupied slot. This is the cost of "no duplicate competing dates for the same intended session". If user testing shows otherwise it reopens one decision (a slot-level multiplicity), not the scope.
 - **Engine-owned revisits are Practice-only and native-evidence-only.** This is conservative by design (M-1, §11.1); it means a freshly migrated library has recommendations but no automatic schedule until the learner practices in V2.
 - **Segments make anchors history-preserving** at the price of a small piecewise model instead of a single anchor; the alternative (materializing occurrences) was rejected because it would store derivable data that could disagree with the cadence.
 - **Parameter values are provisional** (§20); a change is a new `algorithmVersion`, never a rewrite of stored provenance.
@@ -413,24 +426,35 @@ Implemented by the Learning Orchestration milestone; **not written by this ADR**
 - **Overdue volume** for very frequent cadences is truncated explicitly (§9.2) rather than hidden.
 - **Domain integration is out of scope:** Readers are specified; the Objective/Translation/Typing integration milestone supplies the real session records and the Typing Reader.
 
-## 20. Decisions for the Human Gate to review
+## 20. Decisions reviewed at the Human Gate (outcome in §22)
 
 None reopens Scope Freeze Revision 1. These are the engineering choices the Gate is asked to confirm or adjust:
 
 | # | Decision | Alternative |
 |---|---|---|
-| P-1 | Slot = `(domain, material, intent)`; one active schedule per slot; creating in an occupied slot replaces (§7.1, O-1). | Allow several active schedules per slot with explicit grouping (more states, weaker "single active schedule"). |
+| P-1 | Slot = `(domain, material, intent)`; one active schedule per slot, enforced by the database; **Create only for an unoccupied slot** (§7.1, §7.7, O-1). *(Amended: the proposed replace-on-create is removed.)* | Allow several active schedules per slot with explicit grouping (more states, weaker "single active schedule"). |
 | P-2 | Ownership flips in place; no separate engine row beside a user row (§8). | Two rows with a superseded link (breaks the one-row sovereignty proof). |
-| P-3 | Suggestions apply to user-owned **and** Overdue engine-owned schedules; `MATERIAL_DELTA_DAYS = 2` (§8, §11.4). | Any date difference; or never suggest against Overdue. |
+| P-3 | Suggestions apply to user-owned **and** Overdue engine-owned schedules whenever the proposed date **differs** from the current active/display date; equal is a no-op; suggestions are bound to the schedule revision (§7.5, §8, §11.4). *(Amended: `MATERIAL_DELTA_DAYS` is removed.)* | A minimum difference threshold (rejected: Scope §7.5 makes any different date a conflict). |
 | P-4 | The engine plans from **native V2 evidence only**; migration never creates schedules (§11.2). | Let migrated difficulty seed revisits (risks an Overdue flood from history). |
-| P-5 | The engine creates only Practice, `once` revisits on the ladder `[1,3,7,14,30]` days from the planning date (§11.3). | Different ladder values/shape (a new `algorithmVersion`). |
+| P-5 | The engine creates only Practice, `once` revisits on the **provisional, versioned, lightweight heuristic** ladder `[1,3,7,14,30]` days from the planning date; no claim of scientific optimality (§11.3). | Different ladder values/shape (a new `algorithmVersion`). |
 | P-6 | A cancelled slot may be re-proposed only from evidence ids not in `cancellation.considered` (§11.4). | Never re-propose after a learner cancel. |
 | P-7 | Fulfillment commits with the evidence; linked vs slot-match rules; an unlinked session never fulfills a future occurrence (§10). | Any matching session fulfills the next occurrence (can silently consume a planned future date). |
 | P-8 | Definitions pinned to the V1 vocabulary: actionable Teacher Review = judgment `incorrect`/`partial`/`needs-review`; Translation recovery needs an all-`correct` Teacher Review; repeated incorrect = ≥ 2 distinct attempts (§12.2, §12.3). | Looser success inference (rejected by "unknown ≠ negative"). |
 | P-9 | Reasons are grouped into three tiers, not scored; ties break by a stable key (§12.3). | An opaque weighted score (forbidden by Scope §6.2). |
 | P-10 | New catalog role `context`, one store migration 2 → 3 (§15). | Reuse `canonical`/`metadata` (blurs the Evidence boundary in the catalog). |
-| P-11 | `OVERDUE_ENUMERATION_CAP = 366` with explicit truncation; `MATERIAL_DELTA_DAYS`, ladder and cap are provisional versioned parameters (§9.2, §11). | Unbounded enumeration. |
+| P-11 | `OVERDUE_ENUMERATION_CAP = 366` is an explicit projection-enumeration safety limit with explicit truncation; it never deletes any schedule or occurrence; the cap and the ladder are provisional versioned parameters (§9.2, §11). | Unbounded enumeration. |
 
 ## 21. Not authorized by this ADR
 
-Accepting this ADR will not by itself start the Learning Orchestration + Calendar milestone (that needs its own explicit authorization), create schemas or code beyond the requirements of §15, start Objective/Translation/Typing domain integration, Answer Explanation or Focused Practice, change any frozen scope item, or touch the V1 production line. Each remains a separate, explicitly authorized step (Scope §24).
+Accepting this ADR does not by itself start the Learning Orchestration + Calendar milestone: **implementation is NOT STARTED and awaits its own explicit authorization.** It also does not authorize schemas or code beyond the requirements of §15, Objective/Translation/Typing domain integration, Answer Explanation or Focused Practice, any change to a frozen scope item, or any touch of the V1 production line. Each remains a separate, explicitly authorized step (Scope §24).
+
+## 22. Human Gate record — ACCEPTED, GO WITH AMENDMENT (2026-10-02)
+
+The Product Owner accepted this ADR. **P-2, P-4, P-6, P-7, P-8, P-9 and P-10 are approved as written.** **P-5** is approved with its ladder `[1,3,7,14,30]` explicitly a *versioned, provisional, lightweight heuristic*, not claimed to be scientifically optimal. **P-11** is approved with the 366 cap defined as an explicit *projection enumeration safety limit* that never deletes any schedule or occurrence. **P-1 and P-3 are approved with the amendments below.** The four amendments are folded into the normative text above.
+
+| # | Amendment | Where |
+|---|---|---|
+| A-1 | **Create never overwrites.** The Scheduling Slot and the database-level one-active-schedule invariant stay (P-1), but Create is defined only for a slot with no active schedule; an occupied slot returns the existing schedule and is changed only by explicit move / re-anchor / cancel; a full cadence change is cancel-then-create with a new schedule identity, so segments, exceptions, fulfillments and history are never rewritten by Create. | §1, §7.7, O-1, S-1, L-1, §17.1 items 5 |
+| A-2 | **No minimum date difference.** `MATERIAL_DELTA_DAYS` and the "differs by less than 2 days is ignored" rule are removed: any engine date that differs from a user-owned or Overdue engine-owned schedule's current active/display date is a conflict needing the learner's choice; only an equal date is a no-op; repeat reminders are prevented solely by the covered-basis (no new evidence id ⇒ no nag) rule. | §1, §8, §11.4, P-3, L-2, §17.1 item 4 |
+| A-3 | **Suggestions are bound to a schedule revision.** `schedule_suggestion.scheduleRev` records the revision it was computed against; accept/keep verify it; every explicit learner change (and every schedule-row write) closes the pending suggestion as `superseded` in the same Unit of Work; the sweep recomputes against the new revision; kept and superseded bases are both covered for anti-nagging. Added to the learner-wins-race invariants (L-3) and the conflict/race tests. | §7.5, §8, §11.4, §14, L-3, §17.1 items 5a–5c |
+| A-4 | **One occurrence identity.** The only identity is `(scheduleId, originalDate)`; `movedTo`/`displayDate` is never an identity or a key. `occurrenceDate` is renamed `originalDate` in `schedule_fulfillment`, `session_selection.scheduleRef`, calendar entries and `schedule_suggestion.targetOriginalDate`; a moved-occurrence fulfillment/provenance regression case is added. | §3, §7.3, §7.5, §7.6, §7.8, S-7, §17.4 item 13a |
