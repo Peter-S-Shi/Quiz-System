@@ -1,7 +1,7 @@
 # V2 V1 → V2 迁移 —— 里程碑记录
 
 **分支：** `v2`（长期 V2 开发线；未合并到 `main`）
-**状态：** 实现完成，**等待 Human Gate**
+**状态：** **已验收**（Human Gate PASS，2026-10-02）
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§4.5、§5.2、§10.3、§23）、`docs/V2_MIGRATION_READINESS_INVENTORY.md`（Human Gate 决策 D-1…D-15）、ADR 0001（已接受）、**ADR 0002（已接受 —— GO WITH AMENDMENT；其 §15 foundation 扩展与 §16 验证契约是本里程碑的实施与验收依据）**、已验收的 Desktop Foundation。
 **代码：** [`desktop/core/migrate_v1`](../desktop/core/migrate_v1)（`qs-migrate-v1`）及下列追加式 foundation 扩展。V1 生产代码、测试与 CI 均未改动（`desktop/`、`docs/`、`manual-qa/`、状态文件与 V2 workflow 之外没有任何文件变化）。无 V1.x 补丁、不读取浏览器配置文件、不使用真实用户数据。
 
@@ -109,4 +109,8 @@ cargo test -p qs-scenarios --test migration_faults -- --nocapture
 
 ## 8. Gate 就绪
 
-实现完成；ADR 0002 §16 已实现为自动化测试，本地通过并已接入 Windows CI workflow。里程碑**等待 Human Gate**。Scheduler / Recommendation / Calendar 仍未开始，需要各自的 ADR 与授权。
+实现完成；ADR 0002 §16 已实现为自动化测试，本地通过并已接入 Windows CI workflow。Human Gate 先将里程碑置为 HOLD（ADR 0002 §21 收口，已实现且 CI 全绿），随后**通过：Migration 里程碑已验收（ACCEPTED）**。
+
+## 9. Human Gate 结论：已验收
+
+里程碑已验收。**手动打包检查 M1–M7（§6）与 Desktop Foundation 的 D1–D4 继续保持 open、不阻塞的验收欠账：未通过（not PASS）、未豁免、未删除。** Scheduler / Recommendation / Calendar 的实现**未获授权**；下一阶段是架构决策 [ADR 0003](adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)（PROPOSED，等待其自身的 Human Gate）。

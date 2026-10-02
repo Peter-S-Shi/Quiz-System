@@ -1,5 +1,5 @@
 ---
-status: ACCEPTED — GO WITH AMENDMENT (Human Gate, 2026-10-02); Migration milestone implemented, awaiting its Human Gate (section 20)
+status: ACCEPTED — GO WITH AMENDMENT (Human Gate, 2026-10-02); Migration milestone implemented and ACCEPTED (Human Gate PASS, section 20)
 decision-date: 2026-10-02
 accepted: 2026-10-02
 gates: V2 Migration milestone (implementation)
@@ -8,7 +8,7 @@ depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/V2_MIGRATION_READINESS
 
 # ADR 0002 — V1 → V2 Migration Architecture
 
-**Status:** **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02; the decisions and amendments are recorded in §18 and already folded into the text below). The Migration milestone was authorized afterwards and is now **implemented and awaiting its own Human Gate** (section 20). This ADR turns the facts of the Migration Readiness Inventory and the policy decisions D-1…D-15 into an implementable, verifiable migration contract. It writes **no migrator and no test code**. It is authoritative for the Migration milestone. Nothing here changes Scope Freeze Revision 1, Inventory §10, ADR 0001, or the accepted Desktop Foundation; section 15 lists the only additive extensions the foundation will need.
+**Status:** **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02; the decisions and amendments are recorded in §18 and already folded into the text below). The Migration milestone was authorized afterwards, **implemented and ACCEPTED at its own Human Gate** (sections 20-21). This ADR turns the facts of the Migration Readiness Inventory and the policy decisions D-1…D-15 into an implementable, verifiable migration contract. It writes **no migrator and no test code**. It is authoritative for the Migration milestone. Nothing here changes Scope Freeze Revision 1, Inventory §10, ADR 0001, or the accepted Desktop Foundation; section 15 lists the only additive extensions the foundation will need.
 
 ## 1. Decision summary
 

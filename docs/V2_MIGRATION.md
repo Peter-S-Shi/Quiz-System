@@ -1,7 +1,7 @@
 # V2 V1 → V2 Migration — Milestone Record
 
 **Branch:** `v2` (long-lived V2 development line; not merged to `main`)
-**Status:** implementation complete, **awaiting Human Gate**
+**Status:** **ACCEPTED** (Human Gate PASS, 2026-10-02)
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§4.5, §5.2, §10.3, §23), `docs/V2_MIGRATION_READINESS_INVENTORY.md` (Human Gate decisions D-1…D-15), ADR 0001 (ACCEPTED), **ADR 0002 (ACCEPTED — GO WITH AMENDMENT; §15 foundation extensions and §16 verification contract are this milestone's implementation and acceptance basis)**, the accepted Desktop Foundation.
 **Code:** [`desktop/core/migrate_v1`](../desktop/core/migrate_v1) (`qs-migrate-v1`) plus the additive foundation extensions below. V1 production code, tests and CI are untouched (no file outside `desktop/`, `docs/`, `manual-qa/`, the status files and the V2 workflow changed). No V1.x patch, no browser-profile access, no real user data.
 
@@ -109,4 +109,8 @@ cargo test -p qs-scenarios --test migration_faults -- --nocapture
 
 ## 8. Gate readiness
 
-Implementation complete; ADR 0002 §16 is implemented as automated tests that pass locally and are wired into the Windows CI workflow. The milestone **awaits the Human Gate**. Scheduler / Recommendation / Calendar remain not started and need their own ADR and authorization.
+Implementation complete; ADR 0002 §16 is implemented as automated tests that pass locally and are wired into the Windows CI workflow. The Human Gate first placed the milestone on HOLD (ADR 0002 §21 close-out, implemented and green), then **PASSED it: the Migration milestone is ACCEPTED**.
+
+## 9. Human Gate outcome: ACCEPTED
+
+The milestone is accepted. **Manual packaged checks M1–M7 (§6) and the Desktop Foundation's D1–D4 remain open, non-blocking acceptance debt: not PASS, not waived, not deleted.** Scheduler / Recommendation / Calendar implementation is **not authorized**; the next stage is the architecture decision [ADR 0003](adr/0003-learning-orchestration-scheduling-recommendation-calendar.md) (PROPOSED, awaiting its own Human Gate).
