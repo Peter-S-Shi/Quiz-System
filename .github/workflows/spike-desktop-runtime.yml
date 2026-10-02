@@ -19,7 +19,7 @@ jobs:
         shell: pwsh
         working-directory: spike/desktop-runtime
     env:
-      RUSTFLAGS: "-C target-feature=+crt-static"
+      RUSTFLAGS: "-C target-feature=+crt-static -C link-arg=/Brepro --remap-path-prefix=${{ github.workspace }}=/w"
       CARGO_TERM_COLOR: never
     steps:
       - uses: actions/checkout@v4

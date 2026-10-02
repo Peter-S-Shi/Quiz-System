@@ -1,0 +1,10 @@
+﻿{
+    "firstInstanceAliveAfter":  true,
+    "secondInstanceExited":  true,
+    "secondExitCode":  0,
+    "secondLivedMs":  39,
+    "rawSecondOpenWhileAppRuns_opened":  false,
+    "rawSecondOpenError":  "LOCKED: another process owns the store",
+    "appProcesses":  1,
+    "rawOpenAfterAppExit_opened":  true
+}

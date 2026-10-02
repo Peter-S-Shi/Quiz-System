@@ -1,0 +1,57 @@
+{
+    "driver":  [
+                   "save plain: ok",
+                   "open plain: dialog \u0027spike open 0\u0027 not found",
+                   "save desktop: dialog \u0027spike save 1\u0027 not found",
+                   "open desktop: dialog \u0027spike open 1\u0027 not found",
+                   "save documents: dialog \u0027spike save 2\u0027 not found",
+                   "open documents: dialog \u0027spike open 2\u0027 not found",
+                   "save cjk: dialog \u0027spike save 3\u0027 not found",
+                   "open cjk: dialog \u0027spike open 3\u0027 not found"
+               ],
+    "paths":  [
+                  {
+                      "case":  "plain",
+                      "underOneDrive":  false,
+                      "isCjk":  false
+                  },
+                  {
+                      "case":  "desktop",
+                      "underOneDrive":  true,
+                      "isCjk":  false
+                  },
+                  {
+                      "case":  "documents",
+                      "underOneDrive":  true,
+                      "isCjk":  false
+                  },
+                  {
+                      "case":  "cjk",
+                      "underOneDrive":  false,
+                      "isCjk":  true
+                  }
+              ],
+    "filesPresentBeforeCleanup":  [
+                                      {
+                                          "case":  "plain",
+                                          "srcExists":  false,
+                                          "copyExists":  false
+                                      },
+                                      {
+                                          "case":  "desktop",
+                                          "srcExists":  false,
+                                          "copyExists":  false
+                                      },
+                                      {
+                                          "case":  "documents",
+                                          "srcExists":  false,
+                                          "copyExists":  false
+                                      },
+                                      {
+                                          "case":  "cjk",
+                                          "srcExists":  false,
+                                          "copyExists":  false
+                                      }
+                                  ],
+    "app":  null
+}

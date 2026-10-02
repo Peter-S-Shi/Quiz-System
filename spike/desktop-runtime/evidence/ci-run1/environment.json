@@ -1,0 +1,7 @@
+{
+  "os": "10.0.26100",
+  "webview2Runtime": "153.0.4234.48",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8",
+  "node": "v22.23.3",
+  "runnerIsElevated": true
+}

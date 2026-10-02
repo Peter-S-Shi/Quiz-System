@@ -255,14 +255,40 @@ async function scenarioIme(args) {
            committedFromCompositionEnd: committed, textareaValue: box.value, committedEqualsValue: committed === box.value, blurEvents: log.filter((e) => e.t === "blur").length, sampleEvents: log.slice(0, 12) };
 }
 
-const SCENARIOS = { ime: scenarioIme, h1: scenarioH1, h2: scenarioH2, h4: scenarioH4, h7unicode: scenarioH7Unicode, h7long: scenarioH7Long, h7resize: scenarioH7Resize, h8stream: scenarioH8Stream };
+async function scenarioH8Dialogs(args) {
+  // Each case: native Save dialog -> Rust writes a file -> native Open dialog -> Rust streams a copy -> sha compare.
+  const cases = [];
+  const n = args.h8Count || 1;
+  const gaps = []; let stop = false; let prev = performance.now();
+  const probe = () => { const now = performance.now(); gaps.push(now - prev); prev = now; if (!stop) requestAnimationFrame(probe); };
+  requestAnimationFrame(probe);
+  for (let i = 0; i < n; i++) {
+    const saved = await invoke("plugin:dialog|save", { options: { title: `spike save ${i}`, defaultPath: "spike-case.bin" } });
+    if (!saved) { cases.push({ i, error: "save cancelled" }); continue; }
+    const made = JSON.parse(await invoke("make_big_file", { path: saved, mib: args.mib || 64 }));
+    const picked = await invoke("plugin:dialog|open", { options: { title: `spike open ${i}`, multiple: false } });
+    if (!picked) { cases.push({ i, error: "open cancelled" }); continue; }
+    const copied = JSON.parse(await invoke("stream_copy", { src: picked, dest: saved + ".copy" }));
+    cases.push({ i, bytes: copied.bytes, identical: made.sha256 === copied.sha256, copyMs: copied.ms, pathChars: saved.length });
+  }
+  stop = true;
+  return { cases, maxFrameGapMs: Math.max(...gaps), p99FrameGapMs: pct(gaps, 0.99) };
+}
+
+async function scenarioH8Long(args) {
+  const made = JSON.parse(await invoke("make_big_file", { path: args.src, mib: 8 }));
+  const copied = JSON.parse(await invoke("stream_copy", { src: args.src, dest: args.dest }));
+  return { srcChars: args.src.length, destChars: args.dest.length, identical: made.sha256 === copied.sha256, bytes: copied.bytes };
+}
+
+const SCENARIOS = { h8dialogs: scenarioH8Dialogs, h8long: scenarioH8Long, ime: scenarioIme, h1: scenarioH1, h2: scenarioH2, h4: scenarioH4, h7unicode: scenarioH7Unicode, h7long: scenarioH7Long, h7resize: scenarioH7Resize, h8stream: scenarioH8Stream };
 
 async function runAuto() {
   const info = JSON.parse(await invoke("app_info"));
   const args = info.args;
   const get = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
   const list = (get("--auto") || "").split(",").filter(Boolean);
-  const opts = { ndjson: get("--ndjson"), envelope: get("--envelope"), src: get("--big-src"), dest: get("--big-dest"), mib: Number(get("--big-mib") || 1024), cycles: Number(get("--cycles") || 200), chars: Number(get("--chars") || 20000), imeN: Number(get("--ime-n") || 20), imeTimeout: Number(get("--ime-timeout") || 120) };
+  const opts = { ndjson: get("--ndjson"), envelope: get("--envelope"), src: get("--big-src"), dest: get("--big-dest"), mib: Number(get("--big-mib") || 1024), cycles: Number(get("--cycles") || 200), chars: Number(get("--chars") || 20000), imeN: Number(get("--ime-n") || 20), h8Count: Number(get("--h8-count") || 1), imeTimeout: Number(get("--ime-timeout") || 120) };
   const tag = get("--tag") || "";
   try { await invoke("window_op", { op: "focus" }); await sleep(300); } catch (e) {}
   for (const name of list) {

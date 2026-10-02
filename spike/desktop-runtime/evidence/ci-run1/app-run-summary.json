@@ -1,0 +1,16 @@
+{
+  "finished": true,
+  "seconds": 67.5,
+  "socketSamples": 224,
+  "tcpOrUdpListeners": [
+    "udp msedgewebview2.exe:utility+network-service 0.0.0.0"
+  ],
+  "nonLoopbackRemotes": [
+    "msedgewebview2.exe:utility+network-service -> 150.171.27.11:443 Established",
+    "msedgewebview2.exe:utility+network-service -> 52.123.251.35:443 Established"
+  ],
+  "processNamesInTree": [
+    "msedgewebview2.exe",
+    "quiz-studio-spike.exe"
+  ]
+}

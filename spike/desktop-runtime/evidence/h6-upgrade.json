@@ -1,0 +1,83 @@
+{
+    "A_install_v1":  0,
+    "A_before":  {
+                     "fileBytes":  14655488,
+                     "userVersion":  1,
+                     "applicationId":  1364416050,
+                     "records":  4999,
+                     "payloadSha256":  "16f46887dfb8d1ab418d5c2fc9aa4723706e09ac43f03ffba67a4369cbd0d210",
+                     "hasSummaryLenColumn":  false,
+                     "quickCheck":  "ok"
+                 },
+    "A_before_appVersion":  "0.1.0",
+    "A_install_v2":  0,
+    "A_afterInstall_dbFileUntouchedByInstaller":  true,
+    "A_firstLaunch_v2":  {
+                             "finished":  true,
+                             "appVersion":  "0.2.0",
+                             "storeSchemaVersion":  2,
+                             "notice":  "upgraded store schema v1 -\u003e v2",
+                             "startupError":  null,
+                             "identifier":  "io.github.peter-s-shi.quiz-studio"
+                         },
+    "A_after":  {
+                    "fileBytes":  14663680,
+                    "userVersion":  2,
+                    "applicationId":  1364416050,
+                    "records":  4999,
+                    "payloadSha256":  "16f46887dfb8d1ab418d5c2fc9aa4723706e09ac43f03ffba67a4369cbd0d210",
+                    "hasSummaryLenColumn":  true,
+                    "summaryLenNull":  0,
+                    "summaryLenNegative":  0,
+                    "quickCheck":  "ok"
+                },
+    "A_payloadHashEqual":  true,
+    "A_recordsEqual":  true,
+    "A_dataDirSamePath":  true,
+    "A_snapshotCreated":  true,
+    "C_install_v1_over_v2":  0,
+    "C_launch_v1":  {
+                        "finished":  true,
+                        "appVersion":  "0.1.0",
+                        "storeSchemaVersion":  null,
+                        "notice":  null,
+                        "startupError":  "REFUSED: store schema v2 is newer than this build supports (v1); no write performed",
+                        "identifier":  "io.github.peter-s-shi.quiz-studio"
+                    },
+    "C_dbSha256Unchanged":  true,
+    "C_dbMtimeUnchanged":  true,
+    "C_walFilesCreated":  true,
+    "C_userVersionStill":  2,
+    "B_install_v1":  0,
+    "B_before":  {
+                     "fileBytes":  14655488,
+                     "userVersion":  1,
+                     "applicationId":  1364416050,
+                     "records":  4999,
+                     "payloadSha256":  "16f46887dfb8d1ab418d5c2fc9aa4723706e09ac43f03ffba67a4369cbd0d210",
+                     "hasSummaryLenColumn":  false,
+                     "quickCheck":  "ok"
+                 },
+    "B_install_failmig":  0,
+    "B_launch_failmig":  {
+                             "finished":  true,
+                             "appVersion":  "0.3.0",
+                             "storeSchemaVersion":  1,
+                             "notice":  "MIGRATION FAILED (injected migration failure); transaction rolled back (state hash verified equal to pre-upgrade); running on store schema v1",
+                             "startupError":  null,
+                             "identifier":  "io.github.peter-s-shi.quiz-studio"
+                         },
+    "B_after":  {
+                    "fileBytes":  14655488,
+                    "userVersion":  1,
+                    "applicationId":  1364416050,
+                    "records":  4999,
+                    "payloadSha256":  "16f46887dfb8d1ab418d5c2fc9aa4723706e09ac43f03ffba67a4369cbd0d210",
+                    "hasSummaryLenColumn":  false,
+                    "quickCheck":  "ok"
+                },
+    "B_payloadHashEqual":  true,
+    "B_userVersionStillOld":  true,
+    "B_noPartialBackfill":  true,
+    "B_quickCheck":  "ok"
+}
