@@ -2,11 +2,11 @@
 
 ## Current Phase
 
-V1 Finalized / Maintenance Hold + V2 Architecture Validation Active
+V1 Finalized / Maintenance Hold + V2 Desktop Architecture Gate Passed (Desktop Foundation next)
 
 ## Active Milestone
 
-V1: None (maintenance hold). V2: Architecture Validation — bounded desktop spike authorized, not yet started; no V2 implementation milestone is active.
+V1: None (maintenance hold). V2: Desktop Architecture Gate PASSED (GO WITH AMENDMENT); the formal V2 development branch has not been created yet and no V2 implementation milestone is active.
 
 ## Most Recent Completed Milestone
 
@@ -162,18 +162,20 @@ Milestone 7 is complete under active Feature Freeze. M7.2 and PR #22 were merged
 
 Quiz Studio V1 is finalized at version `1.0.0`. The accepted Release Candidate `v1.0.0-rc.1` (commit `f33bafcfe42ac8dd521466026c343102dc18897a`) remains the immutable verification baseline with zero post-candidate runtime modifications. No V1 engineering milestone is currently scheduled. V1 follow-ups such as GitHub Pages deployment or a formal GitHub Release remain separately deferred and begin only upon explicit Product Owner authorization.
 
-Quiz Studio V2 is in **Architecture Validation (active)**. The V1 release line above is unchanged and remains the immutable `v1.0.0` baseline; V2 work does not modify it.
+Quiz Studio V2 has **passed the Desktop Architecture Gate**; the formal V2 development branch has not yet been created. The V1 release line above is unchanged and remains the immutable `v1.0.0` baseline; V2 work does not modify it.
 
 V2 progress (see the linked documents for authority; nothing here changes them):
 
 - **Product Scope Freeze Revision 1: complete** — [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md).
 - **UI Architecture Freeze: complete** — [`docs/V2_UI_ARCHITECTURE_FREEZE.md`](docs/V2_UI_ARCHITECTURE_FREEZE.md) (Human Design Gate passed; approved design inputs tracked under `docs/design-inputs/`).
 - **V1 Migration Readiness Inventory: complete** — passed its Human Gate and is merged into `main` ([`docs/V2_MIGRATION_READINESS_INVENTORY.md`](docs/V2_MIGRATION_READINESS_INVENTORY.md)).
-- **Desktop Runtime & Application Data ADR: Human Gate approved for a bounded spike** (GO WITH AMENDMENT) — [`docs/adr/0001-desktop-runtime-and-application-data.md`](docs/adr/0001-desktop-runtime-and-application-data.md) and the companion [spike contract](docs/adr/0001-appendix-desktop-spike-contract.md). The ADR is **not** accepted as the desktop architecture: the **Desktop Architecture Gate has not been passed**.
-- **Bounded desktop spike: authorized, not started.** No spike has been run and no spike results exist.
-- **No V2 production implementation exists, and no V2 development branch exists.**
+- **Desktop Runtime & Application Data ADR 0001: ACCEPTED** — [`docs/adr/0001-desktop-runtime-and-application-data.md`](docs/adr/0001-desktop-runtime-and-application-data.md) (Tauri 2 + WebView2, Rust durability boundary, SQLite, lossless JSON payload + projections, content-addressed media, unified staging/activation/rollback, V2 archive). Amendments A1–A8 forced by the spike are absorbed; the Electron fallback was not triggered.
+- **Bounded desktop spike: complete.** Executed on the disposable `spike/desktop-runtime` branch (final HEAD `a79cea5c29d10f88c0a7f09c8a265a76dca17d23`, never merged); the long-term evidence is [`docs/adr/evidence/0001-desktop-spike-report.md`](docs/adr/evidence/0001-desktop-spike-report.md) with the amended [spike contract](docs/adr/0001-appendix-desktop-spike-contract.md).
+- **Desktop Architecture Gate: PASSED — GO WITH AMENDMENT** (Product Owner). H2–H7 PASS; H1 CONDITIONAL and accepted with residual limitations (runtime-less `downloadBootstrapper` check and the adapter-disable/`pktmon` run deferred); H8 CANCELLED / RECLASSIFIED BY HUMAN GATE (its remaining native Open dialog, OS drag-and-drop and OneDrive-redirected Desktop/Documents checks are deferred to Desktop Foundation / packaged acceptance).
+- **Typing constraint carried forward:** the third-party Sogou Pinyin IME emits no composition events in the packaged app; future Typing must not rely on `compositionend` as the only committed-text path and must accept non-composing committed input / `insertText`. This does not reopen the desktop architecture.
+- **No V2 production implementation exists, and no V2 development branch exists yet.**
 
-**Next engineering objective: execute the disposable bounded desktop spike** defined in the spike contract. The spike lives on a throwaway `spike/desktop-runtime` branch that is **never merged**. Only after the **Desktop Architecture Gate passes** may the formal V2 development branch be created and Desktop Foundation begin (Scope Freeze §24).
+**Next engineering objective: create the formal V2 development branch and begin Desktop Foundation** (Scope Freeze §24), implementing the accepted ADR 0001 architecture. The `spike/desktop-runtime` branch stays disposable and is never merged; spike code is not carried over wholesale.
 
 Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFIED**.
 
@@ -181,7 +183,7 @@ Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFI
 
 - Default branch: `main`
 - Remote: `origin`
-- Repository lifecycle state: V1 Finalized / Maintenance Hold + V2 Architecture Validation Active
+- Repository lifecycle state: V1 Finalized / Maintenance Hold + V2 Desktop Architecture Gate Passed (Desktop Foundation next)
 - Final release version: `1.0.0`
 - Accepted candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
 - Commit and merge tracking: Use Git history for `main` commit identity and PR merge history
