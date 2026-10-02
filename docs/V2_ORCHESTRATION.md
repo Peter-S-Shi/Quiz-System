@@ -1,6 +1,6 @@
 # V2 Learning Orchestration + Calendar milestone
 
-**Status:** implementation complete, **awaiting Human Gate**
+**Status:** **ACCEPTED** (Human Gate PASS, 2026-10-02)
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§3.2, §3.6, §4.4–§4.6, §6, §7, §8, §23), ADR 0001 (ACCEPTED), ADR 0002 (ACCEPTED), **ADR 0003 (ACCEPTED — GO WITH AMENDMENT; §15 foundation extension and §17 verification contract are this milestone's implementation and acceptance basis)**, Desktop Foundation and V1 Migration (both ACCEPTED).
 **Code:** [`desktop/core/orchestration`](../desktop/core/orchestration) (`qs-orchestration`, store schema 3), the additive foundation extensions below, and the pure JS/TS domain in [`desktop/ui/web/src/orchestration`](../desktop/ui/web/src/orchestration). V1 production code, tests and CI are untouched. No Objective / Translation / Typing domain integration, no Answer Explanation / Focused Practice, no product UI.
 
@@ -113,4 +113,4 @@ node --test "ui/tests/integration/*.spec.mjs"      # QS_ORCH_KILLS=100 QS_ORCH_S
 
 ## 8. Gate readiness
 
-Implementation complete; ADR 0003 §17 is implemented as automated tests that pass locally and are wired into the Windows CI workflow. The milestone **awaits the Human Gate**. Task-Domain Integration (Objective / Translation / Typing), Answer Explanation, Focused Practice and the final UI integration are **not started** and need their own authorization.
+Implementation complete; ADR 0003 §17 is implemented as automated tests that pass locally and are wired into the Windows CI workflow. The milestone is **ACCEPTED** (Human Gate PASS). M1–M7 and D1–D4 stay open, non-blocking, not PASS, not waived. Task-Domain Integration (Objective / Translation / Typing), Answer Explanation, Focused Practice and the final UI integration are **not started** and need their own authorization.

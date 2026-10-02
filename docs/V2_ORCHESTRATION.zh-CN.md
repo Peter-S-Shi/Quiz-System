@@ -1,6 +1,6 @@
 # V2 Learning Orchestration + Calendar 里程碑
 
-**状态：** 实现完成，**等待 Human Gate**
+**状态：** **已验收**（Human Gate PASS，2026-10-02）
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§3.2、§3.6、§4.4–§4.6、§6、§7、§8、§23）、ADR 0001（ACCEPTED）、ADR 0002（ACCEPTED）、**ADR 0003（ACCEPTED — GO WITH AMENDMENT；§15 foundation 扩展与 §17 验证合约是本里程碑的实施与验收依据）**、Desktop Foundation 与 V1 Migration（均已验收）。
 **代码：** [`desktop/core/orchestration`](../desktop/core/orchestration)（`qs-orchestration`，store schema 3）、下列追加式 foundation 扩展，以及 [`desktop/ui/web/src/orchestration`](../desktop/ui/web/src/orchestration) 中的纯 JS/TS 领域层。V1 生产代码、测试与 CI 均未改动。没有 Objective / Translation / Typing 领域集成，没有 Answer Explanation / Focused Practice，没有产品 UI。
 
@@ -113,4 +113,4 @@ node --test "ui/tests/integration/*.spec.mjs"      # QS_ORCH_KILLS=100 QS_ORCH_S
 
 ## 8. Gate 就绪
 
-实现完成；ADR 0003 §17 已实现为自动化测试，本地通过并已接入 Windows CI workflow。里程碑**等待 Human Gate**。Task-Domain Integration（Objective / Translation / Typing）、Answer Explanation、Focused Practice 与最终 UI 集成**尚未开始**，需要各自的授权。
+实现完成；ADR 0003 §17 已实现为自动化测试，本地通过并已接入 Windows CI workflow。里程碑**已验收**（Human Gate PASS）。M1–M7 与 D1–D4 仍保持 open、不阻塞、未 PASS、未豁免。Task-Domain Integration（Objective / Translation / Typing）、Answer Explanation、Focused Practice 与最终 UI 集成**尚未开始**，需要各自的授权。

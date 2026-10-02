@@ -1,5 +1,5 @@
 ---
-status: ACCEPTED — GO WITH AMENDMENT (Human Gate, 2026-10-02); Learning Orchestration + Calendar milestone implemented, awaiting its Human Gate (section 23)
+status: ACCEPTED — GO WITH AMENDMENT (Human Gate, 2026-10-02); Learning Orchestration + Calendar milestone implemented and ACCEPTED (section 23)
 decision-date: 2026-10-02
 gates: Learning Orchestration + Calendar milestone (implementation)
 depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runtime-and-application-data.md (ACCEPTED), docs/adr/0002-v1-to-v2-migration-architecture.md (ACCEPTED), Desktop Foundation (ACCEPTED), V1 Migration milestone (ACCEPTED)
@@ -7,7 +7,7 @@ depends-on: V2_PRODUCT_SCOPE_FREEZE.md (Revision 1), docs/adr/0001-desktop-runti
 
 # ADR 0003 — Learning Orchestration: Scheduling, Recommendation and Calendar Architecture
 
-**Status:** **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02; the review outcome and the four amendments are recorded in §22 and already folded into the text below). This ADR turns the frozen product semantics of Scope Freeze Revision 1 (§3.2, §3.6, §4.4–§4.6, §6, §7, §8, §12.5, §14, §23) into an implementable and verifiable data and behavior contract. It writes **no scheduler, recommender or Calendar code and no schema migration**. Scheduler / Recommendation / Calendar **implementation is not authorized by this document**: the Learning Orchestration + Calendar milestone was authorized separately (Scope §24) and is **implemented and awaiting its own Human Gate** (section 23). Nothing here reopens Scope Freeze Revision 1; §18 maps every frozen boundary to the mechanism that keeps it.
+**Status:** **ACCEPTED — GO WITH AMENDMENT** (Human Gate, 2026-10-02; the review outcome and the four amendments are recorded in §22 and already folded into the text below). This ADR turns the frozen product semantics of Scope Freeze Revision 1 (§3.2, §3.6, §4.4–§4.6, §6, §7, §8, §12.5, §14, §23) into an implementable and verifiable data and behavior contract. It writes **no scheduler, recommender or Calendar code and no schema migration**. Scheduler / Recommendation / Calendar **implementation is not authorized by this document**: the Learning Orchestration + Calendar milestone was authorized separately (Scope §24) and is **implemented and ACCEPTED** (section 23). Nothing here reopens Scope Freeze Revision 1; §18 maps every frozen boundary to the mechanism that keeps it.
 
 ## 1. Decision summary
 
