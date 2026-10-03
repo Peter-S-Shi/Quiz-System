@@ -4,7 +4,6 @@
 import { defineStrings, t } from '../../i18n.js';
 import { annotatedNodes, projectionNodes } from '../correction-view.js';
 import { mediaBlock } from '../../practice/media-presenter.js';
-import { LIST_WIDTH } from '../prefs.js';
 import { domainDot, domainName, emptyState, fill, formatInstant, guarded, h, intentName, pill, seg } from '../kit.js';
 import { exportFile } from '../import-flows.js';
 
@@ -80,7 +79,7 @@ defineStrings({
 const FILTERS = ['all', 'objective', 'translation', 'typing'];
 
 export async function renderHistory(app, main, params = {}) {
-  const { history, runtime } = app.product;
+  const { history } = app.product;
   const toast = app.toast;
   const st = { domain: params.domain ?? 'all', query: '', selected: params.select ?? null };
   let loaded = await history.load();
@@ -187,6 +186,5 @@ export async function renderHistory(app, main, params = {}) {
     h('div', { class: 'tri two' }, h('div', { class: 'col-b' }, h('label', { class: 'search' }, h('span', { class: 'muted', 'aria-hidden': 'true' }, '⌕'), search), rows), detail));
   paintList();
   await paintDetail();
-  void LIST_WIDTH;
   return { focus: () => main.querySelector('#view-title')?.focus() };
 }

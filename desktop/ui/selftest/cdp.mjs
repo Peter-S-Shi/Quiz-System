@@ -55,6 +55,8 @@ export async function launch({ width = 1100, height = 800, store = null } = {}) 
   await send('Runtime.enable');
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+  // robustness aid: QS_CPU_THROTTLE=4 runs the page 4x slower, to expose timing assumptions a slow CI runner would hit
+  if (Number(process.env.QS_CPU_THROTTLE) > 1) await send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.QS_CPU_THROTTLE) });
 
   const api = {
     base: `http://127.0.0.1:${port}`,

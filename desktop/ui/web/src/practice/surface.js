@@ -5,12 +5,14 @@
 // the exit/resume semantics, the live region and the commit/recovery plumbing. It never decides what is revealed -
 // that is the domain engines' job (the views render only what `engine.view()` returns).
 import { focusEl, h, uid } from './dom.js';
+import './strings.js';
+import { t } from '../i18n.js';
 import { newId } from '../ids.js';
 import { mountObjective } from './objective-view.js';
 import { mountTranslation } from './translation-view.js';
 import { mountTyping } from './typing-view.js';
 
-const DOMAIN_LABEL = { objective: 'Objective', translation: 'Translation', typing: 'Typing' };
+const domainLabel = (d) => t(`pr.domain.${d}`);
 
 /**
  * @param {object} args
@@ -30,8 +32,8 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
   const progressText = h('span', { class: 'practice-progress-text' });
   const bar = h('i');
   const progressId = uid('progress');
-  const progress = h('div', { class: 'practice-progress', role: 'progressbar', 'aria-label': 'Progress', 'aria-valuemin': '0', 'aria-valuemax': '1', 'aria-valuenow': '0', id: progressId }, bar);
-  const exitBtn = h('button', { class: 'btn', type: 'button', id: uid('exit') }, 'Exit');
+  const progress = h('div', { class: 'practice-progress', role: 'progressbar', 'aria-label': t('pr.progress'), 'aria-valuemin': '0', 'aria-valuemax': '1', 'aria-valuenow': '0', id: progressId }, bar);
+  const exitBtn = h('button', { class: 'btn', type: 'button', id: uid('exit') }, t('pr.exit'));
   const titleEl = h('h1', { class: 'practice-title', tabindex: '-1' }, '');
   const tagEl = h('span', { class: 'practice-tag' }, '');
   const body = h('div', { class: 'practice-body' });
@@ -39,7 +41,7 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
   let closed = false;
   let noticeTimer = null;
 
-  const section = h('section', { class: 'practice', 'aria-label': 'Focused practice' },
+  const section = h('section', { class: 'practice', 'aria-label': t('pr.frame') },
     h('header', { class: 'practice-head' }, exitBtn, h('div', { class: 'practice-heading' }, titleEl, tagEl), h('div', { class: 'practice-progress-wrap' }, progressText, progress)),
     notice, body, live);
   root.replaceChildren(section);
@@ -84,10 +86,10 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
         finished = true;
         await queue; // a save already in flight must not land after the cleanup
         await services.clear(input.payload.session.id).catch(() => {});
-        exitBtn.textContent = 'Done';
+        exitBtn.textContent = t('pr.done');
         return { ok: true, result, payload: input.payload };
       } catch (e) {
-        ctx.notify(`The result could not be saved - ${e?.message ?? e}. Your answers are kept; try again.`, { kind: 'error', ms: 0 });
+        ctx.notify(t('pr.resultSaveFailed', { message: e?.message ?? e }), { kind: 'error', ms: 0 });
         return { ok: false, error: e };
       }
     },
@@ -104,7 +106,7 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
         await services.save(engine.snapshot());
         return true;
       } catch (e) {
-        ctx.notify(`Your progress could not be saved: ${e?.message ?? e}`, { kind: 'error', ms: 0 });
+        ctx.notify(t('pr.progressSaveFailed', { message: e?.message ?? e }), { kind: 'error', ms: 0 });
         return false;
       }
     });
@@ -129,22 +131,22 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
     if (closed) return;
     if (finished) return close('done');
     const choice = await choose({
-      title: 'Leave this practice?',
-      body: 'Your progress is saved. You can resume it later from where you stopped, or discard it - nothing is recorded as a result either way until you finish.',
-      actions: [{ value: 'keep', label: 'Keep practicing' }, { value: 'leave', label: 'Save and leave', kind: 'primary' }, { value: 'discard', label: 'Discard session', kind: 'danger' }],
+      title: t('pr.leave.title'),
+      body: t('pr.leave.body'),
+      actions: [{ value: 'keep', label: t('pr.leave.keep') }, { value: 'leave', label: t('pr.leave.save'), kind: 'primary' }, { value: 'discard', label: t('pr.leave.discard'), kind: 'danger' }],
     });
     if (choice === 'leave') {
       // a required action: the surface closes only once the recovery state is really stored
       if (await persist()) close('left'); else focusEl(exitBtn);
     } else if (choice === 'discard') {
-      const sure = await choose({ title: 'Discard this session?', body: 'The saved progress is deleted. No result is recorded.', actions: [{ value: 'no', label: 'Cancel' }, { value: 'yes', label: 'Discard', kind: 'danger' }] });
+      const sure = await choose({ title: t('pr.discard.title'), body: t('pr.discard.body'), actions: [{ value: 'no', label: t('pr.discard.cancel') }, { value: 'yes', label: t('pr.discard.confirm'), kind: 'danger' }] });
       if (sure === 'yes') {
         await queue; // let any in-flight save settle first
         try {
           await services.clear(engine.snapshot().session.id);
         } catch (e) {
           // a required action: the saved row still exists, so nothing is closed, discarded or reported as discarded
-          ctx.notify(`The session could not be discarded: ${e?.message ?? e}. Your progress is unchanged; try again.`, { kind: 'error', ms: 0 });
+          ctx.notify(t('pr.discard.failed', { message: e?.message ?? e }), { kind: 'error', ms: 0 });
           focusEl(exitBtn);
           return;
         }
@@ -179,7 +181,7 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
   }
 
   const mount = { objective: mountObjective, translation: mountTranslation, typing: mountTyping }[domain];
-  ctx.setHeader({ title: '', tag: DOMAIN_LABEL[domain] });
+  ctx.setHeader({ title: '', tag: domainLabel(domain) });
   try {
     view = mount({ session: engine, ctx, host: body });
   } catch (e) {

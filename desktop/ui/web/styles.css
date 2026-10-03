@@ -8,7 +8,7 @@
   --red: #b94a48; --red-soft: #fae8e6; --amber: #a66b13; --amber-soft: #f6ecd8;
   --shadow-sm: 0 1px 2px rgba(39, 45, 51, .05), 0 6px 18px rgba(39, 45, 51, .05);
   --sans: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
-  --serif: "Songti SC", "Noto Serif SC", Georgia, serif;
+  --serif: Georgia, "Noto Serif SC", "Source Han Serif SC", "Songti SC", SimSun, serif;
   --mono: ui-monospace, Consolas, monospace;
   --side-w: 252px;
   color-scheme: light;

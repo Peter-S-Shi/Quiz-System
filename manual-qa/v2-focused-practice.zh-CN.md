@@ -4,7 +4,7 @@
 
 **Human Gate 验收之后的状态：M-T1a 与 M-T1c 通过；下表其余条目仍然 OPEN —— 未 PASS，也未豁免。** 实际执行时把结果写进最右列；没有执行的条目保持“未执行”。
 
-在已安装的应用（`quiz-studio.exe`，Windows 11，WebView2 Evergreen）上运行。Library → *Start a practice*。用 *Add a typing text* 添加一段 ≥ 3000 字符的文本（任意合成文字，夹杂几句中日韩文字），然后点 *Practice*。
+在已安装的应用（`quiz-studio.exe`，Windows 11，WebView2 Evergreen）上运行。资料库 → *新建* → *跟打文本*：添加一段 ≥ 3000 字符的文本（任意合成文字，夹杂几句中日韩文字），然后点 *练习*（Final Product UI 已取代临时启动器；示例数据的用法见 `v2-final-product-ui.zh-CN.md`）。
 
 | # | 检查 | 步骤 | 预期 | 结果 |
 |---|---|---|---|---|

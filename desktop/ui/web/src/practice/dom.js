@@ -1,5 +1,9 @@
 // Re-exports the shared DOM helpers; the practice-specific labels live here.
+import './strings.js';
+import { t } from '../i18n.js';
+
 export { h, fill, uid, focusEl, sr } from '../dom.js';
 
-export const KIND_LABEL = Object.freeze({ unknown: "I don't know this", uncertain: "I'm not sure", should_know: 'I should know this' });
-export const TYPE_LABEL = Object.freeze({ single: 'Single choice', multiple: 'Multiple choice', blank: 'Fill in the blank', truefalse: 'True or false', matching: 'Matching' });
+/** The learner's three metacognitive marks and the five question types, in the current interface language. */
+export const kindLabel = (kind) => t(`pr.kind.${kind}`);
+export const typeLabel = (type) => t(`pr.type.${type}`);

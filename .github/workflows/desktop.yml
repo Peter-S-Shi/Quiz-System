@@ -98,8 +98,11 @@ jobs:
       - name: Focused Practice DOM self-test (real Chromium engine via Microsoft Edge headless; trusted CDP input - leakage, keyboard, focus, a11y contract, long-text following, committed-text/IME-composition path, resize, resume)
         run: node ui/selftest/practice-selftest.mjs
 
-      - name: Focused Practice over the real store (launcher -> runtime -> surface -> SessionFinalizer -> SQLite via qs-scenario port-serve, in headless Edge)
+      - name: Learning-session regression over the real product and store (Library -> runtime -> surface -> SessionFinalizer -> SQLite via qs-scenario port-serve, in headless Edge; restart/resume, retry lineage)
         run: node ui/selftest/app-selftest.mjs
+
+      - name: Final product UI self-test (Today, Calendar, Library + editors, History, Review, Exchange, Settings; cross-page journeys; image/audio; offline; a11y base; Chinese; headless Edge over the real Rust store)
+        run: node ui/selftest/product-selftest.mjs
 
       - name: Install Tauri CLI
         run: npm install --global @tauri-apps/cli@2.12.1
@@ -135,6 +138,9 @@ jobs:
           Copy-Item "../../target/release/bundle/nsis/*_2.0.1-dev.0_x64-setup.exe" "$env:RUNNER_TEMP/upgrade-setup.exe"
           Pop-Location
           Get-FileHash "$env:RUNNER_TEMP/base-setup.exe", "$env:RUNNER_TEMP/upgrade-setup.exe" -Algorithm SHA256 | Format-Table Hash, Path -AutoSize
+
+      - name: Final product UI inside the REAL packaged app (shipped exe, real WebView2 + CSP + Tauri IPC + Rust store; seeded isolated data root; loopback DevTools; not the OS IME)
+        run: node ui/selftest/packaged-product-check.mjs target/release/quiz-studio.exe
 
       - name: Installer uses the downloadBootstrapper WebView2 mode (static check)
         run: |

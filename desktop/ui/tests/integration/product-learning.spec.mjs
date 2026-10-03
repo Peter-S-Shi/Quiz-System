@@ -58,6 +58,8 @@ test('Today and Calendar are read-only projections; recommendations carry readab
   assert.match(zh.reasonTexts[0].text, /[一-龥]/);
   assert.equal(today.facts.due, 0);
   assert.equal(cal.month, '2026-10');
+  const chrome = await learning.chromeCounts();
+  assert.deepEqual(chrome, { due: today.facts.due + today.facts.overdue, awaitingDecision: today.facts.awaitingDecision }, 'the chrome counts agree with Today');
 }));
 
 test('the engine sweep proposes a revisit; the learner then owns dates: create, move, cancel; one active schedule per slot', withEnv(async (e) => {

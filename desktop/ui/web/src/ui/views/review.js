@@ -106,10 +106,9 @@ function snapToGraphemes(text, start, end) {
 const reviewerName = (r) => r?.displayLabel || r?.toolName || t(`rev.by.${r?.type ?? 'anonymous'}`);
 
 export async function renderReview(app, main, params = {}) {
-  const { reviews, library } = app.product;
+  const { reviews } = app.product;
   const toast = app.toast;
   const body = h('div', { class: 'rev-body' });
-  void library;
 
   fill(main, h('div', { class: 'vhead' },
     h('div', {}, h('div', { class: 'kicker' }, t('rev.kicker')), h('h1', { tabindex: '-1', id: 'view-title' }, t('rev.title')), h('p', { class: 'muted' }, t('rev.lede'))),

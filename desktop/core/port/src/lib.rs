@@ -260,7 +260,9 @@ impl Core {
                 // Bounded, path-free byte access to one media object for the WebView (images / audio are rendered from
                 // blob URLs built out of these chunks). At most MEDIA_READ_MAX bytes per call.
                 let uint = |k: &str| -> Result<u64> {
-                    args.get(k).and_then(Value::as_u64).ok_or_else(|| Error::new(Code::RejectShape, format!("'{k}' must be a non-negative integer")))
+                    args.get(k)
+                        .and_then(Value::as_u64)
+                        .ok_or_else(|| Error::new(Code::RejectShape, format!("'{k}' must be a non-negative integer")))
                 };
                 let (offset, want) = (uint("offset")?, uint("length")?.min(MEDIA_READ_MAX));
                 let recs = self.store().read(MEDIA_COLLECTION, &json!({"id": str_arg("id")?}))?;
@@ -413,7 +415,20 @@ impl migrate::Host for Core {
 /// Largest decoded object `media.put` accepts, and the media types it stores.
 pub const MEDIA_PUT_MAX: u64 = 24 << 20;
 pub const MEDIA_PUT_MIMES: &[&str] = &[
-    "image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml", "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/webm", "audio/aac", "audio/m4a", "audio/mp4", "audio/flac",
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/gif",
+    "image/svg+xml",
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/wav",
+    "audio/ogg",
+    "audio/webm",
+    "audio/aac",
+    "audio/m4a",
+    "audio/mp4",
+    "audio/flac",
 ];
 
 /// Largest chunk one `media.read` returns.
@@ -436,7 +451,7 @@ fn base64_decode(s: &str) -> Result<Vec<u8>> {
     let mut out = Vec::with_capacity(s.len() / 4 * 3);
     let (mut acc, mut bits) = (0u32, 0u32);
     let body = s.trim_end_matches('=');
-    if body.is_empty() || s.len() % 4 != 0 {
+    if body.is_empty() || !s.len().is_multiple_of(4) {
         bail!(Code::RejectShape, "'data' is not valid base64");
     }
     for ch in body.bytes() {

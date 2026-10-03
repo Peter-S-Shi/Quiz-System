@@ -10,7 +10,7 @@
 1. **Objective Answer Explanation** —— 五种题型（单选、多选、填空、判断、匹配）都支持可选的文字 `explanation`。它是 Content：绝不进入判分、结果、汇总、slot、Reader 或 Scheduling。即时反馈只在该题判分之后显示正确答案和解析；整卷提交（Submit-at-End）在提交之前不泄露任何内容（没有判分、没有正确答案、没有解析）；已 finalize 的 Learner Response 保留作答当时的解析，之后编辑源题不会改写历史。向后兼容：没有解析的题目行为与之前完全一致。
 2. **Focused Practice 界面** —— 三个 Domain 共用的一个框架（不是 canonical mode）：会话进行中移除侧边栏 / 导航 / 管理类外壳；保留的是该 Domain 自己的交互、进度、安全退出（继续练习 / 保存并离开 / 放弃）与会话恢复。
 3. **Objective**（五题型、即时与整卷提交两种反馈、Practice 与 Test 意图、错题重做）、**Translation**（产出、按需显示参考译文、片段标注与整句标记、从已 finalize 的快照重做）、**Typing**（committed-text 引擎，接到真实 textarea；长文本换行与活动位置跟随），都是“引擎 + 视图”。
-4. **最小练习启动器**（放在现有 *Library* 导航项之下），使该界面能从 store 中的材料进入，并可恢复未完成的会话。按设计这是临时的 —— 不是 Library、Today 或 Calendar —— 并含一个极简的 *Add a typing text* 表单，因为 Typing 文本的编辑功能尚不存在。
+4. **最小练习启动器**，使该界面能从 store 中的材料进入，并可恢复未完成的会话。按设计它是临时的，现已**移除**：Final Product UI Integration 里程碑（`docs/V2_PRODUCT_UI.zh-CN.md`）提供了真正的入口（今日、日历、资料库、历史），并完成了下面记录的两项 carry-forward（通过 media pipeline 呈现客观题图片 / 音频；在资料库中编辑跟打文本）。
 5. **固定比较的 WebView 烟测**：应用启动时在真实 WebView 内运行固定的 `typing-compare/1` 字面用例，经 `ui_ready` 上报；打包应用烟测对其断言。
 
 **按设计未构建：** Today / Calendar / Library / History / Review / Exchange / Settings 最终产品 UI；提示、AI 解析、知识点或引用；编辑界面；题目内图片 / 音频的显示（**fail-closed**，见澄清 11）；对 Evidence、Scheduling、Recommendation 算法（Reader 注册表、recommender v2、planner v1 均未动）、V1 主线、Rust store schema（仍为 4）或公开 JSON Schema 的任何改动。

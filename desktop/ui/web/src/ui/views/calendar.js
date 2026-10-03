@@ -4,7 +4,7 @@
 // re-read from the projection afterwards, never patched locally. Drag-and-drop and the date field do the same thing.
 import { defineStrings, getLocale, t } from '../../i18n.js';
 import { addDays } from '../../orchestration/dates.js';
-import { confirmDialog, domainDot, domainName, emptyState, field, fill, formatDate, guarded, h, intentName, pill, seg } from '../kit.js';
+import { confirmDialog, domainDot, domainName, field, fill, formatDate, guarded, h, intentName, pill, seg } from '../kit.js';
 
 defineStrings({
   'cal.kicker': ['Calendar · learning schedules', '日历 · 学习安排'],

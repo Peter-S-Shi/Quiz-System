@@ -21,17 +21,17 @@ function chunk(type, data) {
 }
 
 /** A small valid RGB PNG (a warm-paper gradient), decodable by any browser engine. */
-export function pngBytes(size = 8) {
-  const raw = Buffer.alloc((size * 3 + 1) * size);
-  for (let y = 0; y < size; y += 1) {
-    const row = y * (size * 3 + 1);
+export function pngBytes(width = 8, height = width) {
+  const raw = Buffer.alloc((width * 3 + 1) * height);
+  for (let y = 0; y < height; y += 1) {
+    const row = y * (width * 3 + 1);
     raw[row] = 0;
-    for (let x = 0; x < size; x += 1) { raw[row + 1 + x * 3] = 200 + x * 4; raw[row + 2 + x * 3] = 180 + y * 4; raw[row + 3 + x * 3] = 140; }
+    for (let x = 0; x < width; x += 1) { raw[row + 1 + x * 3] = 150 + Math.floor((x * 90) / width); raw[row + 2 + x * 3] = 120 + Math.floor((y * 100) / height); raw[row + 3 + x * 3] = 90 + ((x + y) % 40); }
   }
-  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(size, 0); ihdr.writeUInt32BE(size, 4); ihdr[8] = 8; ihdr[9] = 2;
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(width, 0); ihdr.writeUInt32BE(height, 4); ihdr[8] = 8; ihdr[9] = 2;
   return Uint8Array.from(Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]));
 }
-export const PNG_2X2 = pngBytes(8);
+export const PNG_2X2 = pngBytes(160, 96);
 
 /** A short mono 8-bit PCM WAV (a quiet tone), decodable by any browser engine. */
 export function wavBytes(ms = 120, rate = 8000) {

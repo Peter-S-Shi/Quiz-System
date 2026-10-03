@@ -2,7 +2,6 @@
 // through the ONE finalization door (SessionFinalizer) and recovery state through SessionRecovery. Nothing here decides
 // domain semantics; it allocates ids at session start (so finalization is idempotent across a crash), reads Content, and
 // hands finished sessions to the finalizer.
-import { putOp } from '../projection.js';
 import { newId } from '../ids.js';
 import { ScheduleStore } from '../orchestration/schedule-store.js';
 import { systemClock } from '../orchestration/dates.js';
@@ -72,16 +71,6 @@ export async function createPracticeRuntime(port, { now = nowIso, ids = newId, s
         documents: docs.map((r) => r.payload).map((d) => ({ id: d.id, title: d.title || '(untitled document)', document: d, ready: Array.isArray(d.items) && d.items.length > 0, items: d.items?.length ?? 0 })),
         texts: texts.map((r) => r.payload).map((t) => ({ id: t.id, title: t.title || '(untitled text)', text: t, ready: typeof t.text === 'string' && t.text.length > 0, characters: t.text?.length ?? 0 })),
       };
-    },
-
-    /** Minimal Content creation for Typing (no authoring UI yet): a learner-supplied reference text. */
-    async addTypingText({ title, text }) {
-      const id = ids();
-      const at = now();
-      const payload = { schemaVersion: 1, id, title: String(title || '').trim() || 'Untitled text', text: String(text), createdAt: at, updatedAt: at };
-      if (!payload.text.trim()) throw new Error('the text is empty');
-      await port.commit({ preconditions: [{ kind: 'absent', collection: 'typing_text', id }], ops: [putOp(spec('typing_text'), id, payload)] });
-      return payload;
     },
 
     /**

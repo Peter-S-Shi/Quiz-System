@@ -2,7 +2,7 @@
 // resumable unfinished session, and a composer for a session of the learner's own choosing. Starting anything goes
 // through the Focused Practice entry; nothing here decides what the learner should do.
 import { defineStrings, getLocale, t } from '../../i18n.js';
-import { domainDot, domainName, emptyState, field, fill, formatDate, formatInstant, guarded, h, intentName, pill, sectionTitle, seg } from '../kit.js';
+import { domainDot, domainName, emptyState, field, fill, formatDate, formatInstant, guarded, h, intentName, pill, seg } from '../kit.js';
 import { confirmDialog } from '../kit.js';
 
 defineStrings({
@@ -115,8 +115,7 @@ export async function renderToday(app, main) {
         return h('li', { class: `rec dom-${r.domain}` },
           h('div', { class: 'rec-main' },
             h('div', { class: 'rec-head' }, domainDot(r.domain), h('b', {}, r.title ?? t('today.rec.unavailable')), pill(t(`today.rec.group.${r.group}`), r.group === 'overdue-or-remediation' ? 'warn' : 'neutral')),
-            h('ul', { class: 'reasons' }, r.reasonTexts.map((x) => h('li', { 'data-code': x.code }, x.text))),
-            r.scheduling ? h('div', { class: 'muted small' }, typeof r.scheduling === 'string' ? r.scheduling : '') : null),
+            h('ul', { class: 'reasons' }, r.reasonTexts.map((x) => h('li', { 'data-code': x.code }, x.text)))),
           r.unavailable ? null : h('div', { class: 'rec-actions' },
             h('button', { class: 'btn primary small', type: 'button', onclick: () => go({ domain: r.domain, materialId: r.target.material.id, intent: 'practice', feedbackTiming: 'instant', source: 'recommended', recommendation: r }) }, t('today.rec.start')),
             h('button', { class: 'btn small', type: 'button', onclick: () => go({ domain: r.domain, materialId: r.target.material.id, intent: 'test', feedbackTiming: 'submit-at-end', source: 'recommended', recommendation: r }) }, t('today.rec.test')),

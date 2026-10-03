@@ -8,10 +8,11 @@
 // In a Test session the passage carries position only - the engine gives the view no correctness to render.
 import { bindTypingInput } from '../task-domains/typing/dom-adapter.js';
 import { focusEl, h, sr, uid } from './dom.js';
+import { t as tr } from '../i18n.js';
 import { STATUS, followScroll, passageCells, passageStatuses } from './typing-passage.js';
 
 const CLS = { [STATUS.PENDING]: 'c', [STATUS.OK]: 'c ok', [STATUS.ERROR]: 'c err', [STATUS.CURRENT]: 'c cur', [STATUS.TYPED]: 'c typed' };
-const KIND_WORD = { substitution: 'Different', omission: 'Missed', insertion: 'Extra' };
+const kindWord = (k) => tr({ substitution: 'pr.ty.different', omission: 'pr.ty.missed', insertion: 'pr.ty.extra' }[k]);
 const clip = (s, n = 60) => (s.length > n ? `${s.slice(0, n)}…` : s);
 
 export function mountTyping({ session, ctx, host }) {
@@ -21,7 +22,7 @@ export function mountTyping({ session, ctx, host }) {
   const intent = snap.intent;
   const root = h('div', { class: 'typing' });
   host.replaceChildren(root);
-  ctx.setHeader({ title: snap.material.title || 'Typing', tag: `Typing · ${intent === 'test' ? 'Test' : 'Practice'}${intent === 'test' ? ' · results after you finish' : snap.policy.feedbackTiming === 'live' ? ' · live feedback' : ''}` });
+  ctx.setHeader({ title: snap.material.title || tr('pr.domain.typing'), tag: tr('pr.ty.tag', { intent: tr(intent === 'test' ? 'pr.obj.intent.test' : 'pr.obj.intent.practice'), note: intent === 'test' ? tr('pr.ty.noteTest') : snap.policy.feedbackTiming === 'live' ? tr('pr.ty.noteLive') : '' }) });
 
   let stage = 'run';
   let saveTimer = null;
@@ -32,14 +33,14 @@ export function mountTyping({ session, ctx, host }) {
   let activeIndex = 0;
 
   const spans = cells.map((c) => h('span', { class: 'c' }, ref.slice(c.start, c.end)));
-  const passage = h('div', { class: 'passage', role: 'region', 'aria-label': 'Reference text', tabindex: '0' }, spans);
+  const passage = h('div', { class: 'passage', role: 'region', 'aria-label': tr('pr.ty.reference'), tabindex: '0' }, spans);
   const taId = uid('type');
   const ta = h('textarea', { id: taId, class: 'type-input', rows: '4', spellcheck: 'false', autocomplete: 'off', autocapitalize: 'off', autocorrect: 'off', 'aria-describedby': 'typing-count' });
   const count = h('span', { id: 'typing-count', class: 'muted small' });
-  const finishBtn = h('button', { class: 'btn primary', type: 'button', onclick: finish }, 'Finish');
+  const finishBtn = h('button', { class: 'btn primary', type: 'button', onclick: finish }, tr('pr.finish'));
   root.append(
     passage,
-    h('div', { class: 'type-wrap' }, h('label', { for: taId, class: 'field-label' }, 'Type the passage here'), ta),
+    h('div', { class: 'type-wrap' }, h('label', { for: taId, class: 'field-label' }, tr('pr.ty.typeHere')), ta),
     h('div', { class: 'row type-foot' }, count, h('span', { class: 'grow' }), finishBtn));
 
   ta.value = session.committedText;
@@ -47,9 +48,9 @@ export function mountTyping({ session, ctx, host }) {
   const unbind = bindTypingInput(ta, session);
 
   function updateCount(v) {
-    const { typedGraphemes: t, referenceGraphemes: r } = v.progress;
-    count.textContent = `${t} of ${r} characters typed`;
-    ctx.setProgress({ text: `${t} of ${r} characters`, done: Math.min(t, r), total: r });
+    const { typedGraphemes: typed, referenceGraphemes: total } = v.progress;
+    count.textContent = tr('pr.ty.count', { typed, total });
+    ctx.setProgress({ text: tr('pr.ty.progress', { typed, total }), done: Math.min(typed, total), total });
   }
 
   function follow(force = false) {
@@ -82,8 +83,8 @@ export function mountTyping({ session, ctx, host }) {
   ta.addEventListener('input', afterChange);
   ta.addEventListener('compositionend', afterChange);
   ta.addEventListener('blur', () => { clearTimeout(saveTimer); ctx.save(); });
-  for (const t of ['paste', 'drop']) ta.addEventListener(t, () => { ctx.notify('Pasting and dropping text are turned off for copy typing - type the passage.', { kind: 'info' }); ctx.announce('Pasting is turned off for copy typing.'); });
-  for (const t of ['wheel', 'touchmove']) passage.addEventListener(t, () => { manualScroll = true; }, { passive: true });
+  for (const evt of ['paste', 'drop']) ta.addEventListener(evt, () => { ctx.notify(tr('pr.ty.noPaste'), { kind: 'info' }); ctx.announce(tr('pr.ty.noPasteShort')); });
+  for (const evt of ['wheel', 'touchmove']) passage.addEventListener(evt, () => { manualScroll = true; }, { passive: true });
   passage.addEventListener('keydown', (e) => { if (['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown'].includes(e.key)) manualScroll = true; });
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => follow(true)) : null;
   ro?.observe(passage);
@@ -97,7 +98,7 @@ export function mountTyping({ session, ctx, host }) {
   async function finishNow() {
     const v = session.view();
     if (v.progress.typedGraphemes < v.progress.referenceGraphemes) {
-      const c = await ctx.choose({ title: 'Finish before the end?', body: `You have typed ${v.progress.typedGraphemes} of ${v.progress.referenceGraphemes} characters. The rest will count as missed.`, actions: [{ value: 'no', label: 'Keep typing' }, { value: 'yes', label: 'Finish', kind: 'primary' }] });
+      const c = await ctx.choose({ title: tr('pr.ty.early.title'), body: tr('pr.ty.early.body', { typed: v.progress.typedGraphemes, total: v.progress.referenceGraphemes }), actions: [{ value: 'no', label: tr('pr.ty.early.keep') }, { value: 'yes', label: tr('pr.finish'), kind: 'primary' }] });
       if (c !== 'yes') { focusEl(ta); return; }
     }
     clearTimeout(saveTimer);
@@ -110,22 +111,22 @@ export function mountTyping({ session, ctx, host }) {
   function showResult(p) {
     unbind();
     ro?.disconnect();
-    ctx.setProgress({ text: 'Saved', done: 1, total: 1 });
+    ctx.setProgress({ text: tr('pr.saved'), done: 1, total: 1 });
     const n = p.errors.length;
-    ctx.announce(n ? `Saved. ${n} difference${n === 1 ? '' : 's'} found.` : 'Saved. No differences - a perfect copy.');
+    ctx.announce(n ? tr('pr.ty.savedFound', { n }) : tr('pr.ty.savedPerfect'));
     root.replaceChildren(h('div', { class: 'result' },
-      h('h2', { tabindex: '-1', id: 'result-head' }, 'Practice saved'),
-      h('p', {}, n ? `${n} difference${n === 1 ? '' : 's'} between the passage and what you typed.` : 'No differences - what you typed matches the passage.'),
-      h('p', { class: 'muted small' }, 'Typing differences describe this copy only; they are not a judgment of what you know.'),
+      h('h2', { tabindex: '-1', id: 'result-head' }, tr('pr.ty.savedTitle')),
+      h('p', {}, n ? tr('pr.ty.diffs', { n }) : tr('pr.ty.none')),
+      h('p', { class: 'muted small' }, tr('pr.ty.disclaimer')),
       n ? h('ol', { class: 'diffs' }, p.errors.slice(0, 50).map((e) => h('li', {},
-        h('b', {}, KIND_WORD[e.kind]), ' ',
-        e.reference.end > e.reference.start ? h('span', {}, 'passage: ', h('q', {}, clip(ref.slice(e.reference.start, e.reference.end)))) : null,
-        e.committed.end > e.committed.start ? h('span', {}, ' typed: ', h('q', {}, clip(p.committed.text.slice(e.committed.start, e.committed.end)))) : null,
-        sr(`. Difference kind: ${e.kind}`)))) : null,
-      n > 50 ? h('p', { class: 'muted small' }, `…and ${n - 50} more.`) : null,
+        h('b', {}, kindWord(e.kind)), ' ',
+        e.reference.end > e.reference.start ? h('span', {}, tr('pr.ty.passage'), h('q', {}, clip(ref.slice(e.reference.start, e.reference.end)))) : null,
+        e.committed.end > e.committed.start ? h('span', {}, tr('pr.ty.typed'), h('q', {}, clip(p.committed.text.slice(e.committed.start, e.committed.end)))) : null,
+        sr(tr('pr.ty.kindIs', { kind: kindWord(e.kind) }))))) : null,
+      n > 50 ? h('p', { class: 'muted small' }, tr('pr.ty.more', { n: n - 50 })) : null,
       h('div', { class: 'row actions' },
-        ctx.startRetry ? h('button', { class: 'btn', type: 'button', onclick: () => ctx.startRetry('typing', { sourceAttemptId: p.id, textId: p.material.id, intent: p.intent }) }, 'Try this passage again') : null,
-        h('button', { class: 'btn primary', type: 'button', onclick: () => ctx.requestExit() }, 'Done'))));
+        ctx.startRetry ? h('button', { class: 'btn', type: 'button', onclick: () => ctx.startRetry('typing', { sourceAttemptId: p.id, textId: p.material.id, intent: p.intent }) }, tr('pr.ty.again')) : null,
+        h('button', { class: 'btn primary', type: 'button', onclick: () => ctx.requestExit() }, tr('pr.done')))));
     focusEl(root.querySelector('#result-head'));
   }
 

@@ -274,6 +274,29 @@ try {
   await b.sleep(150);
   const rr = await b.eval("(() => { const t = document.querySelector('textarea.type-input'); return { len: t.value.length, caret: t.selectionStart, cur: document.querySelectorAll('.passage .c.cur').length, focus: document.activeElement.tagName }; })()");
   ok('a resumed session restores the typed text with the caret at the end and focus in the input', rr.len > 0 && rr.caret === rr.len && rr.cur === 1 && rr.focus === 'TEXTAREA', JSON.stringify(rr));
+
+  // ------------------------------------------------------------------------------------------------- Chinese interface
+  section('The same surface in Simplified Chinese: every string is translated, nothing is lost');
+  await b.goto('/selftest/harness.html');
+  await b.eval("(window.harness.setLocale('zh-CN'), 1)");
+  await b.eval("(window.harness.objective({ feedbackTiming: 'instant' }), 1)");
+  const zhObj = await text();
+  ok('Objective: heading, progress and controls are in Chinese', /第 1 题/.test(zhObj) && zhObj.includes('检查答案') && zhObj.includes('退出'), zhObj.slice(0, 200));
+  await b.exec("document.querySelector('.choice input').click(); document.querySelector('[data-act=check]').click();");
+  await b.sleep(120);
+  ok('Objective: the feedback and the explanation heading are in Chinese', /解析/.test(await text()) && /正确|不太对/.test(await text()));
+  await key('Escape');
+  ok('the exit dialog is in Chinese', (await b.eval("document.querySelector('dialog[open]')?.innerText ?? ''")).includes('保存并离开'));
+  await clickText('继续练习', "document.querySelector('dialog')");
+  await b.sleep(50);
+  await b.eval("(window.harness.translation(), 1)");
+  const zhTr = await text();
+  ok('Translation: sentence, marks and reference controls are in Chinese', zhTr.includes('你的译文') && zhTr.includes('标记所选') && zhTr.includes('显示参考译文'), zhTr.slice(0, 200));
+  await b.eval("(window.harness.typing({ length: 300 }), 1)");
+  const zhTy = await text();
+  ok('Typing: tag, label and counter are in Chinese', zhTy.includes('跟打') && zhTy.includes('在这里输入这段文字') && /已输入 0 \/ \d+ 个字符/.test(zhTy), zhTy.slice(0, 200));
+  ok('no practice string was missing from the dictionary in either language', (await b.eval('window.harness.missingKeys()')).length === 0, (await b.eval('window.harness.missingKeys()')).join(','));
+  await b.eval("(window.harness.setLocale('en'), 1)");
 } finally {
   await b.close();
 }

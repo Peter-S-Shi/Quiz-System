@@ -40,10 +40,10 @@ export async function createProduct({ port, clock = systemClock(), now = () => n
     },
     /** Counts for the chrome (sidebar badges and domain list). */
     async chrome() {
-      const [today, list] = await Promise.all([learning.today('en'), library.list()]);
+      const [counts, list] = await Promise.all([learning.chromeCounts(), library.list()]);
       return {
-        due: today.facts.due + today.facts.overdue,
-        awaitingDecision: today.facts.awaitingDecision,
+        due: counts.due,
+        awaitingDecision: counts.awaitingDecision,
         counts: { objective: list.papers.length, translation: list.documents.length, typing: list.texts.length },
       };
     },

@@ -4,7 +4,7 @@ What the automated suites **cannot** prove for the Objective Answer Explanation 
 
 **Status after the Human Gate (ACCEPTED): M-T1a and M-T1c are PASS; every other item below is still OPEN — not PASS, not waived.** Record the actual result in the right-hand column when it is performed; an item that was not performed stays "not performed".
 
-Run on the installed app (`quiz-studio.exe`, Windows 11, WebView2 Evergreen). Library → *Start a practice*. Add a typing text of ≥ 3 000 characters (any synthetic prose, include a few CJK sentences) with *Add a typing text*, then *Practice*.
+Run on the installed app (`quiz-studio.exe`, Windows 11, WebView2 Evergreen). Library → *New* → *Typing text*: add a text of ≥ 3 000 characters (any synthetic prose, include a few CJK sentences), then *Practice* (the Final Product UI replaced the interim launcher; see `v2-final-product-ui.md` for the sample-data recipe).
 
 | # | Check | Steps | Expected | Result |
 |---|---|---|---|---|

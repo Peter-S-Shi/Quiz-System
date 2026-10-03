@@ -6,6 +6,7 @@ import { TranslationSession } from '../web/src/translation/session.js';
 import { TypingSession, restoreTypingSession } from '../web/src/task-domains/typing/session.js';
 import { paperWithExplanations } from '../tests/objective-fixtures.mjs';
 import { ADAPTERS } from '../web/src/task-domains/adapters.js';
+import { setLocale, missingKeys } from '../web/src/i18n.js';
 
 // `fail` injects faults into the recovery store; `row` models the one recovery row the real store keeps
 const state = { saves: [], commits: [], clears: [], closed: null, invalid: [], engine: null, fail: { save: false, clear: false }, row: null };
@@ -44,6 +45,7 @@ function mount(domain, engine, extra = {}) {
 }
 
 window.harness = {
+  setLocale, missingKeys,
   state, services, longText, paperWithExplanations,
   objective({ feedbackTiming = 'instant', intent = 'practice', explain = true } = {}) {
     const paper = paperWithExplanations({ explain });

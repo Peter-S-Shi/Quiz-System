@@ -91,7 +91,7 @@ fn no_webview_visible_response_exposes_an_absolute_or_local_path() {
         ("media.read", json!({"id": "img-1", "offset": 0, "length": 16})),
         ("media.put", json!({"name": "a.png", "mimeType": "image/png", "data": "AAEC"})),
         ("media.put", json!({"name": "a.exe", "mimeType": "application/x-msdownload", "data": "AAEC"})), // error path
-        ("media.read", json!({"id": "missing", "offset": 0, "length": 16})), // error path
+        ("media.read", json!({"id": "missing", "offset": 0, "length": 16})),                             // error path
         ("snapshots.list", json!({})),
         ("snapshots.restore", json!({"name": "../../evil.db"})), // error path
         ("snapshots.restore", json!({"name": "pre-manual.db"})),

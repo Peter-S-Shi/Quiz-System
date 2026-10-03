@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPracticeRuntime } from '../../web/src/practice/runtime.js';
+import { createLibrary } from '../../web/src/product/library.js';
 import { putOp } from '../../web/src/projection.js';
 import { loadSnapshot } from '../../web/src/orchestration/readers.js';
 import { recommend } from '../../web/src/orchestration/recommend.js';
@@ -11,6 +12,11 @@ import { storeMedia } from '../../web/src/media/media-source.js';
 import { withEnv } from './env.mjs';
 import { correctAnswerForView, paperWithExplanations, wrongAnswerForView } from '../objective-fixtures.mjs';
 
+/** Typing text is authored through the Library service (the formal content workflow). */
+const addText = async (e, { title, text }) => {
+  const lib = await createLibrary({ port: e.port, now: () => new Date().toISOString() });
+  return (await lib.saveTypingText({ ...lib.newTypingText(), title, text })).payload;
+};
 const typed = (engine, value) => engine.input({ isTrusted: true, type: 'input', inputType: 'insertText', value });
 const count = (e, c) => e.port.count(c);
 
@@ -35,14 +41,14 @@ const playAll = (engine, source, ok = () => true) => {
 test('materials: papers, documents and typing texts are listed; only ready content is startable', withEnv(async (e) => {
   const paper = await seed(e);
   const rt = await createPracticeRuntime(e.port);
-  await rt.addTypingText({ title: 'Copy', text: 'environment' });
+  await addText(e, { title: 'Copy', text: 'environment' });
   const m = await rt.materials();
   const mine = m.papers.find((p) => p.id === paper.id);
   assert.ok(mine && mine.ready && mine.questions === 5);
   assert.ok(m.papers.filter((p) => p.id !== paper.id).every((p) => !p.ready), 'seeded empty papers are not startable');
   assert.deepEqual(m.documents.map((d) => [d.id, d.ready, d.items]), [['doc-1', true, 2]]);
   assert.equal(m.texts.length, 1);
-  await assert.rejects(() => rt.addTypingText({ title: 'x', text: '   ' }), /empty/);
+  await assert.rejects(() => addText(e, { title: 'x', text: '   ' }), /empty/);
 }));
 
 test('Objective end to end: start (recovery saved), play, finalize through the one door, explanation stored in the snapshot', withEnv(async (e) => {
@@ -118,7 +124,7 @@ test('Typing end to end on a long passage: live view, finalize, valid immutable 
   const words = ['the', 'environment', 'matters', 'learning', 'by', 'copying', 'careful', 'text'];
   let text = ''; let n = 0;
   while ([...text].length < 7600) text += `${words[(n++ * 7 + (n >> 2)) % words.length]} `;
-  const added = await rt.addTypingText({ title: 'Long', text });
+  const added = await addText(e, { title: 'Long', text });
   const started = await rt.begin(rt.startTyping({ text: added, intent: 'practice' }));
   const parts = [...text];
   parts[30] = 'Z';
@@ -148,7 +154,7 @@ test('recovery across a restart: a new runtime resumes every domain exactly, and
   const trn = await rt.begin(rt.startTranslation({ document: m.documents[0].document }));
   trn.engine.setAnswer('half done');
   await rt.services.save(trn.engine.snapshot());
-  const added = await rt.addTypingText({ title: 'Copy', text: 'environment' });
+  const added = await addText(e, { title: 'Copy', text: 'environment' });
   const ty = await rt.begin(rt.startTyping({ text: added, intent: 'practice' }));
   typed(ty.engine, 'envi');
   await rt.services.save(ty.engine.snapshot());

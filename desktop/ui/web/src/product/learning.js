@@ -54,6 +54,14 @@ export function createLearning({ port, store, clock, runtime, library }) {
     /** One planning sweep (idempotent): engine schedules for what the evidence says, suggestions where the learner owns the date. */
     sweep: () => store.sweep(),
 
+    /** The few numbers the chrome shows (due or overdue, dates awaiting a decision) without computing recommendations. */
+    async chromeCounts() {
+      const today = clock.today();
+      const [models, pending] = await Promise.all([store.models(), store.pendingSuggestions()]);
+      const view = todayView(models, today);
+      return { due: view.entries.length, awaitingDecision: pending.length };
+    },
+
     /**
      * Everything Today shows, from one consistent read. Nothing here writes. `recommendations` are suggestions the
      * learner may ignore; each carries its readable reasons in the requested locale.

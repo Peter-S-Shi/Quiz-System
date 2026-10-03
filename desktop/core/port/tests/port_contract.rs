@@ -76,7 +76,8 @@ fn media_is_readable_in_bounded_chunks_by_id_and_every_byte_round_trips() {
     std::fs::write(&f, &payload).unwrap();
     let ing = core.dispatch("media.ingest_file", &json!({"path": f.display().to_string()}));
     let (hash, size) = (ok(&ing)["hash"].as_str().unwrap().to_string(), ok(&ing)["size"].as_u64().unwrap());
-    ok(&core.dispatch("store.commit", &json!({"uow": uow(vec![put_op(&c, "media_object", "m-1", media_object_payload("m-1", &hash, size))])})));
+    ok(&core
+        .dispatch("store.commit", &json!({"uow": uow(vec![put_op(&c, "media_object", "m-1", media_object_payload("m-1", &hash, size))])})));
     let mut got: Vec<u8> = Vec::new();
     let mut offset = 0u64;
     loop {

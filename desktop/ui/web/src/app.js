@@ -5,22 +5,8 @@ import { createStorePort, tauriTransport, StorePortError } from './store-port.js
 import { startProduct } from './ui/shell.js';
 import { tauriNative } from './native.js';
 import { runWebviewSelfCheck } from './practice/webview-selfcheck.js';
-import { defineStrings, detectLocale, setLocale, t } from './i18n.js';
+import { detectLocale, setLocale, t } from './i18n.js';
 import { confirmDialog, fill, h } from './ui/kit.js';
-
-defineStrings({
-  'boot.failedTitle': ['Quiz Studio could not start', 'Quiz Studio 无法启动'],
-  'boot.recoveryTitle': ['The data store could not be opened', '无法打开数据存储'],
-  'boot.recoveryLede': ['Nothing was changed or deleted. You can restore a snapshot; the damaged file is kept aside so it can be inspected later.', '没有任何内容被改动或删除。你可以恢复一个快照；损坏的文件会被单独保留，以便之后检查。'],
-  'boot.snapshots': ['Snapshots', '快照'],
-  'boot.noSnapshots': ['No snapshots are available.', '没有可用的快照。'],
-  'boot.restoreTitle': ['Restore this snapshot?', '恢复这个快照？'],
-  'boot.restoreBody': ['Use {name} as the current database. The damaged file is preserved in the recovery-artifacts folder.', '把 {name} 作为当前数据库。损坏的文件会保留在 recovery-artifacts 文件夹中。'],
-  'boot.restore': ['Restore', '恢复'],
-  'boot.restoredStill': ['Restored, but the store still failed to open.', '已恢复，但数据存储仍然无法打开。'],
-  'boot.unavailable': ['Store unavailable', '数据存储不可用'],
-  'boot.error': ['Error', '错误'],
-});
 
 const tauri = globalThis.__TAURI__;
 const invoke = (name, args = {}) => tauri.core.invoke(name, args);

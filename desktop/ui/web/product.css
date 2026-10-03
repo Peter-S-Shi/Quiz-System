@@ -241,3 +241,14 @@ mark.ann-should_know { background: var(--amber-soft); border-bottom: 1px solid v
 @media (prefers-reduced-motion: reduce) { .nav .ink, .toggle.big .sw { transition: none; } }
 
 .sfx-try { margin-right: 10px; }
+
+/* headings receive programmatic focus on navigation (for screen readers); they are not controls, so no focus ring */
+h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus, h3[tabindex="-1"]:focus, .qhead:focus { outline: none; }
+
+/* form fields fill their column; two-column rows may shrink instead of overflowing */
+.field input[type="text"], .field input[type="date"], .field input[type="number"], .field select, .field textarea { width: 100%; min-width: 0; }
+.row-fields > .field { min-width: 0; }
+.editor .option-row input[type="text"] { min-width: 0; }
+
+/* Focused Practice: Objective and Translation read like one sheet of paper (Warm Paper); Typing keeps its own passage layout */
+.practice .obj, .practice .trn { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 20px 26px 24px; box-shadow: var(--shadow-sm); }

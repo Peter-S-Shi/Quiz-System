@@ -63,7 +63,6 @@ defineStrings({
   'lib.gone': ['This item no longer exists.', '这项内容已不存在。'],
 });
 
-const KIND_OF_DOMAIN = { objective: 'paper', translation: 'document', typing: 'text' };
 const EDITORS = { paper: editPaper, document: editDocument, text: editTypingText };
 const NEW_LABEL = { paper: 'lib.new.paper', document: 'lib.new.document', text: 'lib.new.text' };
 
@@ -235,7 +234,6 @@ export async function renderLibrary(app, main, params = {}) {
   }
   paint();
   if (params.create) openEditor(params.create, null);
-  void KIND_OF_DOMAIN;
   return { focus: () => main.querySelector('#view-title')?.focus() };
 }
 
