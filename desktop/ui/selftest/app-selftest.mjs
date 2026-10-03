@@ -67,6 +67,7 @@ try {
   ok('the result is stored once', (await rows('learner_response')).length === 1);
   const stored = (await rows('learner_response'))[0]?.payload;
   ok('the stored snapshot keeps every explanation', stored && stored.material.snapshot.items.map((i) => i.explanation).join('|') === paper.questions.map((q) => q.explanation).join('|'));
+  for (let i = 0; i < 40 && (await rows('recovery_session')).length > 0; i += 1) await b.sleep(100); // the cleanup follows the commit
   ok('the stored record carries the V2 session facts and no recovery row is left', stored?.extensions?.['quiz-studio.v2.session']?.feedbackTiming === 'submit-at-end' && (await rows('recovery_session')).length === 0);
   const resultText = await text();
   ok('the review lists every explanation after submission', ['single', 'multi', 'blank', 'tf', 'match'].every((k) => resultText.includes(`EXPL-${k}`)));

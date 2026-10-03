@@ -81,6 +81,7 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
         const input = built && built.payload ? built : { payload: built };
         const result = await services.commit(input);
         finished = true;
+        await queue; // a save already in flight must not land after the cleanup
         await services.clear(input.payload.session.id).catch(() => {});
         exitBtn.textContent = 'Done';
         return { ok: true, result, payload: input.payload };
