@@ -46,7 +46,7 @@
 
 ## 4. 证据
 
-本地（开发机）：**193 个单元 + 63 个集成 JS 测试**通过（含既有 Migration / Orchestration / Task-Domain 套件），DOM 自检 **78/78**、真实 store 应用自检 **23/23** 在 headless Edge 中通过，`cargo fmt --check` 与 `cargo clippy --workspace --all-targets -D warnings` 干净（Rust 代码未改动）。修复后候选版的 Windows Desktop CI 运行在完成后记录（待运行）。此前的候选版 `b318938` 在 [run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209) 中为绿色，但已被 Human Gate 修复取代。
+本地（开发机）：**193 个单元 + 63 个集成 JS 测试**通过（含既有 Migration / Orchestration / Task-Domain 套件），DOM 自检 **78/78**、真实 store 应用自检 **23/23** 在 headless Edge 中通过，`cargo fmt --check` 与 `cargo clippy --workspace --all-targets -D warnings` 干净（Rust 代码未改动）。修复后候选版（head `77b259f`）的 Windows Desktop CI 为**绿色**：[run 37096529380](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37096529380)。（`a95a654` 有一项应用自检失败 —— 在途的恢复保存可能晚于提交后的清理落地 —— 已在 `77b259f` 修复：提交先等待串行化的保存队列。）此前的候选版 `b318938` 在 [run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209) 中为绿色，但已被 Human Gate 修复取代。
 
 | 契约 | 自动化证据 |
 |---|---|

@@ -46,7 +46,7 @@
 
 ## 4. Evidence
 
-Local (development machine): **193 unit + 63 integration JS tests** pass (existing Migration / Orchestration / Task-Domain suites included), the DOM self-test **78/78** and the real-store app self-test **23/23** pass in headless Edge, `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` are clean (Rust code is unchanged). The Windows Desktop CI run for the repair candidate is recorded after it completes (pending). The earlier candidate `b318938` was green in [run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209) but is superseded by the Human Gate repair.
+Local (development machine): **193 unit + 63 integration JS tests** pass (existing Migration / Orchestration / Task-Domain suites included), the DOM self-test **78/78** and the real-store app self-test **23/23** pass in headless Edge, `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` are clean (Rust code is unchanged). The Windows Desktop CI run for the repair candidate (head `77b259f`) is **green**: [run 37096529380](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37096529380). (`a95a654` failed one app-selftest check — an in-flight recovery save could land after the post-commit cleanup — fixed in `77b259f`: the commit now awaits the serialized save queue.) The earlier candidate `b318938` was green in [run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209) but is superseded by the Human Gate repair.
 
 | Contract | Automated evidence |
 |---|---|
