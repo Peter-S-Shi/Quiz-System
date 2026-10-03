@@ -63,12 +63,27 @@ export function validateQuestion(q) {
 }
 
 /**
- * Media (image / audio) a question carries that Focused Practice cannot yet show or play. A session that needs such a
- * question must not start (fail closed): the learner would answer, and Evidence would be recorded, without seeing it.
+ * The media (image / audio) a question carries, as `[{kind, id}]`. A reference without a usable id is still listed (with
+ * `id: null`) so it can never be treated as presentable.
+ */
+export function mediaRefs(question) {
+  const refs = [];
+  for (const kind of ['image', 'audio']) {
+    const m = question?.[kind];
+    if (!m) continue;
+    refs.push({ kind, id: typeof m.id === 'string' && m.id.trim() ? m.id.trim() : null });
+  }
+  return refs;
+}
+
+/**
+ * The media of this question that is NOT proven presentable (fail closed): a session that needs such a question must
+ * not start - the learner would answer, and Evidence would be recorded, without seeing it. `presentable` is the set of
+ * media ids the surface has proven it can show / play (see `practice/media-presenter.js`); absent means none.
  * Returns null, 'image', 'audio' or 'image and audio'. The media metadata itself is never touched.
  */
-export function unsupportedMedia(question) {
-  const kinds = [question?.image ? 'image' : null, question?.audio ? 'audio' : null].filter(Boolean);
+export function unsupportedMedia(question, presentable = null) {
+  const kinds = mediaRefs(question).filter((r) => r.id === null || !presentable?.has(r.id)).map((r) => r.kind);
   return kinds.length ? kinds.join(' and ') : null;
 }
 

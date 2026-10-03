@@ -36,6 +36,10 @@ export function createStorePort(transport) {
     commit: (uow) => call('store.commit', { uow }),
     checkConsistency: () => call('store.check_consistency'),
     locateMedia: (id) => call('media.locate', { id }),
+    /** One bounded chunk (at most 1 MiB) of a media object: `{offset, length, size, eof, data: base64}`. */
+    /** Store bytes (base64) as a media object: `{id, hash, size, mimeType, name, deduplicated}`. Image / audio types only. */
+    putMedia: ({ name, mimeType, data }) => call('media.put', { name, mimeType, data }),
+    readMediaChunk: (id, offset, length) => call('media.read', { id, offset, length }),
     listSnapshots: async () => (await call('snapshots.list')).snapshots,
     // V1 migration (ADR 0002): only the path-free steps; choosing the file is a native Rust flow.
     migrationStatus: () => call('migration.status'),

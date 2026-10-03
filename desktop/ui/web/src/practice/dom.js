@@ -1,38 +1,5 @@
-// Tiny DOM helpers shared by the Focused Practice surface. Text nodes only: material text (prompts, explanations,
-// passages, learner answers) is untrusted data and is never parsed as HTML.
-
-/** Build an element. Props: `class`, `on<event>` handlers, booleans, attributes. Children: nodes, strings, arrays. */
-export function h(tag, props = {}, ...kids) {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(props)) {
-    if (k === 'class') el.className = v;
-    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
-    else if (v === true) el.setAttribute(k, '');
-    else if (v !== false && v != null) el.setAttribute(k, v);
-  }
-  for (const kid of kids.flat(Infinity)) {
-    if (kid === null || kid === undefined || kid === false) continue;
-    el.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
-  }
-  return el;
-}
-
-/** replaceChildren that skips null / undefined / false (a bare `replaceChildren(null)` would insert the text "null"). */
-export function fill(el, ...kids) {
-  el.replaceChildren(...kids.flat(Infinity).filter((k) => k !== null && k !== undefined && k !== false));
-  return el;
-}
-
-let counter = 0;
-export const uid = (prefix = 'p') => `${prefix}-${++counter}`;
-
-/** Move focus without scrolling the page away from the user's context. */
-export function focusEl(el) {
-  if (el && typeof el.focus === 'function') el.focus({ preventScroll: false });
-}
-
-/** A visually hidden span for screen-reader-only text (state that color or an icon would otherwise carry alone). */
-export const sr = (text) => h('span', { class: 'sr-only' }, text);
+// Re-exports the shared DOM helpers; the practice-specific labels live here.
+export { h, fill, uid, focusEl, sr } from '../dom.js';
 
 export const KIND_LABEL = Object.freeze({ unknown: "I don't know this", uncertain: "I'm not sure", should_know: 'I should know this' });
 export const TYPE_LABEL = Object.freeze({ single: 'Single choice', multiple: 'Multiple choice', blank: 'Fill in the blank', truefalse: 'True or false', matching: 'Matching' });

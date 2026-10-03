@@ -26,19 +26,21 @@ export async function renderLauncher(main, rt, notice = '') {
         await renderLauncher(main, rt, `The retry could not be started: ${e?.message ?? e}`);
       }
     };
-    const retry = (kind, args) => {
+    const retry = async (kind, args) => {
       let next;
       if (kind === 'objective') {
         const paper = papersById.get(args.paperId);
         if (!paper) throw new Error('the source paper is no longer available');
-        next = rt.startObjective({ paper, intent: args.intent, feedbackTiming: args.feedbackTiming, questionIds: args.questionIds, provenance: { purpose: 'retry', sourceResponseId: args.sourceResponseId, sourceMaterialId: args.paperId } });
+        const proof = await rt.objectiveMedia(paper, args.questionIds);
+        if (proof.problems.length) throw new Error(`the media of these questions cannot be shown (${proof.problems.map((x) => x.reason).join('; ')})`);
+        next = rt.startObjective({ paper, intent: args.intent, feedbackTiming: args.feedbackTiming, questionIds: args.questionIds, presentableMedia: proof.presentable, provenance: { purpose: 'retry', sourceResponseId: args.sourceResponseId, sourceMaterialId: args.paperId } });
       } else if (kind === 'translation') next = rt.startTranslation({ document: args.document });
       else next = rt.startTyping({ text: textsById.get(args.textId) ?? args.text, intent: args.intent, provenance: { purpose: 'retry', sourceAttemptId: args.sourceAttemptId, sourceMaterialId: args.textId } });
       return rt.begin(next).then((s) => run(s));
     };
     return mountPractice({
       root: main, domain: started.domain, engine: started.engine,
-      services: { ...rt.services, startRetry },
+      services: { ...rt.servicesFor(started), startRetry },
       onClose: (outcome) => { if (outcome !== 'retry') renderLauncher(main, rt).then(() => main.focus({ preventScroll: true })); },
     });
   };
@@ -55,7 +57,7 @@ export async function renderLauncher(main, rt, notice = '') {
       sections.push(h('section', { class: 'card' }, h('h2', {}, 'Unfinished'),
         h('ul', { class: 'plain' }, resumable.map((s) => h('li', { class: 'row' },
           h('span', {}, `${s.domain === 'objective' ? 'Objective' : s.domain === 'translation' ? 'Translation' : 'Typing'}: ${s.material?.title || s.material?.id || 'session'} `, h('span', { class: 'muted' }, `(started ${s.session?.startedAt ?? ''})`)),
-          h('button', { class: 'btn primary', type: 'button', onclick: async () => { try { run(rt.restore(s)); } catch (e) { say.textContent = `This session cannot be resumed (${e.message}). You can discard it.`; } } }, 'Resume'),
+          h('button', { class: 'btn primary', type: 'button', onclick: async () => { try { run(await rt.restore(s)); } catch (e) { say.textContent = `This session cannot be resumed (${e.message}). You can discard it.`; } } }, 'Resume'),
           h('button', { class: 'btn', type: 'button', onclick: async () => { await rt.discard(s.session.id); say.textContent = 'Session discarded; nothing was recorded.'; load(); } }, 'Discard'))))));
     }
 
@@ -63,8 +65,12 @@ export async function renderLauncher(main, rt, notice = '') {
     const intent = select('Intent', [['practice', 'Practice'], ['test', 'Test']], 'practice');
     sections.push(h('section', { class: 'card' }, h('h2', {}, 'Objective papers'),
       m.papers.length ? [h('div', { class: 'row' }, intent.row, timing.row),
-        h('ul', { class: 'plain' }, m.papers.map((p) => h('li', { class: 'row' }, h('span', {}, `${p.title} `, h('span', { class: 'muted' }, `(${p.questions} questions)`), p.unavailable ? h('span', { class: 'muted media-unavailable' }, ` - ${p.unavailable}.`) : null),
-          h('button', { class: 'btn primary', type: 'button', disabled: !p.ready, title: p.ready ? '' : (p.unavailable ?? 'This paper has questions that are not ready'), onclick: async () => run(await rt.begin(rt.startObjective({ paper: p.paper, intent: intent.el.value, feedbackTiming: timing.el.value }))) }, 'Start'))))]
+        h('ul', { class: 'plain' }, m.papers.map((p) => h('li', { class: 'row' }, h('span', {}, `${p.title} `, h('span', { class: 'muted' }, `(${p.questions} questions)`), p.hasMedia ? h('span', { class: 'muted' }, ' - has media') : null),
+          h('button', { class: 'btn primary', type: 'button', disabled: !p.ready, title: p.ready ? '' : 'This paper has questions that are not ready', onclick: async () => {
+            const proof = await rt.objectiveMedia(p.paper);
+            if (proof.problems.length) { say.textContent = `This paper cannot be started: its image or audio cannot be shown (${proof.problems.map((x) => x.reason).join('; ')}).`; return; }
+            run(await rt.begin(rt.startObjective({ paper: p.paper, intent: intent.el.value, feedbackTiming: timing.el.value, presentableMedia: proof.presentable })));
+          } }, 'Start'))))]
         : h('p', { class: 'muted' }, 'No papers yet. Import a V1 backup in Settings.')));
 
     sections.push(h('section', { class: 'card' }, h('h2', {}, 'Translation documents'),

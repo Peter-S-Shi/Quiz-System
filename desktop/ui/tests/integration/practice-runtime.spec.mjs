@@ -7,6 +7,7 @@ import { createPracticeRuntime } from '../../web/src/practice/runtime.js';
 import { putOp } from '../../web/src/projection.js';
 import { loadSnapshot } from '../../web/src/orchestration/readers.js';
 import { recommend } from '../../web/src/orchestration/recommend.js';
+import { storeMedia } from '../../web/src/media/media-source.js';
 import { withEnv } from './env.mjs';
 import { correctAnswerForView, paperWithExplanations, wrongAnswerForView } from '../objective-fixtures.mjs';
 
@@ -155,7 +156,7 @@ test('recovery across a restart: a new runtime resumes every domain exactly, and
   const rt2 = await createPracticeRuntime(e.port); // "the app was restarted"
   const states = await rt2.resumable();
   assert.deepEqual(states.map((s) => s.domain).sort(), ['objective', 'translation', 'typing']);
-  const byDomain = Object.fromEntries(states.map((s) => [s.domain, rt2.restore(s)]));
+  const byDomain = Object.fromEntries(await Promise.all(states.map(async (s) => [s.domain, await rt2.restore(s)])));
   assert.deepEqual(byDomain.objective.engine.view(), obj.engine.view());
   assert.equal(byDomain.translation.engine.view().answer, 'half done');
   assert.equal(byDomain.typing.engine.committedText, 'envi');
@@ -186,19 +187,40 @@ test('a committed session found again in recovery (crash between commit and clea
   assert.equal(await count(e, 'learner_response'), 1);
 }));
 
-test('media-bearing papers are listed but not startable, cannot be started by any bypass, and produce no Evidence', withEnv(async (e) => {
+test('media-bearing papers: listed with hasMedia; with no presenter they fail closed, with a failing one too, and only a proof starts them', withEnv(async (e) => {
   const paper = paperWithExplanations({ id: 'paper-media' });
-  paper.questions[2].image = { name: 'figure.png', alt: 'synthetic', mediaId: 'media-1' };
+  const ref = await storeMedia(e.port, { name: 'figure.png', mimeType: 'image/png', bytes: Uint8Array.from({ length: 64 }, (_, i) => i) });
+  paper.questions[2].image = { id: ref.id, name: 'figure.png', alt: 'synthetic' };
   await e.port.commit({ ops: [putOp(e.spec('paper'), paper.id, paper)] });
-  const rt = await createPracticeRuntime(e.port);
-  const mine = (await rt.materials()).papers.find((p) => p.id === paper.id);
-  assert.equal(mine.ready, false, 'not startable from the launcher');
-  assert.match(mine.unavailable, /image or audio/i, 'with a clear reason');
-  assert.equal(mine.questions, 5, 'still listed with its question count');
-  assert.throws(() => rt.startObjective({ paper, intent: 'practice', feedbackTiming: 'instant' }), (err) => err.code === 'MEDIA_UNSUPPORTED');
-  assert.throws(() => rt.startObjective({ paper, intent: 'test', feedbackTiming: 'submit-at-end', questionIds: ['q-blank'], provenance: { purpose: 'retry' } }), (err) => err.code === 'MEDIA_UNSUPPORTED');
-  assert.equal((await rt.resumable()).length, 0, 'nothing was started or saved');
+  const rtNone = await createPracticeRuntime(e.port);
+  const mine = (await rtNone.materials()).papers.find((p) => p.id === paper.id);
+  assert.ok(mine, 'listed');
+  assert.equal(mine.hasMedia, true);
+  assert.equal(mine.questions, 5);
+  // no presenter: nothing can be proven
+  const none = await rtNone.objectiveMedia(paper);
+  assert.equal(none.presentable.size, 0);
+  assert.equal(none.problems.length, 1);
+  assert.throws(() => rtNone.startObjective({ paper, intent: 'practice', feedbackTiming: 'instant' }), (err) => err.code === 'MEDIA_UNSUPPORTED');
+  // a presenter that cannot present it
+  const failing = await createPracticeRuntime(e.port, { media: { prove: async (refs) => ({ presentable: new Set(), problems: refs.map((r) => ({ ...r, reason: 'cannot decode' })) }) } });
+  const bad = await failing.objectiveMedia(paper);
+  assert.deepEqual(bad.problems.map((p) => [p.questionId, p.reason]), [['q-blank', 'cannot decode']]);
+  assert.throws(() => failing.startObjective({ paper, intent: 'practice', feedbackTiming: 'instant', presentableMedia: bad.presentable }), (err) => err.code === 'MEDIA_UNSUPPORTED');
+  assert.equal((await failing.resumable()).length, 0, 'nothing was started or saved');
   assert.equal(await count(e, 'learner_response'), 0, 'no Evidence');
+  // a retry of questions without media is not affected
+  assert.equal((await failing.objectiveMedia(paper, ['q-single'])).problems.length, 0);
+  // a presenter that proves it: the session starts and the reference is kept
+  const proving = await createPracticeRuntime(e.port, { media: { prove: async (refs) => ({ presentable: new Set(refs.map((r) => r.id)), problems: [] }) } });
+  const ok = await proving.objectiveMedia(paper);
+  assert.equal(ok.problems.length, 0);
+  const started = await proving.begin(proving.startObjective({ paper, intent: 'practice', feedbackTiming: 'instant', presentableMedia: ok.presentable }));
+  assert.equal(started.engine.snapshot().questions[2].image.id, ref.id);
   const [row] = await e.port.read('paper', { id: paper.id });
   assert.deepEqual(row.payload.questions[2].image, paper.questions[2].image, 'the media metadata is stored unchanged');
+  // resuming proves again: a presenter that cannot present it refuses to resume
+  const state = (await proving.resumable())[0];
+  await assert.rejects(() => failing.restore(state), /cannot be shown/);
+  assert.equal((await proving.restore(state)).engine.view().total, 5);
 }));

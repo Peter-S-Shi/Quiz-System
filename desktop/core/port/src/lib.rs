@@ -4,7 +4,7 @@
 //! `{"ok":true,"result":...}` / `{"ok":false,"error":{"code","message"}}` back.
 //!
 //! Commands: `schema.info`, `store.read`, `store.count`, `store.commit`, `store.check_consistency`,
-//! `media.ingest_file`, `media.locate`, `backup.create`, `backup.verify`, `backup.restore`,
+//! `media.ingest_file`, `media.locate`, `media.read`, `backup.create`, `backup.verify`, `backup.restore`,
 //! `snapshots.list`, `snapshots.restore`.
 
 pub mod offline;
@@ -232,6 +232,51 @@ impl Core {
                 let size = self.media.size_of(hash)?;
                 Ok(json!({"hash": hash, "size": size, "mimeType": rec.payload["mimeType"]}))
             }
+            "media.put" => {
+                // Bytes from the WebView (a portable-paper asset, a pasted image) into the content-addressed store,
+                // registered in ONE Unit of Work. The mime type must be a supported image / audio type.
+                self.refuse_if_gated()?;
+                self.require_healthy()?;
+                let (name, mime) = (str_arg("name")?, str_arg("mimeType")?);
+                if !MEDIA_PUT_MIMES.contains(&mime) {
+                    bail!(Code::RejectShape, "unsupported media type '{mime}'");
+                }
+                let bytes = base64_decode(str_arg("data")?)?;
+                if bytes.len() as u64 > MEDIA_PUT_MAX {
+                    bail!(Code::RejectShape, "the media object is too large");
+                }
+                let st = self.media.put_bytes(&bytes)?;
+                let id = format!("media-{}", &st.hash[..16]);
+                let exists = !self.store().read(MEDIA_COLLECTION, &json!({"id": id}))?.is_empty();
+                if !exists {
+                    let uow = json!({"ops": [{"op": "put", "collection": MEDIA_COLLECTION, "id": id,
+                        "payload": {"id": id, "contentHash": st.hash, "size": st.size, "mimeType": mime, "name": name},
+                        "proj": {"columns": {"content_hash": st.hash, "size": st.size, "mime": mime, "name": name}, "relations": {}}}]});
+                    self.store().commit(&uow)?;
+                }
+                Ok(json!({"id": id, "hash": st.hash, "size": st.size, "mimeType": mime, "name": name, "deduplicated": exists}))
+            }
+            "media.read" => {
+                // Bounded, path-free byte access to one media object for the WebView (images / audio are rendered from
+                // blob URLs built out of these chunks). At most MEDIA_READ_MAX bytes per call.
+                let uint = |k: &str| -> Result<u64> {
+                    args.get(k).and_then(Value::as_u64).ok_or_else(|| Error::new(Code::RejectShape, format!("'{k}' must be a non-negative integer")))
+                };
+                let (offset, want) = (uint("offset")?, uint("length")?.min(MEDIA_READ_MAX));
+                let recs = self.store().read(MEDIA_COLLECTION, &json!({"id": str_arg("id")?}))?;
+                let rec = recs.first().ok_or_else(|| Error::new(Code::NotFound, "unknown media id"))?;
+                let hash = rec.payload["contentHash"].as_str().unwrap_or_default();
+                let size = self.media.size_of(hash)?;
+                let mut buf = Vec::new();
+                if offset < size {
+                    use std::io::{Read, Seek, SeekFrom};
+                    let mut f = self.media.open(hash)?;
+                    f.seek(SeekFrom::Start(offset)).map_err(|e| Error::new(Code::Io, e.to_string()))?;
+                    f.take(want.min(size - offset)).read_to_end(&mut buf).map_err(|e| Error::new(Code::Io, e.to_string()))?;
+                }
+                let end = offset + buf.len() as u64;
+                Ok(json!({"offset": offset, "length": buf.len(), "size": size, "eof": end >= size, "data": base64_encode(&buf)}))
+            }
             "backup.create" => {
                 let dest = Path::new(str_arg("dest")?);
                 let op = activation::new_operation_id();
@@ -363,4 +408,53 @@ impl migrate::Host for Core {
     fn write_gate(&self) -> Result<WriteGate<'_>> {
         Core::write_gate(self)
     }
+}
+
+/// Largest decoded object `media.put` accepts, and the media types it stores.
+pub const MEDIA_PUT_MAX: u64 = 24 << 20;
+pub const MEDIA_PUT_MIMES: &[&str] = &[
+    "image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml", "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/webm", "audio/aac", "audio/m4a", "audio/mp4", "audio/flac",
+];
+
+/// Largest chunk one `media.read` returns.
+pub const MEDIA_READ_MAX: u64 = 1 << 20;
+
+fn base64_encode(bytes: &[u8]) -> String {
+    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for c in bytes.chunks(3) {
+        let n = (u32::from(c[0]) << 16) | (u32::from(*c.get(1).unwrap_or(&0)) << 8) | u32::from(*c.get(2).unwrap_or(&0));
+        out.push(T[(n >> 18) as usize & 63] as char);
+        out.push(T[(n >> 12) as usize & 63] as char);
+        out.push(if c.len() > 1 { T[(n >> 6) as usize & 63] as char } else { '=' });
+        out.push(if c.len() > 2 { T[n as usize & 63] as char } else { '=' });
+    }
+    out
+}
+
+fn base64_decode(s: &str) -> Result<Vec<u8>> {
+    let mut out = Vec::with_capacity(s.len() / 4 * 3);
+    let (mut acc, mut bits) = (0u32, 0u32);
+    let body = s.trim_end_matches('=');
+    if body.is_empty() || s.len() % 4 != 0 {
+        bail!(Code::RejectShape, "'data' is not valid base64");
+    }
+    for ch in body.bytes() {
+        let v = match ch {
+            b'A'..=b'Z' => ch - b'A',
+            b'a'..=b'z' => ch - b'a' + 26,
+            b'0'..=b'9' => ch - b'0' + 52,
+            b'+' => 62,
+            b'/' => 63,
+            _ => bail!(Code::RejectShape, "'data' is not valid base64"),
+        };
+        acc = (acc << 6) | u32::from(v);
+        bits += 6;
+        if bits >= 8 {
+            bits -= 8;
+            out.push((acc >> bits) as u8);
+            acc &= (1 << bits) - 1;
+        }
+    }
+    Ok(out)
 }

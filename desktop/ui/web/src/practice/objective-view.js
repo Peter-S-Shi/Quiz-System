@@ -2,7 +2,10 @@
 // no grading, correct answer or explanation anywhere in the DOM before the paper is submitted, because the engine never
 // hands them to the view (Scope Freeze Rev.1 section 10). Instant reveals the correct answer and the explanation of an
 // item only after that item was graded.
+import { mediaBlock } from './media-presenter.js';
 import { TYPE_LABEL, fill, focusEl, h, sr, uid } from './dom.js';
+
+const MEDIA_LABELS = { image: 'Image', audio: 'Audio', imageUnavailable: 'The image for this question cannot be shown.', audioUnavailable: 'The audio for this question cannot be played.' };
 
 export function mountObjective({ session, ctx, host }) {
   let stage = 'run';
@@ -168,7 +171,7 @@ export function mountObjective({ session, ctx, host }) {
     const prev = h('button', { class: 'btn', type: 'button', disabled: v.index === 0, onclick: () => { session.go(v.index - 1); ctx.save(); render({ focus: 'question' }); } }, 'Previous');
     const next = h('button', { class: 'btn', type: 'button', disabled: last, onclick: () => { session.go(v.index + 1); ctx.save(); render({ focus: 'question' }); } }, 'Next');
     const qhead = h('h2', { class: 'qhead', tabindex: '-1', id: 'qhead' }, `Question ${v.index + 1} of ${v.total}`, h('span', { class: 'qtype' }, ` · ${TYPE_LABEL[v.question.type]}`));
-    const media = (v.question.image || v.question.audio) ? h('p', { class: 'media-note muted' }, v.question.image ? `[Image: ${v.question.image.alt || v.question.image.name || 'attached'} - not shown in this build]` : '[Audio attached - not played in this build]') : null;
+    const media = mediaBlock(ctx.media, v.question, MEDIA_LABELS);
     fill(root, 
       navChips(v), qhead, media, choicesFor(v), feedbackPanel(v),
       h('div', { class: 'row actions' }, prev, next, checkBtn, finishBtn));

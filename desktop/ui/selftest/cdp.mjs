@@ -84,6 +84,12 @@ export async function launch({ width = 1100, height = 800, store = null } = {}) 
       await send('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: vk, modifiers, ...(text ? { text } : {}) });
       await send('Input.dispatchKeyEvent', { type: 'keyUp', key, code, windowsVirtualKeyCode: vk, modifiers });
     },
+    /** Save a PNG screenshot of the page (developer aid and failure evidence). */
+    async screenshot(file) {
+      const r = await send('Page.captureScreenshot', { format: 'png' });
+      fs.writeFileSync(file, Buffer.from(r.data, 'base64'));
+      return file;
+    },
     resize: (w, h) => send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false }),
     sleep,
     async close() {

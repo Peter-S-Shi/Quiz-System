@@ -67,6 +67,104 @@ fn media_is_ingested_by_streaming_registered_in_one_unit_of_work_and_locatable()
 }
 
 #[test]
+fn media_is_readable_in_bounded_chunks_by_id_and_every_byte_round_trips() {
+    let t = temp_root();
+    let c = arc(evidence_catalog());
+    let core = open(&t.root, &c);
+    let payload: Vec<u8> = (0..300_000u32).map(|i| (i.wrapping_mul(31) % 251) as u8).collect();
+    let f = t.dir.path().join("clip.bin");
+    std::fs::write(&f, &payload).unwrap();
+    let ing = core.dispatch("media.ingest_file", &json!({"path": f.display().to_string()}));
+    let (hash, size) = (ok(&ing)["hash"].as_str().unwrap().to_string(), ok(&ing)["size"].as_u64().unwrap());
+    ok(&core.dispatch("store.commit", &json!({"uow": uow(vec![put_op(&c, "media_object", "m-1", media_object_payload("m-1", &hash, size))])})));
+    let mut got: Vec<u8> = Vec::new();
+    let mut offset = 0u64;
+    loop {
+        let r = core.dispatch("media.read", &json!({"id": "m-1", "offset": offset, "length": 100_000}));
+        let r = ok(&r);
+        let chunk = b64_decode(r["data"].as_str().unwrap());
+        assert_eq!(chunk.len() as u64, r["length"].as_u64().unwrap());
+        assert!(chunk.len() <= 100_000, "never more than requested");
+        assert_eq!(r["size"], 300_000);
+        got.extend_from_slice(&chunk);
+        offset += chunk.len() as u64;
+        if r["eof"] == true {
+            break;
+        }
+    }
+    assert_eq!(got, payload, "byte-for-byte");
+    // bounds: past the end is an empty eof chunk; an oversized request is capped, not refused; bad ids are refused
+    let end = core.dispatch("media.read", &json!({"id": "m-1", "offset": 300_000, "length": 10}));
+    assert_eq!(ok(&end)["length"], 0);
+    assert_eq!(ok(&end)["eof"], true);
+    let capped = core.dispatch("media.read", &json!({"id": "m-1", "offset": 0, "length": 100_000_000}));
+    assert!(ok(&capped)["length"].as_u64().unwrap() <= 1_048_576, "a request is capped at 1 MiB");
+    assert_eq!(core.dispatch("media.read", &json!({"id": "nope", "offset": 0, "length": 10}))["error"]["code"], "NOT_FOUND");
+    assert_eq!(core.dispatch("media.read", &json!({"id": "m-1", "offset": "x", "length": 10}))["error"]["code"], "REJECT_SHAPE");
+}
+
+#[test]
+fn media_put_stores_bytes_registers_the_object_dedupes_and_refuses_bad_input() {
+    let t = temp_root();
+    let c = arc(evidence_catalog());
+    let core = open(&t.root, &c);
+    let bytes: Vec<u8> = (0..5000u32).map(|i| (i % 253) as u8).collect();
+    let b64 = b64_encode(&bytes);
+    let put = core.dispatch("media.put", &json!({"name": "figure.png", "mimeType": "image/png", "data": b64}));
+    let r = ok(&put).clone();
+    let id = r["id"].as_str().unwrap().to_string();
+    assert_eq!(r["size"], 5000);
+    assert_eq!(r["deduplicated"], false);
+    assert!(qs_port::webview::find_absolute_path(&put).is_none());
+    // the object is registered and readable back byte-for-byte
+    let back = core.dispatch("media.read", &json!({"id": id, "offset": 0, "length": 100_000}));
+    assert_eq!(b64_decode(ok(&back)["data"].as_str().unwrap()), bytes);
+    assert_eq!(ok(&core.dispatch("media.locate", &json!({"id": id})))["mimeType"], "image/png");
+    // the same bytes again are deduplicated onto the same object
+    let again = core.dispatch("media.put", &json!({"name": "copy.png", "mimeType": "image/png", "data": b64}));
+    assert_eq!(ok(&again)["id"], r["id"]);
+    assert_eq!(ok(&again)["deduplicated"], true);
+    // refused: unknown mime, invalid base64, empty data, missing fields
+    for bad in [
+        json!({"name": "x.exe", "mimeType": "application/x-msdownload", "data": b64}),
+        json!({"name": "x.png", "mimeType": "image/png", "data": "***not base64***"}),
+        json!({"name": "x.png", "mimeType": "image/png", "data": ""}),
+        json!({"name": "x.png", "mimeType": "image/png"}),
+    ] {
+        assert_eq!(core.dispatch("media.put", &bad)["ok"], false, "{bad}");
+    }
+}
+
+fn b64_encode(bytes: &[u8]) -> String {
+    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::new();
+    for c in bytes.chunks(3) {
+        let n = (u32::from(c[0]) << 16) | (u32::from(*c.get(1).unwrap_or(&0)) << 8) | u32::from(*c.get(2).unwrap_or(&0));
+        out.push(T[(n >> 18) as usize & 63] as char);
+        out.push(T[(n >> 12) as usize & 63] as char);
+        out.push(if c.len() > 1 { T[(n >> 6) as usize & 63] as char } else { '=' });
+        out.push(if c.len() > 2 { T[n as usize & 63] as char } else { '=' });
+    }
+    out
+}
+
+fn b64_decode(s: &str) -> Vec<u8> {
+    const T: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = Vec::new();
+    let (mut acc, mut bits) = (0u32, 0u32);
+    for ch in s.bytes().filter(|b| *b != b'=') {
+        acc = (acc << 6) | T.bytes().position(|x| x == ch).unwrap() as u32;
+        bits += 6;
+        if bits >= 8 {
+            bits -= 8;
+            out.push((acc >> bits) as u8);
+            acc &= (1 << bits) - 1;
+        }
+    }
+    out
+}
+
+#[test]
 fn an_unhealthy_store_refuses_writes_but_stays_readable_and_is_never_auto_repaired() {
     let t = temp_root();
     let c = arc(evidence_catalog());

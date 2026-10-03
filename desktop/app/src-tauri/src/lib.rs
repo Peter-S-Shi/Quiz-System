@@ -99,6 +99,8 @@ fn run() {
             native::native_backup_restore_pending,
             native::native_migration_artifact,
             native::native_migration_prepare,
+            native::native_export_text,
+            native::native_import_text,
         ])
         .on_window_event(native::on_window_event)
         .run(tauri::generate_context!())

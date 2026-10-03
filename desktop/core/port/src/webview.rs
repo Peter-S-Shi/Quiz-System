@@ -24,6 +24,8 @@ pub const ALLOWLIST: &[&str] = &[
     "store.commit",
     "store.check_consistency",
     "media.locate",
+    "media.read",
+    "media.put",
     "snapshots.list",
     "snapshots.restore",
     // V1 migration (ADR 0002): only the path-free steps. `migration.prepare` carries a source path and is

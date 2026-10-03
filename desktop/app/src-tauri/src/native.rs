@@ -176,6 +176,49 @@ pub async fn native_migration_prepare(app: AppHandle, state: State<'_, AppState>
     Ok(state.sanitized(r))
 }
 
+/// Largest exchange file (JSON) the WebView may export or import through the native dialogs.
+const EXCHANGE_MAX_BYTES: usize = 32 << 20;
+
+/// Exchange export: the WebView supplies a suggested file name and the document text; Rust shows the Save dialog and
+/// writes the file. The chosen location never reaches the WebView (it is told only the file name and size).
+#[tauri::command]
+pub async fn native_export_text(app: AppHandle, state: State<'_, AppState>, suggested_name: String, text: String) -> Result<Value, ()> {
+    if text.len() > EXCHANGE_MAX_BYTES {
+        return Ok(err_msg("REJECT_SHAPE", "the document is too large to export"));
+    }
+    let safe: String = suggested_name.chars().filter(|c| c.is_alphanumeric() || matches!(c, '-' | '_' | '.' | ' ')).take(96).collect();
+    let name = if safe.trim().is_empty() { "quiz-studio-export.json".to_string() } else { safe };
+    let picked = app.dialog().file().set_file_name(name).add_filter("JSON", &["json"]).blocking_save_file();
+    let Some(dest) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
+    if let Err(e) = std::fs::write(&dest, text.as_bytes()) {
+        return Ok(state.sanitized(err_msg("IO", &e.to_string())));
+    }
+    state.log(&format!("exchange export bytes={}", text.len()));
+    let file = dest.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    Ok(json!({"ok": true, "result": {"name": file, "bytes": text.len()}}))
+}
+
+/// Exchange import, step 1: choose a JSON file; Rust reads it (bounded) and returns only its name and text. Nothing is
+/// stored; the WebView previews and validates it, and commits through the Store Port only after confirmation.
+#[tauri::command]
+pub async fn native_import_text(app: AppHandle, state: State<'_, AppState>) -> Result<Value, ()> {
+    let picked = app.dialog().file().add_filter("JSON", &["json"]).add_filter("All files", &["*"]).blocking_pick_file();
+    let Some(p) = picked.and_then(|f| f.into_path().ok()) else { return Ok(json!({"ok": true, "result": null})) };
+    let name = p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    match std::fs::metadata(&p) {
+        Ok(m) if m.len() as usize > EXCHANGE_MAX_BYTES => return Ok(err_msg("REJECT_SHAPE", "the file is too large to import")),
+        Err(e) => return Ok(state.sanitized(err_msg("IO", &e.to_string()))),
+        _ => {}
+    }
+    match std::fs::read(&p) {
+        Ok(bytes) => match String::from_utf8(bytes) {
+            Ok(text) => Ok(json!({"ok": true, "result": {"name": name, "text": text}})),
+            Err(_) => Ok(err_msg("REJECT_SHAPE", "the file is not UTF-8 text")),
+        },
+        Err(e) => Ok(state.sanitized(err_msg("IO", &e.to_string()))),
+    }
+}
+
 /// OS drag-and-drop is handled here, in Rust: dropped files are streamed into the media store on a
 /// worker thread (UI stays responsive) and the UI is told via events.
 pub fn on_window_event(window: &Window, event: &WindowEvent) {

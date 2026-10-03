@@ -58,10 +58,10 @@ function checkAnswerShape(q, value) {
   if (!isObj(value) || !Object.entries(value).every(([pairId, token]) => q.pairs.some((p) => p.id === pairId) && q.rightOptions.some((_, k) => tokenOf(k) === token))) fail('BAD_ANSWER', 'not a pairing of this question');
 }
 
-/** Fail closed on media this build cannot present (see unsupportedMedia). */
-function refuseMedia(q) {
-  const kind = unsupportedMedia(q);
-  if (kind) fail('MEDIA_UNSUPPORTED', `question ${JSON.stringify(q.id)} has ${kind}, which the practice screen cannot present yet`);
+/** Fail closed on media that is not proven presentable (see unsupportedMedia). */
+function refuseMedia(q, presentable) {
+  const kind = unsupportedMedia(q, presentable);
+  if (kind) fail('MEDIA_UNSUPPORTED', `question ${JSON.stringify(q.id)} has ${kind}, which is not proven presentable on the practice screen`);
 }
 
 export class ObjectiveSession {
@@ -78,7 +78,7 @@ export class ObjectiveSession {
    * @param {string} args.sessionId @param {string} args.evidenceId the Learner Response id, allocated at session start
    * @param {string} args.startedAt @param {'instant'|'submit-at-end'} args.feedbackTiming @param {'practice'|'test'} args.intent
    */
-  static start({ paper, questionIds, sessionId, evidenceId, startedAt, feedbackTiming, intent, provenance = { purpose: 'practice' }, rng = Math.random }) {
+  static start({ paper, questionIds, sessionId, evidenceId, startedAt, feedbackTiming, intent, provenance = { purpose: 'practice' }, rng = Math.random, presentableMedia = null }) {
     if (!FEEDBACK_TIMINGS.includes(feedbackTiming)) fail('BAD_INPUT', `feedback timing must be one of ${FEEDBACK_TIMINGS.join(', ')}`);
     if (!INTENTS.includes(intent)) fail('BAD_INPUT', `intent must be one of ${INTENTS.join(', ')}`);
     if (!isObj(paper) || !Array.isArray(paper.questions) || !paper.questions.length) fail('BAD_INPUT', 'a paper with at least one question is required');
@@ -94,7 +94,7 @@ export class ObjectiveSession {
       const q = normalizeQuestion(raw);
       const errs = validateQuestion(q);
       if (errs.length) fail('BAD_INPUT', `question ${JSON.stringify(q.id)} is not ready: ${errs.join('; ')}`);
-      refuseMedia(q);
+      refuseMedia(q, presentableMedia);
       return prepareQuizQuestion(q, rng);
     });
     if (new Set(questions.map((q) => q.id)).size !== questions.length) fail('BAD_INPUT', 'question ids must be unique within a paper');
@@ -106,10 +106,10 @@ export class ObjectiveSession {
     });
   }
 
-  static restore(snap) {
+  static restore(snap, { presentableMedia = null } = {}) {
     if (!isObj(snap) || snap.domain !== 'objective' || snap.schemaVersion !== SCHEMA_VERSION || !Array.isArray(snap.questions) || !snap.questions.length || !isObj(snap.answers) || !isObj(snap.results)) fail('BAD_SNAPSHOT', 'not an Objective session snapshot');
     if (!FEEDBACK_TIMINGS.includes(snap.feedbackTiming) || !INTENTS.includes(snap.intent)) fail('BAD_SNAPSHOT', 'unknown timing or intent');
-    snap.questions.forEach(refuseMedia);
+    snap.questions.forEach((q) => refuseMedia(q, presentableMedia));
     const state = clone(snap);
     if (!Number.isInteger(state.index) || state.index < 0 || state.index >= state.questions.length) state.index = 0;
     return new ObjectiveSession(state);

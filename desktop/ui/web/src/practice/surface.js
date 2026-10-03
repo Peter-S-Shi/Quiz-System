@@ -45,6 +45,7 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
   root.replaceChildren(section);
 
   const ctx = {
+    media: services.media ?? null,
     now: () => services.now(),
     newId: () => services.newId?.() ?? newId(),
     announce(msg) {
