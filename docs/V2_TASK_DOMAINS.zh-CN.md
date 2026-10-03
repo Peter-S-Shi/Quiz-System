@@ -1,6 +1,6 @@
 # V2 Task-Domain Integration 里程碑（Objective / Translation / Typing）
 
-**状态：** 实现完成，**等待 Human Gate**
+**状态：** **已验收（Human Gate PASS）**
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§3.3、§4.2–§4.3、§4.8、§8、§9、§11、§12、§14、§23）、ADR 0001–0003（ACCEPTED）、**ADR 0004（ACCEPTED — GO WITH AMENDMENT；§5–§12 是契约，§13 是验证与验收依据）**、Desktop Foundation、V1 Migration 与 Learning Orchestration + Calendar（均已验收）。
 **代码：** [`desktop/core/task_domains`](../desktop/core/task_domains)（`qs-task-domains`，store schema 4）与 [`desktop/ui/web/src/task-domains`](../desktop/ui/web/src/task-domains) 中的纯 JS 领域层，以及 §2 列出的增量改动。V1 生产代码、测试与 CI 均未改动。**按设计不做：** Answer Explanation、Focused Practice、任何产品或最终 UI、Typing 文本编写 UI、Teacher Review 的编写/导入改动。
 
@@ -46,7 +46,7 @@
 
 ## 4. 结果
 
-本地（开发机、debug profile、阈值取默认缩放值）：`qs-task-domains` 6 个 Rust 测试，`qs-orchestration`/`qs-store`/`qs-port` 套件通过，`fmt --check` 与 `clippy --workspace --all-targets -D warnings` 干净，**136 个单元 + 55 个集成 JS 测试**通过（Orchestration 与 Migration 套件意图未改）。Windows Desktop CI（`windows-latest` 上的 `Desktop (V2)`，完整阈值）：第一个候选版（`d6cd0a6`）为绿；Human Gate HOLD 修复（澄清 2、3）之后，新候选版的运行在完成后记录（待运行）。
+本地（开发机、debug profile、阈值取默认缩放值）：`qs-task-domains` 6 个 Rust 测试，`qs-orchestration`/`qs-store`/`qs-port` 套件通过，`fmt --check` 与 `clippy --workspace --all-targets -D warnings` 干净，**136 个单元 + 55 个集成 JS 测试**通过（Orchestration 与 Migration 套件意图未改）。Windows Desktop CI（`windows-latest` 上的 `Desktop (V2)`，完整阈值）：第一个候选版（`d6cd0a6`）为绿；Human Gate HOLD 修复（澄清 2、3）之后，验收 head `601b4cf` 的运行为**绿色**：[run 37078651808（attempt 2）](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37078651808)。attempt 1 由账户所有者中途取消（不是失败）；之前 `a1e354f` 的运行失败仅因 workflow 没有安装锁定的 `ajv` 开发依赖（已在 `601b4cf` 修复）。
 
 ## 5. 供 Human Gate 评审的实现澄清
 
@@ -86,4 +86,4 @@ node tools/gen-unicode-data.mjs                     # 重新生成固定表（�
 
 ## 8. Gate 就绪情况
 
-实现完成；ADR 0004 §13 已实现为自动化测试，本地通过并在 Windows CI workflow 中运行。里程碑**等待 Human Gate**。Answer Explanation、Focused Practice 与最终 UI 集成**尚未开始**，需要各自的授权。
+实现完成；ADR 0004 §13 已实现为自动化测试，本地通过并在 Windows CI workflow 中运行。里程碑**已验收（Human Gate PASS）**。未实际执行的 M-T1–M-T4（以及 M1-M7、D1-D4）仍然 **open、未 PASS、未豁免**；真实 IME / 长文本 UI / 可访问性 / WebView 这些项目由 Objective Answer Explanation + Focused Practice 里程碑接手，并有其自己的记录。

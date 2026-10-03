@@ -1,6 +1,6 @@
 # V2 Task-Domain Integration milestone (Objective / Translation / Typing)
 
-**Status:** implementation complete, **awaiting Human Gate**
+**Status:** **ACCEPTED (Human Gate PASS)**
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§3.3, §4.2–§4.3, §4.8, §8, §9, §11, §12, §14, §23), ADR 0001–0003 (ACCEPTED), **ADR 0004 (ACCEPTED — GO WITH AMENDMENT; §5–§12 are the contract, §13 the verification and acceptance basis)**, Desktop Foundation, V1 Migration and Learning Orchestration + Calendar (all ACCEPTED).
 **Code:** [`desktop/core/task_domains`](../desktop/core/task_domains) (`qs-task-domains`, store schema 4) and the pure JS domain in [`desktop/ui/web/src/task-domains`](../desktop/ui/web/src/task-domains), plus the additive changes listed in §2. V1 production code, tests and CI are untouched. **Not built, by design:** Answer Explanation, Focused Practice, any product or final UI, Typing text authoring UI, Teacher Review authoring/import changes.
 
@@ -46,7 +46,7 @@ Test-side additions: shared fixtures `tests/task-fixtures.mjs`, `tests/integrati
 
 ## 4. Results
 
-Local (development machine, debug profile, thresholds default-scaled): `qs-task-domains` 6 Rust tests, `qs-orchestration`/`qs-store`/`qs-port` suites green, `fmt --check` and `clippy --workspace --all-targets -D warnings` clean, **136 unit + 55 integration JS tests** pass (the Orchestration and Migration suites unmodified in intent). Windows Desktop CI (`Desktop (V2)` on `windows-latest`, full thresholds): the first candidate (`d6cd0a6`) was green; after the Human Gate HOLD repairs (clarifications 2 and 3) the new candidate's run is recorded after it completes (pending).
+Local (development machine, debug profile, thresholds default-scaled): `qs-task-domains` 6 Rust tests, `qs-orchestration`/`qs-store`/`qs-port` suites green, `fmt --check` and `clippy --workspace --all-targets -D warnings` clean, **136 unit + 55 integration JS tests** pass (the Orchestration and Migration suites unmodified in intent). Windows Desktop CI (`Desktop (V2)` on `windows-latest`, full thresholds): the first candidate (`d6cd0a6`) was green; after the Human Gate HOLD repairs (clarifications 2 and 3) the exact accepted head `601b4cf` is **green**: [run 37078651808 (attempt 2)](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37078651808). Attempt 1 was cancelled by the account owner mid-run (not a failure); the preceding `a1e354f` run failed only because the workflow did not install the locked `ajv` dev dependency (fixed in `601b4cf`).
 
 ## 5. Implementation clarifications for the Human Gate
 
@@ -86,4 +86,4 @@ node tools/gen-unicode-data.mjs                     # regenerate the pinned tabl
 
 ## 8. Gate readiness
 
-Implementation complete; ADR 0004 §13 is implemented as automated tests that pass locally and run in the Windows CI workflow. The milestone **awaits the Human Gate**. Answer Explanation, Focused Practice and the final UI integration are **not started** and need their own authorization.
+Implementation complete; ADR 0004 §13 is implemented as automated tests that pass locally and run in the Windows CI workflow. The milestone is **ACCEPTED (Human Gate PASS)**. M-T1–M-T4 (and M1-M7, D1-D4) that were not actually performed remain **open, not PASS, not waived**; the real-IME / long-text UI / accessibility / WebView items are taken up by the Objective Answer Explanation + Focused Practice milestone, which has its own record.
