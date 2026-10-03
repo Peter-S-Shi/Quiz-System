@@ -44,7 +44,7 @@
 
 ## 4. 证据
 
-本地（开发机）：**183 个单元 + 62 个集成 JS 测试**通过（含既有 Migration / Orchestration / Task-Domain 套件），DOM 自检 **69/69**、真实 store 应用自检 **21/21** 在 headless Edge 中通过，`cargo fmt --check` 与 `cargo clippy --workspace --all-targets -D warnings` 干净（Rust 代码未改动）。本里程碑候选版的 Windows Desktop CI 运行在完成后记录（待运行）。
+本地（开发机）：**183 个单元 + 62 个集成 JS 测试**通过（含既有 Migration / Orchestration / Task-Domain 套件），DOM 自检 **69/69**、真实 store 应用自检 **21/21** 在 headless Edge 中通过，`cargo fmt --check` 与 `cargo clippy --workspace --all-targets -D warnings` 干净（Rust 代码未改动）。本里程碑候选版的 Windows Desktop CI （head `b318938`）为**绿色**：[run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209)。
 
 | 契约 | 自动化证据 |
 |---|---|

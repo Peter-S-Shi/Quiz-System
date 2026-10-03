@@ -44,7 +44,7 @@
 
 ## 4. Evidence
 
-Local (development machine): **183 unit + 62 integration JS tests** pass (existing Migration / Orchestration / Task-Domain suites included), the DOM self-test **69/69** and the real-store app self-test **21/21** pass in headless Edge, `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` are clean (Rust code is unchanged). The Windows Desktop CI run for the milestone candidate is recorded after it completes (pending).
+Local (development machine): **183 unit + 62 integration JS tests** pass (existing Migration / Orchestration / Task-Domain suites included), the DOM self-test **69/69** and the real-store app self-test **21/21** pass in headless Edge, `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` are clean (Rust code is unchanged). The Windows Desktop CI run for the milestone candidate (head `b318938`) is **green**: [run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209).
 
 | Contract | Automated evidence |
 |---|---|
