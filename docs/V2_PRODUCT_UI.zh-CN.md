@@ -55,7 +55,7 @@
 
 ## 4. 证据
 
-本地（开发机）：**210 个单元 + 92 个集成 JS 测试**；在 headless Edge 中、真实 Rust store 之上的浏览器自检 —— **Focused Practice DOM 84/84**、**学习会话回归 23/23**、**最终产品 UI 140/140**；以及同一个产品**在真实打包的 `quiz-studio.exe` 内（真实 WebView2、CSP 与 Tauri IPC）19/19**（仅开发机：托管 CI 机器上的 WebView2 拒绝开放调试端口——环境变量和注册表策略都不起作用，命令行里没有该参数——所以该 CI 步骤记为**未运行（NOT RUN）**，绝不算通过；CI 仍会启动并烟测打包应用），外加打包应用烟测（`webview.pinned_comparison`、单实例、崩溃恢复）；`cargo fmt --check` 与 `cargo clippy --workspace --all-targets -D warnings` 干净；Rust 的 `media.read` / `media.put` 测试。本里程碑候选版的 Windows Desktop CI 运行在完成后记录（待运行）。
+本地（开发机）：**210 个单元 + 92 个集成 JS 测试**；在 headless Edge 中、真实 Rust store 之上的浏览器自检 —— **Focused Practice DOM 84/84**、**学习会话回归 23/23**、**最终产品 UI 140/140**；以及同一个产品**在真实打包的 `quiz-studio.exe` 内（真实 WebView2、CSP 与 Tauri IPC）19/19**（仅开发机：托管 CI 机器上的 WebView2 拒绝开放调试端口——环境变量和注册表策略都不起作用，命令行里没有该参数——所以该 CI 步骤记为**未运行（NOT RUN）**，绝不算通过；CI 仍会启动并烟测打包应用），外加打包应用烟测（`webview.pinned_comparison`、单实例、崩溃恢复）；`cargo fmt --check` 与 `cargo clippy --workspace --all-targets -D warnings` 干净；Rust 的 `media.read` / `media.put` 测试。本候选版的 Windows Desktop CI（CI-L2）：**全绿**，[run 37131774633](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37131774633)，head `837b07b`。此前几次失败只出在测试基础设施（产品自检里的时序竞争；托管机 WebView2 拒绝开放调试端口），均未改动产品代码即修复。托管机上“真实打包应用内的产品检查”记为**未运行（NOT RUN）**（开发机上 19/19）；CI 仍会启动并烟测打包应用。
 
 | 契约 | 自动化证据 |
 |---|---|
