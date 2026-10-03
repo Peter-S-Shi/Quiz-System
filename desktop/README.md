@@ -77,4 +77,6 @@ quiz-studio.exe --identity                 # prints the permanent identifier and
 
 `core/orchestration` (`qs-orchestration`, store schema 3) and the pure JS/TS domain in `ui/web/src/orchestration` implement ADR 0003; see [`docs/V2_ORCHESTRATION.md`](../docs/V2_ORCHESTRATION.md). Suites: `cargo test -p qs-orchestration`, `node --test "ui/tests/*.spec.mjs"` (pure) and `node --test "ui/tests/integration/*.spec.mjs"` (the JS domain against the real Rust store through `qs-scenario port-serve`; `QS_ORCH_KILLS`, `QS_ORCH_SEQUENCES`).
 
+`ui/web/src/{objective,translation,practice}` and `ui/selftest` implement Objective Answer Explanation + Focused Practice ([`docs/V2_PRACTICE.md`](../docs/V2_PRACTICE.md)); suites: the same `node --test` globs plus `node ui/selftest/practice-selftest.mjs` and `node ui/selftest/app-selftest.mjs` (headless Edge).
+
 `core/task_domains` (`qs-task-domains`, store schema 4) and the pure JS domain in `ui/web/src/task-domains` implement ADR 0004 (Objective / Translation / Typing finalization, the Typing evidence and the project-controlled `typing-compare/1`); see [`docs/V2_TASK_DOMAINS.md`](../docs/V2_TASK_DOMAINS.md). Suites: `cargo test -p qs-task-domains`, the same two `node --test` globs; `node ui/tools/gen-unicode-data.mjs` regenerates the pinned Unicode tables (inputs under `ui/tools/ucd-cache/`, not committed).

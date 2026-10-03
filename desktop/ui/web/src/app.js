@@ -4,6 +4,7 @@
 import { createStorePort, tauriTransport, StorePortError } from './store-port.js';
 import { createPracticeRuntime } from './practice/runtime.js';
 import { renderLauncher } from './practice/launcher.js';
+import { runWebviewSelfCheck } from './practice/webview-selfcheck.js';
 
 const tauri = globalThis.__TAURI__;
 const invoke = (name, args = {}) => tauri.core.invoke(name, args);
@@ -364,7 +365,7 @@ async function boot() {
   await writeSetting('app.launchCount', launches + 1);
   setHealth(info.startup.healthy, info.startup.healthy ? 'Store healthy' : 'Store needs attention');
   showView('settings');
-  await invoke('ui_ready', { info: { healthy: info.startup.healthy, collections: info.collections.length, launchCount: launches + 1, storeSchema: info.store.userVersion } });
+  await invoke('ui_ready', { info: { healthy: info.startup.healthy, collections: info.collections.length, launchCount: launches + 1, storeSchema: info.store.userVersion, selfCheck: runWebviewSelfCheck() } });
 }
 
 boot().catch((e) => {

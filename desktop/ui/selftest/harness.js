@@ -49,6 +49,12 @@ window.harness = {
     const engine = ObjectiveSession.start({ paper, sessionId: ids(), evidenceId: ids(), startedAt: T(), feedbackTiming, intent, rng: () => 0.5 });
     return mount('objective', engine);
   },
+  /** A session that cannot render (a corrupt recovery state): mounting must fail cleanly. */
+  broken() {
+    const engine = ObjectiveSession.start({ paper: paperWithExplanations(), sessionId: ids(), evidenceId: ids(), startedAt: T(), feedbackTiming: 'instant', intent: 'practice' });
+    engine.view = () => { throw new Error('boom'); };
+    return mount('objective', engine);
+  },
   translation() {
     const document = { id: 'doc-1', title: 'Synthetic document', sourceLanguage: 'en', targetLanguage: 'zh', items: [
       { id: 'i1', sourceText: 'The environment matters.', referenceTranslation: '环境很重要。' }, { id: 'i2', sourceText: 'Learning is a habit.' }] };

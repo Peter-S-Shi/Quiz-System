@@ -88,7 +88,13 @@ export function mountTyping({ session, ctx, host }) {
   const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(() => follow(true)) : null;
   ro?.observe(passage);
 
+  let finishing = false;
   async function finish() {
+    if (finishing) return;
+    finishing = true;
+    try { await finishNow(); } finally { finishing = false; }
+  }
+  async function finishNow() {
     const v = session.view();
     if (v.progress.typedGraphemes < v.progress.referenceGraphemes) {
       const c = await ctx.choose({ title: 'Finish before the end?', body: `You have typed ${v.progress.typedGraphemes} of ${v.progress.referenceGraphemes} characters. The rest will count as missed.`, actions: [{ value: 'no', label: 'Keep typing' }, { value: 'yes', label: 'Finish', kind: 'primary' }] });

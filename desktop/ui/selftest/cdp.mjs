@@ -24,8 +24,12 @@ export function findBrowser() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export async function launch({ width = 1100, height = 800 } = {}) {
-  const { server, port } = await serve(0);
+export async function launch({ width = 1100, height = 800, store = null } = {}) {
+  // `store`: { port } - a Store Port client (see tests/integration/bridge.mjs) exposed to the page at POST /port
+  const onPort = store ? async (command, args) => {
+    try { return { ok: true, result: await store.port.call(command, args) }; } catch (e) { return { ok: false, error: { code: e.code ?? 'TRANSPORT', message: String(e.message) } }; }
+  } : undefined;
+  const { server, port } = await serve(0, { onPort });
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'qs-selftest-'));
   const exe = findBrowser();
   const child = spawn(exe, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--disable-extensions', '--disable-gpu', `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' });
@@ -58,7 +62,7 @@ export async function launch({ width = 1100, height = 800 } = {}) {
     events,
     async goto(rel) {
       await send('Page.navigate', { url: `http://127.0.0.1:${port}${rel}` });
-      for (let i = 0; i < 100; i += 1) { await sleep(50); if ((await api.eval('document.readyState')) === 'complete' && (await api.eval('document.title')) === 'harness-ready') return; }
+      for (let i = 0; i < 100; i += 1) { await sleep(50); if ((await api.eval('document.readyState')) === 'complete' && String(await api.eval('document.title')).endsWith('-ready')) return; }
       throw new Error('page did not become ready');
     },
     /** Evaluate in the page (top-level await allowed); returns the JSON-serializable value. */

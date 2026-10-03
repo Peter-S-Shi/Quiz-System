@@ -95,6 +95,12 @@ jobs:
           cargo build -p qs-scenarios --bin qs-scenario
           node --test "ui/tests/integration/*.spec.mjs"
 
+      - name: Focused Practice DOM self-test (real Chromium engine via Microsoft Edge headless; trusted CDP input - leakage, keyboard, focus, a11y contract, long-text following, committed-text/IME-composition path, resize, resume)
+        run: node ui/selftest/practice-selftest.mjs
+
+      - name: Focused Practice over the real store (launcher -> runtime -> surface -> SessionFinalizer -> SQLite via qs-scenario port-serve, in headless Edge)
+        run: node ui/selftest/app-selftest.mjs
+
       - name: Install Tauri CLI
         run: npm install --global @tauri-apps/cli@2.12.1
 

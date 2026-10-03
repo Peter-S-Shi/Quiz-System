@@ -11,7 +11,8 @@ export const QUESTION_TYPES = Object.freeze(['single', 'multiple', 'blank', 'tru
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const nonEmpty = (v) => typeof v === 'string' && v.trim().length > 0;
-export const makeId = () => globalThis.crypto.randomUUID();
+import { newId as makeId } from '../ids.js';
+export { makeId };
 
 /** The explanation of an authored question: a string with visible content, kept verbatim; anything else is "none". */
 export function normalizeExplanation(value) {

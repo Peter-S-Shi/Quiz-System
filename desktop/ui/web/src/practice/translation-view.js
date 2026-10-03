@@ -80,7 +80,13 @@ export function mountTranslation({ session, ctx, host }) {
     else if (focus === 'reveal') focusEl(root.querySelector('.reference-text') ?? root.querySelector('#qhead'));
   }
 
+  let finishing = false;
   async function finish() {
+    if (finishing) return;
+    finishing = true;
+    try { await finishNow(); } finally { finishing = false; }
+  }
+  async function finishNow() {
     const v = session.view();
     const empty = v.total - v.progress.answered;
     if (empty) {

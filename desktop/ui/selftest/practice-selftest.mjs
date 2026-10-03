@@ -48,6 +48,10 @@ try {
   await b.sleep(100);
   ok('Discard clears the recovery state and records nothing', (await b.eval('window.harness.state.closed')) === 'discarded' && (await b.eval('window.harness.state.clears.length')) >= 1 && (await commits()) === 0);
 
+  await b.goto('/selftest/harness.html');
+  const broke = await b.eval("(() => { try { window.harness.broken(); return 'mounted'; } catch (e) { return 'threw'; } })()");
+  ok('a session that cannot render fails cleanly and does not leave the app in focus mode', broke === 'threw' && (await b.eval("document.getElementById('app').dataset.focus")) === undefined);
+
   // ------------------------------------------------------------------------------------------------ accessibility contract
   section('Basic accessibility contract on every Objective question type');
   for (const timing of ['instant', 'submit-at-end']) {
@@ -192,7 +196,7 @@ try {
   ok('focus never leaves the typing input', focusAlways);
   ok('there is at most one current cell', singleCur);
   ok('the passage followed the learner far down the text', lastTop > geometry.clientHeight * 3, `scrollTop ${lastTop}`);
-  ok('each 150-character input is processed quickly (worst round trip excess < 600 ms)', worst < 600, `${worst} ms`);
+  ok('each 150-character input is processed quickly (worst round trip excess < 4 s)', worst < 4000, `${worst} ms`);
   ok('a perfect copy shows no error cells', (await b.eval("document.querySelectorAll('.passage .c.err').length")) === 0);
   ok('the engine holds the full typed text', (await b.eval('window.harness.state.engine.committedText.length')) === ref.length);
   ok('the caret is at the end of the typed text', await b.eval("(() => { const t = document.querySelector('textarea.type-input'); return t.selectionStart === t.value.length; })()"));

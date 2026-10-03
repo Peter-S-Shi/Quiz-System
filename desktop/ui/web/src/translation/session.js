@@ -8,6 +8,7 @@
 // extended-grapheme boundaries of the pinned Unicode tables, so a selection can never split a character.
 import { withSessionFacts } from '../task-domains/adapters.js';
 import { graphemeBoundaries } from '../task-domains/unicode/graphemes.js';
+import { newId } from '../ids.js';
 
 export const ANNOTATION_KINDS = Object.freeze(['unknown', 'uncertain', 'should_know']);
 const INTENTS = ['practice', 'test'];
@@ -24,7 +25,7 @@ const fail = (code, message) => { throw new TranslationSessionError(code, messag
 const clone = (v) => structuredClone(v);
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const nonEmpty = (v) => typeof v === 'string' && v.trim().length > 0;
-const defaultIds = () => globalThis.crypto.randomUUID();
+const defaultIds = newId;
 
 /** Only the provenance fields the public contract knows are carried (V1's normalizeProvenance). */
 function cleanProvenance(p) {

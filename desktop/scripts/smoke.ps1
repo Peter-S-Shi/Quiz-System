@@ -44,6 +44,9 @@ try {
   Check "launch.ui_loaded" ($null -ne $b1 -and $b1.uiLoaded -eq $true) ""
   Check "launch.healthy" ($null -ne $b1 -and $b1.info.healthy -eq $true) ""
   Check "launch.first_count" ($null -ne $b1 -and $b1.info.launchCount -eq 1) ""
+  # the pinned typing-compare/1 semantics, executed INSIDE the real WebView (Focused Practice milestone): literal expectations, host-independent
+  Check "webview.pinned_comparison" ($null -ne $b1 -and $b1.info.selfCheck.ok -eq $true) ("cases=" + $b1.info.selfCheck.cases + " failed=" + ($b1.info.selfCheck.failed -join ","))
+  Check "webview.engine_reported" ($null -ne $b1 -and "$($b1.info.selfCheck.host.userAgent)" -match "Edg/") ("" + $b1.info.selfCheck.host.userAgent)
   Check "data.db_in_localappdata" (Test-Path (Join-Path $root "data\quiz-studio.db")) $root
 
   # 2. single instance: a second launch must exit quickly and leave the first running

@@ -3,6 +3,7 @@
 // domain semantics; it allocates ids at session start (so finalization is idempotent across a crash), reads Content, and
 // hands finished sessions to the finalizer.
 import { putOp } from '../projection.js';
+import { newId } from '../ids.js';
 import { ScheduleStore } from '../orchestration/schedule-store.js';
 import { systemClock } from '../orchestration/dates.js';
 import { SessionFinalizer } from '../task-domains/finalizer.js';
@@ -12,7 +13,6 @@ import { ObjectiveSession } from '../objective/session.js';
 import { TranslationSession } from '../translation/session.js';
 import { validateQuestion, normalizeQuestion } from '../objective/questions.js';
 
-const newId = () => globalThis.crypto.randomUUID();
 const nowIso = () => new Date().toISOString();
 
 export async function createPracticeRuntime(port, { now = nowIso, ids = newId } = {}) {

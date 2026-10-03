@@ -5,6 +5,7 @@
 // the exit/resume semantics, the live region and the commit/recovery plumbing. It never decides what is revealed -
 // that is the domain engines' job (the views render only what `engine.view()` returns).
 import { focusEl, h, uid } from './dom.js';
+import { newId } from '../ids.js';
 import { mountObjective } from './objective-view.js';
 import { mountTranslation } from './translation-view.js';
 import { mountTyping } from './typing-view.js';
@@ -17,9 +18,9 @@ const DOMAIN_LABEL = { objective: 'Objective', translation: 'Translation', typin
  * @param {'objective'|'translation'|'typing'} args.domain
  * @param {object} args.engine the domain session engine (already started or restored)
  * @param {object} args.services `{ save(state), commit({payload, selection?, scheduleRef?}), clear(sessionId), now(), newId?, startRetry?(kind, args) }`
- * @param {(outcome: 'left'|'discarded'|'done') => void} args.onClose
+ * @param {(outcome: 'left'|'discarded'|'done'|'retry') => void} args.onClose
  */
-export function mountPractice({ root, domain, engine, services, onClose, material }) {
+export function mountPractice({ root, domain, engine, services, onClose }) {
   const app = document.getElementById('app');
   const previousFocus = document.activeElement;
   if (app) app.dataset.focus = 'on';
@@ -45,7 +46,7 @@ export function mountPractice({ root, domain, engine, services, onClose, materia
 
   const ctx = {
     now: () => services.now(),
-    newId: () => services.newId?.() ?? globalThis.crypto.randomUUID(),
+    newId: () => services.newId?.() ?? newId(),
     announce(msg) {
       live.textContent = '';
       requestAnimationFrame(() => { live.textContent = msg; });
@@ -94,9 +95,7 @@ export function mountPractice({ root, domain, engine, services, onClose, materia
     },
     choose,
     requestExit,
-    startRetry: services.startRetry ? (kind, args) => { close('done'); return services.startRetry(kind, args); } : null,
-    focusTitle: () => focusEl(titleEl),
-    material,
+    startRetry: services.startRetry ? (kind, args) => { close('retry'); return services.startRetry(kind, args); } : null,
   };
 
   /** A modal choice. Resolves with the chosen value, or 'cancel' for Escape. */
@@ -152,6 +151,15 @@ export function mountPractice({ root, domain, engine, services, onClose, materia
 
   const mount = { objective: mountObjective, translation: mountTranslation, typing: mountTyping }[domain];
   ctx.setHeader({ title: '', tag: DOMAIN_LABEL[domain] });
-  view = mount({ session: engine, ctx, host: body, material });
+  try {
+    view = mount({ session: engine, ctx, host: body });
+  } catch (e) {
+    // a session that cannot render (e.g. a corrupt recovery state) must not leave the app stuck in focus mode
+    closed = true;
+    document.removeEventListener('visibilitychange', onHide);
+    if (app) delete app.dataset.focus;
+    root.replaceChildren();
+    throw e;
+  }
   return { close: () => close('left'), el: section, requestExit };
 }

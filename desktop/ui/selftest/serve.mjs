@@ -8,8 +8,18 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json' };
 
-export function serve(port = 0) {
-  const server = http.createServer((req, res) => {
+/** @param {number} port @param {{onPort?: (command: string, args: object) => Promise<object>}} [opts] POST /port forwards a Store Port call (self-test only) */
+export function serve(port = 0, { onPort } = {}) {
+  const server = http.createServer(async (req, res) => {
+    if (req.method === 'POST' && req.url === '/port' && onPort) {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      const { command, args } = JSON.parse(body);
+      const out = await onPort(command, args);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify(out));
+      return;
+    }
     const rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     const file = path.resolve(root, `.${rel}`);
     if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); res.end('not found'); return; }

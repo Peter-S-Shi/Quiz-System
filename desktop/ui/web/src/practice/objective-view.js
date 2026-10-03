@@ -108,7 +108,13 @@ export function mountObjective({ session, ctx, host }) {
     render({ focus: 'feedback' });
   }
 
+  let finishing = false;
   async function finish() {
+    if (finishing) return;
+    finishing = true;
+    try { await finishNow(); } finally { finishing = false; }
+  }
+  async function finishNow() {
     const v = session.view();
     const unanswered = v.total - v.progress.answered;
     if (v.feedbackTiming === 'submit-at-end') {

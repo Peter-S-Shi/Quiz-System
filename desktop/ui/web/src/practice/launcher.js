@@ -33,7 +33,7 @@ export async function renderLauncher(main, rt) {
     return mountPractice({
       root: main, domain: started.domain, engine: started.engine,
       services: { ...rt.services, startRetry },
-      onClose: () => renderLauncher(main, rt),
+      onClose: (outcome) => { if (outcome !== 'retry') renderLauncher(main, rt).then(() => main.focus({ preventScroll: true })); },
     });
   };
 
@@ -49,7 +49,7 @@ export async function renderLauncher(main, rt) {
       sections.push(h('section', { class: 'card' }, h('h2', {}, 'Unfinished'),
         h('ul', { class: 'plain' }, resumable.map((s) => h('li', { class: 'row' },
           h('span', {}, `${s.domain === 'objective' ? 'Objective' : s.domain === 'translation' ? 'Translation' : 'Typing'}: ${s.material?.title || s.material?.id || 'session'} `, h('span', { class: 'muted' }, `(started ${s.session?.startedAt ?? ''})`)),
-          h('button', { class: 'btn primary', type: 'button', onclick: async () => { try { run(rt.restore(s)); } catch (e) { say.textContent = `This session cannot be resumed: ${e.message}`; } } }, 'Resume'),
+          h('button', { class: 'btn primary', type: 'button', onclick: async () => { try { run(rt.restore(s)); } catch (e) { say.textContent = `This session cannot be resumed (${e.message}). You can discard it.`; } } }, 'Resume'),
           h('button', { class: 'btn', type: 'button', onclick: async () => { await rt.discard(s.session.id); say.textContent = 'Session discarded; nothing was recorded.'; load(); } }, 'Discard'))))));
     }
 
