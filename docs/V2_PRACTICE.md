@@ -1,6 +1,6 @@
 # V2 Objective Answer Explanation + Focused Practice milestone
 
-**Status:** implementation complete, **awaiting Human Gate**
+**Status:** **ACCEPTED (Human Gate PASS)** after one HOLD repair; M-T1a and M-T1c PASS, the rest of the manual items stay open
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§3.4–§3.5, §4.7, §10, §11, §12, §13, §22–§23), `docs/V2_UI_ARCHITECTURE_FREEZE.md`, the approved UI prototype / design inputs, ADR 0001–0004 (ACCEPTED), and the accepted Desktop Foundation, V1 Migration, Learning Orchestration + Calendar and Task-Domain Integration milestones. No Evidence or Scheduling semantics were reopened; no new UI architecture was introduced.
 
 ## 1. Scope
@@ -66,12 +66,14 @@ Local (development machine): **193 unit + 63 integration JS tests** pass (existi
 | Media-bearing papers: not startable, refused by the engine on start / retry / restore, no Evidence, metadata intact | `objective-media-failclosed.spec.mjs`, `integration/practice-runtime.spec.mjs`, `app-selftest.mjs` |
 | Existing Migration / Orchestration / Task-Domain regressions | the unchanged suites in the same workflow |
 
-## 5. Open — manual, not PASS, not waived
+## 5. Open — manual, not PASS, not waived (post-gate)
+
+**M-T1a and M-T1c: PASS** (Product Owner, 2026-10-03). Still open, not PASS, not waived: M-T1b/d/e, M-T2a–d, M-T3a–c, M1–M7, D1–D4.
 
 `manual-qa/v2-focused-practice.md` (+ `.zh-CN.md`): M-T1a–e real Microsoft IME / third-party IME / dead keys / paste-drop in the real WebView2; M-T2a–d human long-text reading, resize / DPI, Test intent, interrupt-resume; M-T3a–c keyboard-only, Narrator, high-contrast / 200 %. Plus M1–M7 (Migration) and D1–D4 (Desktop Foundation), unchanged.
 
-Other open items: **Objective image / audio rendering (required carry-forward of the Final Product UI Integration, not waived)**; a real Library / Today entry point; Typing text authoring; per-IME behavior beyond what the manual checklist records.
+Other open items, carried into the Final Product UI Integration milestone (authorized): **Objective image / audio rendering (required, not waived)**; a real Library / Today entry point; Typing text authoring; per-IME behavior beyond what the manual checklist records.
 
-## 6. Gate readiness
+## 6. Gate result
 
-Implementation complete; the automated contract passes locally and runs in the Windows CI workflow. The final Human Gate Exit evidence additionally required **M-T1a** and **M-T1c**: both **PASS** (Product Owner, 2026-10-03, local release build of `77b259f`, not the CI-packaged installer; see `manual-qa/v2-focused-practice.md`). The milestone **awaits the Human Gate**. The final product UI integration is **not started** and needs its own authorization.
+The Human Gate returned PASS — ACCEPTED (after one HOLD repair: required exit actions and fail-closed media). The Final Product UI Integration milestone is authorized and is where the media and Typing-authoring carry-forwards land; the `MEDIA_UNSUPPORTED` fail-closed stays until real presentation is proven.

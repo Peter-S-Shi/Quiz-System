@@ -2,7 +2,7 @@
 
 针对「Objective Answer Explanation + Focused Practice」里程碑，自动化套件**无法证明**的部分：真实 WebView2 中的真实系统输入法、真人阅读长文本界面，以及辅助技术。其余全部已自动化（`docs/V2_PRACTICE.zh-CN.md` 的“证据”一节）：DOM 自检用可信输入在真实 Chromium 引擎浏览器中驱动真实界面，打包应用烟测则在真实 WebView2 内运行固定的比较逻辑。
 
-**以下条目全部 OPEN，没有任何一项 PASS，也没有任何一项被豁免。** 实际执行时把结果写进最右列；没有执行的条目保持“未执行”。
+**Human Gate 验收之后的状态：M-T1a 与 M-T1c 通过；下表其余条目仍然 OPEN —— 未 PASS，也未豁免。** 实际执行时把结果写进最右列；没有执行的条目保持“未执行”。
 
 在已安装的应用（`quiz-studio.exe`，Windows 11，WebView2 Evergreen）上运行。Library → *Start a practice*。用 *Add a typing text* 添加一段 ≥ 3000 字符的文本（任意合成文字，夹杂几句中日韩文字），然后点 *Practice*。
 

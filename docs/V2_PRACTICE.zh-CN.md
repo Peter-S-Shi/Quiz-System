@@ -1,6 +1,6 @@
 # V2 Objective Answer Explanation + Focused Practice 里程碑
 
-**状态：** 实现完成，**等待 Human Gate**
+**状态：** **已验收（Human Gate PASS）**（经一次 HOLD 修复）；M-T1a、M-T1c 通过，其余手动项保持 open
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§3.4–§3.5、§4.7、§10、§11、§12、§13、§22–§23）、`docs/V2_UI_ARCHITECTURE_FREEZE.md`、已批准的 UI 原型 / 设计输入、ADR 0001–0004（均已 ACCEPTED），以及已验收的 Desktop Foundation、V1 Migration、Learning Orchestration + Calendar、Task-Domain Integration 里程碑。没有重新打开任何 Evidence 或 Scheduling 语义，也没有引入新的 UI 架构。
 
 ## 1. 范围
@@ -66,12 +66,14 @@
 | 含媒体的试卷：不可开始，引擎在开始 / 重做 / 恢复时拒绝，无 Evidence，元数据不变 | `objective-media-failclosed.spec.mjs`、`integration/practice-runtime.spec.mjs`、`app-selftest.mjs` |
 | 既有 Migration / Orchestration / Task-Domain 回归 | 同一 workflow 中未改动的套件 |
 
-## 5. 未完成 —— 手动项，未 PASS，未豁免
+## 5. 未完成 —— 手动项，未 PASS，未豁免（gate 之后）
+
+**M-T1a 与 M-T1c：通过**（Product Owner，2026-10-03）。仍为 open、未 PASS、未豁免：M-T1b/d/e、M-T2a–d、M-T3a–c、M1–M7、D1–D4。
 
 `manual-qa/v2-focused-practice.zh-CN.md`（及英文版）：M-T1a–e 真实 WebView2 中的微软输入法 / 第三方输入法 / 死键 / 粘贴拖放；M-T2a–d 真人阅读长文本、缩放 / DPI、Test 意图、中断恢复；M-T3a–c 纯键盘、Narrator、高对比度 / 200 %。另有 M1–M7（Migration）与 D1–D4（Desktop Foundation），保持不变。
 
 其它未决项：**Objective 图片 / 音频渲染（最终产品 UI 集成的必须 carry-forward 项，未豁免）**；真正的 Library / Today 入口；Typing 文本编辑；手动清单记录范围之外的各输入法行为。
 
-## 6. Gate 就绪情况
+## 6. Gate 结果
 
-实现完成；自动化契约本地通过，并在 Windows CI workflow 中运行。最终 Human Gate Exit 证据还要求 **M-T1a** 与 **M-T1c**：均**通过**（Product Owner，2026-10-03，`77b259f` 的本地 release 构建，不是 CI 打包安装包；见 `manual-qa/v2-focused-practice.zh-CN.md`）。里程碑**等待 Human Gate**。最终产品 UI 集成**尚未开始**，需要单独授权。
+Human Gate 结论为 PASS — ACCEPTED（经一次 HOLD 修复：必须成功的退出动作与 fail-closed 媒体）。Final Product UI Integration 里程碑已授权，媒体与 Typing 文本编辑的 carry-forward 在该里程碑完成；在真实呈现得到证明之前，`MEDIA_UNSUPPORTED` fail-closed 保持不变。

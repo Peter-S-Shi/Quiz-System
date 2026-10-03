@@ -2,7 +2,7 @@
 
 What the automated suites **cannot** prove for the Objective Answer Explanation + Focused Practice milestone: real OS input methods in the real WebView2, a human reading the long-text surface, and assistive technology. Everything else is automated (`docs/V2_PRACTICE.md`, section "Evidence"): the DOM self-test drives the real surface in a real Chromium-engine browser with trusted input, and the packaged-app smoke runs the pinned comparison inside the real WebView2.
 
-**These items are OPEN. None is PASS, none is waived.** Record the actual result in the right-hand column when it is performed; an item that was not performed stays "not performed".
+**Status after the Human Gate (ACCEPTED): M-T1a and M-T1c are PASS; every other item below is still OPEN — not PASS, not waived.** Record the actual result in the right-hand column when it is performed; an item that was not performed stays "not performed".
 
 Run on the installed app (`quiz-studio.exe`, Windows 11, WebView2 Evergreen). Library → *Start a practice*. Add a typing text of ≥ 3 000 characters (any synthetic prose, include a few CJK sentences) with *Add a typing text*, then *Practice*.
 
