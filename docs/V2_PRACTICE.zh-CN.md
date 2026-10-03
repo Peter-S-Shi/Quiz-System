@@ -74,4 +74,4 @@
 
 ## 6. Gate 就绪情况
 
-实现完成；自动化契约本地通过，并在 Windows CI workflow 中运行。最终 Human Gate Exit 证据还需要 Product Owner 在最终打包候选版上实际执行 **M-T1a**（微软拼音 / 日文 / 韩文输入法）与 **M-T1c**（至少一种第三方输入法，如搜狗）并记录真实结果。里程碑**等待 Human Gate**。最终产品 UI 集成**尚未开始**，需要单独授权。
+实现完成；自动化契约本地通过，并在 Windows CI workflow 中运行。最终 Human Gate Exit 证据还要求 **M-T1a** 与 **M-T1c**：均**通过**（Product Owner，2026-10-03，`77b259f` 的本地 release 构建，不是 CI 打包安装包；见 `manual-qa/v2-focused-practice.zh-CN.md`）。里程碑**等待 Human Gate**。最终产品 UI 集成**尚未开始**，需要单独授权。

@@ -74,4 +74,4 @@ Other open items: **Objective image / audio rendering (required carry-forward of
 
 ## 6. Gate readiness
 
-Implementation complete; the automated contract passes locally and runs in the Windows CI workflow. The final Human Gate Exit evidence additionally needs the Product Owner to run **M-T1a** (Microsoft Pinyin / Japanese / Korean IME) and **M-T1c** (at least one third-party IME, e.g. Sogou) on the final packaged candidate and record the real results. The milestone **awaits the Human Gate**. The final product UI integration is **not started** and needs its own authorization.
+Implementation complete; the automated contract passes locally and runs in the Windows CI workflow. The final Human Gate Exit evidence additionally required **M-T1a** and **M-T1c**: both **PASS** (Product Owner, 2026-10-03, local release build of `77b259f`, not the CI-packaged installer; see `manual-qa/v2-focused-practice.md`). The milestone **awaits the Human Gate**. The final product UI integration is **not started** and needs its own authorization.
