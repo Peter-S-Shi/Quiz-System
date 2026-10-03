@@ -55,7 +55,7 @@ Static tests (`product-architecture.spec.mjs`) pin: no remote URL / CDN / networ
 
 ## 4. Evidence
 
-Local (development machine): **210 unit + 92 integration JS tests**; browser self-tests in headless Edge over the real Rust store — **Focused Practice DOM 84/84**, **learning-session regression 23/23**, **final product UI 140/140**; and the same product **inside the real packaged `quiz-studio.exe` (real WebView2, CSP and Tauri IPC) 19/19**, plus the packaged-app smoke (`webview.pinned_comparison`, single instance, crash recovery); `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` clean; Rust `media.read` / `media.put` tests. The Windows Desktop CI run for the milestone candidate is recorded after it completes (pending).
+Local (development machine): **210 unit + 92 integration JS tests**; browser self-tests in headless Edge over the real Rust store — **Focused Practice DOM 84/84**, **learning-session regression 23/23**, **final product UI 140/140**; and the same product **inside the real packaged `quiz-studio.exe` (real WebView2, CSP and Tauri IPC) 19/19** (developer machine only: the hosted CI runner WebView2 refused a debugging port — its command line carried no flag even via the environment variable and the registry policy — so that CI step reports **NOT RUN**, never PASS; CI still launches and smoke-tests the packaged app), plus the packaged-app smoke (`webview.pinned_comparison`, single instance, crash recovery); `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` clean; Rust `media.read` / `media.put` tests. The Windows Desktop CI run for the milestone candidate is recorded after it completes (pending).
 
 | Contract | Automated evidence |
 |---|---|

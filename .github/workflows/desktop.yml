@@ -139,7 +139,7 @@ jobs:
           Pop-Location
           Get-FileHash "$env:RUNNER_TEMP/base-setup.exe", "$env:RUNNER_TEMP/upgrade-setup.exe" -Algorithm SHA256 | Format-Table Hash, Path -AutoSize
 
-      - name: Final product UI inside the REAL packaged app (shipped exe, real WebView2 + CSP + Tauri IPC + Rust store; seeded isolated data root; loopback DevTools; not the OS IME)
+      - name: Final product UI inside the REAL packaged app (shipped exe, real WebView2 + CSP + Tauri IPC + Rust store; loopback DevTools; reports NOT RUN when the hosted runner WebView2 refuses a debugging port; not the OS IME)
         run: node ui/selftest/packaged-product-check.mjs target/release/quiz-studio.exe
 
       - name: Installer uses the downloadBootstrapper WebView2 mode (static check)

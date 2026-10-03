@@ -15,7 +15,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * @param {string} args.localAppData an isolated LOCALAPPDATA (the app's data root lives under it)
  * @param {number} [args.debugPort]
  */
-export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Math.floor(Math.random() * 30000), timeoutMs = 180000 }) {
+export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Math.floor(Math.random() * 30000), timeoutMs = process.env.CI ? 60000 : 180000 }) {
   const udf = fs.mkdtempSync(path.join(os.tmpdir(), 'qs-wv2-'));
   const env = { ...process.env, LOCALAPPDATA: localAppData, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${debugPort} --remote-allow-origins=*`, WEBVIEW2_USER_DATA_FOLDER: udf };
   // on a CI runner only: a stray instance from an earlier step would make this launch exit through the single-instance guard
@@ -67,7 +67,7 @@ export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Ma
     const detail = `port ${debugPort}; app exited: ${exited ? JSON.stringify(exited) : 'no (still running)'}; last probe: ${lastError || '(none)'}; active-port file: ${findActivePort(udf) || findActivePort(localAppData) || 'none'}; listeners/webview command lines: ${(net.stdout || net.stderr || '').replace(/\s+/g, ' ').slice(0, 1600)}; boot status: ${bootText}`;
     child.kill();
     dropPolicy();
-    throw new Error(`the packaged app did not expose a DevTools page - ${detail}`);
+    throw Object.assign(new Error(`the packaged app did not expose a DevTools page - ${detail}`), { code: 'DEVTOOLS_UNAVAILABLE' });
   }
   const ws = new WebSocket(page.webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://${usedBase}`));
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
