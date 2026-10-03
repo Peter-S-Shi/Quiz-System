@@ -37,6 +37,14 @@ export function seg({ label, options, value, onchange }) {
   return { el: group, get: () => current, set: (v) => choose(v, false) };
 }
 
+/** A labelled checkbox row (a per-session learner choice). `get()` reads the current value. */
+export function checkRow({ label, hint, checked = false, onchange }) {
+  const input = h('input', { type: 'checkbox', checked });
+  if (onchange) input.addEventListener('change', () => onchange(input.checked));
+  const el = h('label', { class: 'check-row' }, input, h('span', {}, label, hint ? h('span', { class: 'hint small' }, ` ${hint}`) : null));
+  return { el, get: () => input.checked };
+}
+
 /** `YYYY-MM-DD` as a short, locale-aware label (a date, never an instant: the zone must not shift it). */
 export function formatDate(date, opts = { month: 'short', day: 'numeric' }) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? '')) return date ?? '';

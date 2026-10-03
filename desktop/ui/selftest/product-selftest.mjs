@@ -150,7 +150,9 @@ try {
 
   // resume: start, leave with progress saved, and continue from Today
   await clickText('Manual', '.composer');
+  ok('the composer offers Shuffle question order for Objective only, OFF by default', (await b.eval("document.querySelector('.composer .check-row input')?.checked")) === false && (await b.eval("!document.querySelector('.composer .check-row').closest('[hidden]')")));
   await clickText('Typing', '.composer');
+  ok('the shuffle choice is hidden for Typing', await b.eval("!!document.querySelector('.composer .check-row').closest('[hidden]')"));
   await b.sleep(100);
   await clickText('Start', '.composer');
   ok('manual start opens a Typing session', await waitFor("!!document.querySelector('.practice')"));
@@ -241,13 +243,32 @@ try {
   await b.sleep(200);
   ok('selecting an item shows its detail beside the list (no page jump)', (await txt('.col-c')).includes('Questions') && (await b.eval("document.querySelectorAll('.col-c .qlist li').length")) >= 5);
   ok('the paper detail shows which questions carry an explanation', (await b.eval("document.querySelectorAll('.col-c .qlist .pill').length")) >= 5);
+  await clickStarts('All', '.col-a');
+  await b.sleep(100);
+  ok('every Library row carries a factual state (text + glyph) from the closed set, and the states differ', (await b.eval("[...document.querySelectorAll('#main .row-item .pill.state')].every((p) => ['not-started', 'in-progress', 'practiced'].includes(p.dataset.state) && p.textContent.trim().length > 3 && p.querySelector('[aria-hidden=true]'))")) && (await b.eval("document.querySelectorAll('#main .row-item .pill.state').length")) === 5 && (await b.eval("new Set([...document.querySelectorAll('#main .row-item .pill.state')].map((p) => p.dataset.state)).size")) >= 2);
+  ok('the detail repeats the state with a plain-language note that it is a fact, not a mastery level', /not a mastery level|No attempt recorded|saved session/.test(await txt('.col-c')) && !/mastery:|proficiency/i.test(await txt('.col-c')));
+  ok('a paper offers the per-session Shuffle question order choice, OFF by default', (await b.eval("document.querySelector('.col-c .check-row input[type=checkbox]')?.checked")) === false && /Shuffle question order/.test(await txt('.col-c')));
   await audit('Library');
 
   // edit a paper: title and one explanation
   await b.exec("[...document.querySelectorAll('.row-item')].find((r) => r.textContent.includes('Capital cities')).click();");
   await b.sleep(200);
   await clickText('Edit', '.col-c');
-  ok('Edit opens the paper editor in the detail pane', await waitFor("!!document.querySelector('.editor') && document.querySelectorAll('fieldset[data-question]').length === 5"));
+  ok('Edit opens the paper editor in the MAIN workspace (not the narrow detail column)', await waitFor("!!document.querySelector('#main .editor .q-workspace') && !document.querySelector('.tri')"));
+  ok('the workspace shows ONE active question card and a navigator of all five', (await b.eval("document.querySelectorAll('fieldset[data-question]').length")) === 1 && (await b.eval("document.querySelectorAll('.q-nav .nav-jump').length")) === 5);
+  ok('the navigator shows number, type and a prompt preview', /1\s*Single choice/.test((await txt('.q-nav li')).replace(/\n/g, ' ')) && (await b.eval("document.querySelector('.q-nav .nav-preview').textContent.length")) > 3);
+  const firstQ = await b.eval("document.querySelector('fieldset[data-question]').dataset.question");
+  await b.exec("document.querySelectorAll('.q-nav .nav-jump')[3].click();");
+  ok('clicking the navigator jumps to that question', await waitFor(`document.querySelector('fieldset[data-question]').dataset.question !== ${JSON.stringify(firstQ)}`) && /Question 4 of 5/.test(await txt('.q-stepper')));
+  await click('#q-next');
+  ok('Next moves to question 5; Next is then disabled', await waitFor("document.querySelector('.q-stepper span')?.textContent.includes('5 of 5')") && (await b.eval("document.getElementById('q-next').disabled")));
+  await click('#q-prev'); await click('#q-prev'); await click('#q-prev'); await click('#q-prev');
+  ok('Previous walks back to question 1; Previous is then disabled', await waitFor("document.querySelector('.q-stepper span')?.textContent.includes('1 of 5')") && (await b.eval("document.getElementById('q-prev').disabled")));
+  const orderBefore = await b.eval("[...document.querySelectorAll('.q-nav .nav-jump')].map((x) => x.id).join()");
+  await b.exec("document.querySelector('.q-nav li:first-child .nav-move button:last-child').click();");
+  ok('explicit reorder: Move down swaps the first two questions and the active card follows', await waitFor(`[...document.querySelectorAll('.q-nav .nav-jump')].map((x) => x.id).join() !== ${JSON.stringify(orderBefore)}`) && /Question 2 of 5/.test(await txt('.q-stepper')));
+  await b.exec("document.querySelector('.q-nav li:nth-child(2) .nav-move button:first-child').click();");
+  ok('Move up restores the authored order', await waitFor(`[...document.querySelectorAll('.q-nav .nav-jump')].map((x) => x.id).join() === ${JSON.stringify(orderBefore)}`));
   await audit('the paper editor');
   const titleSel = '.editor .field input[type=text]';
   await setValue(titleSel, 'Capital cities (revised)');
@@ -339,6 +360,8 @@ try {
   ok('a paper whose image cannot be decoded is NOT started and the reason is shown', await waitFor("document.getElementById('toast').textContent.includes('cannot be shown')") && !(await focusOn()) && (await count('recovery_session')) === recoveryBefore);
 
   // delete content: evidence stays
+  await clickStarts('All', '.col-a');
+  await b.sleep(100);
   await b.exec("[...document.querySelectorAll('.row-item')].find((r) => r.textContent.includes('Authoring test')).click();");
   await b.sleep(200);
   await clickText('Delete', '.col-c');
@@ -405,7 +428,8 @@ try {
   await setValue('#hist-search', 'capital');
   await b.exec("document.querySelector('#main .row-item').click();");
   await b.sleep(250);
-  ok('Objective detail: the learner’s answer, the correct answer, and the explanation of that moment', (await txt('.col-c')).includes('Your answer') && (await txt('.col-c')).includes('Correct answer') && (await txt('.col-c')).includes('EXPL-'));
+  ok('Objective detail: the learner’s answer, the correct answer, and the explanation of that moment', /your answer/i.test(await txt('.col-c')) && /correct answer/i.test(await txt('.col-c')) && (await txt('.col-c')).includes('EXPL-'));
+  ok('Objective detail has a score hero (band, text and glyph, not colour alone) and one verdict-marked card per question', (await b.eval("document.querySelectorAll('.col-c .score-hero[data-band] .score-badge .glyph').length")) === 1 && (await b.eval("document.querySelectorAll('.col-c li.rv[data-verdict] .rv-verdict').length")) === 5 && (await b.eval("[...document.querySelectorAll('.col-c .rv-verdict')].every((v) => v.textContent.trim().length > 2)")));
   const obj = (await port.read('learner_response')).map((r) => r.payload).filter((p) => p.material.id === 'paper-capitals');
   const original = [...obj].sort((a, c) => String(c.session.completedAt).localeCompare(String(a.session.completedAt)))[0]; // the newest, which is the row that is selected
   const wrongN = original.responses.filter((r) => r.result?.correct === false).length;
@@ -422,6 +446,7 @@ try {
   await b.exec("document.querySelector('#main .row-item').click();");
   await b.sleep(250);
   ok('Typing detail lists the differences as differences of this copy, not a judgment', (await b.eval("document.querySelectorAll('.col-c .diffs li').length")) >= 1);
+  ok('Typing detail shows how long the attempt took, or says it was not recorded, and never a speed or score', /Time (taken: .+|not recorded)/.test(await txt('.col-c')) && !/wpm|words per minute|accuracy/i.test(await txt('.col-c')));
   await clickText('Try this passage again', '.col-c');
   ok('Try again starts a Typing session with recorded lineage', await waitFor("!!document.querySelector('.practice textarea')"));
   await click('.practice-head button');
@@ -529,6 +554,45 @@ try {
   ok('the V1 migration entry previews through the existing Migration engine result', await waitFor("document.querySelector('.migration')?.textContent.includes('already imported')"));
 
   // ---------------------------------------------------------------------------------------------------- Settings
+  section('Physical sound: the preference gates real practice sounds (Web Audio spy); Off is silent at once');
+  await b.exec("window.__sfx = { n: 0 }; window.AudioContext = class { constructor() { this.state = 'running'; this.currentTime = 0; this.destination = {}; } resume() { return Promise.resolve(); } createGain() { return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect: (x) => x }; } createOscillator() { window.__sfx.n += 1; return { type: '', frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect: (x) => x, start() {}, stop() {} }; } };");
+  const practiceOnce = async () => {
+    await show('library');
+    await clickStarts('Objective', '.col-a');
+    await b.exec("[...document.querySelectorAll('.row-item')].find((r) => r.textContent.includes('Capital cities')).click();");
+    await b.sleep(200);
+    await clickText('Practice', '.col-c');
+    await waitFor("document.getElementById('app').dataset.focus === 'on'");
+    await b.exec("document.querySelector('.practice .choice input').click();");
+    await b.sleep(120);
+  };
+  const leavePractice = async () => {
+    await click('.practice-head button');
+    await b.sleep(100);
+    await clickDialog('Discard session');
+    await b.sleep(100);
+    await clickDialog('Discard');
+    await waitFor("!!document.querySelector('.tri')");
+  };
+  await show('settings');
+  ok('the physical-sound switch starts OFF', (await b.eval("document.getElementById('pref-sound').getAttribute('aria-checked')")) === 'false');
+  await practiceOnce();
+  ok('Sound Off: answering in a real practice session makes no sound', (await b.eval('window.__sfx.n')) === 0);
+  await leavePractice();
+  await show('settings');
+  await b.exec("document.getElementById('pref-sound').click();");
+  await waitFor("document.getElementById('pref-sound').getAttribute('aria-checked') === 'true'");
+  await practiceOnce();
+  ok('Sound On: selecting an answer in a real practice session reaches the audio helper', (await b.eval('window.__sfx.n')) >= 1, String(await b.eval('window.__sfx.n')));
+  await leavePractice();
+  await show('settings');
+  await b.exec("document.getElementById('pref-sound').click();");
+  await waitFor("document.getElementById('pref-sound').getAttribute('aria-checked') === 'false'");
+  const heard = await b.eval('window.__sfx.n');
+  await practiceOnce();
+  ok('turning Sound Off silences practice again immediately', (await b.eval('window.__sfx.n')) === heard);
+  await leavePractice();
+
   section('Settings: V1 preferences persist in the Rust-owned database; language switches every view');
   await show('settings');
   await audit('Settings');

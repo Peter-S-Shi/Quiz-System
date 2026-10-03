@@ -93,8 +93,8 @@ export async function createPracticeRuntime(port, { now = nowIso, ids = newId, s
       return { presentable: new Set(proof.presentable), problems };
     },
 
-    startObjective({ paper, intent, feedbackTiming, questionIds, provenance, presentableMedia, selection, scheduleRef }) {
-      const engine = ObjectiveSession.start({ paper, questionIds, sessionId: ids(), evidenceId: ids(), startedAt: now(), intent, feedbackTiming, provenance, presentableMedia });
+    startObjective({ paper, intent, feedbackTiming, questionIds, provenance, presentableMedia, selection, scheduleRef, shuffleQuestions }) {
+      const engine = ObjectiveSession.start({ paper, questionIds, sessionId: ids(), evidenceId: ids(), startedAt: now(), intent, feedbackTiming, provenance, presentableMedia, shuffleQuestions });
       return { domain: 'objective', engine, launch: launchOf(selection, scheduleRef) };
     },
 

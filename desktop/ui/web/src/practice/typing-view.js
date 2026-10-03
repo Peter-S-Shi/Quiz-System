@@ -9,6 +9,7 @@
 import { bindTypingInput } from '../task-domains/typing/dom-adapter.js';
 import { focusEl, h, sr, uid } from './dom.js';
 import { t as tr } from '../i18n.js';
+import { durationLine } from '../duration.js';
 import { STATUS, followScroll, passageCells, passageStatuses } from './typing-passage.js';
 
 const CLS = { [STATUS.PENDING]: 'c', [STATUS.OK]: 'c ok', [STATUS.ERROR]: 'c err', [STATUS.CURRENT]: 'c cur', [STATUS.TYPED]: 'c typed' };
@@ -104,6 +105,7 @@ export function mountTyping({ session, ctx, host }) {
     clearTimeout(saveTimer);
     const res = await ctx.commit(() => session.finalize({ completedAt: ctx.now() }));
     if (!res.ok) return;
+    ctx.sfx('stamp');
     stage = 'result';
     showResult(res.payload);
   }
@@ -116,6 +118,7 @@ export function mountTyping({ session, ctx, host }) {
     ctx.announce(n ? tr('pr.ty.savedFound', { n }) : tr('pr.ty.savedPerfect'));
     root.replaceChildren(h('div', { class: 'result' },
       h('h2', { tabindex: '-1', id: 'result-head' }, tr('pr.ty.savedTitle')),
+      h('p', { class: 'duration' }, durationLine(p.session)),
       h('p', {}, n ? tr('pr.ty.diffs', { n }) : tr('pr.ty.none')),
       h('p', { class: 'muted small' }, tr('pr.ty.disclaimer')),
       n ? h('ol', { class: 'diffs' }, p.errors.slice(0, 50).map((e) => h('li', {},

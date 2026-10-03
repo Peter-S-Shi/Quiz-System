@@ -2,7 +2,8 @@
 // resumable unfinished session, and a composer for a session of the learner's own choosing. Starting anything goes
 // through the Focused Practice entry; nothing here decides what the learner should do.
 import { defineStrings, getLocale, t } from '../../i18n.js';
-import { domainDot, domainName, emptyState, field, fill, formatDate, formatInstant, guarded, h, intentName, pill, seg } from '../kit.js';
+import '../../practice/strings.js';
+import { checkRow, domainDot, domainName, emptyState, field, fill, formatDate, formatInstant, guarded, h, intentName, pill, seg } from '../kit.js';
 import { confirmDialog } from '../kit.js';
 
 defineStrings({
@@ -132,7 +133,9 @@ export async function renderToday(app, main) {
   const materialField = field(t('today.composer.material'), materialSel);
   const feedbackWrap = h('div', {});
   const feedbackSeg = seg({ label: t('today.composer.feedback'), options: FEEDBACK.map((v) => ({ value: v, label: t(`feedback.${v}`) })), value: state.feedback, onchange: (v) => { state.feedback = v; } });
-  fill(feedbackWrap, h('span', { class: 'lbl' }, t('today.composer.feedback')), feedbackSeg.el);
+  const shuffleRow = checkRow({ label: t('pr.obj.shuffle'), hint: t('pr.obj.shuffleHint') });
+  fill(feedbackWrap, h('span', { class: 'lbl' }, t('today.composer.feedback')), feedbackSeg.el, shuffleRow.el);
+  const shuffleOpt = () => (state.domain === 'objective' && shuffleRow.get() ? { shuffleQuestions: true } : {});
 
   function paint() {
     const mats = materialsOf(state.domain);
@@ -154,8 +157,8 @@ export async function renderToday(app, main) {
   startBtn.addEventListener('click', () => {
     const rec = learning.topRecommendation(data.recommendations, state.domain);
     if (state.selection === 'recommended') {
-      if (rec) go({ domain: state.domain, materialId: rec.target.material.id, intent: state.intent, feedbackTiming: state.feedback, source: 'recommended', recommendation: rec });
-    } else if (state.material) go({ domain: state.domain, materialId: state.material, intent: state.intent, feedbackTiming: state.feedback, source: 'manual' });
+      if (rec) go({ domain: state.domain, materialId: rec.target.material.id, intent: state.intent, feedbackTiming: state.feedback, source: 'recommended', recommendation: rec, ...shuffleOpt() });
+    } else if (state.material) go({ domain: state.domain, materialId: state.material, intent: state.intent, feedbackTiming: state.feedback, source: 'manual', ...shuffleOpt() });
   });
   const selSeg = seg({ label: t('today.composer.selection'), options: [{ value: 'recommended', label: t('today.composer.recommended') }, { value: 'manual', label: t('today.composer.manual') }], value: state.selection, onchange: (v) => { state.selection = v; paint(); } });
   const intentSeg = seg({ label: t('today.composer.intent'), options: ['practice', 'test'].map((v) => ({ value: v, label: intentName(v) })), value: state.intent, onchange: (v) => { state.intent = v; state.feedback = v === 'test' ? 'submit-at-end' : 'instant'; feedbackSeg.set(state.feedback); } });

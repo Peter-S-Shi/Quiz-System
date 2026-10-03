@@ -8,7 +8,7 @@
 // Finalization produces a V1-valid native Learner Response (the question snapshot taken at session start, with the
 // explanation of that moment; V2 session facts in the namespaced extension). It never writes anything itself.
 import { withSessionFacts } from '../task-domains/adapters.js';
-import { DEFAULT_LABELS, gradeQuestion, isAnswerComplete, normalizeQuestion, prepareQuizQuestion, unsupportedMedia, validateQuestion } from './questions.js';
+import { DEFAULT_LABELS, gradeQuestion, isAnswerComplete, normalizeQuestion, prepareQuizQuestion, shuffle, unsupportedMedia, validateQuestion } from './questions.js';
 
 export const FEEDBACK_TIMINGS = Object.freeze(['instant', 'submit-at-end']);
 export const INTENTS = Object.freeze(['practice', 'test']);
@@ -78,7 +78,7 @@ export class ObjectiveSession {
    * @param {string} args.sessionId @param {string} args.evidenceId the Learner Response id, allocated at session start
    * @param {string} args.startedAt @param {'instant'|'submit-at-end'} args.feedbackTiming @param {'practice'|'test'} args.intent
    */
-  static start({ paper, questionIds, sessionId, evidenceId, startedAt, feedbackTiming, intent, provenance = { purpose: 'practice' }, rng = Math.random, presentableMedia = null }) {
+  static start({ paper, questionIds, sessionId, evidenceId, startedAt, feedbackTiming, intent, provenance = { purpose: 'practice' }, rng = Math.random, presentableMedia = null, shuffleQuestions = false }) {
     if (!FEEDBACK_TIMINGS.includes(feedbackTiming)) fail('BAD_INPUT', `feedback timing must be one of ${FEEDBACK_TIMINGS.join(', ')}`);
     if (!INTENTS.includes(intent)) fail('BAD_INPUT', `intent must be one of ${INTENTS.join(', ')}`);
     if (!isObj(paper) || !Array.isArray(paper.questions) || !paper.questions.length) fail('BAD_INPUT', 'a paper with at least one question is required');
@@ -90,7 +90,9 @@ export class ObjectiveSession {
       source = source.filter((q) => questionIds.includes(q.id));
       if (!source.length) fail('BAD_INPUT', 'a retry needs at least one question');
     }
-    const questions = source.map((raw) => {
+    // `shuffleQuestions` is the learner's per-session choice (default OFF = authored order). The order is realized ONCE here
+    // with the session RNG; the snapshot order is the canonical record and is never re-shuffled (resume, finalize).
+    let questions = source.map((raw) => {
       const q = normalizeQuestion(raw);
       const errs = validateQuestion(q);
       if (errs.length) fail('BAD_INPUT', `question ${JSON.stringify(q.id)} is not ready: ${errs.join('; ')}`);
@@ -98,6 +100,7 @@ export class ObjectiveSession {
       return prepareQuizQuestion(q, rng);
     });
     if (new Set(questions.map((q) => q.id)).size !== questions.length) fail('BAD_INPUT', 'question ids must be unique within a paper');
+    if (shuffleQuestions === true) questions = shuffle(questions, rng);
     return new ObjectiveSession({
       schemaVersion: SCHEMA_VERSION, domain: 'objective', evidenceId,
       session: { id: sessionId, startedAt }, material: { id: String(paper.id), title: typeof paper.title === 'string' ? paper.title : '' },

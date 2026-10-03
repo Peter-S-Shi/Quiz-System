@@ -252,3 +252,70 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus, h3[tabindex="-1"]:focus, .qhea
 
 /* Focused Practice: Objective and Translation read like one sheet of paper (Warm Paper); Typing keeps its own passage layout */
 .practice .obj, .practice .trn { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 20px 26px 24px; box-shadow: var(--shadow-sm); }
+
+
+/* ------------------------------------------------------------------------- Human Evaluation Repair: result hierarchy */
+.check-row { display: flex; align-items: flex-start; gap: 8px; margin: 8px 0; cursor: pointer; }
+.check-row input { margin-top: 3px; }
+
+.score-hero { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin: 6px 0 18px; padding: 18px 22px; border-radius: 16px; border: 1px solid var(--line); border-left-width: 6px; background: var(--paper-2); }
+.score-hero.tone-green { border-color: var(--green); background: var(--green-soft); }
+.score-hero.tone-amber { border-color: var(--amber); background: var(--amber-soft); }
+.score-hero.tone-red { border-color: var(--red); background: var(--red-soft); }
+.score-main { display: flex; align-items: baseline; gap: 14px; }
+.score-num { font: 700 40px/1 var(--serif); letter-spacing: -.01em; }
+.score-pct { font: 600 22px var(--sans); }
+.tone-green .score-num, .tone-green .score-pct { color: var(--green); }
+.tone-amber .score-num, .tone-amber .score-pct { color: var(--amber); }
+.tone-red .score-num, .tone-red .score-pct { color: var(--red); }
+.score-badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; border-radius: 999px; font: 600 13px var(--sans); background: var(--paper); border: 1px solid currentColor; }
+.tone-green .score-badge { color: var(--green); } .tone-amber .score-badge { color: var(--amber); } .tone-red .score-badge { color: var(--red); }
+.score-badge .glyph { font-size: 16px; }
+.band-perfect .score-badge .glyph { font-size: 20px; }
+
+.rv-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+.rv-list > li.rv, .review.rv-list > li.rv { margin: 0; padding: 14px 16px 14px 18px; border: 1px solid var(--line); border-left-width: 5px; border-radius: 12px; background: var(--paper); }
+.rv-list > li.rv.correct { border-left-color: var(--green); } .rv-list > li.rv.incorrect { border-left-color: var(--red); } .rv-list > li.rv.ungraded { border-left-color: var(--faint); }
+.rv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.rv-num { font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.rv-verdict { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font: 600 12px var(--sans); background: var(--sunk); color: var(--muted); }
+.rv-verdict.correct { background: var(--green-soft); color: var(--green); } .rv-verdict.incorrect { background: var(--red-soft); color: var(--red); }
+.rv-prompt { margin: 0 0 10px; font: 600 17px/1.55 var(--serif); overflow-wrap: anywhere; white-space: pre-wrap; }
+.rv-answer, .rv-correct { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin: 6px 0; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper-2); }
+.rv-answer.correct { border-color: var(--green); background: var(--green-soft); } .rv-answer.incorrect { border-color: var(--red); background: var(--red-soft); }
+.rv-correct { border-color: var(--green); background: var(--green-soft); }
+.rv-label { font: 600 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.rv-value { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 15px; }
+.rv-explain { margin-top: 10px; padding: 8px 12px; border-radius: 9px; background: var(--sunk); color: var(--ink-2); font-size: 14px; }
+.rv-explain h4 { margin: 0 0 3px; font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.rv-explain p { margin: 0; }
+
+.pill.state { display: inline-flex; align-items: center; gap: 2px; }
+.pill.state.neutral { background: transparent; border: 1px dashed var(--faint); }
+.pill.state.warn { border: 1px solid var(--amber); }
+.pill.state.ok { border: 1px solid transparent; }
+
+/* ------------------------------------------------------------------------- Objective paper authoring workspace */
+.editor.paper-editor-wide, .editor:has(.q-workspace) { max-width: none; }
+.paper-meta { border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px 12px; background: var(--paper); }
+.paper-meta summary { cursor: pointer; font: 600 13px var(--sans); padding: 4px 0; }
+.q-workspace { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.q-nav { position: sticky; top: 0; max-height: calc(100vh - 220px); overflow: auto; padding: 4px 6px 10px 0; border-right: 1px solid var(--line-2); }
+.q-nav ol { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.q-nav li { display: flex; align-items: stretch; gap: 4px; border: 1px solid transparent; border-radius: 10px; }
+.q-nav li.on { border-color: var(--blue); background: var(--blue-soft); }
+.nav-jump { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: baseline; text-align: left; padding: 7px 8px; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; border-radius: 10px; }
+.nav-jump:hover { background: var(--sunk); }
+.nav-n { color: var(--muted); min-width: 22px; text-align: right; }
+.nav-body { display: flex; flex-direction: column; min-width: 0; }
+.nav-type { font: 11px var(--mono); color: var(--muted); }
+.nav-preview { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.nav-move { display: flex; flex-direction: column; gap: 2px; justify-content: center; padding-right: 4px; }
+.nav-move .btn.small { padding: 0 6px; line-height: 1.2; }
+.q-card { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.q-stepper { justify-content: space-between; align-items: center; }
+.q-card .block textarea { width: 100%; }
+@media (max-width: 1000px) {
+  .q-workspace { grid-template-columns: 1fr; }
+  .q-nav { position: static; max-height: 240px; border-right: 0; border-bottom: 1px solid var(--line-2); }
+}

@@ -9,12 +9,13 @@ import { ADAPTERS } from '../web/src/task-domains/adapters.js';
 import { setLocale, missingKeys } from '../web/src/i18n.js';
 
 // `fail` injects faults into the recovery store; `row` models the one recovery row the real store keeps
-const state = { saves: [], commits: [], clears: [], closed: null, invalid: [], engine: null, fail: { save: false, clear: false }, row: null };
+const state = { saves: [], commits: [], clears: [], closed: null, sfx: [], invalid: [], engine: null, fail: { save: false, clear: false }, row: null };
 let n = 0;
 const ids = () => `h-${++n}`;
 const T = () => new Date().toISOString();
 
 const services = {
+  sfx: (name) => state.sfx.push(name),
   now: T,
   newId: ids,
   save: async (s) => { if (state.fail.save) throw new Error('injected save fault'); state.saves.push(JSON.parse(JSON.stringify(s))); state.row = JSON.parse(JSON.stringify(s)); },

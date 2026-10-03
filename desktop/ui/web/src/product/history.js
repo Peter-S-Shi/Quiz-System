@@ -141,6 +141,7 @@ function typingDetail(p) {
     kind: 'typing', policy: p.policy ?? null, counts: p.counts ?? null, correctedErrorCount: p.correctedErrorCount ?? null,
     errors: (p.errors ?? []).map((e) => ({ kind: e.kind, reference: ref.slice(e.reference.start, e.reference.end), committed: com.slice(e.committed.start, e.committed.end) })),
     referenceText: ref, committedText: com,
+    session: p.session ? { startedAt: p.session.startedAt, completedAt: p.session.completedAt } : null,
   };
 }
 

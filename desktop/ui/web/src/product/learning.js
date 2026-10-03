@@ -3,6 +3,7 @@
 // with the right provenance. This module decides nothing new: Due / Overdue are derived by the projection, schedule
 // changes go through ScheduleStore (the only writer of Scheduling Context), a recommendation is a suggestion with a readable
 // reason, and the learner chooses (Scope Freeze Rev.1 sections 6-8).
+import { deriveMaterialStates } from './material-state.js';
 import { addDays, calendarView, explain, loadSnapshot, recommend, selectionProvenance, todayView } from '../orchestration/index.js';
 
 export class StartError extends Error {
@@ -50,6 +51,12 @@ export function createLearning({ port, store, clock, runtime, library }) {
   const learning = {
     domainOfType: (type) => DOMAIN_OF_TYPE[type] ?? null,
     typeOfDomain: (domain) => TYPE_OF_DOMAIN[domain],
+
+    /** Factual learning state per material (not started / in progress / practiced), derived from Evidence and recovery state. */
+    async materialStates() {
+      const [responses, typingAttempts, resumable] = await Promise.all([port.read('learner_response'), port.read('typing_attempt'), runtime.resumable()]);
+      return deriveMaterialStates({ responses, typingAttempts, resumable });
+    },
 
     /** One planning sweep (idempotent): engine schedules for what the evidence says, suggestions where the learner owns the date. */
     sweep: () => store.sweep(),
@@ -132,7 +139,7 @@ export function createLearning({ port, store, clock, runtime, library }) {
      * 'manual'); `scheduleRef` links a due occurrence. Objective media is proven presentable first (fail closed).
      * @returns {Promise<object>} `{ domain, engine, launch }`, with the first recovery state already saved
      */
-    async start({ domain, materialId, intent = 'practice', feedbackTiming = 'instant', source = 'manual', recommendation = null, scheduleRef = null, questionIds = null, provenance = null }) {
+    async start({ domain, materialId, intent = 'practice', feedbackTiming = 'instant', source = 'manual', recommendation = null, scheduleRef = null, questionIds = null, provenance = null, shuffleQuestions = false }) {
       const selection = source === 'recommended' && recommendation ? selectionProvenance(recommendation) : { source: 'manual' };
       const material = await learning.material(domain, materialId);
       let started;
@@ -140,7 +147,7 @@ export function createLearning({ port, store, clock, runtime, library }) {
         if (!material.questions?.length) throw new StartError('NOT_READY', 'this paper has no questions');
         const proof = await runtime.objectiveMedia(material, questionIds);
         if (proof.problems.length) throw new StartError('MEDIA_UNAVAILABLE', 'the image or audio of this paper cannot be shown', { problems: proof.problems });
-        started = runtime.startObjective({ paper: material, intent, feedbackTiming, questionIds: questionIds ?? undefined, presentableMedia: proof.presentable, selection, scheduleRef: scheduleRef ?? undefined, ...(provenance ? { provenance } : {}) });
+        started = runtime.startObjective({ paper: material, intent, feedbackTiming, questionIds: questionIds ?? undefined, presentableMedia: proof.presentable, shuffleQuestions: shuffleQuestions === true, selection, scheduleRef: scheduleRef ?? undefined, ...(provenance ? { provenance } : {}) });
       } else if (domain === 'translation') {
         if (!material.items?.length) throw new StartError('NOT_READY', 'this document has no sentences');
         started = runtime.startTranslation({ document: material, intent, selection, scheduleRef: scheduleRef ?? undefined });

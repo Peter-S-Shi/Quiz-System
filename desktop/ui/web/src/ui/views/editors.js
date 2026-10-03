@@ -28,6 +28,15 @@ defineStrings({
   'ed.q.type': ['Type', '题型'],
   'ed.q.prompt': ['Question text', '题干'],
   'ed.q.explanation': ['Explanation (optional) — shown only after the answer is revealed', '解析（可选）——仅在揭晓答案后显示'],
+  'ed.nav.title': ['Questions', '题目'],
+  'ed.nav.empty': ['(no text yet)', '（尚无内容）'],
+  'ed.nav.prev': ['Previous question', '上一题'],
+  'ed.nav.next': ['Next question', '下一题'],
+  'ed.nav.position': ['Question {n} of {total}', '第 {n} 题 / 共 {total} 题'],
+  'ed.nav.details': ['Paper details', '试卷信息'],
+  'ed.nav.jump': ['Question {n}, {type}: {preview}', '第 {n} 题，{type}：{preview}'],
+  'ed.nav.up': ['Move question {n} up', '把第 {n} 题上移'],
+  'ed.nav.down': ['Move question {n} down', '把第 {n} 题下移'],
   'ed.q.add': ['Add a question', '添加题目'],
   'ed.q.remove': ['Remove question', '删除本题'],
   'ed.q.up': ['Move up', '上移'],
@@ -108,7 +117,7 @@ function askName(label) {
 
 const message = (e) => String(e?.message ?? e).replace(/^[A-Z_]+: /, '');
 
-function shell(app, { heading, body, errors, onSave, onCancel, dirty }) {
+function shell(app, { heading, body, errors, onSave, onCancel, dirty, page = false }) {
   const err = h('div', { class: 'error-box', role: 'alert', hidden: true });
   const save = h('button', { class: 'btn primary', type: 'submit' }, t('ed.save'));
   const form = h('form', { class: 'editor', novalidate: true, onsubmit: async (ev) => {
@@ -132,7 +141,7 @@ function shell(app, { heading, body, errors, onSave, onCancel, dirty }) {
       save.disabled = false;
     }
   } },
-  h('h2', { tabindex: '-1', id: 'editor-heading' }, heading), err, body,
+  h(page ? 'h1' : 'h2', { tabindex: '-1', id: 'editor-heading' }, heading), err, body,
   h('div', { class: 'row editor-actions' }, save, h('button', { class: 'btn', type: 'button', onclick: async () => {
     if (dirty() && !(await confirmDialog({ title: t('ed.discardTitle'), body: t('ed.discardBody'), okLabel: t('ed.discard'), cancelLabel: t('ed.keep'), danger: true }))) return;
     onCancel();
@@ -223,6 +232,10 @@ export async function editPaper(app, container, { id = null, onDone }) {
   if (!draft.questions.length) draft.questions.push(blankQuestion('single', app.ids));
   const original = JSON.stringify(draft);
   let focus = null;
+  let active = 0;
+  let metaOpen = !loaded;
+  let previewEls = [];
+  const preview = (q) => (q.prompt ?? '').replace(/\s+/g, ' ').trim().slice(0, 56) || t('ed.nav.empty');
 
   const answersText = (q) => (q._answersText ?? q.answers.join('\n'));
   const toSave = () => ({ ...draft, tags: Array.isArray(draft.tags) ? draft.tags : String(draft.tags ?? '').split(','), questions: draft.questions.map(cleanQuestion) });
@@ -251,8 +264,8 @@ export async function editPaper(app, container, { id = null, onDone }) {
       focus = `q-${qid}-type`;
       render();
     } }, QUESTION_TYPES.map((x) => h('option', { value: x, selected: x === q.type }, t(`ed.q.type.${x}`))));
-    const prompt = h('textarea', { id: `q-${qid}-prompt`, rows: '2', oninput: (e) => { q.prompt = e.target.value; } }, q.prompt ?? '');
-    const explanation = h('textarea', { id: `q-${qid}-explanation`, rows: '2', oninput: (e) => { q.explanation = e.target.value; } }, q.explanation ?? '');
+    const prompt = h('textarea', { id: `q-${qid}-prompt`, rows: '4', oninput: (e) => { q.prompt = e.target.value; if (previewEls[i]) previewEls[i].textContent = preview(q); } }, q.prompt ?? '');
+    const explanation = h('textarea', { id: `q-${qid}-explanation`, rows: '3', oninput: (e) => { q.explanation = e.target.value; } }, q.explanation ?? '');
 
     let specific = null;
     if (q.type === 'single' || q.type === 'multiple') {
@@ -289,21 +302,51 @@ export async function editPaper(app, container, { id = null, onDone }) {
       h('legend', {}, t('ed.q.heading', { n: i + 1 })),
       field(t('ed.q.type'), typeSel), field(t('ed.q.prompt'), prompt), mediaRow('image'), mediaRow('audio'), specific, field(t('ed.q.explanation'), explanation),
       h('div', { class: 'row' },
-        h('button', { class: 'btn small', type: 'button', disabled: i === 0, onclick: () => { [draft.questions[i - 1], draft.questions[i]] = [draft.questions[i], draft.questions[i - 1]]; focus = `q-${qid}-type`; render(); } }, t('ed.q.up')),
-        h('button', { class: 'btn small', type: 'button', disabled: i === draft.questions.length - 1, onclick: () => { [draft.questions[i + 1], draft.questions[i]] = [draft.questions[i], draft.questions[i + 1]]; focus = `q-${qid}-type`; render(); } }, t('ed.q.down')),
-        h('button', { class: 'btn small danger', type: 'button', disabled: draft.questions.length === 1, onclick: () => { draft.questions.splice(i, 1); focus = null; render(); } }, t('ed.q.remove'))));
+        h('button', { class: 'btn small', type: 'button', disabled: i === 0, onclick: () => { [draft.questions[i - 1], draft.questions[i]] = [draft.questions[i], draft.questions[i - 1]]; active = i - 1; focus = `q-${qid}-type`; render(); } }, t('ed.q.up')),
+        h('button', { class: 'btn small', type: 'button', disabled: i === draft.questions.length - 1, onclick: () => { [draft.questions[i + 1], draft.questions[i]] = [draft.questions[i], draft.questions[i + 1]]; active = i + 1; focus = `q-${qid}-type`; render(); } }, t('ed.q.down')),
+        h('button', { class: 'btn small danger', type: 'button', disabled: draft.questions.length === 1, onclick: () => { draft.questions.splice(i, 1); active = Math.max(0, Math.min(i, draft.questions.length - 1)); focus = `q-${draft.questions[active].id}-type`; render(); } }, t('ed.q.remove'))));
+  }
+
+  function navigator() {
+    previewEls = [];
+    const go = (n, id) => { active = n; focus = id ?? `q-${draft.questions[n].id}-prompt`; render(); };
+    const rows = draft.questions.map((q, i) => {
+      const pv = h('span', { class: 'nav-preview' }, preview(q));
+      previewEls.push(pv);
+      const jump = h('button', { type: 'button', class: 'nav-jump', id: `nav-${q.id}`, 'aria-current': i === active ? 'true' : null,
+        'aria-label': t('ed.nav.jump', { n: i + 1, type: t(`ed.q.type.${q.type}`), preview: preview(q) }), onclick: () => go(i, `nav-${q.id}`) },
+      h('span', { class: 'nav-n mono' }, String(i + 1)), h('span', { class: 'nav-body' }, h('span', { class: 'nav-type' }, t(`ed.q.type.${q.type}`)), pv));
+      const move = (to) => { [draft.questions[i], draft.questions[to]] = [draft.questions[to], draft.questions[i]]; active = to; focus = null; render(); };
+      return h('li', { class: i === active ? 'on' : '' }, jump,
+        h('span', { class: 'nav-move' },
+          h('button', { class: 'btn small', type: 'button', id: `nav-up-${q.id}`, disabled: i === 0, 'aria-label': t('ed.nav.up', { n: i + 1 }), onclick: () => { move(i - 1); container.querySelector(`#nav-up-${q.id}`)?.focus(); } }, '↑'),
+          h('button', { class: 'btn small', type: 'button', id: `nav-down-${q.id}`, disabled: i === draft.questions.length - 1, 'aria-label': t('ed.nav.down', { n: i + 1 }), onclick: () => { move(i + 1); container.querySelector(`#nav-down-${q.id}`)?.focus(); } }, '↓')));
+    });
+    return h('nav', { class: 'q-nav', 'aria-label': t('ed.nav.title') },
+      h('h3', { class: 'side-h' }, t('ed.nav.title'), h('span', { class: 'count mono' }, String(draft.questions.length))),
+      h('ol', {}, rows),
+      h('button', { class: 'btn', type: 'button', onclick: () => { draft.questions.push(blankQuestion('single', app.ids)); active = draft.questions.length - 1; focus = `q-${draft.questions[active].id}-type`; render(); } }, t('ed.q.add')));
   }
 
   function render() {
+    active = Math.max(0, Math.min(active, draft.questions.length - 1));
     const title = h('input', { type: 'text', id: uid('t'), value: draft.title ?? '', oninput: (e) => { draft.title = e.target.value; } });
     const category = h('input', { type: 'text', id: uid('c'), value: draft.category ?? '', oninput: (e) => { draft.category = e.target.value; } });
     const tags = h('input', { type: 'text', id: uid('g'), value: Array.isArray(draft.tags) ? draft.tags.join(', ') : '', oninput: (e) => { draft.tags = e.target.value.split(','); } });
     const description = h('textarea', { id: uid('d'), rows: '2', oninput: (e) => { draft.description = e.target.value; } }, draft.description ?? '');
+    const nav = navigator();
+    const n = draft.questions.length;
+    const step = (to) => { active = to; focus = `q-${draft.questions[to].id}-prompt`; render(); };
+    const stepper = h('div', { class: 'row q-stepper' },
+      h('button', { class: 'btn', type: 'button', id: 'q-prev', disabled: active === 0, onclick: () => step(active - 1) }, t('ed.nav.prev')),
+      h('span', { class: 'muted', role: 'status' }, t('ed.nav.position', { n: active + 1, total: n })),
+      h('button', { class: 'btn', type: 'button', id: 'q-next', disabled: active === n - 1, onclick: () => step(active + 1) }, t('ed.nav.next')));
     fill(container, shell(app, {
       heading: loaded ? t('ed.paper.edit') : t('ed.paper.new'),
-      body: [field(t('ed.title'), title), field(t('ed.description'), description), h('div', { class: 'row-fields' }, field(t('ed.category'), category), field(t('ed.tags'), tags)),
-        draft.questions.map(questionBlock),
-        h('button', { class: 'btn', type: 'button', onclick: () => { draft.questions.push(blankQuestion('single', app.ids)); focus = `q-${draft.questions.at(-1).id}-type`; render(); } }, t('ed.q.add'))],
+      page: true,
+      body: [h('details', { class: 'paper-meta', open: metaOpen, ontoggle: (ev) => { metaOpen = ev.target.open; } }, h('summary', {}, t('ed.nav.details')),
+        field(t('ed.title'), title), field(t('ed.description'), description), h('div', { class: 'row-fields' }, field(t('ed.category'), category), field(t('ed.tags'), tags))),
+      h('div', { class: 'q-workspace' }, nav, h('div', { class: 'q-card' }, stepper, questionBlock(draft.questions[active], active)))],
       errors: problemsList,
       dirty: () => JSON.stringify(draft) !== original,
       onSave: async () => { const saved = await library.savePaper(toSave(), loaded?.rev ?? null); app.toast(t('ed.saved')); await onDone({ kind: 'paper', id: saved.payload.id }); },

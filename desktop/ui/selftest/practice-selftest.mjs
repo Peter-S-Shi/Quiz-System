@@ -48,6 +48,26 @@ try {
   await b.sleep(100);
   ok('Discard clears the recovery state and records nothing', (await b.eval('window.harness.state.closed')) === 'discarded' && (await b.eval('window.harness.state.clears.length')) >= 1 && (await commits()) === 0);
 
+  // ------------------------------------------------------------------------------------------------ physical sound reaches practice
+  section('Physical sound: semantic accents reach the audio helper; typing never plays a pen sound per character');
+  await b.goto('/selftest/harness.html');
+  await b.eval("(window.harness.objective({ feedbackTiming: 'instant' }), 1)");
+  await b.exec("document.querySelector('.choice input').click();");
+  ok('selecting an answer plays the pen accent', (await b.eval('window.harness.state.sfx')).join() === 'pen');
+  await b.exec("document.querySelector('[data-act=check]').click();");
+  await b.sleep(120);
+  ok('grading an item plays the stamp accent', (await b.eval('window.harness.state.sfx')).join() === 'pen,stamp');
+  await clickText('Next');
+  ok('moving to the next question plays the page accent', (await b.eval('window.harness.state.sfx')).slice(-1)[0] === 'page');
+  await b.eval("(window.harness.translation(), 1)");
+  await b.eval('window.harness.state.sfx.length = 0');
+  await b.exec("const ta = document.querySelector('textarea.answer'); ta.focus(); ta.value = 'a longer answer'; ta.dispatchEvent(new Event('input', { bubbles: true }));");
+  ok('typing a translation plays no sound', (await b.eval('window.harness.state.sfx.length')) === 0);
+  await b.eval("(window.harness.typing({ length: 200 }), 1)");
+  await b.eval('window.harness.state.sfx.length = 0');
+  for (const ch of 'abcdefgh') await b.insertText(ch);
+  ok('typing characters plays no pen sound per keystroke', (await b.eval('window.harness.state.sfx.length')) === 0);
+
   // ------------------------------------------------------------------------------------ explicit exit durability (fault injection)
   section('Explicit exit actions are required actions: a failed save / clear never closes the surface');
   const noticeText = () => b.eval("(document.querySelector('.practice [data-kind=error]')?.textContent ?? '')");
@@ -172,6 +192,9 @@ try {
   ok('the evidence was committed once and is adapter-valid', (await commits()) === 1 && (await b.eval('window.harness.state.invalid.length')) === 0);
   ok('the recovery state was cleared after the commit', (await b.eval('window.harness.state.clears.length')) >= 1);
   ok('the surface now offers Done', (await active()).text !== undefined && (await text()).includes('Done'));
+  ok('the result leads with a score hero: correct / total, a percentage, a band word and glyph', (await b.eval("(() => { const h = document.querySelector('.score-hero'); return !!h && /[0-9]+ [/] 5/.test(h.querySelector('.score-num').textContent) && /%/.test(h.querySelector('.score-pct').textContent) && h.querySelector('.score-badge .glyph') !== null && h.dataset.band !== undefined; })()")) === true);
+  ok('each reviewed question separates prompt, learner answer, verdict and a secondary explanation', (await b.eval("document.querySelectorAll('li.rv').length")) === 5 && (await b.eval("[...document.querySelectorAll('li.rv')].every((c) => c.querySelector('.rv-prompt') && c.querySelector('.rv-answer') && c.querySelector('.rv-verdict') && c.querySelector('.rv-explain'))")));
+  ok('a wrong answer also shows the correct answer; a correct one does not repeat it', (await b.eval("[...document.querySelectorAll('li.rv.incorrect')].every((c) => c.querySelector('.rv-correct'))")) && (await b.eval("[...document.querySelectorAll('li.rv.correct')].every((c) => !c.querySelector('.rv-correct'))")));
 
   // ------------------------------------------------------------------------------------------------ Translation
   section('Translation: production, marks (UTF-16, grapheme-safe), reference only on request');
@@ -246,6 +269,7 @@ try {
   await b.sleep(300);
   const att = await b.eval('window.harness.state.commits[window.harness.state.commits.length - 1]');
   ok('finishing commits a valid typing attempt with no differences', att.material.type === 'typing-text' && att.errors.length === 0 && (await b.eval('window.harness.state.invalid.length')) === 0);
+  ok('the Typing result shows how long the attempt took (derived from the session timestamps)', /Time (taken: .* sec|not recorded)/.test(await b.eval("document.querySelector('.result .duration')?.textContent ?? ''")), await b.eval("document.querySelector('.result')?.innerText ?? ''"));
 
   section('Typing: errors are shown live in Practice; a Test shows position only');
   await b.eval("(window.harness.typing({ text: 'abcdefghij', intent: 'practice' }), 1)");

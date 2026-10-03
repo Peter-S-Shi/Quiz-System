@@ -48,6 +48,8 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
 
   const ctx = {
     media: services.media ?? null,
+    /** A restrained physical sound accent ('page' | 'pen' | 'stamp'). The product owns the preference; it is a no-op without one. */
+    sfx: (name) => { try { services.sfx?.(name); } catch { /* sound is only an accent */ } },
     now: () => services.now(),
     newId: () => services.newId?.() ?? newId(),
     announce(msg) {

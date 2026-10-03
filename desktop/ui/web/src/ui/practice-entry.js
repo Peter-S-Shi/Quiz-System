@@ -14,6 +14,7 @@ export function createPracticeEntry({ app }) {
     const services = {
       ...product.runtime.servicesFor(started),
       media: product.media,
+      sfx: app.sfx,
       startRetry: (kind, args) => retry(kind, args, { returnTo }),
     };
     return mountPractice({
@@ -28,7 +29,7 @@ export function createPracticeEntry({ app }) {
       let started;
       if (kind === 'objective') {
         started = await product.learning.start({
-          domain: 'objective', materialId: args.paperId, intent: args.intent, feedbackTiming: args.feedbackTiming, questionIds: args.questionIds,
+          domain: 'objective', materialId: args.paperId, intent: args.intent, feedbackTiming: args.feedbackTiming, questionIds: args.questionIds, shuffleQuestions: args.shuffleQuestions === true,
           provenance: { purpose: 'retry', sourceResponseId: args.sourceResponseId, sourceMaterialId: args.paperId },
         });
       } else if (kind === 'translation') {

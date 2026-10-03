@@ -4,6 +4,8 @@
 // item only after that item was graded.
 import { mediaBlock } from './media-presenter.js';
 import { typeLabel, fill, focusEl, h, sr, uid } from './dom.js';
+import { checkRow } from './check-row.js';
+import { reviewCard, scoreHero } from './result-view.js';
 import { t } from '../i18n.js';
 
 const mediaLabels = () => ({ image: t('pr.obj.image'), audio: t('pr.obj.audio'), imageUnavailable: t('pr.obj.imageGone'), audioUnavailable: t('pr.obj.audioGone') });
@@ -39,6 +41,7 @@ export function mountObjective({ session, ctx, host }) {
         const input = h('input', { type: multi ? 'checkbox' : 'radio', name, value: o.id, checked: picked.has(o.id), disabled: locked });
         input.addEventListener('change', () => {
           const next = multi ? [...root.querySelectorAll(`input[name="${name}"]:checked`)].map((i) => i.value) : input.value;
+          ctx.sfx('pen');
           answer(multi && !next.length ? null : next);
         });
         body.push(h('label', { class: `choice${fb && correct ? ' is-correct' : ''}${fb && picked.has(o.id) && !correct ? ' is-wrong' : ''}` }, input, h('span', { class: 'choice-text' }, o.text), mark(correct, picked.has(o.id))));
@@ -50,7 +53,7 @@ export function mountObjective({ session, ctx, host }) {
       return h('fieldset', { class: 'choices', 'aria-labelledby': legendId }, h('legend', { id: legendId, class: 'prompt' }, q.prompt),
         [[t('pr.obj.true'), true], [t('pr.obj.false'), false]].map(([label, val]) => {
           const input = h('input', { type: 'radio', name, value: String(val), checked: v.answer === val, disabled: locked });
-          input.addEventListener('change', () => answer(val));
+          input.addEventListener('change', () => { ctx.sfx('pen'); answer(val); });
           return h('label', { class: 'choice' }, input, h('span', { class: 'choice-text' }, label));
         }));
     }
@@ -68,6 +71,7 @@ export function mountObjective({ session, ctx, host }) {
         const current = v.answer?.[p.id] ?? '';
         const sel = h('select', { id, disabled: locked }, h('option', { value: '' }, t('pr.obj.choose')), q.rightOptions.map((r) => h('option', { value: r.id, selected: r.id === current }, r.text)));
         sel.addEventListener('change', () => {
+          ctx.sfx('pen');
           const next = { ...(session.view().answer ?? {}) };
           if (sel.value) next[p.id] = sel.value; else delete next[p.id];
           answer(Object.keys(next).length ? next : null);
@@ -93,7 +97,7 @@ export function mountObjective({ session, ctx, host }) {
     return h('nav', { class: 'qnav', 'aria-label': t('pr.obj.questions') }, v.items.map((it, i) => {
       const b = h('button', { type: 'button', class: `chipbtn${it.answered ? ' answered' : ''}${it.graded ? (it.correct ? ' good' : ' bad') : ''}${i === v.index ? ' current' : ''}`, 'aria-current': i === v.index ? 'step' : null,
         'aria-label': t('pr.obj.chip', { n: i + 1, answered: t(it.answered ? 'pr.obj.chip.answered' : 'pr.obj.chip.notAnswered'), graded: it.graded ? t(it.correct ? 'pr.obj.chip.correct' : 'pr.obj.chip.incorrect') : '' }) }, String(i + 1));
-      b.addEventListener('click', () => { session.go(i); ctx.save(); render({ focus: 'question' }); });
+      b.addEventListener('click', () => { ctx.sfx('page'); session.go(i); ctx.save(); render({ focus: 'question' }); });
       return b;
     }));
   }
@@ -106,6 +110,7 @@ export function mountObjective({ session, ctx, host }) {
 
   async function check() {
     try { session.submitItem(); } catch (e) { ctx.notify(e.message, { kind: 'error' }); return; }
+    ctx.sfx('stamp');
     await ctx.save();
     const fb = session.view().feedback;
     ctx.announce(t('pr.obj.announce', { verdict: fb.correct ? t('pr.obj.correct') : t('pr.obj.notQuite'), label: fb.correctLabel, answer: fb.correctAnswer, explanation: fb.explanation ? t('pr.obj.announceExpl', { text: fb.explanation }) : '' }));
@@ -127,6 +132,7 @@ export function mountObjective({ session, ctx, host }) {
     }
     const res = await ctx.commit(() => session.finalize({ now: ctx.now() }));
     if (!res.ok) return;
+    ctx.sfx('stamp');
     outcome = { payload: res.payload, review: session.review() };
     stage = 'result';
     render({ focus: 'result' });
@@ -144,20 +150,19 @@ export function mountObjective({ session, ctx, host }) {
   function resultView() {
     const { payload, review } = outcome;
     const wrongIds = payload.responses.filter((r) => !r.result.correct).map((r) => r.itemId);
+    const retryShuffle = checkRow({ label: t('pr.obj.shuffle') });
     ctx.setHeader({ title: payload.material.title || t('pr.obj.paper'), tag: t('pr.obj.tagDone', { intent: t(payload.extensions['quiz-studio.v2.session'].intent === 'test' ? 'pr.obj.intent.test' : 'pr.obj.intent.practice') }) });
     ctx.setProgress({ text: t('pr.obj.submitted'), done: 1, total: 1 });
     ctx.announce(t('pr.obj.summary', { correct: payload.summary.correctCount, total: payload.summary.itemCount }));
     return h('div', { class: 'result' },
       h('h2', { tabindex: '-1', id: 'result-head' }, t('pr.obj.result')),
-      h('p', { class: 'score' }, h('b', {}, t('pr.obj.scoreOf', { correct: payload.summary.correctCount, total: payload.summary.itemCount })), t('pr.obj.scoreRest', { percent: payload.summary.percent })),
+      scoreHero({ correct: payload.summary.correctCount, total: payload.summary.itemCount }),
       h('p', { class: 'muted' }, t('pr.obj.saved')),
-      h('ol', { class: 'review' }, review.map((r) => h('li', { class: r.correct ? 'correct' : 'wrong' },
-        h('p', { class: 'prompt' }, r.prompt),
-        h('p', {}, h('span', { class: 'label' }, t('pr.obj.yourAnswerColon')), r.learnerAnswer || h('em', {}, t('pr.obj.noAnswer')), ' ', r.correct ? [h('span', { 'aria-hidden': 'true' }, '✓'), sr(t('pr.obj.correct'))] : [h('span', { 'aria-hidden': 'true' }, '✗'), sr(t('pr.obj.incorrect'))]),
-        r.correct ? null : h('p', {}, h('span', { class: 'label' }, `${r.correctLabel}: `), r.correctAnswer),
-        typeof r.explanation === 'string' ? h('div', { class: 'explanation' }, h('h4', {}, t('pr.obj.explanation')), h('p', { class: 'explanation-text' }, r.explanation)) : null))),
+      h('ol', { class: 'review rv-list' }, review.map((r) => reviewCard({ index: r.index, prompt: r.prompt, answered: Boolean(r.learnerAnswer), answer: r.learnerAnswer, correct: r.correct, correctLabel: r.correctLabel, correctAnswer: r.correctAnswer, explanation: r.explanation },
+        { answer: t('pr.obj.yourAnswerColon').replace(/[:：]\s*$/, ''), noAnswer: t('pr.obj.noAnswer'), correctAnswer: t('pr.obj.correctAnswer'), explanation: t('pr.obj.explanation') }))),
+      wrongIds.length > 1 && ctx.startRetry ? h('div', { class: 'row' }, retryShuffle.el) : null,
       h('div', { class: 'row actions' },
-        wrongIds.length && ctx.startRetry ? h('button', { class: 'btn', type: 'button', onclick: () => ctx.startRetry('objective', { questionIds: wrongIds, sourceResponseId: payload.id, paperId: payload.material.id, intent: payload.extensions['quiz-studio.v2.session'].intent, feedbackTiming: payload.extensions['quiz-studio.v2.session'].feedbackTiming }) }, t('pr.obj.retry', { n: wrongIds.length })) : null,
+        wrongIds.length && ctx.startRetry ? h('button', { class: 'btn', type: 'button', onclick: () => ctx.startRetry('objective', { shuffleQuestions: retryShuffle.get(), questionIds: wrongIds, sourceResponseId: payload.id, paperId: payload.material.id, intent: payload.extensions['quiz-studio.v2.session'].intent, feedbackTiming: payload.extensions['quiz-studio.v2.session'].feedbackTiming }) }, t('pr.obj.retry', { n: wrongIds.length })) : null,
         h('button', { class: 'btn primary', type: 'button', onclick: () => ctx.requestExit() }, t('pr.done'))));
   }
 
@@ -169,8 +174,8 @@ export function mountObjective({ session, ctx, host }) {
     const instant = v.feedbackTiming === 'instant';
     const checkBtn = instant ? h('button', { class: 'btn primary', type: 'button', 'data-act': 'check', disabled: !v.canSubmitItem, onclick: check }, t('pr.obj.check')) : null;
     const finishBtn = h('button', { class: `btn${last || v.canFinish ? ' primary' : ''}`, type: 'button', 'data-act': 'finish', disabled: !v.canFinish, onclick: finish }, instant ? t('pr.finish') : t('pr.obj.submitPaper'));
-    const prev = h('button', { class: 'btn', type: 'button', disabled: v.index === 0, onclick: () => { session.go(v.index - 1); ctx.save(); render({ focus: 'question' }); } }, t('pr.previous'));
-    const next = h('button', { class: 'btn', type: 'button', disabled: last, onclick: () => { session.go(v.index + 1); ctx.save(); render({ focus: 'question' }); } }, t('pr.next'));
+    const prev = h('button', { class: 'btn', type: 'button', disabled: v.index === 0, onclick: () => { ctx.sfx('page'); session.go(v.index - 1); ctx.save(); render({ focus: 'question' }); } }, t('pr.previous'));
+    const next = h('button', { class: 'btn', type: 'button', disabled: last, onclick: () => { ctx.sfx('page'); session.go(v.index + 1); ctx.save(); render({ focus: 'question' }); } }, t('pr.next'));
     const qhead = h('h2', { class: 'qhead', tabindex: '-1', id: 'qhead' }, t('pr.obj.questionOf', { n: v.index + 1, total: v.total }), h('span', { class: 'qtype' }, ` · ${typeLabel(v.question.type)}`));
     const media = mediaBlock(ctx.media, v.question, mediaLabels());
     fill(root, 

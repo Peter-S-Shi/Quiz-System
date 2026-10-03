@@ -7,8 +7,18 @@ function context() {
   const Ctor = globalThis.AudioContext ?? globalThis.webkitAudioContext;
   if (!Ctor) return null;
   ctx ??= new Ctor();
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   return ctx;
+}
+
+/** Play now, or as soon as a suspended context (autoplay policy) has resumed; never throws. */
+function play(name) {
+  const c = context();
+  if (!c) return;
+  if (c.state === 'suspended' && typeof c.resume === 'function') {
+    c.resume().then(() => SOUNDS[name](c)).catch(() => {});
+    return;
+  }
+  SOUNDS[name](c);
 }
 
 function burst(c, { freq, to = freq, ms, gain, type = 'sine' }) {
@@ -31,12 +41,14 @@ const SOUNDS = {
   stamp: (c) => burst(c, { freq: 140, to: 60, ms: 140, gain: 0.07, type: 'sine' }),
 };
 
+/** Test seam: forget the shared context so a fake AudioContext can be installed on globalThis. */
+export const resetSfxForTest = () => { ctx = null; };
+
 export function createSfx({ enabled = () => false, reduced = () => false } = {}) {
   return (name) => {
     try {
       if (!enabled() || reduced() || !SOUNDS[name]) return;
-      const c = context();
-      if (c) SOUNDS[name](c);
+      play(name);
     } catch {
       /* sound is only an accent */
     }

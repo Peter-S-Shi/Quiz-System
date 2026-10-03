@@ -3,7 +3,9 @@
 // History); deleting content never touches a recorded attempt.
 import { defineStrings, t } from '../../i18n.js';
 import { LIST_WIDTH } from '../prefs.js';
-import { confirmDialog, domainDot, domainName, emptyState, field, fill, formatDate, guarded, h, modal, pill, textInput } from '../kit.js';
+import '../../practice/strings.js';
+import { checkRow, confirmDialog, domainDot, domainName, emptyState, field, fill, formatDate, guarded, h, modal, pill, textInput } from '../kit.js';
+import { materialStateOf } from '../../product/material-state.js';
 import { editDocument, editPaper, editTypingText } from './editors.js';
 import { exportFile, importDocumentFlow, importPaperFlow } from '../import-flows.js';
 
@@ -60,6 +62,13 @@ defineStrings({
   'lib.delete.title': ['Delete "{title}"?', '删除“{title}”？'],
   'lib.delete.body': ['The material is removed from the library. Attempts you already recorded stay in Evidence history, with their own copy of the content.', '材料会从资料库中移除。已经记录的作答仍保留在“证据历史”中，并带有它们自己的内容副本。'],
   'lib.deleted': ['Deleted.', '已删除。'],
+  'lib.state.notStarted': ['Not started', '未开始'],
+  'lib.state.inProgress': ['In progress', '进行中'],
+  'lib.state.practiced': ['Practiced', '已练习'],
+  'lib.state.practicedN': ['Practiced · {n}×', '已练习 · {n} 次'],
+  'lib.state.hintInProgress': ['A saved session is waiting; resume it from Today.', '有一次已保存的练习，可在“今日”继续。'],
+  'lib.state.hintPracticed': ['{n} completed attempt(s) are recorded. This is a fact, not a mastery level.', '已记录 {n} 次完成的作答。这只是事实，并非掌握程度。'],
+  'lib.state.hintNotStarted': ['No attempt recorded and no session in progress.', '尚无作答记录，也没有进行中的练习。'],
   'lib.gone': ['This item no longer exists.', '这项内容已不存在。'],
 });
 
@@ -71,6 +80,15 @@ export async function renderLibrary(app, main, params = {}) {
   const toast = app.toast;
   const st = { domain: params.domain ?? 'all', group: params.group ?? null, query: '', selected: params.select ?? null, mode: params.edit ? 'edit' : 'view', editKind: null };
   let list = await library.list();
+  let states = await app.product.learning.materialStates();
+  const stateOf = (it) => materialStateOf(states, app.product.learning.typeOfDomain(it.domain), it.id);
+  const STATE_UI = { 'not-started': ['○', 'lib.state.notStarted', 'neutral'], 'in-progress': ['◐', 'lib.state.inProgress', 'warn'], practiced: ['●', 'lib.state.practiced', 'ok'] };
+  const statePill = (it, { long = false } = {}) => {
+    const s = stateOf(it);
+    const [glyph, key, kind] = STATE_UI[s.state];
+    const text = long && s.state === 'practiced' ? t('lib.state.practicedN', { n: s.attempts }) : t(key);
+    return h('span', { class: `pill state ${kind}`, 'data-state': s.state }, h('span', { 'aria-hidden': 'true' }, `${glyph} `), text);
+  };
 
   const colA = h('div', { class: 'col-a', role: 'navigation', 'aria-label': t('lib.title') });
   const search = h('input', { type: 'search', id: 'lib-search', 'aria-label': t('lib.search.label'), placeholder: t('lib.search'), oninput: (e) => { st.query = e.target.value; paintList(); } });
@@ -93,6 +111,7 @@ export async function renderLibrary(app, main, params = {}) {
 
   const reload = async (select) => {
     list = await library.list();
+    states = await app.product.learning.materialStates();
     if (select !== undefined) st.selected = select;
     await app.refreshChrome();
     paint();
@@ -139,7 +158,7 @@ export async function renderLibrary(app, main, params = {}) {
       return h('button', { type: 'button', role: 'option', class: `row-item dom-${it.domain}${on ? ' on' : ''}`, 'aria-selected': String(Boolean(on)), 'data-id': it.id, onclick: () => { st.selected = { kind: it.kind, id: it.id }; st.mode = 'view'; paint(); colC.querySelector('h2')?.focus(); } },
         domainDot(it.domain),
         h('span', { class: 'grow' }, h('b', {}, it.title || t('common.untitled')), h('span', { class: 'muted small' }, ` ${metaOf(it)}`)),
-        it.hasMedia ? pill(t('lib.row.media'), 'info') : null, it.ready ? null : pill(t('lib.row.notReady'), 'warn'));
+        statePill(it), it.hasMedia ? pill(t('lib.row.media'), 'info') : null, it.ready ? null : pill(t('lib.row.notReady'), 'warn'));
     }));
   }
 
@@ -153,7 +172,8 @@ export async function renderLibrary(app, main, params = {}) {
     const row = await library.get(sel.kind, sel.id);
     if (!row) { fill(colC, emptyState({ title: t('lib.gone') })); return; }
     const p = row.payload;
-    const go = (intent) => app.startSession({ domain: sel.domain, materialId: sel.id, intent, feedbackTiming: intent === 'test' ? 'submit-at-end' : 'instant' });
+    const shuffle = sel.kind === 'paper' && p.questions.length > 1 ? checkRow({ label: t('pr.obj.shuffle'), hint: t('pr.obj.shuffleHint') }) : null;
+    const go = (intent) => app.startSession({ domain: sel.domain, materialId: sel.id, intent, feedbackTiming: intent === 'test' ? 'submit-at-end' : 'instant', ...(shuffle?.get() ? { shuffleQuestions: true } : {}) });
     const actions = h('div', { class: 'row detail-actions' },
       sel.ready ? [h('button', { class: 'btn primary', type: 'button', onclick: () => go('practice') }, t('lib.detail.practice')), h('button', { class: 'btn', type: 'button', onclick: () => go('test') }, t('lib.detail.test')),
         h('button', { class: 'btn', type: 'button', onclick: () => app.navigate('calendar', { mode: 'new', domain: sel.domain, materialId: sel.id }) }, t('lib.detail.schedule'))] : null,
@@ -169,8 +189,10 @@ export async function renderLibrary(app, main, params = {}) {
       h('div', { class: 'row' }, domainDot(sel.domain), h('span', { class: 'kicker' }, domainName(sel.domain))),
       h('h2', { tabindex: '-1' }, sel.title || t('common.untitled')),
       h('p', { class: 'muted small' }, `${metaOf(sel)} · ${t('lib.detail.updated', { date: formatDate((sel.updatedAt || '').slice(0, 10)) })}`),
+      h('p', { class: 'row small' }, statePill(sel, { long: true }), h('span', { class: 'muted small' }, t(`lib.state.hint${{ 'not-started': 'NotStarted', 'in-progress': 'InProgress', practiced: 'Practiced' }[stateOf(sel).state]}`, { n: stateOf(sel).attempts }))),
       sel.ready ? null : h('p', { class: 'error-text' }, t('lib.detail.notReadyBody')),
       actions,
+      sel.ready && shuffle ? shuffle.el : null,
     ];
     let body;
     if (sel.kind === 'paper') {
@@ -187,15 +209,26 @@ export async function renderLibrary(app, main, params = {}) {
 
   async function openEditor(kind, id) {
     st.mode = 'edit';
-    fill(colC, h('p', { class: 'muted' }, t('common.loading')));
+    // A paper is authored in the MAIN workspace (a spacious editor with a question navigator), not squeezed into the
+    // detail column; leaving it returns to the Library on the paper that was edited.
+    const workspace = kind === 'paper';
+    const host = workspace ? main : colC;
+    const back = (sel) => app.navigate('library', { domain: st.domain, group: st.group, ...(sel ? { select: sel } : {}) });
+    fill(host, h('p', { class: 'muted' }, t('common.loading')));
     try {
-      await EDITORS[kind](app, colC, {
+      await EDITORS[kind](app, host, {
         id,
-        onDone: async (saved) => { st.mode = 'view'; await reload(saved ? { kind: saved.kind, id: saved.id } : st.selected); },
+        onDone: async (saved) => {
+          st.mode = 'view';
+          const sel = saved ? { kind: saved.kind, id: saved.id } : st.selected;
+          if (workspace) { await back(sel); return; }
+          await reload(sel);
+        },
       });
     } catch (e) {
       st.mode = 'view';
       toast(e?.code === 'GONE' ? t('lib.gone') : String(e?.message ?? e), { kind: 'error', ms: 0 });
+      if (workspace) { await back(null); return; }
       await reload(null);
     }
   }

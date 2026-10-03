@@ -2,8 +2,10 @@
 // immutable: this view offers retry (a NEW session with recorded lineage), review and export of a request, never edit or
 // delete. No mastery level, streak or score beyond the one an Objective record itself carries.
 import { defineStrings, t } from '../../i18n.js';
+import { durationLine } from '../../duration.js';
 import { annotatedNodes, projectionNodes } from '../correction-view.js';
 import { mediaBlock } from '../../practice/media-presenter.js';
+import { reviewCard, scoreHero } from '../../practice/result-view.js';
 import { domainDot, domainName, emptyState, fill, formatInstant, guarded, h, intentName, pill, seg } from '../kit.js';
 import { exportFile } from '../import-flows.js';
 
@@ -114,12 +116,12 @@ export async function renderHistory(app, main, params = {}) {
   }
 
   function objectiveBody(d) {
-    return h('ol', { class: 'review-list' }, d.items.map((i) => h('li', { class: `ritem ${i.correct === true ? 'good' : i.correct === false ? 'bad' : ''}` },
-      h('div', { class: 'row' }, h('b', {}, i.prompt), i.correct === null ? pill(t('hist.q.ungraded')) : pill(i.correct ? t('hist.q.correct') : t('hist.q.incorrect'), i.correct ? 'ok' : 'warn')),
-      mediaBlock(app.product.media, i, { image: t('hist.q.answer'), audio: t('hist.q.answer'), imageUnavailable: t('hist.media.unavailable'), audioUnavailable: t('hist.media.unavailable') }),
-      h('div', {}, h('span', { class: 'label' }, `${t('hist.q.answer')}: `), i.answered ? i.answer : h('span', { class: 'muted' }, t('hist.q.unanswered'))),
-      i.correct === false && i.correctAnswer ? h('div', {}, h('span', { class: 'label' }, `${i.correctLabel ?? t('hist.q.correctAnswer')}: `), i.correctAnswer) : null,
-      i.explanation ? h('div', { class: 'explanation' }, h('h4', {}, t('hist.q.explanation')), h('div', { class: 'explanation-text' }, i.explanation)) : null)));
+    const graded = d.items.filter((i) => i.correct !== null);
+    const labels = { answer: t('hist.q.answer'), noAnswer: t('hist.q.unanswered'), correctAnswer: t('hist.q.correctAnswer'), explanation: t('hist.q.explanation') };
+    const mediaLabels = { image: t('hist.q.answer'), audio: t('hist.q.answer'), imageUnavailable: t('hist.media.unavailable'), audioUnavailable: t('hist.media.unavailable') };
+    return h('div', {},
+      graded.length === d.items.length && d.items.length ? scoreHero({ correct: graded.filter((i) => i.correct).length, total: graded.length }) : null,
+      h('ol', { class: 'review-list rv-list' }, d.items.map((i, index) => reviewCard({ ...i, index }, labels, mediaBlock(app.product.media, i, mediaLabels)))));
   }
 
   function translationBody(d) {
@@ -139,6 +141,7 @@ export async function renderHistory(app, main, params = {}) {
     const timing = d.policy?.feedbackTiming === 'on-completion' ? t('hist.ty.onCompletion') : t('hist.ty.live');
     return h('div', {},
       h('p', {}, t('hist.ty.counts', { ref: d.counts?.referenceGraphemes ?? 0, com: d.counts?.committedGraphemes ?? 0 })),
+      h('p', {}, durationLine(d.session)),
       d.policy ? h('p', { class: 'muted small' }, t('hist.ty.policy', { timing, corrections: d.policy.corrections === 'allowed' ? t('hist.ty.allowed') : t('hist.ty.disallowed') })) : null,
       d.correctedErrorCount ? h('p', { class: 'muted small' }, t('hist.ty.corrected', { n: d.correctedErrorCount })) : null,
       d.errors.length

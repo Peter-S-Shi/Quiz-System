@@ -176,3 +176,41 @@ test('starting refuses what cannot be shown or is not there; typing and translat
   assert.equal(tr.domain, 'translation');
   assert.equal(SCHED.length, 5);
 }));
+
+test('Library state (derived): not started -> in progress (saved session) -> practiced (canonical evidence); nothing is stored', withEnv(async (e) => {
+  const { library, runtime, learning } = await setup(e);
+  const paper = { ...paperWithExplanations({ id: 'paper-s' }), title: 'State paper' };
+  await library.savePaper(paper);
+  const stateOf = async () => (await learning.materialStates()).get('quiz-paper|paper-s')?.state ?? 'not-started';
+  assert.equal(await stateOf(), 'not-started');
+  const started = await learning.start({ domain: 'objective', materialId: 'paper-s', intent: 'practice' });
+  assert.equal(await stateOf(), 'in-progress', 'a saved recoverable session exists');
+  const payload = await playObjective(started, paper);
+  await runtime.servicesFor(started).commit({ payload });
+  await runtime.discard(payload.session.id);
+  assert.equal(await stateOf(), 'practiced', 'a canonical completed attempt exists and no session is active');
+  assert.equal((await e.port.read('setting')).some((r) => /material.?state/i.test(r.id)), false, 'no new state field is persisted');
+}));
+
+test('shuffled start over the real store: the realized order survives restore and finalizes in that order; OFF is authored order', withEnv(async (e) => {
+  const { library, runtime, learning } = await setup(e);
+  const paper = { ...paperWithExplanations({ id: 'paper-sh' }), title: 'Shuffle paper' };
+  await library.savePaper(paper);
+  const authored = paper.questions.map((q) => q.id);
+  const plain = await learning.start({ domain: 'objective', materialId: 'paper-sh', intent: 'practice' });
+  assert.deepEqual(plain.engine.snapshot().questions.map((q) => q.id), authored);
+  let realized = null;
+  for (let i = 0; i < 12 && !realized; i += 1) {
+    const s = await learning.start({ domain: 'objective', materialId: 'paper-sh', intent: 'practice', shuffleQuestions: true });
+    const order = s.engine.snapshot().questions.map((q) => q.id);
+    assert.deepEqual([...order].sort(), [...authored].sort());
+    if (order.join() !== authored.join()) realized = { s, order };
+  }
+  assert.ok(realized, 'a shuffled start reorders the questions');
+  const saved = (await runtime.resumable()).find((x) => x.session.id === realized.s.engine.snapshot().session.id);
+  const back = await runtime.restore(saved);
+  assert.deepEqual(back.engine.snapshot().questions.map((q) => q.id), realized.order);
+  const payload = await playObjective(back, paper);
+  assert.deepEqual(payload.responses.map((r) => r.itemId), realized.order);
+  await runtime.servicesFor(back).commit({ payload });
+}));

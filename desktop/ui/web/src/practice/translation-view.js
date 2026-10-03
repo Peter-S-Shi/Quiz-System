@@ -51,6 +51,7 @@ export function mountTranslation({ session, ctx, host }) {
     const mark = (kind) => {
       try {
         session.addAnnotation({ start: ta.selectionStart, end: ta.selectionEnd, kind }, { now: ctx.now() });
+        ctx.sfx('pen');
         ctx.save();
         render({ focus: 'answer' });
         ctx.announce(t('pr.tr.markedAs', { kind: kindLabel(kind) }));
@@ -58,11 +59,11 @@ export function mountTranslation({ session, ctx, host }) {
     };
     const markBtns = KINDS.map((k) => h('button', { class: 'btn small', type: 'button', disabled: true, onclick: () => mark(k) }, kindLabel(k)));
     const itemMark = h('select', { id: uid('im'), 'aria-label': t('pr.tr.wholeSentence') }, h('option', { value: '' }, t('pr.tr.noMark')), KINDS.map((k) => h('option', { value: k, selected: v.mark === k }, kindLabel(k))));
-    itemMark.addEventListener('change', () => { session.setMark(itemMark.value || null); ctx.save(); });
+    itemMark.addEventListener('change', () => { session.setMark(itemMark.value || null); ctx.sfx('pen'); ctx.save(); });
     const marksHost = h('div', { class: 'marks-host' }, annotationList(v));
     const last = v.index === v.total - 1;
     fill(root, 
-      h('nav', { class: 'qnav', 'aria-label': t('pr.tr.sentences') }, v.items.map((it, i) => h('button', { type: 'button', class: `chipbtn${it.answered ? ' answered' : ''}${i === v.index ? ' current' : ''}`, 'aria-current': i === v.index ? 'step' : null, 'aria-label': t('pr.tr.chip', { n: i + 1, state: t(it.answered ? 'pr.tr.chip.translated' : 'pr.tr.chip.notTranslated'), marked: it.marked ? t('pr.tr.chip.marked') : '' }), onclick: () => { session.go(i); ctx.save(); render({ focus: 'head' }); } }, String(i + 1)))),
+      h('nav', { class: 'qnav', 'aria-label': t('pr.tr.sentences') }, v.items.map((it, i) => h('button', { type: 'button', class: `chipbtn${it.answered ? ' answered' : ''}${i === v.index ? ' current' : ''}`, 'aria-current': i === v.index ? 'step' : null, 'aria-label': t('pr.tr.chip', { n: i + 1, state: t(it.answered ? 'pr.tr.chip.translated' : 'pr.tr.chip.notTranslated'), marked: it.marked ? t('pr.tr.chip.marked') : '' }), onclick: () => { ctx.sfx('page'); session.go(i); ctx.save(); render({ focus: 'head' }); } }, String(i + 1)))),
       h('h2', { class: 'qhead', tabindex: '-1', id: 'qhead' }, t('pr.tr.sentenceOf', { n: v.index + 1, total: v.total })),
       h('blockquote', { class: 'source', lang: v.sourceLanguage || null }, v.item.sourceText),
       v.item.notes ? h('p', { class: 'muted small' }, t('pr.tr.note', { text: v.item.notes })) : null,
@@ -72,10 +73,10 @@ export function mountTranslation({ session, ctx, host }) {
       h('div', { class: 'row' }, h('label', { class: 'field-label inline' }, t('pr.tr.wholeSentenceColon')), itemMark),
       v.hasReference ? h('div', { class: 'reference' }, v.revealed
         ? [h('h3', {}, t('pr.tr.reference')), h('p', { class: 'reference-text', lang: v.targetLanguage || null }, v.reference), h('button', { class: 'btn small', type: 'button', onclick: () => { session.reveal(false); ctx.save(); render({ focus: 'answer' }); } }, t('pr.tr.hideReference'))]
-        : h('button', { class: 'btn', type: 'button', onclick: () => { session.reveal(true); ctx.save(); render({ focus: 'reveal' }); } }, t('pr.tr.showReference'))) : null,
+        : h('button', { class: 'btn', type: 'button', onclick: () => { session.reveal(true); ctx.sfx('stamp'); ctx.save(); render({ focus: 'reveal' }); } }, t('pr.tr.showReference'))) : null,
       h('div', { class: 'row actions' },
-        h('button', { class: 'btn', type: 'button', disabled: v.index === 0, onclick: () => { session.go(v.index - 1); ctx.save(); render({ focus: 'head' }); } }, t('pr.previous')),
-        h('button', { class: 'btn', type: 'button', disabled: last, onclick: () => { session.go(v.index + 1); ctx.save(); render({ focus: 'head' }); } }, t('pr.next')),
+        h('button', { class: 'btn', type: 'button', disabled: v.index === 0, onclick: () => { ctx.sfx('page'); session.go(v.index - 1); ctx.save(); render({ focus: 'head' }); } }, t('pr.previous')),
+        h('button', { class: 'btn', type: 'button', disabled: last, onclick: () => { ctx.sfx('page'); session.go(v.index + 1); ctx.save(); render({ focus: 'head' }); } }, t('pr.next')),
         h('button', { class: 'btn primary', type: 'button', 'data-act': 'finish', onclick: finish }, t('pr.finish'))));
     if (focus === 'answer') { focusEl(ta); ta.setSelectionRange(ta.value.length, ta.value.length); } else if (focus === 'head') focusEl(root.querySelector('#qhead'));
     else if (focus === 'reveal') focusEl(root.querySelector('.reference-text') ?? root.querySelector('#qhead'));
@@ -96,6 +97,7 @@ export function mountTranslation({ session, ctx, host }) {
     }
     const res = await ctx.commit(() => session.finalize({ now: ctx.now() }));
     if (!res.ok) return;
+    ctx.sfx('stamp');
     outcome = { payload: res.payload };
     stage = 'result';
     render({ focus: 'result' });
