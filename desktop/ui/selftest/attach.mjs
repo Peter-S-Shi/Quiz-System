@@ -16,31 +16,51 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * @param {number} [args.debugPort]
  */
 export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Math.floor(Math.random() * 30000), timeoutMs = 180000 }) {
-  const env = { ...process.env, LOCALAPPDATA: localAppData, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${debugPort} --remote-allow-origins=*`, WEBVIEW2_USER_DATA_FOLDER: fs.mkdtempSync(path.join(os.tmpdir(), 'qs-wv2-')) };
+  const udf = fs.mkdtempSync(path.join(os.tmpdir(), 'qs-wv2-'));
+  const env = { ...process.env, LOCALAPPDATA: localAppData, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${debugPort} --remote-allow-origins=*`, WEBVIEW2_USER_DATA_FOLDER: udf };
   // on a CI runner only: a stray instance from an earlier step would make this launch exit through the single-instance guard
   if (process.env.CI) { spawnSync('taskkill', ['/F', '/IM', 'quiz-studio.exe'], { stdio: 'ignore' }); await sleep(1000); }
   const child = spawn(exe, [], { env, stdio: 'ignore', detached: false });
   let exited = null;
   child.on('exit', (code, signal) => { exited = { code, signal }; });
+  // Chromium records the port it really listens on in DevToolsActivePort inside the profile; find it wherever the runtime put the profile
+  const findActivePort = (dir, depth = 0) => {
+    try {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (e.isFile() && e.name === 'DevToolsActivePort') { const n = Number(fs.readFileSync(path.join(dir, e.name), 'utf8').split(/\r?\n/)[0]); if (n > 0) return n; }
+        if (e.isDirectory() && depth < 3) { const n = findActivePort(path.join(dir, e.name), depth + 1); if (n) return n; }
+      }
+    } catch { /* not there yet */ }
+    return 0;
+  };
   let page = null;
   let lastError = '';
+  let usedBase = '';
   const deadline = Date.now() + timeoutMs;
   while (!page && Date.now() < deadline && !exited) {
     await sleep(250);
-    try {
-      const list = await (await fetch(`http://127.0.0.1:${debugPort}/json/list`)).json();
-      page = list.find((t) => t.type === 'page' && /tauri|localhost|127\.0\.0\.1/.test(t.url)) ?? list.find((t) => t.type === 'page') ?? null;
-      if (!page) lastError = `DevTools answered but lists no page: ${JSON.stringify(list.map((t) => [t.type, t.url]))}`;
-    } catch (e) { lastError = String(e?.cause?.code ?? e?.message ?? e); /* the app is still starting */ }
+    const ports = [...new Set([debugPort, findActivePort(udf), findActivePort(localAppData)].filter(Boolean))];
+    for (const port of ports) {
+      for (const host of ['127.0.0.1', '[::1]', 'localhost']) {
+        try {
+          const list = await (await fetch(`http://${host}:${port}/json/list`)).json();
+          page = list.find((t) => t.type === 'page' && /tauri|localhost|127\.0\.0\.1/.test(t.url)) ?? list.find((t) => t.type === 'page') ?? null;
+          if (page) { usedBase = `${host}:${port}`; break; }
+          lastError = `DevTools answered on ${host}:${port} but lists no page: ${JSON.stringify(list.map((t) => [t.type, t.url]))}`;
+        } catch (e) { lastError = `${host}:${port} ${String(e?.cause?.code ?? e?.message ?? e)}`; /* the app is still starting */ }
+      }
+      if (page) break;
+    }
   }
   if (!page) {
     const boot = path.join(localAppData, 'io.github.peter-s-shi.quiz-studio', 'logs', 'boot-status.json');
-    const bootText = fs.existsSync(boot) ? fs.readFileSync(boot, 'utf8').slice(0, 600) : '(no boot-status.json)';
-    const detail = `port ${debugPort}; app exited: ${exited ? JSON.stringify(exited) : 'no (still running)'}; last probe: ${lastError || '(none)'}; boot status: ${bootText}`;
+    const bootText = fs.existsSync(boot) ? fs.readFileSync(boot, 'utf8').slice(0, 300) : '(no boot-status.json)';
+    const net = spawnSync('powershell', ['-NoProfile', '-Command', "Get-Process quiz-studio,msedgewebview2 -ErrorAction SilentlyContinue | ForEach-Object { $p = $_; (Get-NetTCPConnection -OwningProcess $p.Id -State Listen -ErrorAction SilentlyContinue | ForEach-Object { \"$($p.ProcessName):$($_.LocalAddress):$($_.LocalPort)\" }) }; Get-CimInstance Win32_Process -Filter \"Name='msedgewebview2.exe'\" | Select-Object -First 2 | ForEach-Object { $_.CommandLine.Substring(0, [Math]::Min(700, $_.CommandLine.Length)) }"], { encoding: 'utf8', timeout: 20000 });
+    const detail = `port ${debugPort}; app exited: ${exited ? JSON.stringify(exited) : 'no (still running)'}; last probe: ${lastError || '(none)'}; active-port file: ${findActivePort(udf) || findActivePort(localAppData) || 'none'}; listeners/webview command lines: ${(net.stdout || net.stderr || '').replace(/\s+/g, ' ').slice(0, 1600)}; boot status: ${bootText}`;
     child.kill();
     throw new Error(`the packaged app did not expose a DevTools page - ${detail}`);
   }
-  const ws = new WebSocket(page.webSocketDebuggerUrl);
+  const ws = new WebSocket(page.webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://${usedBase}`));
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
   let id = 0;
   const pending = new Map();
