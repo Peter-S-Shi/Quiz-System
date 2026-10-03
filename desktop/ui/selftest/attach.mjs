@@ -20,6 +20,14 @@ export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Ma
   const env = { ...process.env, LOCALAPPDATA: localAppData, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${debugPort} --remote-allow-origins=*`, WEBVIEW2_USER_DATA_FOLDER: udf };
   // on a CI runner only: a stray instance from an earlier step would make this launch exit through the single-instance guard
   if (process.env.CI) { spawnSync('taskkill', ['/F', '/IM', 'quiz-studio.exe'], { stdio: 'ignore' }); await sleep(1000); }
+  // WebView2 also reads the per-app AdditionalBrowserArguments policy; the runner's runtime ignored the environment variable
+  // (its command line showed no debugging flag), so the policy is the reliable route. HKCU only, removed again on close.
+  const policyKey = ['HKCU', 'Software', 'Policies', 'Microsoft', 'Edge', 'WebView2', 'AdditionalBrowserArguments'].join('\\');
+  const exeName = path.basename(exe);
+  const useRegistry = Boolean(process.env.CI) || process.env.QS_ATTACH_REGISTRY === '1';
+  if (useRegistry) spawnSync('reg', ['add', policyKey, '/v', exeName, '/t', 'REG_SZ', '/d', `--remote-debugging-port=${debugPort} --remote-allow-origins=*`, '/f'], { stdio: 'ignore' });
+  if (process.env.QS_ATTACH_REGISTRY === '1') delete env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS;
+  const dropPolicy = () => { if (useRegistry) spawnSync('reg', ['delete', policyKey, '/v', exeName, '/f'], { stdio: 'ignore' }); };
   const child = spawn(exe, [], { env, stdio: 'ignore', detached: false });
   let exited = null;
   child.on('exit', (code, signal) => { exited = { code, signal }; });
@@ -58,6 +66,7 @@ export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Ma
     const net = spawnSync('powershell', ['-NoProfile', '-Command', "Get-Process quiz-studio,msedgewebview2 -ErrorAction SilentlyContinue | ForEach-Object { $p = $_; (Get-NetTCPConnection -OwningProcess $p.Id -State Listen -ErrorAction SilentlyContinue | ForEach-Object { \"$($p.ProcessName):$($_.LocalAddress):$($_.LocalPort)\" }) }; Get-CimInstance Win32_Process -Filter \"Name='msedgewebview2.exe'\" | Select-Object -First 2 | ForEach-Object { $_.CommandLine.Substring(0, [Math]::Min(700, $_.CommandLine.Length)) }"], { encoding: 'utf8', timeout: 20000 });
     const detail = `port ${debugPort}; app exited: ${exited ? JSON.stringify(exited) : 'no (still running)'}; last probe: ${lastError || '(none)'}; active-port file: ${findActivePort(udf) || findActivePort(localAppData) || 'none'}; listeners/webview command lines: ${(net.stdout || net.stderr || '').replace(/\s+/g, ' ').slice(0, 1600)}; boot status: ${bootText}`;
     child.kill();
+    dropPolicy();
     throw new Error(`the packaged app did not expose a DevTools page - ${detail}`);
   }
   const ws = new WebSocket(page.webSocketDebuggerUrl.replace(/^ws:\/\/[^/]+/, `ws://${usedBase}`));
@@ -109,6 +118,7 @@ export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Ma
     async close() {
       try { ws.close(); } catch { /* ignore */ }
       child.kill();
+      dropPolicy();
       await sleep(400);
       // WebView2 child processes exit with the host; make sure none keeps the isolated profile busy
       spawn('taskkill', ['/F', '/T', '/PID', String(child.pid)], { stdio: 'ignore' });
