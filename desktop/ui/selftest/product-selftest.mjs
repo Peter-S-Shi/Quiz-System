@@ -145,6 +145,7 @@ try {
   ok('the stored Selection is "recommended" and keeps the reasons that were shown', last && last.selection.reasons.length > 0 && last.selection.reasons.every((r) => r.code), JSON.stringify(sels.map((s) => s.payload.selection.source)));
   ok('the recovery row was cleared after the commit', await until(async () => (await count('recovery_session')) === 0, 8000));
   await waitFor("[...document.querySelectorAll('#main button')].some((x) => x.textContent.trim() === 'Done')", 8000);
+  await waitFor("[...document.querySelectorAll('.practice button')].some((x) => x.textContent.trim() === 'Done')");
   await clickText('Done');
   ok('closing returns to Today with the sidebar back', await waitFor("document.getElementById('app').dataset.focus === undefined && document.querySelector('#nav [aria-current=page]')?.dataset.view === 'today' && !!document.querySelector('.composer')"));
 
@@ -436,6 +437,7 @@ try {
   await clickText('Retry the incorrect ones', '.col-c');
   ok('Retry opens a NEW session containing only the questions answered incorrectly', await waitFor("document.getElementById('app').dataset.focus === 'on'") && new RegExp(`Question 1 of ${wrongN}`, "i").test(await txt('.qhead')), `${wrongN}: ${await txt('.qhead')}`);
   await finishObjective(wrongN);
+  await waitFor("[...document.querySelectorAll('.practice button')].some((x) => x.textContent.trim() === 'Done')");
   await clickText('Done', '.practice');
   ok('finishing returns to Evidence history where the learner came from', await waitFor("document.querySelector('#nav [aria-current=page]')?.dataset.view === 'history' && !!document.querySelector('.tri')"));
   const retried = (await port.read('learner_response')).map((r) => r.payload).find((p) => p.provenance?.purpose === 'retry');
