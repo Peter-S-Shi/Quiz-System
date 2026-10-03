@@ -14,17 +14,23 @@ const select = (label, options, value) => {
  * @param {HTMLElement} main the app's main region
  * @param {Awaited<ReturnType<import('./runtime.js').createPracticeRuntime>>} rt
  */
-export async function renderLauncher(main, rt) {
-  const say = h('p', { class: 'muted', role: 'status', 'aria-live': 'polite' });
+export async function renderLauncher(main, rt, notice = '') {
+  const say = h('p', { class: 'muted', role: 'status', 'aria-live': 'polite' }, notice);
   const body = h('div', { class: 'launcher' });
   main.replaceChildren(h('h1', {}, 'Start a practice'), h('p', { class: 'lede' }, 'A minimal launcher for the Focused Practice surface. The Library, Today and Calendar views arrive with later milestones.'), say, body);
 
   const run = (started) => {
-    const startRetry = (kind, args) => {
+    const startRetry = async (kind, args) => {
+      try { await retry(kind, args); } catch (e) {
+        // the surface has already closed for the retry: land on the launcher with the reason (e.g. media not presentable yet)
+        await renderLauncher(main, rt, `The retry could not be started: ${e?.message ?? e}`);
+      }
+    };
+    const retry = (kind, args) => {
       let next;
       if (kind === 'objective') {
         const paper = papersById.get(args.paperId);
-        if (!paper) { say.textContent = 'The source paper is no longer available, so it cannot be retried.'; return; }
+        if (!paper) throw new Error('the source paper is no longer available');
         next = rt.startObjective({ paper, intent: args.intent, feedbackTiming: args.feedbackTiming, questionIds: args.questionIds, provenance: { purpose: 'retry', sourceResponseId: args.sourceResponseId, sourceMaterialId: args.paperId } });
       } else if (kind === 'translation') next = rt.startTranslation({ document: args.document });
       else next = rt.startTyping({ text: textsById.get(args.textId) ?? args.text, intent: args.intent, provenance: { purpose: 'retry', sourceAttemptId: args.sourceAttemptId, sourceMaterialId: args.textId } });
@@ -57,8 +63,8 @@ export async function renderLauncher(main, rt) {
     const intent = select('Intent', [['practice', 'Practice'], ['test', 'Test']], 'practice');
     sections.push(h('section', { class: 'card' }, h('h2', {}, 'Objective papers'),
       m.papers.length ? [h('div', { class: 'row' }, intent.row, timing.row),
-        h('ul', { class: 'plain' }, m.papers.map((p) => h('li', { class: 'row' }, h('span', {}, `${p.title} `, h('span', { class: 'muted' }, `(${p.questions} questions)`)),
-          h('button', { class: 'btn primary', type: 'button', disabled: !p.ready, title: p.ready ? '' : 'This paper has questions that are not ready', onclick: async () => run(await rt.begin(rt.startObjective({ paper: p.paper, intent: intent.el.value, feedbackTiming: timing.el.value }))) }, 'Start'))))]
+        h('ul', { class: 'plain' }, m.papers.map((p) => h('li', { class: 'row' }, h('span', {}, `${p.title} `, h('span', { class: 'muted' }, `(${p.questions} questions)`), p.unavailable ? h('span', { class: 'muted media-unavailable' }, ` - ${p.unavailable}.`) : null),
+          h('button', { class: 'btn primary', type: 'button', disabled: !p.ready, title: p.ready ? '' : (p.unavailable ?? 'This paper has questions that are not ready'), onclick: async () => run(await rt.begin(rt.startObjective({ paper: p.paper, intent: intent.el.value, feedbackTiming: timing.el.value }))) }, 'Start'))))]
         : h('p', { class: 'muted' }, 'No papers yet. Import a V1 backup in Settings.')));
 
     sections.push(h('section', { class: 'card' }, h('h2', {}, 'Translation documents'),

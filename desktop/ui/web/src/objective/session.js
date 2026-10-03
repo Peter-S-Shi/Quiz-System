@@ -8,7 +8,7 @@
 // Finalization produces a V1-valid native Learner Response (the question snapshot taken at session start, with the
 // explanation of that moment; V2 session facts in the namespaced extension). It never writes anything itself.
 import { withSessionFacts } from '../task-domains/adapters.js';
-import { DEFAULT_LABELS, gradeQuestion, isAnswerComplete, normalizeQuestion, prepareQuizQuestion, validateQuestion } from './questions.js';
+import { DEFAULT_LABELS, gradeQuestion, isAnswerComplete, normalizeQuestion, prepareQuizQuestion, unsupportedMedia, validateQuestion } from './questions.js';
 
 export const FEEDBACK_TIMINGS = Object.freeze(['instant', 'submit-at-end']);
 export const INTENTS = Object.freeze(['practice', 'test']);
@@ -58,6 +58,12 @@ function checkAnswerShape(q, value) {
   if (!isObj(value) || !Object.entries(value).every(([pairId, token]) => q.pairs.some((p) => p.id === pairId) && q.rightOptions.some((_, k) => tokenOf(k) === token))) fail('BAD_ANSWER', 'not a pairing of this question');
 }
 
+/** Fail closed on media this build cannot present (see unsupportedMedia). */
+function refuseMedia(q) {
+  const kind = unsupportedMedia(q);
+  if (kind) fail('MEDIA_UNSUPPORTED', `question ${JSON.stringify(q.id)} has ${kind}, which the practice screen cannot present yet`);
+}
+
 export class ObjectiveSession {
   #s;
 
@@ -88,6 +94,7 @@ export class ObjectiveSession {
       const q = normalizeQuestion(raw);
       const errs = validateQuestion(q);
       if (errs.length) fail('BAD_INPUT', `question ${JSON.stringify(q.id)} is not ready: ${errs.join('; ')}`);
+      refuseMedia(q);
       return prepareQuizQuestion(q, rng);
     });
     if (new Set(questions.map((q) => q.id)).size !== questions.length) fail('BAD_INPUT', 'question ids must be unique within a paper');
@@ -102,6 +109,7 @@ export class ObjectiveSession {
   static restore(snap) {
     if (!isObj(snap) || snap.domain !== 'objective' || snap.schemaVersion !== SCHEMA_VERSION || !Array.isArray(snap.questions) || !snap.questions.length || !isObj(snap.answers) || !isObj(snap.results)) fail('BAD_SNAPSHOT', 'not an Objective session snapshot');
     if (!FEEDBACK_TIMINGS.includes(snap.feedbackTiming) || !INTENTS.includes(snap.intent)) fail('BAD_SNAPSHOT', 'unknown timing or intent');
+    snap.questions.forEach(refuseMedia);
     const state = clone(snap);
     if (!Number.isInteger(state.index) || state.index < 0 || state.index >= state.questions.length) state.index = 0;
     return new ObjectiveSession(state);

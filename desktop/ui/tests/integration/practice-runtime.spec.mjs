@@ -185,3 +185,20 @@ test('a committed session found again in recovery (crash between commit and clea
   assert.deepEqual(await rt2.resumable(), []);
   assert.equal(await count(e, 'learner_response'), 1);
 }));
+
+test('media-bearing papers are listed but not startable, cannot be started by any bypass, and produce no Evidence', withEnv(async (e) => {
+  const paper = paperWithExplanations({ id: 'paper-media' });
+  paper.questions[2].image = { name: 'figure.png', alt: 'synthetic', mediaId: 'media-1' };
+  await e.port.commit({ ops: [putOp(e.spec('paper'), paper.id, paper)] });
+  const rt = await createPracticeRuntime(e.port);
+  const mine = (await rt.materials()).papers.find((p) => p.id === paper.id);
+  assert.equal(mine.ready, false, 'not startable from the launcher');
+  assert.match(mine.unavailable, /image or audio/i, 'with a clear reason');
+  assert.equal(mine.questions, 5, 'still listed with its question count');
+  assert.throws(() => rt.startObjective({ paper, intent: 'practice', feedbackTiming: 'instant' }), (err) => err.code === 'MEDIA_UNSUPPORTED');
+  assert.throws(() => rt.startObjective({ paper, intent: 'test', feedbackTiming: 'submit-at-end', questionIds: ['q-blank'], provenance: { purpose: 'retry' } }), (err) => err.code === 'MEDIA_UNSUPPORTED');
+  assert.equal((await rt.resumable()).length, 0, 'nothing was started or saved');
+  assert.equal(await count(e, 'learner_response'), 0, 'no Evidence');
+  const [row] = await e.port.read('paper', { id: paper.id });
+  assert.deepEqual(row.payload.questions[2].image, paper.questions[2].image, 'the media metadata is stored unchanged');
+}));

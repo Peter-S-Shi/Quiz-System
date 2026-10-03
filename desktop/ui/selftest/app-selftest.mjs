@@ -19,10 +19,13 @@ const { port } = bridge;
 const info = await port.schemaInfo();
 const spec = (n) => info.collections.find((c) => c.name === n);
 const paper = paperWithExplanations({ id: 'paper-exp' });
+const mediaPaper = { ...paperWithExplanations({ id: 'paper-media' }), title: 'Figure paper' };
+mediaPaper.questions[0].image = { name: 'figure.png', alt: 'synthetic figure', mediaId: 'media-1' };
 const at = '2026-09-01T00:00:00.000Z';
 const typingText = 'The environment matters. 学习是一种习惯。 Careful copying builds attention.';
 await port.commit({ ops: [
   putOp(spec('paper'), paper.id, paper),
+  putOp(spec('paper'), mediaPaper.id, mediaPaper),
   putOp(spec('translation_folder'), 'f-1', { schemaVersion: 1, id: 'f-1', name: 'Folder', createdAt: at, updatedAt: at }),
   putOp(spec('translation_document'), 'doc-1', { schemaVersion: 1, id: 'doc-1', title: 'Synthetic document', folderId: 'f-1', sourceLanguage: 'en', targetLanguage: 'zh', createdAt: at, updatedAt: at,
     items: [{ id: 'it-1', position: 0, sourceText: 'The environment matters.', referenceTranslation: '环境很重要。' }, { id: 'it-2', position: 1, sourceText: 'Learning is a habit.' }] }),
@@ -42,6 +45,8 @@ try {
   await b.sleep(200);
   const home = await text();
   ok('papers, documents and typing texts are listed', home.includes('Synthetic paper') && home.includes('Synthetic document') && home.includes('Copy text'), home.slice(0, 300));
+  ok('a media-bearing paper is listed with a clear reason and its Start is disabled', home.includes('Figure paper') && /image or audio/i.test(home) && (await b.eval("(() => { const li = [...document.querySelectorAll('#main li')].find((x) => x.textContent.includes('Figure paper')); return li.querySelector('button').disabled; })()")) === true);
+  ok('no session was started or saved for it', (await rows('learner_response')).length === 0);
   ok('nothing is listed as unfinished', !home.toLowerCase().includes('unfinished'));
 
   section('Objective (Submit-at-End) from the launcher to the store');

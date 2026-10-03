@@ -23,3 +23,5 @@
 | M-T4 | 打包 WebView 烟测 | `scripts/package-test.ps1`（CI 会运行） | `boot-status.json` 中 `webview.pinned_comparison` 与 `webview.engine_reported` 通过 | CI 自动化（见 `docs/V2_PRACTICE.zh-CN.md`） |
 
 按设计不在本里程碑内：题目内图片/音频的显示、Today / Calendar / Library 最终视图、各种编辑界面。
+
+> **最终 Human Gate Exit 证据所必需：** Product Owner 在最终打包候选版上执行 **M-T1a** 与 **M-T1c** 并在此记录真实结果（无法自动化；绝不记为自动化 PASS）。

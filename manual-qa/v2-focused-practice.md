@@ -23,3 +23,5 @@ Run on the installed app (`quiz-studio.exe`, Windows 11, WebView2 Evergreen). Li
 | M-T4 | Packaged WebView smoke | `scripts/package-test.ps1` (CI runs it) | `webview.pinned_comparison` and `webview.engine_reported` pass in `boot-status.json` | automated in CI (see `docs/V2_PRACTICE.md`) |
 
 Out of scope here, by design: media (image / audio) display inside questions, Today / Calendar / Library final views, authoring UIs.
+
+> **Required for the final Human Gate Exit evidence:** the Product Owner runs **M-T1a** and **M-T1c** on the final packaged candidate and records the real results here (not automatable; never an automated PASS).

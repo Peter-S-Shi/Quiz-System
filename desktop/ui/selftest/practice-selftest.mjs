@@ -48,6 +48,48 @@ try {
   await b.sleep(100);
   ok('Discard clears the recovery state and records nothing', (await b.eval('window.harness.state.closed')) === 'discarded' && (await b.eval('window.harness.state.clears.length')) >= 1 && (await commits()) === 0);
 
+  // ------------------------------------------------------------------------------------ explicit exit durability (fault injection)
+  section('Explicit exit actions are required actions: a failed save / clear never closes the surface');
+  const noticeText = () => b.eval("(document.querySelector('.practice [data-kind=error]')?.textContent ?? '')");
+  const closedNow = () => b.eval('window.harness.state.closed');
+  await b.goto('/selftest/harness.html');
+  await b.eval("(window.harness.objective({ feedbackTiming: 'instant' }), 1)");
+  await b.eval("window.harness.state.fail.save = true");
+  await key('Escape');
+  await clickText('Save and leave', "document.querySelector('dialog')");
+  await b.sleep(150);
+  ok('Save and leave with a failing save keeps the surface open', (await closedNow()) === null && (await b.eval("!!document.querySelector('.practice')")) && (await b.eval("document.getElementById('app').dataset.focus")) === 'on');
+  ok('a persistent error says the progress was not saved', /could not be saved/i.test(await noticeText()) && (await b.eval("document.querySelector('.practice [data-kind=error]').hidden")) === false);
+  await b.sleep(4500);
+  ok('the error stays until the problem is resolved (no auto-dismiss)', /could not be saved/i.test(await noticeText()) && (await b.eval("document.querySelector('.practice [data-kind=error]').hidden")) === false);
+  ok('no recovery state was written by the failed save', (await b.eval('window.harness.state.row')) === null);
+  await b.eval("window.harness.state.fail.save = false");
+  await key('Escape');
+  await clickText('Save and leave', "document.querySelector('dialog')");
+  await b.sleep(150);
+  ok('retrying Save and leave succeeds once the store works, and then closes', (await closedNow()) === 'left' && (await b.eval('window.harness.state.row !== null')));
+
+  await b.goto('/selftest/harness.html');
+  await b.eval("(window.harness.objective({ feedbackTiming: 'instant' }), 1)");
+  await b.exec("document.querySelector('.practice').dispatchEvent(new Event('focusout', { bubbles: true }));");
+  await b.eval("window.harness.services.save(window.harness.state.engine.snapshot()).then(() => 1)");
+  await b.eval("window.harness.state.fail.clear = true");
+  await key('Escape');
+  await clickText('Discard session', "document.querySelector('dialog')");
+  await b.sleep(50);
+  await clickText('Discard', "document.querySelector('dialog')");
+  await b.sleep(150);
+  ok('Discard with a failing clear keeps the surface open and reports nothing as discarded', (await closedNow()) === null && (await b.eval("!!document.querySelector('.practice')")));
+  ok('the failed discard says the session was not discarded and the recovery row is untouched', /could not be discarded/i.test(await noticeText()) && (await b.eval('window.harness.state.row !== null')));
+  ok('nothing was recorded as a result', (await commits()) === 0);
+  await b.eval("window.harness.state.fail.clear = false");
+  await key('Escape');
+  await clickText('Discard session', "document.querySelector('dialog')");
+  await b.sleep(50);
+  await clickText('Discard', "document.querySelector('dialog')");
+  await b.sleep(150);
+  ok('retrying Discard succeeds once the store works: row gone, closed as discarded', (await closedNow()) === 'discarded' && (await b.eval('window.harness.state.row')) === null);
+
   await b.goto('/selftest/harness.html');
   const broke = await b.eval("(() => { try { window.harness.broken(); return 'mounted'; } catch (e) { return 'threw'; } })()");
   ok('a session that cannot render fails cleanly and does not leave the app in focus mode', broke === 'threw' && (await b.eval("document.getElementById('app').dataset.focus")) === undefined);

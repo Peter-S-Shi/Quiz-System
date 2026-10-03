@@ -7,7 +7,8 @@ import { TypingSession, restoreTypingSession } from '../web/src/task-domains/typ
 import { paperWithExplanations } from '../tests/objective-fixtures.mjs';
 import { ADAPTERS } from '../web/src/task-domains/adapters.js';
 
-const state = { saves: [], commits: [], clears: [], closed: null, invalid: [], engine: null };
+// `fail` injects faults into the recovery store; `row` models the one recovery row the real store keeps
+const state = { saves: [], commits: [], clears: [], closed: null, invalid: [], engine: null, fail: { save: false, clear: false }, row: null };
 let n = 0;
 const ids = () => `h-${++n}`;
 const T = () => new Date().toISOString();
@@ -15,7 +16,7 @@ const T = () => new Date().toISOString();
 const services = {
   now: T,
   newId: ids,
-  save: async (s) => { state.saves.push(JSON.parse(JSON.stringify(s))); },
+  save: async (s) => { if (state.fail.save) throw new Error('injected save fault'); state.saves.push(JSON.parse(JSON.stringify(s))); state.row = JSON.parse(JSON.stringify(s)); },
   commit: async ({ payload }) => {
     const adapter = Object.values(ADAPTERS).find((a) => a.materialType === payload.material.type);
     const errs = adapter.validate(payload);
@@ -23,7 +24,7 @@ const services = {
     state.commits.push(JSON.parse(JSON.stringify(payload)));
     return { alreadyFinalized: false };
   },
-  clear: async (id) => { state.clears.push(id); },
+  clear: async (id) => { if (state.fail.clear) throw new Error('injected clear fault'); state.clears.push(id); state.row = null; },
 };
 
 export function longText(graphemes, seed = 7) {

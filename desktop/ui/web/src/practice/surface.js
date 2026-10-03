@@ -69,14 +69,10 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
       progress.setAttribute('aria-valuetext', text);
       bar.style.width = `${total ? Math.min(100, (100 * done) / total) : 0}%`;
     },
-    /** Persist the recovery state (never evidence). A failed save is reported, never swallowed. */
-    async save() {
-      if (finished || closed) return;
-      try {
-        await services.save(engine.snapshot());
-      } catch (e) {
-        ctx.notify(`Your progress could not be saved: ${e?.message ?? e}`, { kind: 'error', ms: 0 });
-      }
+    /** Best-effort recovery save (automatic: per change, blur, hidden). A failure is reported persistently, never swallowed. */
+    save() {
+      if (finished || closed) return Promise.resolve(false);
+      return persist();
     },
     /** Finalize through the one door (SessionFinalizer); the recovery state is cleared only after the evidence is committed. */
     async commit(build) {
@@ -97,6 +93,22 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
     requestExit,
     startRetry: services.startRetry ? (kind, args) => { close('retry'); return services.startRetry(kind, args); } : null,
   };
+
+  // Saves are serialized so a discard can never be undone by a save that was already in flight.
+  let queue = Promise.resolve();
+  function persist() {
+    const run = queue.then(async () => {
+      try {
+        await services.save(engine.snapshot());
+        return true;
+      } catch (e) {
+        ctx.notify(`Your progress could not be saved: ${e?.message ?? e}`, { kind: 'error', ms: 0 });
+        return false;
+      }
+    });
+    queue = run;
+    return run;
+  }
 
   /** A modal choice. Resolves with the chosen value, or 'cancel' for Escape. */
   function choose({ title, body: text, actions }) {
@@ -119,9 +131,24 @@ export function mountPractice({ root, domain, engine, services, onClose }) {
       body: 'Your progress is saved. You can resume it later from where you stopped, or discard it - nothing is recorded as a result either way until you finish.',
       actions: [{ value: 'keep', label: 'Keep practicing' }, { value: 'leave', label: 'Save and leave', kind: 'primary' }, { value: 'discard', label: 'Discard session', kind: 'danger' }],
     });
-    if (choice === 'leave') { await ctx.save(); close('left'); } else if (choice === 'discard') {
+    if (choice === 'leave') {
+      // a required action: the surface closes only once the recovery state is really stored
+      if (await persist()) close('left'); else focusEl(exitBtn);
+    } else if (choice === 'discard') {
       const sure = await choose({ title: 'Discard this session?', body: 'The saved progress is deleted. No result is recorded.', actions: [{ value: 'no', label: 'Cancel' }, { value: 'yes', label: 'Discard', kind: 'danger' }] });
-      if (sure === 'yes') { finished = true; await services.clear(engine.snapshot().session.id).catch(() => {}); close('discarded'); } else focusEl(exitBtn);
+      if (sure === 'yes') {
+        await queue; // let any in-flight save settle first
+        try {
+          await services.clear(engine.snapshot().session.id);
+        } catch (e) {
+          // a required action: the saved row still exists, so nothing is closed, discarded or reported as discarded
+          ctx.notify(`The session could not be discarded: ${e?.message ?? e}. Your progress is unchanged; try again.`, { kind: 'error', ms: 0 });
+          focusEl(exitBtn);
+          return;
+        }
+        finished = true;
+        close('discarded');
+      } else focusEl(exitBtn);
     } else focusEl(exitBtn);
   }
 

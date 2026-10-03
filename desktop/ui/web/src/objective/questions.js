@@ -62,6 +62,18 @@ export function validateQuestion(q) {
   return errs;
 }
 
+/**
+ * Media (image / audio) a question carries that Focused Practice cannot yet show or play. A session that needs such a
+ * question must not start (fail closed): the learner would answer, and Evidence would be recorded, without seeing it.
+ * Returns null, 'image', 'audio' or 'image and audio'. The media metadata itself is never touched.
+ */
+export function unsupportedMedia(question) {
+  const kinds = [question?.image ? 'image' : null, question?.audio ? 'audio' : null].filter(Boolean);
+  return kinds.length ? kinds.join(' and ') : null;
+}
+
+export const MEDIA_UNAVAILABLE_REASON = 'Contains image or audio that this practice screen cannot show yet';
+
 /** V1's completeness rule, on the stored answer format. */
 export function isAnswerComplete(question, answer) {
   if (question.type === 'single') return Boolean(answer);

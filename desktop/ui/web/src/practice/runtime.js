@@ -11,7 +11,7 @@ import { SessionRecovery } from '../task-domains/recovery.js';
 import { TypingSession, restoreTypingSession } from '../task-domains/typing/session.js';
 import { ObjectiveSession } from '../objective/session.js';
 import { TranslationSession } from '../translation/session.js';
-import { validateQuestion, normalizeQuestion } from '../objective/questions.js';
+import { validateQuestion, normalizeQuestion, unsupportedMedia, MEDIA_UNAVAILABLE_REASON } from '../objective/questions.js';
 
 const nowIso = () => new Date().toISOString();
 
@@ -37,7 +37,13 @@ export async function createPracticeRuntime(port, { now = nowIso, ids = newId } 
     async materials() {
       const [papers, docs, texts] = await Promise.all([port.read('paper'), port.read('translation_document'), port.read('typing_text')]);
       return {
-        papers: papers.map((r) => r.payload).map((p) => ({ id: p.id, title: p.title || '(untitled paper)', paper: p, ready: Array.isArray(p.questions) && p.questions.length > 0 && p.questions.every((q) => validateQuestion(normalizeQuestion(q)).length === 0), questions: p.questions?.length ?? 0 })),
+        papers: papers.map((r) => r.payload).map((p) => {
+          const questions = Array.isArray(p.questions) ? p.questions : [];
+          const wellFormed = questions.length > 0 && questions.every((q) => validateQuestion(normalizeQuestion(q)).length === 0);
+          // fail closed: a paper with image / audio is listed but not startable until the surface can present media
+          const media = questions.some((q) => unsupportedMedia(q));
+          return { id: p.id, title: p.title || '(untitled paper)', paper: p, ready: wellFormed && !media, unavailable: wellFormed && media ? MEDIA_UNAVAILABLE_REASON : null, questions: questions.length };
+        }),
         documents: docs.map((r) => r.payload).map((d) => ({ id: d.id, title: d.title || '(untitled document)', document: d, ready: Array.isArray(d.items) && d.items.length > 0, items: d.items?.length ?? 0 })),
         texts: texts.map((r) => r.payload).map((t) => ({ id: t.id, title: t.title || '(untitled text)', text: t, ready: typeof t.text === 'string' && t.text.length > 0, characters: t.text?.length ?? 0 })),
       };

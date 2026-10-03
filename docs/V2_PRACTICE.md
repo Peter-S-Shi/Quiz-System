@@ -13,7 +13,7 @@
 4. A **minimal practice launcher** (under the existing *Library* navigation entry) so the surface is reachable from materials in the store, with resume of unfinished sessions. It is interim by design — not Library, Today or Calendar — and includes a bare *Add a typing text* form because Typing text authoring does not exist yet.
 5. **WebView smoke for the pinned comparison**: the app runs literal pinned `typing-compare/1` cases inside the real WebView at startup and reports them through `ui_ready`; the packaged-app smoke asserts them.
 
-**Not built, by design:** Today / Calendar / Library / History / Review / Exchange / Settings final product UI; hints, AI explanations, knowledge points or citations; authoring UIs; image / audio display inside questions (the surface shows a text placeholder); any change to Evidence, Scheduling, Recommendation algorithms (the Reader registry, recommender v2 and planner v1 are untouched), the V1 line, the Rust store schema (still 4) or the public JSON Schemas.
+**Not built, by design:** Today / Calendar / Library / History / Review / Exchange / Settings final product UI; hints, AI explanations, knowledge points or citations; authoring UIs; image / audio display inside questions (**fail-closed**, see clarification 11); any change to Evidence, Scheduling, Recommendation algorithms (the Reader registry, recommender v2 and planner v1 are untouched), the V1 line, the Rust store schema (still 4) or the public JSON Schemas.
 
 ## 2. Where it lives
 
@@ -41,10 +41,12 @@
 7. **Exit semantics.** Exit / Esc asks: keep practicing, save and leave (the recovery state is written), or discard (confirmed; no result is recorded). Esc during an IME composition never opens the dialog. Recovery state is written at session start, after each answer / change, on blur and when the page is hidden; it is cleared only after the evidence commit.
 8. **One door for results.** Every finished session goes through `SessionFinalizer` (ADR 0004); nothing under `practice/` names an evidence collection (static test).
 9. **Chromium, not WebView2 itself, in CI for the DOM checks.** The self-tests drive Microsoft Edge headless (the engine WebView2 embeds) with trusted `Input.insertText` / `Input.imeSetComposition` / key events; they prove the engine contracts but are *not* a real OS IME in WebView2 — those stay manual.
+10. **Explicit exit actions are required actions (Human Gate repair).** Automatic saves (per change, on blur, when hidden) stay best-effort and report a persistent error on failure. *Save and leave* closes the surface only after the recovery state is really stored; *Discard* closes and reports `discarded` only after the recovery row is really cleared. On failure the surface stays open, a persistent error is shown, nothing is lost or recorded, and the action can be retried. Saves are serialized, so a discard cannot be undone by a save already in flight. The post-commit recovery cleanup is unchanged (idempotent, crash-safe) and finalization was not touched.
+11. **Objective media is fail-closed (Human Gate repair).** The surface cannot show images or play audio yet, so a session that needs a question with `image` or `audio` never starts: the engine refuses (`MEDIA_UNSUPPORTED`) on start, on retry of a requested media question and on restore of a recovery state, and the launcher lists such a paper as not startable with the reason *Contains image or audio that this practice screen cannot show yet*. A retry of questions without media from a media paper stays possible. Media metadata is never removed or rewritten. **Carry-forward (required, not waived or deferred): real Objective image / audio rendering belongs to the Final Product UI Integration and must land before media papers become startable.**
 
 ## 4. Evidence
 
-Local (development machine): **183 unit + 62 integration JS tests** pass (existing Migration / Orchestration / Task-Domain suites included), the DOM self-test **69/69** and the real-store app self-test **21/21** pass in headless Edge, `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` are clean (Rust code is unchanged). The Windows Desktop CI run for the milestone candidate (head `b318938`) is **green**: [run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209).
+Local (development machine): **193 unit + 63 integration JS tests** pass (existing Migration / Orchestration / Task-Domain suites included), the DOM self-test **78/78** and the real-store app self-test **23/23** pass in headless Edge, `cargo fmt --check` and `cargo clippy --workspace --all-targets -D warnings` are clean (Rust code is unchanged). The Windows Desktop CI run for the repair candidate is recorded after it completes (pending). The earlier candidate `b318938` was green in [run 37083868209](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37083868209) but is superseded by the Human Gate repair.
 
 | Contract | Automated evidence |
 |---|---|
@@ -60,14 +62,16 @@ Local (development machine): **183 unit + 62 integration JS tests** pass (existi
 | Keyboard operation, focus, basic accessibility contract (names, legends, progressbar, live region, one h1, unique ids, Exit first) | `practice-selftest.mjs` |
 | Pinned comparison inside the real WebView | `webview-selfcheck.spec.mjs` + `scripts/smoke.ps1` (`webview.pinned_comparison`, `webview.engine_reported`) in the packaged-app step |
 | Architecture: engines DOM-free; views cannot grade; only the runtime touches the store; no browser storage / HTML parsing | `practice-architecture.spec.mjs` |
+| Save and leave / Discard are required actions: failed save / clear keeps the surface open, persistent error, retry works, no result recorded | `practice-selftest.mjs` (fault injection) |
+| Media-bearing papers: not startable, refused by the engine on start / retry / restore, no Evidence, metadata intact | `objective-media-failclosed.spec.mjs`, `integration/practice-runtime.spec.mjs`, `app-selftest.mjs` |
 | Existing Migration / Orchestration / Task-Domain regressions | the unchanged suites in the same workflow |
 
 ## 5. Open — manual, not PASS, not waived
 
 `manual-qa/v2-focused-practice.md` (+ `.zh-CN.md`): M-T1a–e real Microsoft IME / third-party IME / dead keys / paste-drop in the real WebView2; M-T2a–d human long-text reading, resize / DPI, Test intent, interrupt-resume; M-T3a–c keyboard-only, Narrator, high-contrast / 200 %. Plus M1–M7 (Migration) and D1–D4 (Desktop Foundation), unchanged.
 
-Other open items: question image / audio display; a real Library / Today entry point; Typing text authoring; per-IME behavior beyond what the manual checklist records.
+Other open items: **Objective image / audio rendering (required carry-forward of the Final Product UI Integration, not waived)**; a real Library / Today entry point; Typing text authoring; per-IME behavior beyond what the manual checklist records.
 
 ## 6. Gate readiness
 
-Implementation complete; the automated contract passes locally and runs in the Windows CI workflow. The milestone **awaits the Human Gate**. The final product UI integration is **not started** and needs its own authorization.
+Implementation complete; the automated contract passes locally and runs in the Windows CI workflow. The final Human Gate Exit evidence additionally needs the Product Owner to run **M-T1a** (Microsoft Pinyin / Japanese / Korean IME) and **M-T1c** (at least one third-party IME, e.g. Sogou) on the final packaged candidate and record the real results. The milestone **awaits the Human Gate**. The final product UI integration is **not started** and needs its own authorization.
