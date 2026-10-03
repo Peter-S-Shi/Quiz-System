@@ -2,7 +2,7 @@
 // `quiz-studio.exe` can be started with a remote-debugging port on loopback and driven (evaluate, trusted input, console and
 // CSP violations) exactly like the browser self-tests - but now inside the real WebView2, under the real CSP, over the real
 // Tauri IPC and the real Rust store. This is a TEST aid; nothing in the shipped app opens a debugging port by itself.
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -15,18 +15,31 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * @param {string} args.localAppData an isolated LOCALAPPDATA (the app's data root lives under it)
  * @param {number} [args.debugPort]
  */
-export async function launchPackaged({ exe, localAppData, debugPort = 9333 }) {
+export async function launchPackaged({ exe, localAppData, debugPort = 20000 + Math.floor(Math.random() * 30000), timeoutMs = 180000 }) {
   const env = { ...process.env, LOCALAPPDATA: localAppData, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${debugPort} --remote-allow-origins=*`, WEBVIEW2_USER_DATA_FOLDER: fs.mkdtempSync(path.join(os.tmpdir(), 'qs-wv2-')) };
+  // on a CI runner only: a stray instance from an earlier step would make this launch exit through the single-instance guard
+  if (process.env.CI) { spawnSync('taskkill', ['/F', '/IM', 'quiz-studio.exe'], { stdio: 'ignore' }); await sleep(1000); }
   const child = spawn(exe, [], { env, stdio: 'ignore', detached: false });
+  let exited = null;
+  child.on('exit', (code, signal) => { exited = { code, signal }; });
   let page = null;
-  for (let i = 0; i < 300 && !page; i += 1) {
-    await sleep(200);
+  let lastError = '';
+  const deadline = Date.now() + timeoutMs;
+  while (!page && Date.now() < deadline && !exited) {
+    await sleep(250);
     try {
       const list = await (await fetch(`http://127.0.0.1:${debugPort}/json/list`)).json();
       page = list.find((t) => t.type === 'page' && /tauri|localhost|127\.0\.0\.1/.test(t.url)) ?? list.find((t) => t.type === 'page') ?? null;
-    } catch { /* the app is still starting */ }
+      if (!page) lastError = `DevTools answered but lists no page: ${JSON.stringify(list.map((t) => [t.type, t.url]))}`;
+    } catch (e) { lastError = String(e?.cause?.code ?? e?.message ?? e); /* the app is still starting */ }
   }
-  if (!page) { child.kill(); throw new Error('the packaged app did not expose a DevTools page'); }
+  if (!page) {
+    const boot = path.join(localAppData, 'io.github.peter-s-shi.quiz-studio', 'logs', 'boot-status.json');
+    const bootText = fs.existsSync(boot) ? fs.readFileSync(boot, 'utf8').slice(0, 600) : '(no boot-status.json)';
+    const detail = `port ${debugPort}; app exited: ${exited ? JSON.stringify(exited) : 'no (still running)'}; last probe: ${lastError || '(none)'}; boot status: ${bootText}`;
+    child.kill();
+    throw new Error(`the packaged app did not expose a DevTools page - ${detail}`);
+  }
   const ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
   let id = 0;
