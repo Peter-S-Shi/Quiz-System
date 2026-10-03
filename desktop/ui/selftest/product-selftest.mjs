@@ -38,7 +38,17 @@ const clickText = (label, scope = '#main', tag = 'button') => b.exec(`const el =
 const clickStarts = (label, scope = '#main') => b.exec(`const el = [...document.querySelectorAll(${JSON.stringify(`${scope} button`)})].find((x) => x.textContent.trim().startsWith(${JSON.stringify(label)}) && !x.disabled); if (!el) throw new Error(${JSON.stringify(`no button starting with "${label}" in ${scope}`)}); el.click();`);
 const clickDialog = (label) => clickText(label, 'dialog[open]');
 const setValue = (sel, value) => b.exec(`const el = document.querySelector(${JSON.stringify(sel)}); el.value = ${JSON.stringify(value)}; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));`);
-const show = async (name, params = {}) => { await b.eval(`window.product.show(${JSON.stringify(name)}, ${JSON.stringify(params)})`); await b.sleep(150); };
+// a view renders asynchronously from the store: wait until #main has content and has stopped changing (never a fixed sleep)
+const settle = async (ms = 8000) => { const end = Date.now() + ms; let last = ''; let stable = 0; while (Date.now() < end) { const cur = await b.eval("document.getElementById('main')?.innerHTML ?? ''"); if (cur && cur === last) stable += 1; else { stable = 0; last = cur; } if (stable >= 3) return true; await b.sleep(120); } return false; };
+// an earlier action may still be finishing its own navigation (e.g. returning to Today after a session): ask again until the requested view is the current one
+const show = async (name, params = {}) => {
+  for (let n = 0; n < 6; n += 1) {
+    await b.eval(`window.product.show(${JSON.stringify(name)}, ${JSON.stringify(params)})`);
+    await b.sleep(100);
+    await settle();
+    if (await b.eval(`document.querySelector('[aria-current=page]')?.dataset.view === ${JSON.stringify(name)}`)) return;
+  }
+};
 const waitFor = async (expr, ms = 4000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await b.eval(expr)) return true; await b.sleep(60); } return false; };
 /** Poll a node-side predicate (e.g. a store read) until it holds. */
 const until = async (fn, ms = 4000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await fn()) return true; await b.sleep(60); } return false; };
@@ -119,16 +129,22 @@ try {
     else if (/True/.test(typeLabel)) await b.exec("document.querySelector('.choice input').click(); document.querySelector('[data-act=check]').click();");
     else await b.exec("for (const s of document.querySelectorAll('select')) { s.selectedIndex = 1; s.dispatchEvent(new Event('change', { bubbles: true })); } document.querySelector('[data-act=check]').click();");
     await b.sleep(80);
-    if (i < 4) await clickText('Next');
+    if (i < 4) { await waitFor("[...document.querySelectorAll('#main button')].some((x) => x.textContent.trim() === 'Next' && !x.disabled)", 8000); await clickText('Next'); }
   }
+  await waitFor("!!document.querySelector('[data-act=finish]:not([disabled])')", 8000);
   await b.exec("document.querySelector('[data-act=finish]').click();");
-  await b.sleep(150);
-  await b.exec("const d = document.querySelector('dialog[open]'); if (d) [...d.querySelectorAll('button')].pop().click();");
-  ok('the finished session is recorded once', await waitFor('true') && await b.eval('true') && (await count('learner_response')) === beforeLearner + 1);
+  // a confirmation dialog may or may not appear; the session is finished once Done is offered (slow machines: poll, never sleep)
+  for (let n = 0; n < 100; n += 1) {
+    if (await b.eval("[...document.querySelectorAll('#main button')].some((x) => x.textContent.trim() === 'Done')")) break;
+    await b.exec("const d = document.querySelector('dialog[open]'); if (d) [...d.querySelectorAll('button')].pop().click();");
+    await b.sleep(100);
+  }
+  ok('the finished session is recorded once', await until(async () => (await count('learner_response')) === beforeLearner + 1, 8000));
   const sels = await port.read('session_selection');
   const last = sels.map((r) => r.payload).find((p) => p.selection.source === 'recommended');
   ok('the stored Selection is "recommended" and keeps the reasons that were shown', last && last.selection.reasons.length > 0 && last.selection.reasons.every((r) => r.code), JSON.stringify(sels.map((s) => s.payload.selection.source)));
-  ok('the recovery row was cleared after the commit', await waitFor("true") && (await count('recovery_session')) === 0);
+  ok('the recovery row was cleared after the commit', await until(async () => (await count('recovery_session')) === 0, 8000));
+  await waitFor("[...document.querySelectorAll('#main button')].some((x) => x.textContent.trim() === 'Done')", 8000);
   await clickText('Done');
   ok('closing returns to Today with the sidebar back', await waitFor("document.getElementById('app').dataset.focus === undefined && document.querySelector('#nav [aria-current=page]')?.dataset.view === 'today' && !!document.querySelector('.composer')"));
 
@@ -157,9 +173,11 @@ try {
   section('Calendar: real projection, move by identity, drag and keyboard, cancel, create, decisions');
   const addDay = (d, n) => { const x = new Date(`${d}T00:00:00Z`); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
   await show('calendar');
-  ok('the engine proposal for the reviewed document is on the grid as an app-proposed date', await b.eval("!!document.querySelector('.chip-entry.engine')"));
+  ok('the engine proposal for the reviewed document is on the grid as an app-proposed date', await waitFor("!!document.querySelector('.chip-entry.engine')", 8000));
+  await waitFor("document.querySelectorAll('.calcell').length === 42 && document.querySelectorAll('.chip-entry').length >= 3", 8000);
   ok('the month grid has 42 day cells and the learner schedule is on it', (await b.eval("document.querySelectorAll('.calcell').length")) === 42 && (await b.eval("document.querySelectorAll('.chip-entry').length")) >= 3);
   ok('Calendar shows no time of day, reminder or notification control', !/reminder|notify|notification|alarm|\b\d{1,2}:\d{2}\s?(am|pm)?\b/i.test(await txt('.calwrap')));
+  await waitFor("!!document.querySelector('.decisions')", 8000);
   ok('a date waiting for a decision is shown with its reason and both choices', (await txt('.decisions')).includes('Answered incorrectly') && (await txt('.decisions')).includes('Use the suggested date') && (await txt('.decisions')).includes('Keep my date'));
   const capitalsChip = "[...document.querySelectorAll('.chip-entry')].find((c) => c.querySelector('.ename').textContent === 'Capital cities')";
   const firstOriginal = await b.eval(`${capitalsChip}.dataset.original`);
