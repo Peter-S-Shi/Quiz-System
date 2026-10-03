@@ -1,6 +1,6 @@
 # V2 Final Product UI Integration 里程碑
 
-**状态：** 实现完成，**等待 Human Gate**
+**状态：** **已验收**（Human Gate PASS，2026-10-03，经首轮人工评测、Human Evaluation Repair 及其定向复测；见 `docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`）。下一阶段：Product Hardening（尚未开始）。
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1、`docs/V2_UI_ARCHITECTURE_FREEZE.md`（已批准原型的信息架构、“Warm Paper · Living Ink”，不引入第二套 UI 架构）、ADR 0001–0004（均已 ACCEPTED），以及已验收的 Desktop Foundation、V1 Migration、Learning Orchestration + Calendar、Task-Domain Integration 与 Objective Answer Explanation + Focused Practice 里程碑。**这是集成工作：没有改动任何 Evidence、Scheduling、Recommendation、session 或 domain 语义。**
 
 ## 1. 范围
@@ -50,7 +50,7 @@
 6. **导入的文件不可信。** 每个文件都经校验；id 冲突变成独立副本而非覆盖；补救文档必须能追溯到本资料库中的作答与批改；可移植试卷内嵌媒体，并按内容重新存入。
 7. **新增原生接口（Rust 拥有）：** `native_export_text`（保存对话框 + 写入）与 `native_import_text`（打开对话框 + 有上限的读取，32 MiB，UTF-8）。所选路径绝不进入 WebView。WebView 白名单只增加了 `media.read` 与 `media.put`；已审计的“不含路径”契约测试覆盖了它们。
 8. **语言。** 整个产品与 Focused Practice 都是双语（zh-CN / en）；默认跟随系统语言，也是一项偏好。材料文本从不被翻译。
-9. **字体。** 产品只使用**系统字体栈**（不使用托管字体，不联网）。架构冻结还要求把每一个必需字体随包；布局并不*必需*某个特定字体，而随包 CJK 衬线子集会增加一个需要许可选择的二进制资源，所以保留为**交给 Human Gate 的明确待决项**（不是豁免）。
+9. **字体。** 产品只使用**系统字体栈**（不使用托管字体，不联网）。架构冻结还要求把每一个必需字体随包；布局并不*必需*某个特定字体，而随包 CJK 衬线子集会增加一个需要许可选择的二进制资源，Human Gate **已决定正式接受系统字体栈**（`docs/V2_UI_ARCHITECTURE_FREEZE.md` 的窄幅修订）：冻结的不变量是离线、无 CDN、无网络字体依赖。没有新增任何字体资源。
 10. **深色模式** 默认跟随系统，除非偏好另有设置；减弱动效同时遵从系统与偏好。
 
 ## 4. 证据
@@ -75,8 +75,8 @@
 
 `manual-qa/v2-final-product-ui.zh-CN.md`（及英文版）：M-U1–M-U8（不同 DPI / 深色 / 高对比度下的视觉检查、Narrator 逐视图、纯键盘旅程、**资料库编辑器**中的真实微软输入法与第三方输入法、用真实文件的原生文件对话框、拖放、真实备份 / 恢复、带新界面的安装包升级）。更早里程碑遗留的仍保持 open：M-T1b/d/e、M-T2a–d、M-T3a–c、M1–M7、D1–D4（M-T1a 与 M-T1c 已通过）。自检驱动的是 Chromium / 真实 WebView2 加可信输入 —— **不是系统输入法、不是 Narrator、不是系统文件对话框。**
 
-其它未决项：字体使用系统字体栈（见上方决定）；`docs/V2_PRACTICE.zh-CN.md` 中记录的跟打实时反馈等行为变化保持不变。
+其它事项：字体使用系统字体栈（已接受，见上方决定）；最终应用图标与发布版本号属于 RC 验收项；`docs/V2_PRACTICE.zh-CN.md` 中记录的跟打实时反馈等行为变化保持不变。
 
 ## 6. Gate 就绪情况
 
-实现完成；自动化契约本地通过，并在 Windows CI workflow 中运行（包括真实打包应用）。里程碑**等待 Human Gate**。Hardening **尚未开始**。
+实现完成；自动化契约本地通过，并在 Windows CI workflow 中运行（包括真实打包应用）。里程碑**已验收**。第 5 节所列手动项仍保持 OPEN（未 PASS，未豁免），属于 Product Hardening / RC 证据欠账。Hardening **尚未开始**。

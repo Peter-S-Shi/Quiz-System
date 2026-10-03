@@ -1,6 +1,6 @@
 # V2 Final Product UI Integration milestone
 
-**Status:** implementation complete, **awaiting Human Gate**
+**Status:** **ACCEPTED** (Human Gate PASS, 2026-10-03, after the first Human Evaluation, the Human Evaluation Repair and its targeted re-test; see `docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`). Next phase: Product Hardening (not started).
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1, `docs/V2_UI_ARCHITECTURE_FREEZE.md` (the approved prototype's information architecture, "Warm Paper · Living Ink", no second UI architecture), ADR 0001–0004 (ACCEPTED) and the accepted Desktop Foundation, V1 Migration, Learning Orchestration + Calendar, Task-Domain Integration and Objective Answer Explanation + Focused Practice milestones. **This is integration: no Evidence, Scheduling, Recommendation, session or domain semantics were changed.**
 
 ## 1. Scope
@@ -50,7 +50,7 @@ Static tests (`product-architecture.spec.mjs`) pin: no remote URL / CDN / networ
 6. **Imports are untrusted.** Every file is validated; a colliding id becomes a separate copy, never an overwrite; a remediation document must trace to a response and review in this library; portable papers carry their media inline and are re-stored by content.
 7. **New native surface (Rust-owned):** `native_export_text` (Save dialog + write) and `native_import_text` (Open dialog + bounded read, 32 MiB, UTF-8). The chosen path never reaches the WebView. The WebView allowlist gained only `media.read` and `media.put`; the audited path-free contract tests cover them.
 8. **Language.** The whole product and Focused Practice are bilingual (zh-CN / en); the default follows the system language and is a preference. Material text is never translated.
-9. **Fonts.** The product uses **system font stacks only** (no hosted font, no network). The architecture freeze also asks that every required font be bundled; no font is *required* by the layout, and bundling a CJK serif subset would add a binary asset that needs a licensing choice, so it is left as an **explicit open decision for the Human Gate** (not waived).
+9. **Fonts.** The product uses **system font stacks only** (no hosted font, no network). The architecture freeze also asks that every required font be bundled; no font is *required* by the layout, and bundling a CJK serif subset would add a binary asset that needs a licensing choice, so the Human Gate **decided to accept system font stacks** (narrow amendment in `docs/V2_UI_ARCHITECTURE_FREEZE.md`): the frozen invariant is offline, no CDN, no network font dependency. No font asset was added.
 10. **Dark mode** follows the system unless the preference says otherwise; reduced motion is honoured from the system and the preference.
 
 ## 4. Evidence
@@ -75,8 +75,8 @@ Local (development machine): **210 unit + 92 integration JS tests**; browser sel
 
 `manual-qa/v2-final-product-ui.md` (+ `.zh-CN.md`): M-U1–M-U8 (visual review at DPI / dark / high contrast, Narrator across the views, keyboard-only journeys, real Microsoft IME and a third-party IME in the **Library editors**, native file dialogs with real files, drag-and-drop, real backup / restore, installer upgrade with the new UI). Still open from earlier milestones: M-T1b/d/e, M-T2a–d, M-T3a–c, M1–M7, D1–D4 (M-T1a and M-T1c are PASS). The self-tests drive Chromium / the real WebView2 with trusted input — **not the OS IME, not Narrator, not the OS file dialogs.**
 
-Other open items: fonts are system stacks (decision above); the Typing live feedback and other behavior changes recorded in `docs/V2_PRACTICE.md` are unchanged.
+Other items: fonts are system stacks (accepted, decision above); the final application icon and the release version are RC acceptance items; the Typing live feedback and other behavior changes recorded in `docs/V2_PRACTICE.md` are unchanged.
 
 ## 6. Gate readiness
 
-Implementation complete; the automated contract passes locally and runs in the Windows CI workflow (including the real packaged app). The milestone **awaits the Human Gate**. Hardening is **not started**.
+Implementation complete; the automated contract passes locally and runs in the Windows CI workflow (including the real packaged app). The milestone is **ACCEPTED**. The manual items listed in section 5 remain OPEN (not PASS, not waived) as Product Hardening / RC evidence debt. Hardening is **not started**.
