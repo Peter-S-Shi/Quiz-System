@@ -37,7 +37,8 @@ export async function launch({ width = 1100, height = 800, store = null } = {}) 
   for (let i = 0; i < 100 && !dev; i += 1) {
     await sleep(100);
     const f = path.join(profile, 'DevToolsActivePort');
-    if (fs.existsSync(f)) dev = fs.readFileSync(f, 'utf8').split('\n')[0].trim();
+    // the browser may still hold the file open while writing it (EBUSY on Windows): retry on the next tick
+    try { if (fs.existsSync(f)) dev = fs.readFileSync(f, 'utf8').split('\n')[0].trim() || null; } catch { dev = null; }
   }
   if (!dev) { child.kill(); throw new Error('the browser did not expose a DevTools port'); }
   const targets = await (await fetch(`http://127.0.0.1:${dev}/json/list`)).json();
