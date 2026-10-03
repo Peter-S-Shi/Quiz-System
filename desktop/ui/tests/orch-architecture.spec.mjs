@@ -129,7 +129,10 @@ test('Test views are structurally opaque: only a live Practice view computes a c
   assert.ok(start > 0 && end > start, 'view() found');
   const gated = view.indexOf("this.#cfg.intent === 'practice' && this.#cfg.policy.feedbackTiming === 'live'");
   assert.ok(gated > 0, 'live comparison is gated on Practice + live');
-  assert.equal(view.indexOf('compare('), view.lastIndexOf('compare('), 'compare is called exactly once');
-  assert.ok(view.indexOf('compare(') > gated, 'and only inside the gate');
+  // the comparison lives in the private live helper, reached from view() only through the gate
+  assert.ok(!view.includes('compare('), 'view() itself never compares');
+  assert.equal(view.indexOf('this.#live('), view.lastIndexOf('this.#live('), 'the live helper is called exactly once');
+  assert.ok(view.indexOf('this.#live(') > gated, 'and only inside the gate');
+  assert.equal(src.split('compare(').length - 1, 1, 'the session engine calls compare( exactly once, inside the private live helper');
   assert.ok(!/errors/.test(view), 'the view never reads recorded errors');
 });

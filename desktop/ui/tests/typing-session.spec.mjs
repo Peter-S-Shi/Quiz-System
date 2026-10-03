@@ -35,6 +35,22 @@ test('a committed insertion arriving as a LONE trusted input event (no keydown, 
   assert.deepEqual([again.accepted, s.committedText], [true, 'environ']);
 });
 
+test('an untrusted compositionend may only CLOSE a trusted composition, and only over the value the trusted input reported', () => {
+  const s = mk();
+  s.input(user({ type: 'compositionstart' }));
+  s.input(user({ type: 'input', inputType: 'insertCompositionText', isComposing: true, value: 'en' }));
+  assert.equal(s.committedText, '', 'still composing');
+  // script forges the element value, then closes the composition: refused, nothing is committed
+  assert.equal(s.input({ isTrusted: false, type: 'compositionend', value: 'FORGED' }).accepted, false);
+  assert.equal(s.committedText, '');
+  // the genuine user-agent close (observed untrusted via CDP) adopts exactly the composed text
+  const r = s.input({ isTrusted: false, type: 'compositionend', value: 'en' });
+  assert.deepEqual([r.accepted, s.committedText], [true, 'en']);
+  // with no composition in flight an untrusted compositionend is never accepted
+  assert.equal(s.input({ isTrusted: false, type: 'compositionend', value: 'enZ' }).accepted, false);
+  assert.equal(s.committedText, 'en');
+});
+
 test('composition: updates never alter committed text; commit adopts exactly the composed text; cancel changes nothing', () => {
   const s = mk();
   s.input(user({ type: 'input', value: 'env' }));
@@ -108,7 +124,12 @@ test('Practice with live feedback may compare while typing; its view carries the
   const v = s.view();
   assert.deepEqual(v.progress, { typedGraphemes: 6, referenceGraphemes: 11 });
   assert.ok(v.live, 'live comparison present');
-  assert.equal(v.live.errors.length, 1, 'omission of the missing n is visible live');
+  assert.deepEqual(v.live.errors, [], 'text not typed yet is pending, not an error');
+  assert.equal(v.live.reached, 6, 'typing has reached offset 6 of the reference');
+  s.input(user({ type: 'input', value: 'enviroment' }));
+  const w = s.view();
+  assert.equal(w.live.errors.length, 1, 'the skipped n is visible live');
+  assert.equal(w.live.errors[0].kind, 'omission');
 });
 
 test('Test is opaque: no comparison, diff or correctness is exposed before finalization (view and API)', () => {

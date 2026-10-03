@@ -2,6 +2,8 @@
 // canonical data lives behind the Rust Store Port (never in browser-origin storage), native file flows are
 // Rust-owned, and everything runs offline. Product views arrive with later milestones.
 import { createStorePort, tauriTransport, StorePortError } from './store-port.js';
+import { createPracticeRuntime } from './practice/runtime.js';
+import { renderLauncher } from './practice/launcher.js';
 
 const tauri = globalThis.__TAURI__;
 const invoke = (name, args = {}) => tauri.core.invoke(name, args);
@@ -54,11 +56,22 @@ function showView(name) {
   const main = $('#main');
   main.replaceChildren();
   if (name === 'settings') return renderSystem(main);
+  if (name === 'library') return renderPractice(main);
   main.append(
     h('h1', {}, PLACEHOLDERS[name]),
     h('p', { class: 'lede' }, 'This view arrives with a later V2 milestone. The Desktop Foundation milestone only establishes the runtime, the data boundary and the shell.'),
     h('div', { class: 'card placeholder' }, 'Not part of the Desktop Foundation scope.'),
   );
+}
+
+let practiceRuntime = null;
+async function renderPractice(main) {
+  try {
+    practiceRuntime ??= await createPracticeRuntime(port);
+    await renderLauncher(main, practiceRuntime);
+  } catch (e) {
+    main.replaceChildren(h('h1', {}, 'Start a practice'), h('div', { class: 'error-box', role: 'alert' }, `The practice launcher could not start: ${describe(e)}`));
+  }
 }
 
 function setHealth(ok, text) {

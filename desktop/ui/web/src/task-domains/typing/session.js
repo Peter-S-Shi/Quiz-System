@@ -28,7 +28,9 @@ const countGraphemes = (text) => graphemeBoundaries(text).length - 1;
 export class TypingSession {
   #committed = '';
   #composing = false;
+  #composedValue = null; // the element value reported by the last TRUSTED input of the composition in flight
   #cfg;
+  #refBounds;
 
   /**
    * @param {{evidenceId: string, sessionId: string, startedAt: string, material: {id: string, title: string, text: string},
@@ -49,23 +51,30 @@ export class TypingSession {
       provenance: cfg.provenance ?? { purpose: 'practice' },
     };
     this.#committed = cfg.committedText ?? '';
+    this.#refBounds = graphemeBoundaries(cfg.material.text);
   }
 
   get committedText() { return this.#committed; }
 
   /** Feed one user-agent event. Returns `{accepted, reason?, revertTo?}`. */
   input(event) {
-    if (!event || event.isTrusted !== true) return { accepted: false, reason: 'untrusted' };
+    // One narrow exception to "untrusted never enters": some user-agent paths (observed with Chromium's DevTools IME
+    // commit) deliver the closing `compositionend` with isTrusted=false. It may only CLOSE a composition that trusted
+    // events opened, and only when the element still holds exactly what the trusted composition input last reported -
+    // it can never inject or change text, so a script cannot use it to forge committed input.
+    const closesTrustedComposition = event?.type === 'compositionend' && event.isTrusted !== true && this.#composing && this.#composedValue !== null && event.value === this.#composedValue;
+    if (!event || (event.isTrusted !== true && !closesTrustedComposition)) return { accepted: false, reason: 'untrusted' };
     const type = event.type;
     if (PASTE_DROP_TYPES.includes(type) || PASTE_DROP_INPUT_TYPES.includes(event.inputType)) {
       return { accepted: false, reason: 'paste-drop', revertTo: this.#committed };
     }
-    if (type === 'compositionstart') { this.#composing = true; return { accepted: true, committedChanged: false }; }
+    if (type === 'compositionstart') { this.#composing = true; this.#composedValue = null; return { accepted: true, committedChanged: false }; }
     if (type === 'compositionupdate') { this.#composing = true; return { accepted: true, committedChanged: false }; }
-    if (type === 'input' && event.isComposing === true) { this.#composing = true; return { accepted: true, committedChanged: false }; }
+    if (type === 'input' && event.isComposing === true) { this.#composing = true; this.#composedValue = typeof event.value === 'string' ? event.value : null; return { accepted: true, committedChanged: false }; }
     if (type === 'compositionend' || type === 'input') {
       if (typeof event.value !== 'string') return { accepted: false, reason: 'no-value', revertTo: this.#committed };
       this.#composing = false;
+      this.#composedValue = null;
       return this.#commit(event.value);
     }
     return { accepted: false, reason: 'unsupported-event', revertTo: this.#committed };
@@ -80,12 +89,35 @@ export class TypingSession {
     return { accepted: true, committedChanged: changed };
   }
 
+  /**
+   * Live comparison against only the reference window typing can have reached (its cost follows what was typed and the
+   * number of differences, never the whole passage; the FINAL comparison at finalize always uses the full text). The
+   * window starts at the typed length and grows while the typed text overruns it (the learner skipped something).
+   */
+  #live(typed) {
+    const text = this.#cfg.material.text;
+    const bounds = this.#refBounds;
+    let upto = Math.min(typed, bounds.length - 1);
+    for (;;) {
+      const end = bounds[upto];
+      const { errors } = compare(text.slice(0, end), this.#committed);
+      const last = errors[errors.length - 1];
+      if (last && last.kind === 'insertion' && last.reference.start === end && last.committed.end === this.#committed.length && upto < bounds.length - 1) {
+        upto = Math.min(bounds.length - 1, upto + Math.max(1, countGraphemes(this.#committed.slice(last.committed.start))));
+        continue;
+      }
+      // a trailing omission is only "not typed yet": `reached` is where typing stands in the reference
+      const pending = last && last.kind === 'omission' && last.committed.start === this.#committed.length && last.reference.end === end;
+      return { errors, reached: pending ? last.reference.start : end };
+    }
+  }
+
   /** What the surface may show while typing. Test (and any on-completion session) carries NO correctness. */
   view() {
-    const progress = { typedGraphemes: countGraphemes(this.#committed), referenceGraphemes: countGraphemes(this.#cfg.material.text) };
+    const progress = { typedGraphemes: countGraphemes(this.#committed), referenceGraphemes: this.#refBounds.length - 1 };
     const base = { committedText: this.#committed, progress };
     if (this.#cfg.intent === 'practice' && this.#cfg.policy.feedbackTiming === 'live') {
-      return { ...base, live: compare(this.#cfg.material.text, this.#committed) };
+      return { ...base, live: this.#live(progress.typedGraphemes) };
     }
     return base;
   }
