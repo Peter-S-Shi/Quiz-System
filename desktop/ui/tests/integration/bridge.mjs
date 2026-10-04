@@ -44,10 +44,12 @@ export function openBridge(root, { env = {} } = {}) {
     if (p) p.resolve(JSON.parse(line));
   });
   child.stderr.on('data', () => {});
+  // A killed child closes its stdin read end; the resulting EPIPE/EOF is the same event as 'process exited', not an uncaught error.
+  child.stdin.on('error', () => {});
   const transport = (command, args) => new Promise((resolve, reject) => {
     if (exited !== null) return reject(new Error('process exited'));
     pending.push({ resolve, reject });
-    child.stdin.write(`${JSON.stringify({ command, args })}\n`, (err) => err && reject(err));
+    child.stdin.write(`${JSON.stringify({ command, args })}\n`, (err) => err && reject(exited !== null || ['EPIPE', 'EOF', 'ERR_STREAM_DESTROYED', 'ERR_STREAM_WRITE_AFTER_END'].includes(err.code) ? new Error('process exited') : err));
   });
   const port = createStorePort(transport);
   return {

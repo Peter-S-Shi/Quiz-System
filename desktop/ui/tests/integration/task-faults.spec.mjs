@@ -86,7 +86,7 @@ async function chaos(s, rnd) {
         await s.finalizer.finalize({ payload, ...(active && rnd() < 0.5 ? { scheduleRef: { scheduleId: active.id, originalDate: pick(days) } } : {}) });
       }
     } catch (e) {
-      if (String(e?.message).includes('process exited')) return;
+      if (s.b.exited() !== null || String(e?.message).includes('process exited')) return;
     }
   }
 }
