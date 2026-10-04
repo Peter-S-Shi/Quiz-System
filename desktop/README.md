@@ -58,7 +58,7 @@ Never run a development build against your real data folder if you also have the
 
 ```powershell
 ./scripts/smoke.ps1 -Exe target/release/quiz-studio.exe -Report smoke.json          # isolated launch smoke
-./scripts/package-test.ps1 -Installer <setup.exe> -Report pkg.json [-UpgradeInstaller <newer.exe>] [-RealData]
+./scripts/package-test.ps1 -Installer <setup.exe> -ExpectedVersion <v> -Report pkg.json [-UpgradeSource <older.exe>] [-IconFile <icon.ico>] [-DataJourneys] [-RealData]   # exact-candidate package acceptance
 quiz-studio.exe --self-test report.json    # headless end-to-end proof on an isolated temp root
 quiz-studio.exe --identity                 # prints the permanent identifier and version
 ```

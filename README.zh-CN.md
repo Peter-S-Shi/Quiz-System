@@ -15,6 +15,10 @@
 
 ---
 
+> **Quiz Studio V2（Windows 桌面版）—— `v2` 分支上的发布候选版 `2.0.0-rc.1`。** 一款本地优先、支持客观题、翻译与跟打练习的桌面应用。它只是候选版，**尚未发布也尚未合并**，且**仅在 Windows 上验证**。请从 [V2 桌面版快速上手](docs/V2_QUICKSTART.zh-CN.md) 开始。以下章节描述的是 **Quiz Studio V1**——浏览器版（`v1.0.0`，维护冻结），它在本仓库中保持不变。
+
+---
+
 ## 概述
 
 **Quiz Studio** 是一个专为专注自学与刻意练习打造的**本地优先（Local-First）**个人学习工作区。它基于**分层纸质书桌（Layered Paper Study Desk）**设计隐喻，无缝整合了两大互补学习体系：
@@ -211,6 +215,6 @@ Quiz System/
 
 ## 项目状态与开源协议
 
-- **当前版本**：`v1.0.0`（V1 最终定版 / 维护冻结状态）
+- **当前版本**：V1 浏览器版 `v1.0.0`（最终定版 / 维护冻结）；V2 桌面版 `2.0.0-rc.1`（`v2` 分支上的发布候选版；尚未发布或合并）
 - **设计规范**：Layered Paper Study Desk (`DESIGN.md`)
 - **开源协议**：[MIT License](LICENSE) © 2026 Quiz Studio Contributors

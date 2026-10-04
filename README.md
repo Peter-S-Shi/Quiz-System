@@ -15,6 +15,10 @@
 
 ---
 
+> **Quiz Studio V2 (Windows desktop) — release candidate `2.0.0-rc.1` on the `v2` branch.** A local-first desktop app for Objective, Translation and Typing practice. It is a candidate, **not yet released or merged**, and is verified on **Windows only**. Start with the [V2 desktop quick start](docs/V2_QUICKSTART.md). The sections below describe **Quiz Studio V1**, the browser edition (`v1.0.0`, maintenance hold), which stays in this repository unchanged.
+
+---
+
 ## Overview
 
 **Quiz Studio** is a distraction-free, local-first personal learning workspace and practice studio. It provides a tactile **Layered Paper Study Desk** experience that unites two complementary learning workflows:
@@ -213,6 +217,6 @@ Quiz System/
 
 ## Project Status & License
 
-- **Current Version**: `v1.0.0` (V1 Finalized / Maintenance Hold)
+- **Current Version**: V1 browser edition `v1.0.0` (Finalized / Maintenance Hold); V2 desktop `2.0.0-rc.1` (release candidate on branch `v2`; not yet released or merged)
 - **Design System**: Layered Paper Study Desk (`DESIGN.md`)
 - **License**: [MIT License](LICENSE) © 2026 Quiz Studio Contributors

@@ -400,7 +400,7 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 15. Human Evaluation Repair 里程碑（Final Product UI Integration 之后）。**已验收（定向人工复测 PASS）**（[记录](docs/V2_HUMAN_EVAL_REPAIR.md)）。
 16. 整体产品功能关口（Whole Product Feature Gate）。**PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效**（[记录](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）。其余手动 / 打包 / 迁移项属于 Product Hardening / RC 证据欠账，保持 open、未 PASS、未豁免。
 17. Product Hardening。**PASS —— 已验收 / 完成**（Human Hardening Gate PASS，2026-10-03；绿色 CI-L2 候选 run 37172021453；[记录](docs/V2_HARDENING.md)、[清单](HARDENING_BACKLOG.md)）。F1 / F2 保持为已知 RC 观察项。
-18. Release Candidate。**尚未开始 —— 需要单独授权。** 最终应用图标与发布版本号是其验收项。
+18. Release Candidate。**进行中**（2026-10-04 获授权；[记录](docs/V2_RELEASE_CANDIDATE.md)）：身份 `2.0.0-rc.1`，最终图标已获产品负责人批准，一次确切 HEAD 的 CI-L3 运行待执行。合并到 `main`、tag 与发布需要单独的 promotion 授权。
 
 ## 维护 / 下一版本
 

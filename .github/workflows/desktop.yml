@@ -36,9 +36,30 @@ jobs:
       # ADR 0003 section 17 thresholds (Learning Orchestration): randomly timed kills and random operation sequences
       QS_ORCH_KILLS: "100"
       QS_ORCH_SEQUENCES: "60"
+      # RC: the TEST-ONLY upgrade source is a real earlier V2 build (the Product Hardening candidate, version 2.0.0-dev.0).
+      # It is never the release candidate and is never uploaded as one.
+      UPGRADE_SOURCE_REF: "4c0418116c8f948f18ae3a1c9a851c92c92e491b"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Candidate identity (discovered from the authoritative V2 config; the Tauri and Cargo versions must agree)
+        id: ident
+        run: |
+          $tauri = (Get-Content app/src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          $cargo = [regex]::Match((Get-Content Cargo.toml -Raw), '(?m)^version\s*=\s*"([^"]+)"').Groups[1].Value
+          if (-not $tauri -or $tauri -ne $cargo) { throw "version mismatch: tauri.conf.json=$tauri, workspace Cargo.toml=$cargo" }
+          $short = "$env:GITHUB_SHA".Substring(0, 7)
+          "version=$tauri" >> $env:GITHUB_OUTPUT
+          "short=$short" >> $env:GITHUB_OUTPUT
+          Write-Host "candidate version $tauri at commit $env:GITHUB_SHA"
+
+      - name: Check out the upgrade-source build (TEST ONLY - an earlier V2 build to prove upgrade preservation, not the candidate)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UPGRADE_SOURCE_REF }}
+          path: upgrade-source
+          fetch-depth: 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -128,16 +149,31 @@ jobs:
           $text = [Text.Encoding]::ASCII.GetString($bytes)
           if ($text.Contains("QS_FAULT_AT")) { throw "fault-injection hook found in the release binary" }
 
-      - name: Build NSIS installer (v2.0.0-dev.0) and an upgrade installer (v2.0.1-dev.0)
+      - name: Build the EXACT candidate NSIS installer (version taken from the V2 config, no override)
+        run: |
+          . ./scripts/env.ps1
+          $v = "${{ steps.ident.outputs.version }}"
+          Push-Location app/src-tauri
+          tauri build --bundles nsis
+          Pop-Location
+          $built = Get-ChildItem "target/release/bundle/nsis/*_${v}_x64-setup.exe"
+          if (-not $built -or $built.Count -ne 1) { throw "expected exactly one installer for $v, found: $($built.Name -join ', ')" }
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/rc" | Out-Null
+          Copy-Item $built.FullName "$env:RUNNER_TEMP/rc/quiz-studio_${v}_x64-setup.exe"
+          Get-FileHash "$env:RUNNER_TEMP/rc/quiz-studio_${v}_x64-setup.exe", "target/release/quiz-studio.exe" -Algorithm SHA256 | Format-Table Hash, Path -AutoSize
+
+      - name: Build the upgrade-source installer (TEST ONLY - a real earlier V2 build; never the candidate)
+        working-directory: upgrade-source/desktop
         run: |
           . ./scripts/env.ps1
           Push-Location app/src-tauri
           tauri build --bundles nsis
-          Copy-Item "../../target/release/bundle/nsis/*_2.0.0-dev.0_x64-setup.exe" "$env:RUNNER_TEMP/base-setup.exe"
-          tauri build --bundles nsis --config '{"version":"2.0.1-dev.0"}'
-          Copy-Item "../../target/release/bundle/nsis/*_2.0.1-dev.0_x64-setup.exe" "$env:RUNNER_TEMP/upgrade-setup.exe"
           Pop-Location
-          Get-FileHash "$env:RUNNER_TEMP/base-setup.exe", "$env:RUNNER_TEMP/upgrade-setup.exe" -Algorithm SHA256 | Format-Table Hash, Path -AutoSize
+          $built = Get-ChildItem "target/release/bundle/nsis/*_x64-setup.exe"
+          if ($built.Count -ne 1) { throw "expected exactly one upgrade-source installer" }
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/test-only" | Out-Null
+          Copy-Item $built.FullName "$env:RUNNER_TEMP/test-only/upgrade-source_TEST-ONLY_x64-setup.exe"
+          Get-FileHash "$env:RUNNER_TEMP/test-only/upgrade-source_TEST-ONLY_x64-setup.exe" -Algorithm SHA256 | Format-Table Hash, Path -AutoSize
 
       - name: Final product UI inside the REAL packaged app (shipped exe, real WebView2 + CSP + Tauri IPC + Rust store; loopback DevTools; reports NOT RUN when the hosted runner WebView2 refuses a debugging port; not the OS IME)
         run: node ui/selftest/packaged-product-check.mjs target/release/quiz-studio.exe
@@ -148,29 +184,49 @@ jobs:
           if ($nsi -notmatch 'INSTALLWEBVIEW2MODE "downloadBootstrapper"') { throw "WebView2 install mode is not downloadBootstrapper" }
           if ($nsi -notmatch 'currentUser|perUser|PERUSER') { Write-Host "note: per-user mode is verified at install time (no machine-wide registry key)" }
 
-      - name: Package acceptance (install, installed-exe smoke, upgrade, silent uninstall keeps data)
+      - name: Package acceptance of the EXACT candidate (clean install, identity + icon, smoke, upgrade from a real earlier V2 build, backup / restore / V1-migration journeys on the upgraded data, silent uninstall keeps data)
         run: |
-          ./scripts/package-test.ps1 -Installer "$env:RUNNER_TEMP/base-setup.exe" -UpgradeInstaller "$env:RUNNER_TEMP/upgrade-setup.exe" -Report "$env:RUNNER_TEMP/package-report.json" -RealData
+          $v = "${{ steps.ident.outputs.version }}"
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/evidence" | Out-Null
+          ./scripts/package-test.ps1 -Installer "$env:RUNNER_TEMP/rc/quiz-studio_${v}_x64-setup.exe" -ExpectedVersion $v -UpgradeSource "$env:RUNNER_TEMP/test-only/upgrade-source_TEST-ONLY_x64-setup.exe" -IconFile app/src-tauri/icons/icon.ico -DataJourneys -Report "$env:RUNNER_TEMP/evidence/package-report.json" -RealData
 
-      - name: Collect evidence
+      - name: Collect evidence (exact commit, version, installer and executable SHA-256, icon identity)
         if: always()
         run: |
-          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/evidence" | Out-Null
-          foreach ($f in "package-report.json", "repro.txt") { if (Test-Path "$env:RUNNER_TEMP/$f") { Copy-Item "$env:RUNNER_TEMP/$f" "$env:RUNNER_TEMP/evidence/" } }
-          if (Test-Path "$env:RUNNER_TEMP/base-setup.exe") { (Get-FileHash "$env:RUNNER_TEMP/base-setup.exe" -Algorithm SHA256).Hash | Set-Content "$env:RUNNER_TEMP/evidence/installer.sha256" }
-          rustc -vV | Set-Content "$env:RUNNER_TEMP/evidence/rustc.txt"
+          $v = "${{ steps.ident.outputs.version }}"
+          $ev = "$env:RUNNER_TEMP/evidence"
+          New-Item -ItemType Directory -Force $ev | Out-Null
+          if (Test-Path "$env:RUNNER_TEMP/repro.txt") { Copy-Item "$env:RUNNER_TEMP/repro.txt" $ev }
+          $inst = "$env:RUNNER_TEMP/rc/quiz-studio_${v}_x64-setup.exe"
+          $icon = Get-FileHash app/src-tauri/icons/icon.ico -Algorithm SHA256
+          $shipped = $null
+          if (Test-Path "$ev/package-report.json") { $shipped = (Get-Content "$ev/package-report.json" -Raw | ConvertFrom-Json).checks.'identity.installed_exe_sha256_recorded'.detail }
+          $obj = [ordered]@{
+            commit = "$env:GITHUB_SHA"; version = $v; ga_target = ($v -replace '-.*$', '')
+            run = "$env:GITHUB_RUN_ID"; run_attempt = "$env:GITHUB_RUN_ATTEMPT"
+            installer = if (Test-Path $inst) { Split-Path $inst -Leaf } else { $null }
+            installer_sha256 = if (Test-Path $inst) { (Get-FileHash $inst -Algorithm SHA256).Hash } else { $null }
+            shipped_exe_sha256 = $shipped
+            build_tree_exe_sha256 = if (Test-Path target/release/quiz-studio.exe) { (Get-FileHash target/release/quiz-studio.exe -Algorithm SHA256).Hash } else { $null }
+            build_tree_exe_note = "the Tauri bundler stamps the bundle type into the shipped exe, so it differs from the build-tree exe; shipped_exe_sha256 is the installed one"
+            icon_ico_sha256 = $icon.Hash; icon_source = "docs/design-inputs/Design model/app-icon (Concept A Ink-tail Q; regenerated deterministically by build_icon.py)"
+            upgrade_source_commit = "$env:UPGRADE_SOURCE_REF"; upgrade_source_note = "TEST ONLY - an earlier V2 build used to prove upgrade preservation; not the candidate"
+          }
+          $obj | ConvertTo-Json | Set-Content -Encoding utf8 "$ev/rc-evidence.json"
+          Get-Content "$ev/rc-evidence.json"
+          rustc -vV | Set-Content "$ev/rustc.txt"
 
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: desktop-foundation-evidence
+          name: rc-evidence-${{ steps.ident.outputs.version }}-${{ steps.ident.outputs.short }}
           path: ${{ runner.temp }}/evidence
-          retention-days: 14
+          retention-days: 30
 
-      - name: Upload installer
+      - name: Upload the candidate installer (the exact RC artifact; the test-only upgrade source is NOT uploaded)
         uses: actions/upload-artifact@v4
         with:
-          name: quiz-studio-installer-dev
-          path: ${{ runner.temp }}/base-setup.exe
-          retention-days: 7
+          name: quiz-studio-${{ steps.ident.outputs.version }}-${{ steps.ident.outputs.short }}-installer
+          path: ${{ runner.temp }}/rc/quiz-studio_${{ steps.ident.outputs.version }}_x64-setup.exe
+          retention-days: 30

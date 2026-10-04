@@ -13,6 +13,7 @@
 //!   qs-scenario archive-restore <root> <archive>       prints peak working set
 //!   qs-scenario migrate <root> <source> [artifact]     V1 migration: prepare + confirm + activate (prints JSON)
 //!   qs-scenario migrate-undo <root> <run-op-id>        undo an import (prints JSON)
+//!   qs-scenario migrate-product <root> <source>       V1 migration through the PRODUCT Core (the path the app takes: prepare + confirm), prints JSON; exit 3 when blocked
 //!   qs-scenario port-serve <root>                     the product Store Port over stdin/stdout (JSON lines {command,args} -> envelope)
 //!   qs-scenario product-archive-create <root> <dest>   archive the product store
 //!   qs-scenario product-archive-restore <root> <archive>
@@ -172,6 +173,31 @@ fn main() {
                     println!("{{\"result\":\"already-migrated\",\"runOpId\":\"{run_op_id}\"}}")
                 }
             }
+        }
+        "migrate-product" => {
+            // The same Core the packaged app uses (product catalog, healthy-store gate, pending preview, hash-confirmed
+            // activation) - not the migration-only standalone host above, which cannot open a full product data root.
+            let core = qs_port::Core::open(&root, qs_port::selftest::product_catalog(), &OpenOptions::default()).expect("open core");
+            let prep = core.dispatch("migration.prepare", &serde_json::json!({"source": args[3]}));
+            if prep["ok"] != true {
+                println!("{}", serde_json::json!({"result": "error", "error": prep["error"]}));
+                std::process::exit(4);
+            }
+            let r = &prep["result"];
+            if r["blocked"] == true {
+                println!("{}", serde_json::json!({"result": "blocked", "report": r["report"]}));
+                std::process::exit(3);
+            }
+            if r["alreadyMigrated"] == true {
+                println!("{}", serde_json::json!({"result": "already-migrated"}));
+                return;
+            }
+            let done = core.dispatch("migration.confirm", &serde_json::json!({"reportHash": r["reportHash"]}));
+            if done["ok"] != true {
+                println!("{}", serde_json::json!({"result": "error", "error": done["error"]}));
+                std::process::exit(4);
+            }
+            println!("{}", serde_json::json!({"result": done["result"]["result"], "runOpId": done["result"]["runOpId"]}));
         }
         "migrate-undo" => {
             let store = Store::open(&root, Arc::new(qs_migrate_v1::product_catalog()), &OpenOptions::default()).expect("open store");

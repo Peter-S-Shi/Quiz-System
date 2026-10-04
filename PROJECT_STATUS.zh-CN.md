@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + `v2` 分支上的 V2：Desktop Foundation **已验收**；ADR 0002 **已验收**；**V1 Migration 里程碑已验收**；**ADR 0003（Learning Orchestration / Scheduling / Recommendation / Calendar）ACCEPTED — GO WITH AMENDMENT**；**Learning Orchestration + Calendar 里程碑已验收**；**ADR 0004（Task-Domain Integration 与 Typing Evidence Contract）ACCEPTED — GO WITH AMENDMENT**；**Task-Domain Integration 里程碑已验收（Human Gate PASS）**；**Objective Answer Explanation + Focused Practice 里程碑已验收（Human Gate PASS）**；**Final Product UI Integration 里程碑已验收（Human Gate PASS）**；**Human Evaluation Repair 已验收（定向人工复测 PASS）**；**整体产品功能关口（Whole Product Feature Gate）PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效；Product Hardening PASS —— 已验收 / 完成（Human Hardening Gate PASS，2026-10-03）；下一阶段：Release Candidate —— 尚未开始，需单独授权**（[`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）
+V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + `v2` 分支上的 V2：Desktop Foundation **已验收**；ADR 0002 **已验收**；**V1 Migration 里程碑已验收**；**ADR 0003（Learning Orchestration / Scheduling / Recommendation / Calendar）ACCEPTED — GO WITH AMENDMENT**；**Learning Orchestration + Calendar 里程碑已验收**；**ADR 0004（Task-Domain Integration 与 Typing Evidence Contract）ACCEPTED — GO WITH AMENDMENT**；**Task-Domain Integration 里程碑已验收（Human Gate PASS）**；**Objective Answer Explanation + Focused Practice 里程碑已验收（Human Gate PASS）**；**Final Product UI Integration 里程碑已验收（Human Gate PASS）**；**Human Evaluation Repair 已验收（定向人工复测 PASS）**；**整体产品功能关口（Whole Product Feature Gate）PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效；Product Hardening PASS —— 已验收 / 完成（Human Hardening Gate PASS，2026-10-03）；Release Candidate 2.0.0-rc.1 进行中**（[`docs/V2_RELEASE_CANDIDATE.md`](docs/V2_RELEASE_CANDIDATE.md)）（[`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）
 
 ## 当前活跃里程碑
 
@@ -196,7 +196,9 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 
 - **Human Hardening Gate：PASS（产品负责人，2026-10-03）。** 整个 Human Hardening Pack 已执行：**D1–D5、M1–M7、M-T1b/d/e、M-T2a–d、M-T3a–c、M-U1–M-U8 与 S1 均为 PO-PASS**（M-T1a、M-T1c 保留此前的 PO-PASS）。**P1**（托管运行器上打包 WebView2 的 DevTools 深度检查）严格保持 **NOT RUN on hosted CI**；开发机 19/19 为 **DEV-PASS**。候选：head `4c04181`，CI-L2 [run 37172021453](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37172021453)。保留的已知 RC 观察项：**F1** 大历史读取成本，**F2** 导出原地写入。最终应用图标与发布版本号仍是 RC 验收项；为此没有改动任何东西（未改版本、图标、tag、`main`、Release、签名或自动更新）。
 
-**下一步行动：Release Candidate —— 尚未开始；需要单独授权 prompt。** `spike/desktop-runtime` 分支保持一次性且永不合并。
+- **Release Candidate：进行中**（2026-10-04 获授权；记录：[`docs/V2_RELEASE_CANDIDATE.md`](docs/V2_RELEASE_CANDIDATE.md)）。身份 `2.0.0-rc.1`（GA 目标 `2.0.0`）。产品负责人批准 **Concept A“Ink-tail Q”** 为最终应用图标，已替换 Tauri 打包中的占位图标。Desktop workflow 已版本感知，构建确切的候选安装包；只把一个真实的更早 V2 构建用作仅供测试的升级源。F1、F2 有明确的 RC 处置（带 release 构建实测数字的已接受已知限制）。已准备 V2 快速上手与 15–30 分钟的产品负责人冒烟指南；根 README 增加了如实的 V2 候选版说明。未完成：唯一一次确切 HEAD 的 CI-L3 运行、产品负责人冒烟、合并到 `main`、tag、GitHub Release。
+
+**下一步行动：完成 RC 工程（一次确切 HEAD 的 CI-L3 运行），然后交回 Human RC Gate。** 合并、tag 与发布需要单独的 promotion 授权。 `spike/desktop-runtime` 分支保持一次性且永不合并。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 
