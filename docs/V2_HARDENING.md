@@ -1,0 +1,50 @@
+# V2 Product Hardening — milestone record
+
+**Status: Product Hardening in progress.** Entry truth: [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (V2 is FEATURE COMPLETE / FROZEN). Canonical inventory: [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md). Product Owner manual pack: [`../manual-qa/v2-hardening-pack.md`](../manual-qa/v2-hardening-pack.md).
+
+Hardening attacks the frozen product; it adds no feature, no bundled font, no signing or auto-update, and does not start RC. The final application icon and the release version are RC acceptance items.
+
+## Evidence states
+
+AUTOMATED PASS · DEVELOPER-MACHINE packaged PASS · PRODUCT OWNER / manual PASS · NOT RUN · OPEN (not waived). They are never merged: a green Action is not a PH exit by itself.
+
+## Backlog reconciliation
+
+The inventory was rebuilt from the real checklists in `manual-qa/v2-*.md`, not from the summaries. It includes **D5 (interactive uninstall)**, which the checklist has but several summary lines omitted ("D1–D4"); those lines now say D1–D5. All 30 open checklist items (D1–D5, M1–M7, M-T1b/d/e, M-T2a–d, M-T3a–c, M-U1–M-U8), the physical-sound quality check (S1) and the hosted-runner packaged-check limitation (P1) are listed, none dropped, none waived.
+
+## Lane results so far
+
+Local development machine, `v2` at the PH entry state plus the PH additions below.
+
+| Lane | Evidence | Result |
+|---|---|---|
+| 1 Data integrity / durability / crash recovery | Rust H2 crash loop, H3 activation faults, H4/H5 media + archive suites, migration faults, JS `orch-faults` / `task-faults` (real store, fault matrix, kills) | AUTOMATED PASS (Rust 186, integration 94 → 95 with the PH test) |
+| 2 Migration / upgrade | `core/migrate_v1/tests/*`, `orch-migrated`, archive 2→3 upgrade, migration memory envelope | AUTOMATED PASS. Native packaged flows M1–M7 remain OPEN (manual) |
+| 3 Native Windows / packaging | Release build of the packaged app: `packaged-product-check` **19/19**; `smoke.ps1` (single instance, crash-recovery relaunch, pinned comparison, no listener, no remote connection, no stray Python/Node) all ok | DEVELOPER-MACHINE PASS. Hosted CI: packaged DevTools check **NOT RUN** (WebView2 refuses a debugging port); installer install / upgrade / uninstall is covered by the CI package acceptance, not re-run here (the Tauri CLI is not installed on this machine). D1–D5 OPEN |
+| 4 Input / international text | `typing-*.spec.mjs`, practice self-test 93 (committed-text / IME path, paste and drop rejection, long text) | AUTOMATED PASS. Real IME / dead keys / AltGr / resize items OPEN except M-T1a, M-T1c (PO-PASS) |
+| 5 Accessibility / visual resilience | Practice 93 and product 158 self-test accessibility bases (names, focus, keyboard, no colour-only meaning), narrow window | AUTOMATED PASS. Narrator, high contrast, 200 % scale, mixed DPI, visual review, audible quality OPEN (need a person) |
+| 6 Performance / bounded resources | `typing-compare-scale`, `typing-long-text`, migration and media envelopes, **new** `ph-scale.spec.mjs` (400 completed sessions: correct result, ceiling) | AUTOMATED PASS. See Findings F1 |
+| 7 Security / privacy / offline | `product-architecture.spec.mjs`, `boundary.spec.mjs`, `webview_contract.rs`; static audit this round: no remote URL in the UI, no browser-origin storage, CSP `'self'` only, capability `core:default` only, native dialogs keep paths in Rust, CI step proves no fault-injection hook in the shipped binary | AUTOMATED PASS; release binary smoke shows no listener and no remote connection |
+
+Other local checks: `cargo fmt --check` clean, `cargo clippy --workspace --all-targets -D warnings` clean, JS unit 235, product UI self-test 158, learning-session regression 23.
+
+## Findings
+
+No product defect has been found so far, so no product code changed. Observations, classified:
+
+- **F1 (observation, not a defect): the read cost of a very large history is linear and not small.** On the debug store, reading all Objective Evidence costs about 0.4–0.8 ms per session record (about 3 KB each). Library state and Today read the whole Evidence collections, so a history of several thousand sessions makes those screens take seconds on a debug build (release is faster; not measured on the packaged app). It is not a Feature Freeze blocker class (nothing is lost or wrong), the resource guards are intact, and fixing it would be a read-model redesign, so it is **carried to RC as an observation** with the numbers above. The new test pins correctness at 400 sessions plus a ceiling; a growth-ratio assertion was tried and removed because the test bridge's own line reader doubles the per-byte cost above about 1 MB and would have measured the harness.
+- **F2 (observation): exchange export writes the chosen file in place** (`std::fs::write`), not via a temporary file and rename. The target is a file the person chose in the Save dialog (the OS asks before overwriting), no canonical data is involved, and the write is bounded to 32 MiB. Recorded, not changed.
+
+## PH additions in this candidate (no product behavior change)
+
+- `desktop/ui/tests/integration/ph-scale.spec.mjs` — correctness and ceiling over a large history (lane 6).
+- `desktop/scripts/make-hardening-pack.ps1` — builds the synthetic fixtures for the manual session (CJK-path and blocked V1 backups, a 420 MiB V1 backup, a 1 GiB drop file, media, a long typing text, a seeded data folder). Not run in CI.
+- `HARDENING_BACKLOG.md`, `manual-qa/v2-hardening-pack.md`, this record.
+
+## CI plan
+
+CI-L1 / local checks while iterating (done above). One PH candidate is pushed and one CI-L2 Desktop workflow is run; the evidence close-out afterwards is docs-only (CI-L0) and does not trigger CI. If a CI failure is not a product defect, it is classified first; a repeated identical non-product failure stops the retry loop and the verification source is redefined instead.
+
+## Not done / carried
+
+All manual items stay OPEN (not PASS, not waived); the result sheet is in the manual pack. Final application icon, release version, code signing and auto-update are not PH work. Product Hardening is **not** accepted: after the candidate is green the state becomes *implementation / evidence complete — awaiting Human Hardening Gate*.

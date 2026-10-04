@@ -15,7 +15,7 @@
 | Final Product UI Integration ([record](V2_PRODUCT_UI.md)) | ACCEPTED |
 | Human Evaluation Repair | ACCEPTED |
 | Whole Product Feature Gate | PASS — FEATURE COMPLETE |
-| Product Hardening | Next phase — not started; needs its own authorization |
+| Product Hardening | In progress (authorized after this Gate) — see `V2_HARDENING.md` |
 
 ## Remaining items are evidence debt, not feature debt
 
@@ -23,7 +23,7 @@ These move to Product Hardening / RC. They stay **OPEN — not PASS, not waived*
 
 - Final Product UI manual items **M-U1–M-U8** (`manual-qa/v2-final-product-ui.md`).
 - Task-domain manual items **M-T1b/d/e, M-T2a–d, M-T3a–c**.
-- Migration / package manual items **M1–M7** and Desktop Foundation items **D1–D4**.
+- Migration / package manual items **M1–M7** and Desktop Foundation items **D1–D5** (D5, interactive uninstall, was omitted from some earlier summaries).
 - Real audible quality of the practice sounds.
 - RC acceptance items: the **final application icon** and the **release version**.
 

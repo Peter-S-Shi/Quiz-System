@@ -399,7 +399,7 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 9. Scheduler / Recommendation / Calendar ADR（[ADR 0003](docs/adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)）。**ACCEPTED — GO WITH AMENDMENT**；仅文档。10. Learning Orchestration + Calendar 实现里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_ORCHESTRATION.zh-CN.md)；Windows CI 与 ADR 0003 §17 证据见该文档；按设计没有产品 UI）。11. Task-Domain Integration 与 Typing Evidence Contract ADR（[ADR 0004](docs/adr/0004-task-domain-integration-and-typing-evidence-contract.md)）。**ACCEPTED — GO WITH AMENDMENT**（固定版本的比较语义；单一 committed-text 输入路径；不做 Typing 自动排程）；仅文档。12. Task-Domain Integration 实现里程碑（Objective / Translation / Typing）。**已验收（Human Gate PASS）**（[记录](docs/V2_TASK_DOMAINS.zh-CN.md)；Windows CI 与 ADR 0004 §13 证据见该文档；按设计没有产品 UI）。13. Objective Answer Explanation + Focused Practice 里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_PRACTICE.zh-CN.md)；M-T1a、M-T1c 通过；M-T1b/d/e、M-T2、M-T3、M1–M7、D1–D4 仍 open、未 PASS、未豁免）。14. Final Product UI Integration 里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_PRODUCT_UI.zh-CN.md)；两项 carry-forward 均已完成；手动项 M-U1–M-U8 与更早的手动项仍 open、未 PASS、未豁免；正式接受系统字体栈）。
 15. Human Evaluation Repair 里程碑（Final Product UI Integration 之后）。**已验收（定向人工复测 PASS）**（[记录](docs/V2_HUMAN_EVAL_REPAIR.md)）。
 16. 整体产品功能关口（Whole Product Feature Gate）。**PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效**（[记录](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）。其余手动 / 打包 / 迁移项属于 Product Hardening / RC 证据欠账，保持 open、未 PASS、未豁免。
-17. Product Hardening。**下一阶段 —— 尚未开始；需要单独授权 prompt。** 其后才是 Release Candidate 验证。
+17. Product Hardening。**进行中**（2026-10-03 获授权；[记录](docs/V2_HARDENING.md)、[清单](HARDENING_BACKLOG.md)）。其后的 Release Candidate 验证需要单独授权。
 
 ## 维护 / 下一版本
 
