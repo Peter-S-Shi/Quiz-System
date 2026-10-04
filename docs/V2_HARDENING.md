@@ -1,6 +1,6 @@
 # V2 Product Hardening — milestone record
 
-**Status: Product Hardening in progress.** Entry truth: [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (V2 is FEATURE COMPLETE / FROZEN). Canonical inventory: [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md). Product Owner manual pack: [`../manual-qa/v2-hardening-pack.md`](../manual-qa/v2-hardening-pack.md).
+**Status: Product Hardening implementation/evidence complete — awaiting Human Hardening Gate.** Not accepted: acceptance belongs to the Human Hardening Gate, and every manual item below stays OPEN. Entry truth: [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (V2 is FEATURE COMPLETE / FROZEN). Canonical inventory: [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md). Product Owner manual pack: [`../manual-qa/v2-hardening-pack.md`](../manual-qa/v2-hardening-pack.md).
 
 Hardening attacks the frozen product; it adds no feature, no bundled font, no signing or auto-update, and does not start RC. The final application icon and the release version are RC acceptance items.
 
@@ -14,7 +14,7 @@ The inventory was rebuilt from the real checklists in `manual-qa/v2-*.md`, not f
 
 ## Lane results so far
 
-Local development machine, `v2` at the PH entry state plus the PH additions below.
+Local development machine, plus the hosted run 37172021453 where noted.
 
 | Lane | Evidence | Result |
 |---|---|---|
@@ -41,10 +41,19 @@ No product defect has been found so far, so no product code changed. Observation
 - `desktop/scripts/make-hardening-pack.ps1` — builds the synthetic fixtures for the manual session (CJK-path and blocked V1 backups, a 420 MiB V1 backup, a 1 GiB drop file, media, a long typing text, a seeded data folder). Not run in CI.
 - `HARDENING_BACKLOG.md`, `manual-qa/v2-hardening-pack.md`, this record.
 
+## CI evidence (the PH candidate)
+
+One PH candidate, two CI-L2 runs, the first failing for a test-infrastructure reason:
+
+- **Run 37168470932** (head `21f05bd`): **FAILED** in the *Final product UI self-test*; the job stopped there, so the later steps — release build, no-fault-hook check, NSIS installers, packaged-app check, installer check and **Package acceptance — were SKIPPED, not PASS.** This run is **not** candidate evidence.
+- **Run 37172021453** (head `4c04181`, [run 37172021453](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37172021453)): **GREEN, every step.** Includes Rust tests, orchestration integration, practice 93, learning regression 23, product UI 158, release build and reproducibility, no fault-injection hook in the shipped binary, NSIS base and upgrade installers, and Package acceptance (per-user install, installed smoke, single instance, no listener / remote connection, crash-recovery relaunch, upgrade keeps data, silent uninstall keeps data). The packaged DevTools product check ran as designed on the hosted runner and reported **NOT RUN (the hosted WebView2 refuses a debugging port) — not PASS**; the developer-machine result (19/19) is the evidence for it.
+
+**F3 (test-infrastructure defect, repaired, no product change).** The first failure was a race in the product self-test: *Finish* was clicked while still disabled (the last answer had not rendered yet) and a fixed 120 ms sleep guarded the confirmation dialog. It was reproduced locally only under load (two throttled runs in parallel, 6x CPU, about one round in three) and not on a single run, even at 20x. The repair is condition-based: wait until Finish is enabled, poll the dialog until Done is offered, retry a click for a button that is not there yet; the 20 s budget is only a timeout ceiling. After the fix: 12 of 12 paired parallel + throttled runs green; practice and app self-tests green under throttle. No wait / timeout loop was iterated just to turn Actions green.
+
 ## CI plan
 
-CI-L1 / local checks while iterating (done above). One PH candidate is pushed and one CI-L2 Desktop workflow is run; the evidence close-out afterwards is docs-only (CI-L0) and does not trigger CI. If a CI failure is not a product defect, it is classified first; a repeated identical non-product failure stops the retry loop and the verification source is redefined instead.
+CI-L1 / local checks while iterating; one PH candidate; the evidence close-out is docs-only (CI-L0, this commit) and does not trigger CI. If a CI failure is not a product defect, it is classified first; a repeated identical non-product failure stops the retry loop and the verification source is redefined instead.
 
 ## Not done / carried
 
-All manual items stay OPEN (not PASS, not waived); the result sheet is in the manual pack. Final application icon, release version, code signing and auto-update are not PH work. Product Hardening is **not** accepted: after the candidate is green the state becomes *implementation / evidence complete — awaiting Human Hardening Gate*.
+All manual items stay OPEN (not PASS, not waived); the result sheet is in the manual pack. Final application icon, release version, code signing and auto-update are not PH work. Product Hardening is **not** accepted; it awaits the Human Hardening Gate. RC has not started; the icon, release version, tag, merge to `main` and publication are untouched.

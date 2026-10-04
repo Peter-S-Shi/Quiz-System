@@ -2,7 +2,7 @@
 
 ## 当前阶段
 
-V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + `v2` 分支上的 V2：Desktop Foundation **已验收**；ADR 0002 **已验收**；**V1 Migration 里程碑已验收**；**ADR 0003（Learning Orchestration / Scheduling / Recommendation / Calendar）ACCEPTED — GO WITH AMENDMENT**；**Learning Orchestration + Calendar 里程碑已验收**；**ADR 0004（Task-Domain Integration 与 Typing Evidence Contract）ACCEPTED — GO WITH AMENDMENT**；**Task-Domain Integration 里程碑已验收（Human Gate PASS）**；**Objective Answer Explanation + Focused Practice 里程碑已验收（Human Gate PASS）**；**Final Product UI Integration 里程碑已验收（Human Gate PASS）**；**Human Evaluation Repair 已验收（定向人工复测 PASS）**；**整体产品功能关口（Whole Product Feature Gate）PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效；Product Hardening 进行中**（[`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）
+V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + `v2` 分支上的 V2：Desktop Foundation **已验收**；ADR 0002 **已验收**；**V1 Migration 里程碑已验收**；**ADR 0003（Learning Orchestration / Scheduling / Recommendation / Calendar）ACCEPTED — GO WITH AMENDMENT**；**Learning Orchestration + Calendar 里程碑已验收**；**ADR 0004（Task-Domain Integration 与 Typing Evidence Contract）ACCEPTED — GO WITH AMENDMENT**；**Task-Domain Integration 里程碑已验收（Human Gate PASS）**；**Objective Answer Explanation + Focused Practice 里程碑已验收（Human Gate PASS）**；**Final Product UI Integration 里程碑已验收（Human Gate PASS）**；**Human Evaluation Repair 已验收（定向人工复测 PASS）**；**整体产品功能关口（Whole Product Feature Gate）PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效；Product Hardening 实现/证据已完成 —— 等待 Human Hardening Gate**（[`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）
 
 ## 当前活跃里程碑
 
@@ -192,9 +192,9 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 
 - **整体产品功能关口（Whole Product Feature Gate）：PASS —— Quiz Studio V2 正式 FEATURE COMPLETE 并冻结**（产品负责人 / Verifier，2026-10-03；记录：[`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）。Scope Freeze 的各核心系统均已实现；首轮人工评测、修缮及定向复测均已通过。其余手动 / 打包 / 迁移项属于 **Product Hardening / RC 证据欠账，而不是功能欠账**，保持 OPEN（未 PASS，未豁免）。**Feature Freeze：** 从此不得因便利、审美或新想法增加产品功能；只有真实的发布阻断项（数据完整性、安全、迁移 / 升级、无障碍，或已冻结工作流无法使用）才能重新打开具体范围。正式接受系统字体栈；最终应用图标与发布版本号转为 RC 验收项。
 
-- **Product Hardening：进行中**（2026-10-03 获授权；记录：[`docs/V2_HARDENING.md`](docs/V2_HARDENING.md)；权威清单：[`HARDENING_BACKLOG.md`](HARDENING_BACKLOG.md)；产品负责人手动验收包：[`manual-qa/v2-hardening-pack.md`](manual-qa/v2-hardening-pack.md)）。清单已与真实检查表对账，并包含 **D5（交互式卸载）**。本地自动化各通道通过（Rust 186、JS 235、集成 95、practice 93、app 23、product 158；fmt 与 clippy 干净）；开发机打包检查 19/19，启动冒烟通过；托管运行器上的打包 DevTools 检查仍为 **NOT RUN**。目前未发现产品缺陷，记录两条观察（大历史读取成本；导出原地写入）。未新增功能、字体、签名或自动更新；RC 未开始。
+- **Product Hardening：实现/证据已完成 —— 等待 Human Hardening Gate**（尚未验收；2026-10-03 获授权；记录：[`docs/V2_HARDENING.md`](docs/V2_HARDENING.md)；权威清单：[`HARDENING_BACKLOG.md`](HARDENING_BACKLOG.md)；产品负责人手动验收包：[`manual-qa/v2-hardening-pack.md`](manual-qa/v2-hardening-pack.md)）。清单已与真实检查表对账，并包含 **D5（交互式卸载）**。本地自动化各通道通过（Rust 186、JS 235、集成 95、practice 93、app 23、product 158；fmt 与 clippy 干净）；开发机打包检查 19/19，启动冒烟通过；托管运行器上的打包 DevTools 检查仍为 **NOT RUN**。**PH 候选 CI-L2（Windows Desktop）：绿色，[run 37172021453](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37172021453)，head `4c04181`**，所有步骤通过，包括 NSIS 基础 + 升级安装包与 Package acceptance；此前的 run 37168470932 在 product UI 自测处失败（测试竞态，未改产品代码即修复），其后的步骤是 SKIPPED，不是 PASS。托管机上的打包 DevTools 检查为 **NOT RUN**（开发机 19/19）。未发现产品缺陷；记录观察（大历史读取成本；导出原地写入）。未新增功能、字体、签名或自动更新；RC 未开始。
 
-**下一步行动：完成 Product Hardening 候选（一次 CI-L2），随后交回证据地图与手动验收包，等待 Human Hardening Gate。** 未完成（未 PASS，未豁免）：M-U1–M-U8、M-T1b/d/e、M-T2a–d、M-T3a–c、M1–M7、D1–D5、音效听感、最终应用图标、发布版本号。`spike/desktop-runtime` 分支保持一次性且永不合并。
+**下一步行动：Human Hardening Gate —— 产品负责人审阅证据地图（[`docs/V2_HARDENING.md`](docs/V2_HARDENING.md)）并执行手动验收包（[`manual-qa/v2-hardening-pack.md`](manual-qa/v2-hardening-pack.md)）。** 只有该 Gate 通过并获得单独授权后才开始 RC。 未完成（未 PASS，未豁免）：M-U1–M-U8、M-T1b/d/e、M-T2a–d、M-T3a–c、M1–M7、D1–D5、音效听感、最终应用图标、发布版本号。`spike/desktop-runtime` 分支保持一次性且永不合并。
 
 保留的延期边界：macOS 环境保持 **DEFERRED / NOT VERIFIED**。
 

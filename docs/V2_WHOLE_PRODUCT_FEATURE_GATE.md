@@ -15,7 +15,7 @@
 | Final Product UI Integration ([record](V2_PRODUCT_UI.md)) | ACCEPTED |
 | Human Evaluation Repair | ACCEPTED |
 | Whole Product Feature Gate | PASS — FEATURE COMPLETE |
-| Product Hardening | In progress (authorized after this Gate) — see `V2_HARDENING.md` |
+| Product Hardening | Implementation/evidence complete — awaiting Human Hardening Gate — see `V2_HARDENING.md` |
 
 ## Remaining items are evidence debt, not feature debt
 

@@ -1,6 +1,6 @@
 # Quiz Studio V2 — Product Hardening backlog
 
-**Phase:** Product Hardening (PH) — **in progress.** Entry truth: [`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md). Milestone record: [`docs/V2_HARDENING.md`](docs/V2_HARDENING.md).
+**Phase:** Product Hardening (PH) — **implementation/evidence complete — awaiting Human Hardening Gate** (candidate: green CI-L2 run 37172021453, head `4c04181`; not accepted). Entry truth: [`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md). Milestone record: [`docs/V2_HARDENING.md`](docs/V2_HARDENING.md).
 **Rules:** Feature Freeze applies. No new features, no bundled fonts, no signing or auto-update, no RC work. Final app icon and release version are RC acceptance items.
 
 This file is the single canonical inventory. It was reconciled against the real checklists in `manual-qa/v2-*.md` (not only the summary docs), so it includes **D5**, which the summaries omit.
@@ -53,7 +53,7 @@ This file is the single canonical inventory. It was reconciled against the real 
 | M-U7 | Drag-and-drop and media into a question | 3 | Installed app | OPEN |
 | M-U8 | Backup, restore and upgrade with the new UI | 1, 2 | Two builds for the upgrade | OPEN |
 | S1 | Real audible quality of the physical sounds | 5 | Speakers / headphones | OPEN |
-| P1 | Packaged-product DevTools check on the hosted runner | 3 | Hosted runner WebView2 refuses a debugging port | **NOT RUN** on hosted CI; developer-machine evidence exists (19/19 at the Final UI candidate) |
+| P1 | Packaged-product DevTools check on the hosted runner | 3 | Hosted runner WebView2 refuses a debugging port | **NOT RUN** on hosted CI (confirmed again in run 37172021453); **DEV-PASS** 19/19 on the developer machine at the PH candidate |
 
 ## B. Automatable hardening lanes (risk order)
 
