@@ -400,7 +400,7 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 15. Human Evaluation Repair milestone (post Final Product UI Integration). **ACCEPTED (targeted Human re-test PASS)** ([record](docs/V2_HUMAN_EVAL_REPAIR.md)).
 16. Whole Product Feature Gate. **PASS — Quiz Studio V2 is FEATURE COMPLETE; Feature Freeze in effect** ([record](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)). Remaining manual / package / migration items are Product Hardening / RC evidence debt and stay open, not PASS, not waived.
 17. Product Hardening. **PASS — ACCEPTED / COMPLETE** (Human Hardening Gate PASS, 2026-10-03; green CI-L2 candidate run 37172021453; [record](docs/V2_HARDENING.md), [backlog](HARDENING_BACKLOG.md)). F1 / F2 stay known RC observations.
-18. Release Candidate. **In progress** (authorized 2026-10-04; [record](docs/V2_RELEASE_CANDIDATE.md)): identity `2.0.0-rc.1`, final icon approved by the Product Owner, one exact-head CI-L3 run pending. Merge to `main`, tags and release need a separate promotion authorization.
+18. Release Candidate. **RC candidate verified by engineering — awaiting Human RC Gate** (not accepted; [record](docs/V2_RELEASE_CANDIDATE.md)): identity `2.0.0-rc.1`, final icon approved by the Product Owner, exact-head CI-L3 green ([run 37176744235](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37176744235)). Merge to `main`, tags and release need a separate promotion authorization.
 
 ## Maintenance / Next Version
 

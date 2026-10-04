@@ -6,7 +6,7 @@ Record **PASS / FAIL / NOT RUN** for each item with the date and the installer y
 
 ## Setup (once)
 
-1. Download the candidate installer from the green CI-L3 run (artifact `quiz-studio-2.0.0-rc.1-<sha7>-installer`) and compare its SHA-256 with `rc-evidence.json` in the evidence artifact (also copied into `docs/V2_RELEASE_CANDIDATE.md`).
+1. Download the candidate installer from the green CI-L3 run (run 37176744235, artifact `quiz-studio-2.0.0-rc.1-cec737b-installer`) and compare its SHA-256 with `34FE8E4DD189DB6281104C9D0EDE7B6178E1EA10A39A2243AE948E43774F052F` (`rc-evidence.json`, also in `docs/V2_RELEASE_CANDIDATE.md`).
 2. Build the synthetic fixtures: `powershell -File desktop\scripts\make-hardening-pack.ps1 -Out "$env:TEMP\qs-rc-pack" -BigBackupMiB 8 -DropFileGiB 1` (a small big-backup is enough here; skip the 1 GiB file if you like).
 3. For a clean, harmless run use the seeded sample data: after installing, start the app from a prompt with `$env:LOCALAPPDATA="$env:TEMP\qs-rc-pack\data-root"` set, or simply let the app create a fresh data folder on a test Windows profile.
 

@@ -15,7 +15,7 @@
 | Final Product UI Integration ([record](V2_PRODUCT_UI.md)) | ACCEPTED |
 | Human Evaluation Repair | ACCEPTED |
 | Whole Product Feature Gate | PASS — FEATURE COMPLETE |
-| Product Hardening | PASS — ACCEPTED / COMPLETE (Human Hardening Gate, 2026-10-03) — see `V2_HARDENING.md`. Release Candidate: in progress (`V2_RELEASE_CANDIDATE.md`) |
+| Product Hardening | PASS — ACCEPTED / COMPLETE (Human Hardening Gate, 2026-10-03) — see `V2_HARDENING.md`. Release Candidate: verified by engineering, awaiting Human RC Gate (`V2_RELEASE_CANDIDATE.md`) |
 
 ## Remaining items are evidence debt, not feature debt
 

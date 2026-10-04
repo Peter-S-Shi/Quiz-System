@@ -1,6 +1,6 @@
 # V2 Release Candidate — evidence map
 
-**Status: Release Candidate in progress.** Candidate identity `2.0.0-rc.1` (GA target `2.0.0`) on the long-lived `v2` branch. Entry truth: [`V2_HARDENING.md`](V2_HARDENING.md) (Product Hardening PASS — ACCEPTED / COMPLETE), [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (Feature Freeze), [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md).
+**Status: RC candidate verified by engineering — awaiting Human RC Gate.** Not accepted: acceptance, the merge to `main`, tags and the release belong to the Human RC Gate and a separate promotion authorization. Candidate identity `2.0.0-rc.1` (GA target `2.0.0`) on the long-lived `v2` branch. Entry truth: [`V2_HARDENING.md`](V2_HARDENING.md) (Product Hardening PASS — ACCEPTED / COMPLETE), [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (Feature Freeze), [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md).
 
 RC is packaging, identity, exact-candidate verification and delivery evidence. It adds no feature, no bundled font, no signing or auto-update, and reopens no accepted semantics. **Not done and not authorized here:** merge to `main`, any tag (`v2.0.0-rc.1`, `v2.0.0`), a GitHub Release, the change from RC to GA.
 
@@ -56,17 +56,17 @@ Run by the package acceptance on the **data root the installed candidate upgrade
 
 ## 5. Evidence states for the candidate
 
-To be filled from the one exact-head CI-L3 run (see section 8); nothing below is claimed before that run.
+Kept separate; a green workflow is **not** "everything passed" because one nested check reports NOT RUN.
 
 | State | Items |
 |---|---|
-| AUTO-PASS (local, CI-L1) | recorded in section 7 |
-| CI-L3 package PASS | pending the run |
-| DEV-PASS | recorded in section 7 |
-| PO-PASS | none for RC yet (smoke not performed) |
-| NOT RUN | hosted-runner packaged WebView2 DevTools deep check (known runner limitation; stays NOT RUN) |
-| Accepted known limitation | F1, F2 (section 6) |
-| Unresolved blocker | none known |
+| **AUTO-PASS** (CI, exact head) | format / lint; JS unit, Rust (store, media, activation, archive, port, fault and memory suites), Learning Orchestration + task-domain integration; Focused Practice self-test; learning-session regression; final product UI self-test; offline / CSP / path-boundary assertions (inside those suites); shipped binary carries no fault-injection hook; release build + reproducibility; WebView2 `downloadBootstrapper` configuration (static) |
+| **CI-L3 package PASS** (exact candidate installer) | per-user install; exe / file / uninstall-entry version `2.0.0-rc.1`; final icon embedded, uninstall-entry icon, Start-menu shortcut; installed smoke (single instance, no listener, no remote connection, crash-recovery relaunch); silent uninstall keeps data; upgrade from the earlier V2 build preserves the data root (15 pre-upgrade records identical; the app added one schedule and one suggestion on launch); backup → restore, valid V1 migration, repeat = already migrated, truncated source blocked (on the upgraded data root, engine level — section 4) |
+| **DEV-PASS** (developer machine) | the same package acceptance on the exact candidate installer; packaged-app product check 19/19 on the shipped exe (section 7) |
+| **PO-PASS** | none for RC yet — the Product Owner RC smoke is prepared and **not performed** |
+| **NOT RUN** | the hosted-runner packaged WebView2 DevTools deep check (the hosted WebView2 refuses a debugging port; the step reports `SKIPPED (not run, not passed)`) — never PASS; the developer-machine 19/19 is the evidence for it |
+| **Accepted known limitation** | F1, F2 (section 6) |
+| **Unresolved blocker** | none known |
 
 ## 6. F1 and F2 — RC dispositions
 
@@ -92,9 +92,27 @@ Run on the developer machine (Windows 11, i7-12700H) before the candidate was pu
 - **DEV-PASS — packaged-app product check** on the shipped exe: 19/19 (real WebView2, CSP, Tauri IPC, Rust store).
 - Local installers were built with the same Tauri CLI version CI uses (`2.12.1`).
 
-## 8. CI-L3 exact-head run
+## 8. CI-L3 exact-head run (the one run)
 
-Pending: one exact-head run after all candidate-affecting changes are frozen. Recorded fields: exact commit SHA, RC version, installer file name, installer SHA-256, shipped exe SHA-256, CI run, packaged / manual evidence source, icon source identity, F1 / F2 disposition.
+[run 37176744235](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37176744235) — **green, every step**, on the exact candidate head. (The only workflow run for this candidate; no re-run.)
+
+| Field | Value |
+|---|---|
+| Exact commit SHA | `cec737b53b59d2e88b98817880baf41abb6f2304` |
+| RC version | `2.0.0-rc.1` (GA target `2.0.0`) |
+| Installer file | `quiz-studio_2.0.0-rc.1_x64-setup.exe` (artifact `quiz-studio-2.0.0-rc.1-cec737b-installer`) |
+| Installer SHA-256 | `34FE8E4DD189DB6281104C9D0EDE7B6178E1EA10A39A2243AE948E43774F052F` |
+| Shipped (installed) exe SHA-256 | `961B17DC401F606B95B88A1D86318CD1487D29B2E6053FD938D83FFFF40D1E7E` |
+| Build-tree exe SHA-256 | `DA1979AC81DBF124519585BEB926B56EA10C7F9F578EC5F36E633CD08AE33A0C` (differs by design: the Tauri bundler stamps the bundle type into the shipped exe) |
+| `icon.ico` SHA-256 | `2A1977E3938F19179D5712EE74BAB295879DC839DEE941C993555A1F5B0D680A` |
+| Icon source identity | Concept A "Ink-tail Q", Product Owner approved; `docs/design-inputs/Design model/app-icon/` |
+| Evidence artifact | `rc-evidence-2.0.0-rc.1-cec737b` (`rc-evidence.json`, package report, data-journeys report) |
+| Test-only upgrade source | commit `4c0418116c8f948f18ae3a1c9a851c92c92e491b` (version `2.0.0-dev.0`); not an RC artifact, not uploaded |
+| Hosted WebView2 for the installed-app checks | Edge/WebView2 153.x on the runner |
+| Packaged / manual evidence source | developer machine (DEV-PASS, section 7); Product Owner smoke pending |
+| F1 / F2 disposition | accepted known limitations (section 6) |
+
+The installer is an unsigned, per-user NSIS package; code signing and auto-update are outside the frozen V2 Core.
 
 ## 9. User-facing documentation
 
@@ -104,4 +122,4 @@ Pending: one exact-head run after all candidate-affecting changes are frozen. Re
 
 ## 10. Product Owner RC smoke
 
-[`../manual-qa/v2-rc-smoke.md`](../manual-qa/v2-rc-smoke.md) (+ `.zh-CN`): about 15–30 minutes, ten items R1–R10, every result blank. Not auto-marked.
+[`../manual-qa/v2-rc-smoke.md`](../manual-qa/v2-rc-smoke.md) (+ `.zh-CN`): about 15–30 minutes, ten items R1–R10, every result blank. **Ready for the Product Owner; nothing is pre-marked and nothing is PASS until performed.** Step 1 of its setup is to compare the downloaded installer's SHA-256 with section 8.

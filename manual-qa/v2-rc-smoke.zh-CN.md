@@ -6,7 +6,7 @@
 
 ## 准备（一次）
 
-1. 从绿色的 CI-L3 run 下载候选安装包（artifact `quiz-studio-2.0.0-rc.1-<sha7>-installer`），把它的 SHA-256 与证据 artifact 中的 `rc-evidence.json`（同样抄录在 `docs/V2_RELEASE_CANDIDATE.md`）核对。
+1. 从绿色的 CI-L3 run 下载候选安装包（run 37176744235，artifact `quiz-studio-2.0.0-rc.1-cec737b-installer`），把它的 SHA-256 与 `34FE8E4DD189DB6281104C9D0EDE7B6178E1EA10A39A2243AE948E43774F052F` 核对（`rc-evidence.json`，同样抄录在 `docs/V2_RELEASE_CANDIDATE.md`）。
 2. 生成合成夹具：`powershell -File desktop\scripts\make-hardening-pack.ps1 -Out "$env:TEMP\qs-rc-pack" -BigBackupMiB 8 -DropFileGiB 1`（这里小一点的“大备份”就够；1 GiB 文件可跳过）。
 3. 想要干净且无害的运行，使用带样例数据的文件夹：安装后在命令行里先设置 `$env:LOCALAPPDATA="$env:TEMP\qs-rc-pack\data-root"` 再启动应用；或者在测试用的 Windows 账户上让应用自己新建数据文件夹。
 
