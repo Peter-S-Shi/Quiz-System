@@ -1,6 +1,6 @@
 # V2 Final Product UI Integration milestone
 
-**Status:** **ACCEPTED** (Human Gate PASS, 2026-10-03, after the first Human Evaluation, the Human Evaluation Repair and its targeted re-test; see `docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`). Next phase: Product Hardening (not started).
+**Status:** **ACCEPTED** (Human Gate PASS, 2026-10-03, after the first Human Evaluation, the Human Evaluation Repair and its targeted re-test; see `docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`). Manual items M-U1–M-U8 PO-PASS at the Human Hardening Gate (2026-10-03); Product Hardening PASS — ACCEPTED / COMPLETE. Next phase: Release Candidate (not started).
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1, `docs/V2_UI_ARCHITECTURE_FREEZE.md` (the approved prototype's information architecture, "Warm Paper · Living Ink", no second UI architecture), ADR 0001–0004 (ACCEPTED) and the accepted Desktop Foundation, V1 Migration, Learning Orchestration + Calendar, Task-Domain Integration and Objective Answer Explanation + Focused Practice milestones. **This is integration: no Evidence, Scheduling, Recommendation, session or domain semantics were changed.**
 
 ## 1. Scope
@@ -79,4 +79,4 @@ Other items: fonts are system stacks (accepted, decision above); the final appli
 
 ## 6. Gate readiness
 
-Implementation complete; the automated contract passes locally and runs in the Windows CI workflow (including the real packaged app). The milestone is **ACCEPTED**. The manual items listed in section 5 remain OPEN (not PASS, not waived) as Product Hardening / RC evidence debt. Hardening is **not started**.
+Implementation complete; the automated contract passes locally and runs in the Windows CI workflow (including the real packaged app). The milestone is **ACCEPTED**. The manual items listed in section 5 were OPEN as Product Hardening / RC evidence debt and are PO-PASS at the Human Hardening Gate (2026-10-03). Hardening is complete.

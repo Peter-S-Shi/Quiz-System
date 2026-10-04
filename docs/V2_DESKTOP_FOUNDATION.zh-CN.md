@@ -1,7 +1,7 @@
 # V2 Desktop Foundation —— 里程碑记录
 
 **分支：** `v2`（长期 V2 开发线，自 `main@8eb6608` 切出）
-**状态：** **已验收（ACCEPTED）**（Desktop Foundation Human Gate PASS，2026-10-02），期间经过两次限定范围的修复（第 8、9 节）；验收欠账 D1–D4 保持开放，作为不阻塞的打包/手动验收欠账（第 10 节）
+**状态：** **已验收（ACCEPTED）**（Desktop Foundation Human Gate PASS，2026-10-02），期间经过两次限定范围的修复（第 8、9 节）；验收欠账 D1–D4（及 D5）在该次验收时保持开放，作为不阻塞的打包/手动验收欠账（第 10 节）；**均已在 Human Hardening Gate（2026-10-03）PO-PASS**
 **权威输入：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§5.1、§24）、ADR 0001（已接受，含修订 A1–A8）、`docs/V2_UI_ARCHITECTURE_FREEZE.md`、`docs/adr/evidence/0001-desktop-spike-report.md`。
 **代码：** [`desktop/`](../desktop/README.md)。V1 生产代码、测试与 CI 均未改动。
 

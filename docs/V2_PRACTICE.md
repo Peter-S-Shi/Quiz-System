@@ -1,6 +1,6 @@
 # V2 Objective Answer Explanation + Focused Practice milestone
 
-**Status:** **ACCEPTED (Human Gate PASS)** after one HOLD repair; M-T1a and M-T1c PASS, the rest of the manual items stay open
+**Status:** **ACCEPTED (Human Gate PASS)** after one HOLD repair; M-T1a and M-T1c PASS then, the rest of the manual items were open at that acceptance and are PO-PASS at the Human Hardening Gate (2026-10-03)
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§3.4–§3.5, §4.7, §10, §11, §12, §13, §22–§23), `docs/V2_UI_ARCHITECTURE_FREEZE.md`, the approved UI prototype / design inputs, ADR 0001–0004 (ACCEPTED), and the accepted Desktop Foundation, V1 Migration, Learning Orchestration + Calendar and Task-Domain Integration milestones. No Evidence or Scheduling semantics were reopened; no new UI architecture was introduced.
 
 ## 1. Scope

@@ -1,6 +1,6 @@
 # V2 Objective Answer Explanation + Focused Practice 里程碑
 
-**状态：** **已验收（Human Gate PASS）**（经一次 HOLD 修复）；M-T1a、M-T1c 通过，其余手动项保持 open
+**状态：** **已验收（Human Gate PASS）**（经一次 HOLD 修复）；当时 M-T1a、M-T1c 通过，其余手动项在该次验收时为 open，之后已在 Human Hardening Gate（2026-10-03）PO-PASS
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§3.4–§3.5、§4.7、§10、§11、§12、§13、§22–§23）、`docs/V2_UI_ARCHITECTURE_FREEZE.md`、已批准的 UI 原型 / 设计输入、ADR 0001–0004（均已 ACCEPTED），以及已验收的 Desktop Foundation、V1 Migration、Learning Orchestration + Calendar、Task-Domain Integration 里程碑。没有重新打开任何 Evidence 或 Scheduling 语义，也没有引入新的 UI 架构。
 
 ## 1. 范围

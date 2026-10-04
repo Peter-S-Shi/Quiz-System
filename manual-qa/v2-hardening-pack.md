@@ -2,7 +2,7 @@
 
 One coherent session that covers every still-open manual item. It does **not** replace the individual checklists (`v2-desktop-foundation.md`, `v2-migration.md`, `v2-focused-practice.md`, `v2-final-product-ui.md`), which keep the exact steps and expected results. This pack consolidates the **setup** so nothing is prepared twice, and records **one result per item**.
 
-Nothing here is PASS until a person performed it. Record `PASS`, `FAIL` or `NOT RUN` with the environment, the date and the candidate identity. An item whose environment is unavailable stays **OPEN** with the reason; it is not waived.
+**Executed: the Product Owner performed every item in this pack and the Human Hardening Gate PASSED on 2026-10-03 (PH candidate `4c04181`, CI-L2 [run 37172021453](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37172021453)).** The rule that produced this is kept for the next pack: nothing is PASS until a person performed it; record `PASS`, `FAIL` or `NOT RUN` with environment, date and candidate; an unavailable environment stays **OPEN**, never waived.
 
 ## 0. Setup (once)
 
@@ -38,39 +38,39 @@ Candidate identity to record: the PH candidate commit and, for an installed buil
 
 | ID | Result | Environment | Date | Candidate | Note |
 |---|---|---|---|---|---|
-| M-T1b | OPEN | | | | |
-| M-T1d | OPEN | | | | |
-| M-T1e | OPEN | | | | |
-| M-T2a | OPEN | | | | |
-| M-T2b | OPEN | | | | |
-| M-T2c | OPEN | | | | |
-| M-T2d | OPEN | | | | |
-| M-U5 | OPEN | | | | |
-| M-T3a | OPEN | | | | |
-| M-T3b | OPEN | | | | |
-| M-T3c | OPEN | | | | |
-| M-U1 | OPEN | | | | |
-| M-U2 | OPEN | | | | |
-| M-U3 | OPEN | | | | |
-| M-U4 | OPEN | | | | |
-| S1 (sound quality) | OPEN | | | | |
-| D1 | OPEN | | | | |
-| M-U6 | OPEN | | | | |
-| M-U7 | OPEN | | | | |
-| M1 | OPEN | | | | |
-| M2 | OPEN | | | | |
-| M3 | OPEN | | | | |
-| M4 | OPEN | | | | |
-| M5 | OPEN | | | | |
-| D2 | OPEN | | | | |
-| M7 | OPEN | | | | |
-| D3 | OPEN | | | | |
-| M6 | OPEN | | | | |
-| M-U8 | OPEN | | | | |
-| D5 | OPEN | | | | |
-| D4 | OPEN | | | | |
+| M-T1b | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T1d | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T1e | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T2a | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T2b | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T2c | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T2d | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U5 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T3a | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T3b | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-T3c | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U1 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U2 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U3 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U4 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| S1 (sound quality) | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| D1 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U6 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U7 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M1 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M2 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M3 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M4 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M5 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| D2 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M7 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| D3 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M6 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| M-U8 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| D5 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
+| D4 | PO-PASS | Product Owner's machine (per-item environment not itemised in this record) | 2026-10-03 | `4c04181` | Human Hardening Gate PASS |
 
-Already **PASS** (Product Owner, 2026-10-03): M-T1a, M-T1c. Automated in CI: M-T4. The hosted-runner packaged DevTools check (P1) is **NOT RUN** on hosted CI by design; developer-machine evidence exists.
+Earlier **PO-PASS** (Product Owner, 2026-10-03, Human Gate): M-T1a, M-T1c — history kept as recorded. Automated in CI: M-T4. The hosted-runner packaged DevTools check (P1) stays **NOT RUN** on hosted CI by design (it is not a manual item and was not converted by this Gate); the developer-machine 19/19 is **DEV-PASS**.
 
 ## 3. If something fails
 

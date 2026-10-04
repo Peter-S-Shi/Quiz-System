@@ -1,7 +1,7 @@
 # V2 V1 → V2 迁移 —— 里程碑记录
 
 **分支：** `v2`（长期 V2 开发线；未合并到 `main`）
-**状态：** **已验收**（Human Gate PASS，2026-10-02）
+**状态：** **已验收**（Human Gate PASS，2026-10-02）；手动检查 M1–M7 已在 Human Hardening Gate（2026-10-03）PO-PASS
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1（§4.5、§5.2、§10.3、§23）、`docs/V2_MIGRATION_READINESS_INVENTORY.md`（Human Gate 决策 D-1…D-15）、ADR 0001（已接受）、**ADR 0002（已接受 —— GO WITH AMENDMENT；其 §15 foundation 扩展与 §16 验证契约是本里程碑的实施与验收依据）**、已验收的 Desktop Foundation。
 **代码：** [`desktop/core/migrate_v1`](../desktop/core/migrate_v1)（`qs-migrate-v1`）及下列追加式 foundation 扩展。V1 生产代码、测试与 CI 均未改动（`desktop/`、`docs/`、`manual-qa/`、状态文件与 V2 workflow 之外没有任何文件变化）。无 V1.x 补丁、不读取浏览器配置文件、不使用真实用户数据。
 

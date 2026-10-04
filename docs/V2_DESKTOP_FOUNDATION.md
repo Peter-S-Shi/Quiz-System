@@ -1,7 +1,7 @@
 # V2 Desktop Foundation — Milestone Record
 
 **Branch:** `v2` (long-lived V2 development line, cut from `main@8eb6608`)
-**Status:** **ACCEPTED** (Desktop Foundation Human Gate PASS, 2026-10-02) after two bounded repairs (sections 8 and 9); acceptance debt D1-D4 stays open as non-blocking packaged/manual debt (section 10)
+**Status:** **ACCEPTED** (Desktop Foundation Human Gate PASS, 2026-10-02) after two bounded repairs (sections 8 and 9); acceptance debt D1-D4 (and D5) stayed open at that acceptance as non-blocking packaged/manual debt (section 10); **all PO-PASS at the Human Hardening Gate, 2026-10-03**
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§5.1, §24), ADR 0001 (ACCEPTED, amendments A1–A8), `docs/V2_UI_ARCHITECTURE_FREEZE.md`, `docs/adr/evidence/0001-desktop-spike-report.md`.
 **Code:** [`desktop/`](../desktop/README.md). V1 production code, tests and CI are untouched.
 

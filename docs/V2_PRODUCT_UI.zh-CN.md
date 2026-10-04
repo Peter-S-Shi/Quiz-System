@@ -1,6 +1,6 @@
 # V2 Final Product UI Integration 里程碑
 
-**状态：** **已验收**（Human Gate PASS，2026-10-03，经首轮人工评测、Human Evaluation Repair 及其定向复测；见 `docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`）。下一阶段：Product Hardening（尚未开始）。
+**状态：** **已验收**（Human Gate PASS，2026-10-03，经首轮人工评测、Human Evaluation Repair 及其定向复测；见 `docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`）。手动项 M-U1–M-U8 已在 Human Hardening Gate（2026-10-03）PO-PASS；Product Hardening PASS —— 已验收 / 完成。下一阶段：Release Candidate（尚未开始）。
 **依据：** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1、`docs/V2_UI_ARCHITECTURE_FREEZE.md`（已批准原型的信息架构、“Warm Paper · Living Ink”，不引入第二套 UI 架构）、ADR 0001–0004（均已 ACCEPTED），以及已验收的 Desktop Foundation、V1 Migration、Learning Orchestration + Calendar、Task-Domain Integration 与 Objective Answer Explanation + Focused Practice 里程碑。**这是集成工作：没有改动任何 Evidence、Scheduling、Recommendation、session 或 domain 语义。**
 
 ## 1. 范围
@@ -79,4 +79,4 @@
 
 ## 6. Gate 就绪情况
 
-实现完成；自动化契约本地通过，并在 Windows CI workflow 中运行（包括真实打包应用）。里程碑**已验收**。第 5 节所列手动项仍保持 OPEN（未 PASS，未豁免），属于 Product Hardening / RC 证据欠账。Hardening **尚未开始**。
+实现完成；自动化契约本地通过，并在 Windows CI workflow 中运行（包括真实打包应用）。里程碑**已验收**。第 5 节所列手动项原为 Product Hardening / RC 证据欠账，已在 Human Hardening Gate（2026-10-03）PO-PASS。Hardening 已完成。

@@ -1,7 +1,7 @@
 # V2 V1 → V2 Migration — Milestone Record
 
 **Branch:** `v2` (long-lived V2 development line; not merged to `main`)
-**Status:** **ACCEPTED** (Human Gate PASS, 2026-10-02)
+**Status:** **ACCEPTED** (Human Gate PASS, 2026-10-02); manual checks M1–M7 PO-PASS at the Human Hardening Gate (2026-10-03)
 **Authority:** `V2_PRODUCT_SCOPE_FREEZE.md` Revision 1 (§4.5, §5.2, §10.3, §23), `docs/V2_MIGRATION_READINESS_INVENTORY.md` (Human Gate decisions D-1…D-15), ADR 0001 (ACCEPTED), **ADR 0002 (ACCEPTED — GO WITH AMENDMENT; §15 foundation extensions and §16 verification contract are this milestone's implementation and acceptance basis)**, the accepted Desktop Foundation.
 **Code:** [`desktop/core/migrate_v1`](../desktop/core/migrate_v1) (`qs-migrate-v1`) plus the additive foundation extensions below. V1 production code, tests and CI are untouched (no file outside `desktop/`, `docs/`, `manual-qa/`, the status files and the V2 workflow changed). No V1.x patch, no browser-profile access, no real user data.
 
