@@ -207,10 +207,11 @@ V2 进展（以所链接文档为准，此处不改变其内容）：
 
 - 默认分支：`main`
 - 远程仓库：`origin`
-- 仓库生命周期状态：V1 最终定版 / 维护冻结状态 (V1 Finalized / Maintenance Hold) + V2（`v2` 分支）：Desktop Foundation 已验收，ADR 0002 已验收，V1 Migration 里程碑已验收，ADR 0003 已验收，Learning Orchestration + Calendar 里程碑已验收，ADR 0004 已验收，Task-Domain Integration 里程碑已验收
-- V2 开发分支：`v2`（自 `main@8eb6608`；已推送；长期分支；无指向 `main` 的 PR）
-- 最终发布版本号：`1.0.0`
-- 已接受候选版本 Tag：`v1.0.0-rc.1`（指向不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）
+- 仓库生命周期状态：**Quiz Studio V2 `2.0.0` —— 已发布 / 维护（RELEASED / MAINTENANCE）**（当前已发布产品）。Quiz Studio V1 `1.0.0` 作为历史材料保留，处于维护冻结状态（Maintenance Hold）。
+- 当前 GA tag / Release：`v2.0.0`（GitHub Release `v2.0.0`；不可变的 GA 运行时提交 `62b76b7c4454df971f380d649ea986dbdb0e476a`）。`main` 在这个不可变 GA tag 之后可能包含后续的文档/作品集提交。
+- V2 长期分支：`v2`，保留在 GA 运行时提交 `62b76b7c4454df971f380d649ea986dbdb0e476a`。
+- RC 溯源 tag：`v2.0.0-rc.1` → 已接受的 RC 运行时提交 `cec737b53b59d2e88b98817880baf41abb6f2304`。
+- V1 历史（仅指 V1）：V1 最终发布版本 `1.0.0`（tag `v1.0.0`）；V1 已接受候选 tag `v1.0.0-rc.1`（不可变提交 `f33bafcfe42ac8dd521466026c343102dc18897a`）。
 - 提交与合并追踪：请查阅 Git 历史以获取 `main` 提交身份与 PR 合并记录
 - 当前文档版本：包含本状态文件的提交；请使用 Git 历史获取其不可变标识符
 - 发布状态：请参考 GitHub Releases 页面以获取已发布分发状态

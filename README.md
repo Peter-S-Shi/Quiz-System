@@ -1,222 +1,396 @@
 # Quiz Studio
 
 <p align="center">
-  <img src="assets/readme/hero.svg" alt="Quiz Studio Banner - Local-First Study Desk &amp; Open Teaching Interchange" width="100%">
+  <img src="assets/readme/quiz-studio-v2-hero-banner.png" alt="Quiz Studio — evidence-first local-first desktop learning workspace" width="100%">
 </p>
 
 <p align="center">
-  <a href="#quick-start"><img src="https://img.shields.io/badge/Runtime-Vanilla%20ESM%20%C2%B7%20Zero%20Build-blue?style=flat-square" alt="Zero Build Step"></a>
-  <a href="#engineering-highlights"><img src="https://img.shields.io/badge/Architecture-100%25%20Local--First-success?style=flat-square" alt="Local First"></a>
-  <a href="#engineering-highlights"><img src="https://img.shields.io/badge/Tests-292%20Passed-brightgreen?style=flat-square" alt="292 Tests Passed"></a>
-  <a href="docs/OPEN_TEACHING_INTERCHANGE.md"><img src="https://img.shields.io/badge/Interchange-JSON%20Schema%20Standard-orange?style=flat-square" alt="Open Teaching Interchange"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-informational?style=flat-square" alt="MIT License"></a>
-  <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/%E6%96%87%E6%A1%A3-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-blueviolet?style=flat-square" alt="Simplified Chinese Documentation"></a>
+  <strong>An evidence-first Windows desktop learning workspace for deliberate practice, scheduling, review, and durable learning history.</strong>
 </p>
-
----
-
-> **Quiz Studio V2 `2.0.0` — released.** A local-first **Windows desktop** learning workspace for Objective, Translation and Typing practice, with Today, Calendar, Library, Evidence history, Review, Exchange & backup and Settings; fully offline, with backup / restore and V1 migration. Get the installer from the [GitHub Release `v2.0.0`](https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0) and start with the [V2 desktop quick start](docs/V2_QUICKSTART.md). Windows is the verified platform; the installer is unsigned. The sections below describe **Quiz Studio V1**, the browser edition (`v1.0.0`, maintenance hold), which stays in this repository unchanged as the preserved V1 record.
-
----
-
-## Overview
-
-**Quiz Studio** is a distraction-free, local-first personal learning workspace and practice studio. It provides a tactile **Layered Paper Study Desk** experience that unites two complementary learning workflows:
-1. **Objective Quiz Practice**: Multi-type testing with rich media attachments, instant/deferred feedback, session recovery, and wrong-question retries.
-2. **Qualitative Translation Studio**: Sentence-level translation practice with learner metacognitive uncertainty marking, rich teacher correction workspaces, and portable file-based interchange.
-
-Quiz Studio is **AI-Native and API-Optional**: it supports rich collaborative review and remediation with outside human teachers or external AI assistants (ChatGPT, Claude, Codex, local LLMs) via portable, versioned JSON schemas—**without requiring an embedded backend database, user accounts, network tracking, or paid API keys**.
-
----
-
-## Core Capabilities
 
 <p align="center">
-  <img src="assets/readme/capabilities.svg" alt="Quiz Studio Core Learning Surfaces" width="100%">
+  The engine recommends. The learner remains sovereign.
 </p>
-
-### 1. Objective Quiz Desk & Paper Authoring
-- **5 Supported Question Types**: Single-choice, multiple-choice, fill-in-the-blank, true/false, and one-to-one matching.
-- **Embedded Media Attachments**: Attach images (with modal zoom viewer) and audio (with inline playback) backed by client-side IndexedDB Blob storage.
-- **Flexible Practice Modes**: Choose between *Instant Feedback* (per-question checking with correction hints) or *Submit-at-End* (simulated test environment).
-- **Session Durability & Shuffling**: Randomize question order and options; recover in-progress sessions seamlessly across browser refreshes.
-- **Library Organization**: 3-level progressive sidebar navigation (Category → Paper → Question), search, tagging, and one-click JSON import/export.
-
-### 2. Translation Studio with Metacognitive Marking
-- **Qualitative Deliberate Practice**: Sentence-by-sentence translation interface with hidden-by-default reference reveals that never force simplistic auto-grading.
-- **Metacognitive Confidence Marking**: Learners highlight specific spans of their own translations and tag them as **Unknown**, **Uncertain**, or **Should know** before submission.
-- **Batch Material Ingestion**: Fast bulk import via source-only text or bilingual TSV (`source<TAB>reference`) rows.
-- **Protected Learner Evidence**: Finalizing practice creates an immutable, timestamped Learner Response snapshot preserving original answers and confidence marks.
-
-### 3. Teacher Marking Desk & Rich Correction
-- **Tactile Ink Annotations**: Reviewers apply presentation styling (**Bold**, **Italic**, **Highlight**, **Underline**, custom reviewer ink) and structural corrections (**Insert**, **Replace**, **Strikeout Delete**).
-- **Reviewer Judgments & Feedback**: Assign stamp judgments (*Correct*, *Incorrect*, *Partial*, *Needs review*), item-level comments, and suggested full-sentence revisions.
-- **Multiple Concurrent Reviews**: A single learner response can accumulate multiple independent reviews over time without mutating the original learner submission.
-
-### 4. Lineage History & Targeted Retry Loop
-- **Durable Evidence Archive**: Browse all finalized responses, review statuses, and lineage relationships—even after originating practice documents are deleted.
-- **Targeted Retry Modes**: Retry an entire paper, select specific items, or automatically trigger **Retry Needs-Work Items** (extracting items with uncertainty marks or reviewer corrections into a focused attempt).
-- **Lineage Integrity**: Full bidirectional lineage tracking (`resolveResponseLineage`) across retries and remediations with safe cascading deletion protection.
-
----
-
-## Architecture: Open Teaching Interchange
-
-Quiz Studio introduces the **Open Teaching Interchange (OTI)** architecture—a file-based protocol for asynchronous pedagogical collaboration between learners, human teachers, and AI agents.
 
 <p align="center">
-  <img src="assets/readme/architecture.svg" alt="Open Teaching Interchange Lifecycle" width="100%">
+  <a href="https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0"><strong>Download v2.0.0</strong></a>
+  ·
+  <a href="#see-the-real-product">See the real product</a>
+  ·
+  <a href="#engineering-depth">Engineering</a>
+  ·
+  <a href="docs/V2_QUICKSTART.md">Quick start</a>
+  ·
+  <a href="README.zh-CN.md">中文说明</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Peter-S-Shi/Quiz-System/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Peter-S-Shi/Quiz-System?display_name=tag"></a>
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows-2563eb">
+  <img alt="Local first" src="https://img.shields.io/badge/data-local--first-15803d">
+  <img alt="Desktop" src="https://img.shields.io/badge/desktop-Tauri%202-24C8DB">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-informational"></a>
+</p>
+
+Quiz Studio is built around a simple learning principle:
+
+> **Evidence is canonical. Interpretation is replaceable.**
+
+What you actually answered, typed, and marked (including metacognitive marks) forms the canonical evidence and stays inspectable. Review, recommendations, retries, and scheduling evolve around that evidence without rewriting it.
+
+Quiz Studio brings **Objective**, **Translation**, and **Typing** practice into one local-first desktop workspace, then connects each finished session to **Evidence History**, **Review**, **Today**, and **Calendar** so the next practice decision is informed without becoming automatic or opaque.
+
+---
+
+## See the real product
+
+The screens below come from the released **v2.0.0** Windows desktop build using synthetic portfolio data.
+
+<p align="center">
+  <img src="assets/readme/quiz-studio-v2-product-proof.png" alt="Quiz Studio product proof: Today, Calendar, Library, and Focused Practice" width="100%">
+</p>
+
+Quiz Studio is not a quiz page with a history tab bolted on. It is a learning workspace where material, practice, evidence, review, and scheduling remain connected while preserving clear ownership boundaries.
+
+---
+
+## Why Quiz Studio?
+
+| Evidence stays honest | Recommendations stay explainable | Your data stays yours |
+| --- | --- | --- |
+| Finished attempts are preserved as recorded facts. Editing or deleting source material does not silently rewrite prior learning evidence. | Today and Calendar can suggest what deserves attention and explain why, but the learner can ignore, reschedule, start manually, or choose a different domain or intent. | Core data stays on-device. No account, cloud database, telemetry service, or embedded remote AI is required for normal use. |
+
+---
+
+## One workspace, three learning domains
+
+### Objective
+
+Create and practice papers with five question types: single choice, multiple choice, fill-in-the-blank, true/false, and one-to-one matching.
+
+Objective practice supports:
+
+- **Instant feedback** or **submit-at-the-end** test behavior;
+- optional question-order shuffling per session;
+- image and audio attachments;
+- answer explanations revealed at the correct feedback boundary;
+- retry of incorrect items;
+- durable result snapshots that keep the explanation and answer state from the completed attempt.
+
+### Translation
+
+Translation practice is deliberately qualitative. It does not collapse a translation into a fake numeric score.
+
+Learners can:
+
+- translate sentence by sentence;
+- mark uncertainty before submission;
+- preserve the original learner response as read-only evidence;
+- create or import separate Teacher Review records;
+- retry full material or targeted needs-work items;
+- exchange review requests and teacher reviews as portable files.
+
+### Typing
+
+Typing practice is designed for long-form committed text rather than raw key logging.
+
+It supports:
+
+- long passages;
+- real IME committed-text input;
+- practice and test intent;
+- deterministic grapheme-level comparison;
+- retry of remaining errors;
+- Time taken derived from the saved session start/end timestamps, and durable attempt history;
+- resume after interruption without turning typing speed into a mastery score.
+
+---
+
+## From practice to evidence to the next practice
+
+<p align="center">
+  <img src="assets/readme/quiz-studio-v2-evidence-loop.png" alt="Quiz Studio evidence loop: practice, evidence history, review, retry, and next-practice scheduling" width="100%">
 </p>
 
 ```text
-External Authoring (JSON / AI Prompts)
-  │
-  ▼
-Learner Practice Desk (Objective Quizzes & Translation Studio)
-  │
-  ▼
-Finalized Protected Evidence (Immutable Learner Response)
-  │
-  ├──► Export "review-request.json" ──► External Teacher / AI Reviewer
-  │                                                │
-  ▼                                                ▼
-Targeted Retry / Remediation ◄── Import "teacher-review.json"
+Material
+   │
+   ▼
+Focused Practice
+   │
+   ▼
+Canonical Evidence
+   │
+   ├────────► Teacher Review / external review
+   │
+   ├────────► Retry / remediation
+   │
+   └────────► Today / Calendar recommendations
+                         │
+                         ▼
+                 Learner decides
 ```
 
-### Why File-Based Interchange?
-- **Zero API Key Friction**: No need to configure OpenAI, Anthropic, or cloud API keys inside the application.
-- **Universal Model Compatibility**: Export a `quiz-studio.review-request` JSON file, feed it to any LLM prompt, web interface, or human tutor, and import the resulting `quiz-studio.teacher-review` JSON.
-- **Data Sovereignty**: Educational data never leaves the user's computer unless the user explicitly chooses to export and share a specific file.
+This separation is intentional:
+
+- **Evidence** records what happened.
+- **Review** adds interpretation without mutating the original answer.
+- **Scheduling** adds context without becoming evidence.
+- **Recommendation** is derived and replaceable, not stored as truth.
 
 ---
 
-## Engineering Highlights
+## Scheduling without surrendering control
 
-### 1. 100% Local-First & Dual-Storage Architecture
-- Built with **vanilla ES Modules (ESM)**, plain HTML5, and modern CSS—no webpack, Vite, React, or build step required.
-- **Dual Client Storage Strategy**:
-  - `localStorage` for fast structured metadata, quiz papers, translation documents, and history indexes.
-  - `IndexedDB` (`quiz-studio-media-db`) for audio/image binary blobs, preventing storage quota starvation.
-- Full **Service Worker ESM precache** for true offline execution.
+Quiz Studio includes a lightweight learning schedule rather than a full productivity planner.
 
-### 2. Character-Anchored Metacognitive Engine
-- Custom span-level annotation algorithms anchor marks to exact character indices within learner answers.
-- **Deterministic Collision Resolution**: Handles overlapping selections, edits, and deletions safely while preserving mark provenance upon submission.
+**Today** surfaces sessions due today, overdue work, unfinished sessions, and suggestions with readable reasons.
 
-### 3. Procedural Web Audio Synthesis
-- Dynamic sound engine using the native **Web Audio API** with zero external audio assets:
-  - *Paper Rustle*: Exponential bandpass sweep across white/brown noise (180ms).
-  - *Pencil / Ink Scratch*: High-Q bandpass noise bursts simulating writing on laid paper (90ms).
-  - *Rubber Stamp Thud*: Resonant low-frequency sine oscillator with impact click (120ms).
-- Fully configurable with instant topbar toggle and respects system `prefers-reduced-motion`.
+**Calendar** provides date-based practice scheduling with recurrence, rescheduling, cancellation, and occurrence-level handling.
 
-### 4. Public Versioned JSON Schema Contracts
-- Formal schemas maintained under [`schemas/`](schemas/):
-  - [`quiz-paper.schema.json`](schemas/quiz-paper.schema.json): Standardized objective quiz package.
-  - [`learner-response.schema.json`](schemas/learner-response.schema.json): Finalized learning evidence.
-  - [`teacher-review.schema.json`](schemas/teacher-review.schema.json): Rich corrections, judgments, and annotations.
-  - [`translation-document.schema.json`](schemas/translation-document.schema.json): Qualitative translation curriculum.
-  - [`review-request.schema.json`](schemas/review-request.schema.json) & [`remediation-request.schema.json`](schemas/remediation-request.schema.json): Portable interchange envelopes.
-
-### 5. Automated Verification Rig
-- Comprehensive test suite covering question validation, grading engines, annotation collision handling, schema contracts, and storage migrations:
-  ```bash
-  node --test
-  ```
-- **292 unit and integration tests passing** with 0 external test dependencies.
+Important rule: **manual schedules are sovereign**. The engine does not silently overwrite a learner-created schedule. When the engine and learner disagree, Quiz Studio presents the difference instead of resolving it behind the scenes.
 
 ---
 
-## Quick Start
+## Review, remediation, and Open Teaching Interchange
 
-### Prerequisites
-- Python 3.8+ (for local static runtime) or Node.js 18+
-- Modern web browser (Chrome, Edge, Firefox, Safari)
+A Translation learner response is immutable evidence. A Teacher Review is a separate record.
 
-### Option A: Windows 1-Click Launcher
-Double-click `start-local.bat` in the repository root.
-> *The launcher automatically starts the local Python runtime on `http://localhost:8000` and opens your default browser.*
+That means a teacher — human or external AI — can evaluate an answer without replacing what the learner originally wrote.
 
-### Option B: Terminal Launch
-```bash
-# Start the canonical local server
-python -u scripts/dev-server.py
-```
-Open **`http://localhost:8000`** in your browser.
-
-> [!NOTE]
-> Port `8000` is strict by design because browser storage (localStorage & IndexedDB) is origin-bound. Direct `file://` opening is unsupported due to ES module security policies.
-
----
-
-## Validation & Quality Checks
-
-Run the automated test suite and syntax verification:
-
-```bash
-# Validate core syntax
-node --check src/app.js
-
-# Execute complete test suite (292 tests)
-node --test
-```
-
----
-
-## First 60-Second Walkthrough
+Quiz Studio supports a file-based **Open Teaching Interchange** flow:
 
 ```text
-1. Launch ──► Open http://localhost:8000
-2. Choose ──► Select "Objective Practice" or "Translation Studio"
-3. Practice ──► Answer questions or translate sentences with confidence marks
-4. Finalize ──► Finish attempt to save immutable Learner Response
-5. Review ──► Open Teacher Marking Desk or export JSON for external review
+Learner Response
+      │
+      ▼
+review-request.json
+      │
+      ├────► Human teacher
+      └────► External AI assistant
+                    │
+                    ▼
+          teacher-review.json
+                    │
+                    ▼
+             Quiz Studio Review
+                    │
+                    ▼
+          Retry / remediation
 ```
 
-1. **Try Objective Quiz**: Click on any preloaded sample paper in the **Library**, select **Practice**, answer questions, and inspect the immediate feedback and score comparison.
-2. **Try Translation Practice**: Switch to the **Translation** tab, open a sample document, start practice, type your translation, and highlight a word to tag it as **Uncertain**.
-3. **Try Rich Correction**: Finish your translation attempt, select **Open Correction Workspace**, select a phrase in the learner's translation, and apply **Replace** or a **Teacher Stamp**.
+No API key or cloud account is required inside Quiz Studio. Export happens only when the learner explicitly chooses to create a file.
 
 ---
 
-## Repository Structure
+## Library, Evidence History, and durable state
+
+The **Library** contains learning material, not historical attempts. Each item shows a factual state: **Not started**, **In progress**, or **Practiced**. These are operational facts, not mastery labels.
+
+**Evidence History** is the durable record of completed practice. Attempts remain visible even if the source material later changes or is deleted.
+
+That distinction matters: material is editable; historical evidence is not silently rewritten.
+
+---
+
+## Local-first by design
 
 ```text
-Quiz System/
-├── assets/readme/          # Project-native SVG banners, architecture, & feature diagrams
-├── docs/                   # Detailed specifications & guides
-│   ├── USER_GUIDE.md               # Complete end-user guide (EN / zh-CN)
-│   ├── DEVELOPER_GUIDE.md          # Architecture & developer specification
-│   ├── OPEN_TEACHING_INTERCHANGE.md # Data interchange specification
-│   ├── TRANSLATION_DOMAIN.md       # Translation domain model
-│   └── SAFETY.md                   # Privacy, security, & data handling principles
-├── examples/               # Synthetic sample papers and interchange JSON fixtures
-├── schemas/                # Public JSON Schema contracts (v1.0.0)
-├── scripts/                # Python local development server
-├── src/                    # Application source (Vanilla ESM)
-│   ├── core/               # Quiz models, grading, annotation engine, & history
-│   ├── storage/            # Browser localStorage & IndexedDB storage boundary
-│   └── app.js              # UI controller, routing, and localization engine
-├── tests/                  # Automated test suite (292 tests)
-├── DESIGN.md               # Layered Paper Study Desk design system & tokens
-├── PROJECT_STATUS.md       # Lifecycle roadmap & project status
-├── index.html              # Application entrypoint & DOM shell
-├── styles.css              # Study desk theme & responsive stylesheets
-└── sw.js                   # Service Worker precache for offline support
+Objective papers · Translation documents · Typing texts
+                 │
+                 ▼
+          Focused Practice
+                 │
+                 ▼
+     SQLite + content-addressed media
+                 │
+       ┌─────────┴─────────┐
+       ▼                   ▼
+Evidence / Review      Backup / Restore
+       │
+       └─────────► Your Windows device
 ```
 
+Core use is local and offline:
+
+- no user account;
+- no hosted database;
+- no telemetry;
+- no remote AI dependency;
+- no CDN or network font dependency;
+- no browser-origin canonical storage.
+
+The only installer network exception is WebView2 bootstrap when the runtime is missing.
+
 ---
 
-## Data Sovereignty & Privacy
+## Backup, restore, and V1 migration
 
-- **Zero Remote Tracking**: Quiz papers, practice drafts, media attachments, score history, and annotations remain strictly inside your browser's local storage.
-- **No In-App Telemetry**: No third-party analytics, tracking pixels, or remote database sync.
-- **Export Control**: All exported JSON files remain completely under the user's manual control.
+Quiz Studio V2 treats data durability as a product feature.
+
+### Backup / restore
+
+**Exchange & backup** creates a versioned archive containing structured data and media. Restore validates before activation and preserves a safety snapshot of the replaced state.
+
+### V1 → V2 migration
+
+The desktop app can import Quiz Studio V1 backups through a staged migration pipeline.
+
+Migration preserves supported historical data, media references, Teacher Reviews, retry lineage, timestamps where they existed, and recovery artifacts without silently activating ambiguous or invalid state. Invalid or truncated sources fail closed.
 
 ---
 
-## Project Status & License
+## Engineering depth
 
-- **Current Version**: V2 desktop `2.0.0` (released; maintenance); V1 browser edition `v1.0.0` (Finalized / Maintenance Hold, preserved)
-- **Design System**: Layered Paper Study Desk (`DESIGN.md`)
-- **License**: [MIT License](LICENSE) © 2026 Quiz Studio Contributors
+Quiz Studio is a portfolio project because of the engineering decisions behind the product, not because of its dependency list.
+
+| Engineering area | What the project demonstrates |
+| --- | --- |
+| **Evidence-first domain architecture** | Evidence, Scheduling Context, Review, and Recommendation are separate contracts rather than one overloaded record type. |
+| **Local-first desktop durability** | Rust-owned SQLite persistence, one-unit-of-work commits, staging/activation, snapshots, recovery, and content-addressed media. |
+| **Loss-aware migration** | V1 intake is read-only, staged, schema-detected, previewed, and activated atomically with explicit conservation rules. |
+| **Learner-sovereign orchestration** | Date-only schedules, recurrence, occurrence identity, manual ownership, explainable recommendations, and no silent overwrite of learner choices. |
+| **Input correctness** | Typing uses project-controlled grapheme comparison semantics and accepts committed text from IMEs without relying only on composition lifecycle events. |
+| **Desktop-native verification** | Real Windows packaging, clean install, upgrade preservation, uninstall behavior, packaged smoke, crash/recovery checks, and exact-candidate SHA-256 evidence. |
+| **Risk-scaled delivery** | CI depth follows lifecycle risk: focused development checks, milestone CI-L2, and exact-candidate CI-L3 for release packaging. |
+
+<p align="center">
+  <img src="assets/readme/quiz-studio-v2-engineering-journey.png" alt="Quiz Studio V2 engineering journey from browser baseline to released Windows desktop product" width="100%">
+</p>
+
+```text
+V1 baseline
+   ↓
+Desktop Foundation
+   ↓
+V1 Migration
+   ↓
+Scheduling + Recommendation
+   ↓
+Objective / Translation / Typing integration
+   ↓
+Focused Practice + Product UI
+   ↓
+Human Evaluation
+   ↓
+Product Hardening
+   ↓
+Release Candidate
+   ↓
+Quiz Studio 2.0.0
+```
+
+For the detailed verification record, see [PROJECT_STATUS.md](PROJECT_STATUS.md), [ROADMAP.md](ROADMAP.md), and [docs/V2_RELEASE_CANDIDATE.md](docs/V2_RELEASE_CANDIDATE.md).
+
+---
+
+## Download Quiz Studio 2.0.0
+
+### Windows
+
+1. Open the [Quiz Studio v2.0.0 GitHub Release](https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0).
+2. Download `quiz-studio_2.0.0_x64-setup.exe`.
+3. Optionally verify the SHA-256 value against `SHA256SUMS.txt`.
+4. Run the per-user installer.
+5. Launch **Quiz Studio** from the Start Menu.
+
+Administrator rights are not required for the normal per-user install.
+
+The installer is currently unsigned, so Windows may show an unknown-publisher / unrecognized-app warning.
+
+---
+
+## Known limitations in 2.0.0
+
+- **Windows only.** Windows 11 / WebView2 is the verified platform. macOS and Linux are not supported or verified.
+- **Unsigned installer.** Code signing is not part of the 2.0.0 release.
+- **No automatic self-update.** Updating is a manual release/install workflow.
+- **Large histories cost more to read.** At roughly 5,000 completed sessions on the measured release build, Library readiness was about 0.9 s and Today about 1.6 s on the reference machine. No data-integrity issue was observed.
+- **Export writes directly to the chosen destination.** Export does not modify Quiz Studio's canonical store, but the selected export file is written in place.
+
+---
+
+## Intentional boundaries
+
+Quiz Studio 2.0.0 deliberately does **not** try to become:
+
+- a cloud account platform;
+- a collaboration SaaS;
+- a full goal / exam / workload planner;
+- a mastery-scoring engine;
+- a gamified streak system;
+- an embedded AI tutor;
+- an automatic scheduler that overrides learner decisions;
+- a macOS release.
+
+External AI can participate through exported review files, but the core product remains useful without it.
+
+---
+
+## Technology
+
+**Desktop:** Tauri 2 · Rust · WebView2 · Windows/MSVC · NSIS  
+**Local data:** SQLite · content-addressed media · staged activation / recovery  
+**UI:** HTML · CSS · JavaScript ES modules  
+**Testing:** Node test runner · Rust tests · headless Edge · packaged WebView2 checks · installer/upgrade acceptance  
+**Delivery:** GitHub Actions · GitHub Releases
+
+Technology choices support the product architecture; they are not the product story by themselves.
+
+---
+
+## Build from source
+
+Authoritative desktop prerequisites and commands live in [`desktop/README.md`](desktop/README.md).
+
+On Windows, the release path uses the MSVC Rust toolchain, Node 22+, and Tauri CLI 2.12.1.
+
+```powershell
+cd desktop
+. .\scripts\env.ps1
+
+node --test "ui/tests/*.spec.mjs"
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace --exclude qs-desktop
+
+cd app/src-tauri
+cargo tauri build --bundles nsis
+```
+
+For packaged-app, migration, fault-injection, recovery, and installer acceptance details, use [`desktop/README.md`](desktop/README.md) and the V2 milestone records.
+
+---
+
+## Deeper technical documentation
+
+- [`docs/V2_QUICKSTART.md`](docs/V2_QUICKSTART.md) — released desktop quick start
+- [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md) — V2 product boundary and accepted scope
+- [`docs/V2_DESKTOP_FOUNDATION.md`](docs/V2_DESKTOP_FOUNDATION.md) — desktop architecture and durability foundation
+- [`docs/V2_MIGRATION.md`](docs/V2_MIGRATION.md) — V1 → V2 migration architecture and evidence
+- [`docs/V2_ORCHESTRATION.md`](docs/V2_ORCHESTRATION.md) — scheduling, recommendation, and Calendar
+- [`docs/V2_TASK_DOMAINS.md`](docs/V2_TASK_DOMAINS.md) — Objective, Translation, Typing, and evidence integration
+- [`docs/V2_PRODUCT_UI.md`](docs/V2_PRODUCT_UI.md) — final product UI integration
+- [`docs/V2_HARDENING.md`](docs/V2_HARDENING.md) — Product Hardening evidence
+- [`docs/V2_RELEASE_CANDIDATE.md`](docs/V2_RELEASE_CANDIDATE.md) — RC / release provenance and exact-candidate evidence
+- [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — authoritative lifecycle state
+- [`ROADMAP.md`](ROADMAP.md) — milestone history
+
+---
+
+## V1 historical edition
+
+Quiz Studio V1 (`v1.0.0`) remains preserved in this repository as the earlier browser-based edition and as the migration source for V2.
+
+V1's browser architecture, public JSON schemas, Open Teaching Interchange work, and historical documentation remain useful project evidence, but **Quiz Studio V2 `2.0.0` is the current released product**.
+
+---
+
+## Release status
+
+**Current release:** `v2.0.0`  
+**Lifecycle state:** Released / Maintenance  
+**Verified platform:** Windows  
+**License:** [MIT](LICENSE)
+
+The accepted V2 release completed Feature Freeze, Product Hardening, exact-candidate CI-L3, packaged Windows acceptance, and Human RC Gate review before publication.

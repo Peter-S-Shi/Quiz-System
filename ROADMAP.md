@@ -398,14 +398,16 @@ Quiz Studio V1 is finalized (`1.0.0`) in Maintenance Hold, with all historical m
 8. V1 Migration milestone (implementation). **ACCEPTED (Human Gate PASS)** ([record](docs/V2_MIGRATION.md); manual packaged checks M1-M7 and the Desktop Foundation's D1-D5 remained open at that acceptance; PO-PASS at the Human Hardening Gate, 2026-10-03).
 9. Scheduler / Recommendation / Calendar ADR ([ADR 0003](docs/adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)). **ACCEPTED — GO WITH AMENDMENT**; documentation only. 10. Learning Orchestration + Calendar implementation milestone. **ACCEPTED (Human Gate PASS)** ([record](docs/V2_ORCHESTRATION.md); Windows CI and the ADR 0003 section 17 evidence as listed there; no product UI by design). 11. Task-Domain Integration & Typing Evidence Contract ADR ([ADR 0004](docs/adr/0004-task-domain-integration-and-typing-evidence-contract.md)). **ACCEPTED — GO WITH AMENDMENT** (pinned comparison semantics; single committed-text input path; no automatic Typing planning); documentation only. 12. Task-Domain Integration implementation milestone (Objective / Translation / Typing). **ACCEPTED (Human Gate PASS)** ([record](docs/V2_TASK_DOMAINS.md); Windows CI and the ADR 0004 section 13 evidence as listed there; no product UI by design). 13. Objective Answer Explanation + Focused Practice milestone. **ACCEPTED (Human Gate PASS)** ([record](docs/V2_PRACTICE.md); M-T1a and M-T1c PASS; M-T1b/d/e, M-T2, M-T3, M1–M7, D1–D4 remained open at that acceptance; PO-PASS at the Human Hardening Gate, 2026-10-03). 14. Final Product UI Integration milestone. **ACCEPTED (Human Gate PASS)** ([record](docs/V2_PRODUCT_UI.md); both carry-forwards closed; manual items M-U1–M-U8 and the earlier ones remained open at that acceptance; PO-PASS at the Human Hardening Gate, 2026-10-03; system font stacks accepted).
 15. Human Evaluation Repair milestone (post Final Product UI Integration). **ACCEPTED (targeted Human re-test PASS)** ([record](docs/V2_HUMAN_EVAL_REPAIR.md)).
-16. Whole Product Feature Gate. **PASS — Quiz Studio V2 is FEATURE COMPLETE; Feature Freeze in effect** ([record](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)). Remaining manual / package / migration items are Product Hardening / RC evidence debt and stay open, not PASS, not waived.
-17. Product Hardening. **PASS — ACCEPTED / COMPLETE** (Human Hardening Gate PASS, 2026-10-03; green CI-L2 candidate run 37172021453; [record](docs/V2_HARDENING.md), [backlog](HARDENING_BACKLOG.md)). F1 / F2 stay known RC observations.
+16. Whole Product Feature Gate. **PASS — Quiz Studio V2 is FEATURE COMPLETE; Feature Freeze in effect** ([record](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)). Remaining manual / package / migration items were Product Hardening / RC evidence debt and were open at that Gate; they were later closed or given final dispositions at the Human Hardening Gate and RC, not PASS, not waived.
+17. Product Hardening. **PASS — ACCEPTED / COMPLETE** (Human Hardening Gate PASS, 2026-10-03; green CI-L2 candidate run 37172021453; [record](docs/V2_HARDENING.md), [backlog](HARDENING_BACKLOG.md)). F1 / F2 were carried through RC and are accepted known limitations for `2.0.0`.
 18. Release Candidate. **ACCEPTED (Human RC Gate PASS)** ([record](docs/V2_RELEASE_CANDIDATE.md); runtime commit `cec737b`, exact-head CI-L3 [run 37176744235](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37176744235) green; final icon Concept A approved by the Product Owner).
 19. GA promotion. **Quiz Studio V2 `2.0.0` — RELEASED / MAINTENANCE.** `main`, annotated tag `v2.0.0` and the GitHub Release `v2.0.0` point at the exact commit verified by the GA CI-L3; F1 / F2 stay accepted known limitations; no further V2 work without separate Product Owner authorization.
 
 ## Maintenance / Next Version
 
-V1 maintenance work, upon separate Product Owner authorization, will focus on:
+Quiz Studio V2 `2.0.0` is the current released product and is in Maintenance. V1 `1.0.0` remains in Maintenance Hold as preserved historical material. V2.1 or any maintenance engineering requires separate Product Owner authorization.
+
+The lists below are **V1 historical / deferred context**, not current V2 open work. V1 maintenance work, upon separate Product Owner authorization, would focus on:
 
 - Critical defect and compatibility maintenance.
 - Explicitly selected next-version features.
@@ -413,7 +415,7 @@ V1 maintenance work, upon separate Product Owner authorization, will focus on:
 
 ## Deferred Features / Next Version Candidates
 
-These remain outside the current v1 scope:
+*V1 historical / deferred context.* These remained outside the V1 scope; items such as "Desktop application packaging" and "a formal GitHub Release" were V1 deferrals and are not open V2 work (V2 shipped as a Windows desktop application with GitHub Release `v2.0.0`):
 
 - AI-assisted question generation.
 - Desktop application packaging.

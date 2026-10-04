@@ -398,14 +398,16 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 8. V1 Migration 里程碑（实现）。**已验收（Human Gate PASS）**（[记录](docs/V2_MIGRATION.zh-CN.md)；手动打包检查 M1–M7 与 Desktop Foundation 的 D1–D4 继续保持 open、不阻塞、未通过、未豁免）。
 9. Scheduler / Recommendation / Calendar ADR（[ADR 0003](docs/adr/0003-learning-orchestration-scheduling-recommendation-calendar.md)）。**ACCEPTED — GO WITH AMENDMENT**；仅文档。10. Learning Orchestration + Calendar 实现里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_ORCHESTRATION.zh-CN.md)；Windows CI 与 ADR 0003 §17 证据见该文档；按设计没有产品 UI）。11. Task-Domain Integration 与 Typing Evidence Contract ADR（[ADR 0004](docs/adr/0004-task-domain-integration-and-typing-evidence-contract.md)）。**ACCEPTED — GO WITH AMENDMENT**（固定版本的比较语义；单一 committed-text 输入路径；不做 Typing 自动排程）；仅文档。12. Task-Domain Integration 实现里程碑（Objective / Translation / Typing）。**已验收（Human Gate PASS）**（[记录](docs/V2_TASK_DOMAINS.zh-CN.md)；Windows CI 与 ADR 0004 §13 证据见该文档；按设计没有产品 UI）。13. Objective Answer Explanation + Focused Practice 里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_PRACTICE.zh-CN.md)；M-T1a、M-T1c 通过；M-T1b/d/e、M-T2、M-T3、M1–M7、D1–D4 在该次验收时仍 open（之后已在 Human Hardening Gate（2026-10-03）PO-PASS））。14. Final Product UI Integration 里程碑。**已验收（Human Gate PASS）**（[记录](docs/V2_PRODUCT_UI.zh-CN.md)；两项 carry-forward 均已完成；手动项 M-U1–M-U8 与更早的手动项在该次验收时仍 open（之后已在 Human Hardening Gate（2026-10-03）PO-PASS）；正式接受系统字体栈）。
 15. Human Evaluation Repair 里程碑（Final Product UI Integration 之后）。**已验收（定向人工复测 PASS）**（[记录](docs/V2_HUMAN_EVAL_REPAIR.md)）。
-16. 整体产品功能关口（Whole Product Feature Gate）。**PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效**（[记录](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）。其余手动 / 打包 / 迁移项属于 Product Hardening / RC 证据欠账，保持 open、未 PASS、未豁免。
-17. Product Hardening。**PASS —— 已验收 / 完成**（Human Hardening Gate PASS，2026-10-03；绿色 CI-L2 候选 run 37172021453；[记录](docs/V2_HARDENING.md)、[清单](HARDENING_BACKLOG.md)）。F1 / F2 保持为已知 RC 观察项。
+16. 整体产品功能关口（Whole Product Feature Gate）。**PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效**（[记录](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）。其余手动 / 打包 / 迁移项在该 Gate 时属于 Product Hardening / RC 证据欠账（当时为 open），之后已在 Human Hardening Gate 与 RC 中关闭或形成最终处置。
+17. Product Hardening。**PASS —— 已验收 / 完成**（Human Hardening Gate PASS，2026-10-03；绿色 CI-L2 候选 run 37172021453；[记录](docs/V2_HARDENING.md)、[清单](HARDENING_BACKLOG.md)）。F1 / F2 已带过 RC，作为 `2.0.0` 的已接受已知限制。
 18. Release Candidate。**已验收（Human RC Gate PASS）**（[记录](docs/V2_RELEASE_CANDIDATE.md)；运行时提交 `cec737b`，确切 HEAD 的 CI-L3 [run 37176744235](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37176744235) 绿色；最终图标 Concept A 已获产品负责人批准）。
 19. GA promotion。**Quiz Studio V2 `2.0.0` —— 已发布 / 维护中。** `main`、带注释的 tag `v2.0.0` 与 GitHub Release `v2.0.0` 指向由 GA CI-L3 验证过的同一个提交；F1 / F2 保持为已接受的已知限制；未经产品负责人另行授权不再进行 V2 工作。
 
 ## 维护 / 下一版本
 
-经 Product Owner 另行授权后，V1 维护工作将聚焦于：
+Quiz Studio V2 `2.0.0` 是当前已发布产品，处于维护状态。V1 `1.0.0` 作为历史材料保持维护冻结（Maintenance Hold）。V2.1 或任何维护工程都需要 Product Owner 另行授权。
+
+以下列表是 **V1 历史 / 延迟事项背景**，不是当前 V2 的未完成项。经 Product Owner 另行授权后，V1 维护工作将聚焦于：
 
 - 严重缺陷与兼容性维护。
 - 已明确选择的下一版本功能。
@@ -413,7 +415,7 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 
 ## 延迟特性 / 下一版本候选
 
-这些内容不属于当前 v1 范围：
+*V1 历史 / 延迟事项背景。* 这些内容当时不属于 V1 范围；“桌面应用封装”“正式 GitHub Release”等是 V1 的延期项，不是 V2 的未完成项（V2 已作为 Windows 桌面应用发布，GitHub Release 为 `v2.0.0`）：
 
 - AI 辅助生成题目。
 - 桌面应用封装。
