@@ -2693,7 +2693,7 @@ dependencies = [
 
 [[package]]
 name = "qs-activation"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "hex",
@@ -2710,7 +2710,7 @@ dependencies = [
 
 [[package]]
 name = "qs-archive"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "hex",
@@ -2729,7 +2729,7 @@ dependencies = [
 
 [[package]]
 name = "qs-desktop"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "qs-activation",
  "qs-archive",
@@ -2747,7 +2747,7 @@ dependencies = [
 
 [[package]]
 name = "qs-media"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "hex",
@@ -2758,7 +2758,7 @@ dependencies = [
 
 [[package]]
 name = "qs-migrate-v1"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "hex",
@@ -2777,7 +2777,7 @@ dependencies = [
 
 [[package]]
 name = "qs-orchestration"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "qs-archive",
  "qs-migrate-v1",
@@ -2791,7 +2791,7 @@ dependencies = [
 
 [[package]]
 name = "qs-platform"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "hex",
@@ -2802,7 +2802,7 @@ dependencies = [
 
 [[package]]
 name = "qs-port"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "hex",
  "qs-activation",
@@ -2823,7 +2823,7 @@ dependencies = [
 
 [[package]]
 name = "qs-scenarios"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "hex",
@@ -2844,7 +2844,7 @@ dependencies = [
 
 [[package]]
 name = "qs-store"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "hex",
  "qs-platform",
@@ -2858,7 +2858,7 @@ dependencies = [
 
 [[package]]
 name = "qs-task-domains"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "qs-archive",
  "qs-orchestration",
@@ -2871,7 +2871,7 @@ dependencies = [
 
 [[package]]
 name = "qs-testkit"
-version = "2.0.0-rc.1"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "qs-media",

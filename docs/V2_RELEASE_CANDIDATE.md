@@ -1,8 +1,8 @@
 # V2 Release Candidate — evidence map
 
-**Status: RC candidate verified by engineering — awaiting Human RC Gate.** Not accepted: acceptance, the merge to `main`, tags and the release belong to the Human RC Gate and a separate promotion authorization. Candidate identity `2.0.0-rc.1` (GA target `2.0.0`) on the long-lived `v2` branch. Entry truth: [`V2_HARDENING.md`](V2_HARDENING.md) (Product Hardening PASS — ACCEPTED / COMPLETE), [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (Feature Freeze), [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md).
+**Status: Human RC Gate PASS — RC ACCEPTED. Quiz Studio V2 `2.0.0` is RELEASED / MAINTENANCE** (this record stays as the RC evidence map; the GA promotion is described in section 11). Candidate identity `2.0.0-rc.1` (GA target `2.0.0`) on the long-lived `v2` branch. Entry truth: [`V2_HARDENING.md`](V2_HARDENING.md) (Product Hardening PASS — ACCEPTED / COMPLETE), [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (Feature Freeze), [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md).
 
-RC is packaging, identity, exact-candidate verification and delivery evidence. It adds no feature, no bundled font, no signing or auto-update, and reopens no accepted semantics. **Not done and not authorized here:** merge to `main`, any tag (`v2.0.0-rc.1`, `v2.0.0`), a GitHub Release, the change from RC to GA.
+RC is packaging, identity, exact-candidate verification and delivery evidence. It adds no feature, no bundled font, no signing or auto-update, and reopens no accepted semantics. At the time of the RC, merge to `main`, tags and the release were not authorized; they were done later by the GA promotion (section 11).
 
 ## 1. Identity
 
@@ -118,8 +118,16 @@ The installer is an unsigned, per-user NSIS package; code signing and auto-updat
 
 - [`V2_QUICKSTART.md`](V2_QUICKSTART.md) / [`.zh-CN`](V2_QUICKSTART.zh-CN.md): install, offline / data concept (no raw paths), main views, backup / restore, V1 migration, uninstall data choice, known limitations F1 / F2, Windows-only.
 - Root `README.md` / `README.zh-CN.md`: a V2 release-candidate notice at the top and an honest "Current Version" line; the V1 sections stay as the preserved V1 record.
-- **Merge-time changes required for the promotion prompt** (not done now, because they would be false before the release): in `README.md` / `README.zh-CN.md` change "release candidate `2.0.0-rc.1` … not yet released or merged" to the final `2.0.0` wording and make V2 the primary section; in the quick starts drop "Release Candidate / candidate" and the "not yet released" notes; bump the version from `2.0.0-rc.1` to `2.0.0` in `desktop/Cargo.toml`, `tauri.conf.json` and `Cargo.lock`, then rebuild.
+- **Merge-time changes** (they were prepared in the GA promotion commit, as listed here): in `README.md` / `README.zh-CN.md` change "release candidate `2.0.0-rc.1` … not yet released or merged" to the final `2.0.0` wording and make V2 the primary section; in the quick starts drop "Release Candidate / candidate" and the "not yet released" notes; bump the version from `2.0.0-rc.1` to `2.0.0` in `desktop/Cargo.toml`, `tauri.conf.json` and `Cargo.lock`, then rebuild.
 
 ## 10. Product Owner RC smoke
 
 [`../manual-qa/v2-rc-smoke.md`](../manual-qa/v2-rc-smoke.md) (+ `.zh-CN`): about 15–30 minutes, ten items R1–R10, every result blank. **Ready for the Product Owner; nothing is pre-marked and nothing is PASS until performed.** Step 1 of its setup is to compare the downloaded installer's SHA-256 with section 8.
+
+## 11. Human RC Gate and GA promotion
+
+**Human RC Gate: PASS (Product Owner)** on the exact `2.0.0-rc.1` installer. Only the gate-level result was supplied; the R1–R10 items in the smoke guide are **not** individually marked here, and no per-item environment or date is invented. The evidence states of section 5 are unchanged: the hosted packaged WebView2 DevTools check stays **NOT RUN**, the developer-machine 19/19 stays **DEV-PASS**, F1 / F2 stay **accepted known limitations**.
+
+**GA `2.0.0`.** The accepted RC was promoted with only the release identity (`2.0.0-rc.1` → `2.0.0` in the workspace, Tauri config and lockfile) and release-facing documentation changed. The Concept A icon source and every generated Tauri icon are byte-identical to the accepted RC. The GA installer is `quiz-studio_2.0.0_x64-setup.exe`, built and verified by its own exact-head CI-L3 run with the same version-aware workflow, and published with a checksum file. `main`, the annotated tag `v2.0.0` and the GitHub Release `v2.0.0` point at that exact commit; the commit, run and hashes are on the Release page. The provenance tag `v2.0.0-rc.1` marks the accepted RC runtime commit `cec737b` (not the docs-only close-out `2c4b8c7`). The `v2` branch is kept. Signing and auto-update were not added.
+
+Lifecycle state: **Quiz Studio V2 `2.0.0` — RELEASED / MAINTENANCE.**

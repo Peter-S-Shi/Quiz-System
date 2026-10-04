@@ -1,6 +1,6 @@
 # V2 Product Hardening — milestone record
 
-**Status: Product Hardening — PASS, ACCEPTED / COMPLETE.** The Product Owner's Human Hardening Gate **PASSED on 2026-10-03**: every item of the Human Hardening Pack was actually performed and passed. Next phase: **Release Candidate — verified by engineering, awaiting the Human RC Gate** (see [`V2_RELEASE_CANDIDATE.md`](V2_RELEASE_CANDIDATE.md)). Entry truth: [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (V2 is FEATURE COMPLETE / FROZEN). Canonical inventory: [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md). Product Owner manual pack: [`../manual-qa/v2-hardening-pack.md`](../manual-qa/v2-hardening-pack.md).
+**Status: Product Hardening — PASS, ACCEPTED / COMPLETE.** The Product Owner's Human Hardening Gate **PASSED on 2026-10-03**: every item of the Human Hardening Pack was actually performed and passed. Next phase: **Release Candidate — ACCEPTED (Human RC Gate PASS); Quiz Studio V2 `2.0.0` released / maintenance** (see [`V2_RELEASE_CANDIDATE.md`](V2_RELEASE_CANDIDATE.md)). Entry truth: [`V2_WHOLE_PRODUCT_FEATURE_GATE.md`](V2_WHOLE_PRODUCT_FEATURE_GATE.md) (V2 is FEATURE COMPLETE / FROZEN). Canonical inventory: [`../HARDENING_BACKLOG.md`](../HARDENING_BACKLOG.md). Product Owner manual pack: [`../manual-qa/v2-hardening-pack.md`](../manual-qa/v2-hardening-pack.md).
 
 Hardening attacks the frozen product; it adds no feature, no bundled font, no signing or auto-update, and does not start RC. The final application icon and the release version are RC acceptance items.
 

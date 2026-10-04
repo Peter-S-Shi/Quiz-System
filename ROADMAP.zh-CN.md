@@ -400,7 +400,8 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 15. Human Evaluation Repair 里程碑（Final Product UI Integration 之后）。**已验收（定向人工复测 PASS）**（[记录](docs/V2_HUMAN_EVAL_REPAIR.md)）。
 16. 整体产品功能关口（Whole Product Feature Gate）。**PASS —— Quiz Studio V2 正式 FEATURE COMPLETE，Feature Freeze 生效**（[记录](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md)）。其余手动 / 打包 / 迁移项属于 Product Hardening / RC 证据欠账，保持 open、未 PASS、未豁免。
 17. Product Hardening。**PASS —— 已验收 / 完成**（Human Hardening Gate PASS，2026-10-03；绿色 CI-L2 候选 run 37172021453；[记录](docs/V2_HARDENING.md)、[清单](HARDENING_BACKLOG.md)）。F1 / F2 保持为已知 RC 观察项。
-18. Release Candidate。**候选版已由工程验证 —— 等待 Human RC Gate**（尚未验收；[记录](docs/V2_RELEASE_CANDIDATE.md)）：身份 `2.0.0-rc.1`，最终图标已获产品负责人批准，确切 HEAD 的 CI-L3 绿色（[run 37176744235](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37176744235)）。合并到 `main`、tag 与发布需要单独的 promotion 授权。
+18. Release Candidate。**已验收（Human RC Gate PASS）**（[记录](docs/V2_RELEASE_CANDIDATE.md)；运行时提交 `cec737b`，确切 HEAD 的 CI-L3 [run 37176744235](https://github.com/Peter-S-Shi/Quiz-System/actions/runs/37176744235) 绿色；最终图标 Concept A 已获产品负责人批准）。
+19. GA promotion。**Quiz Studio V2 `2.0.0` —— 已发布 / 维护中。** `main`、带注释的 tag `v2.0.0` 与 GitHub Release `v2.0.0` 指向由 GA CI-L3 验证过的同一个提交；F1 / F2 保持为已接受的已知限制；未经产品负责人另行授权不再进行 V2 工作。
 
 ## 维护 / 下一版本
 
@@ -434,4 +435,4 @@ Quiz Studio V1 已完成版本 `1.0.0` 最终定版，并处于维护保留状�
 4. 完成 Milestone 7 Product Hardening。**已完成。**
 5. 生成并验证 Milestone 8 Release Candidate。**已完成。**
 6. 候选版本已接受（`v1.0.0-rc.1`），V1 发布元数据已定版（`1.0.0`），V1 发布线进入维护保留状态。**当前 V1 生命周期状态。**
-7. V2 Desktop Foundation（架构验证已完成且已通过 Desktop Architecture Gate；正式 V2 开发分支 `v2` 已创建；Desktop Foundation 已验收；ADR 0002 已验收；V1 Migration 里程碑已验收；ADR 0003 已验收；Learning Orchestration + Calendar 里程碑已验收；ADR 0004 已验收；Task-Domain Integration 里程碑已验收）。**当前 V2 状态** —— 见上文“当前 V2 路线”。
+7. V2 Desktop Foundation（架构验证已完成且已通过 Desktop Architecture Gate；正式 V2 开发分支 `v2` 已创建；Desktop Foundation 已验收；ADR 0002 已验收；V1 Migration 里程碑已验收；ADR 0003 已验收；Learning Orchestration + Calendar 里程碑已验收；ADR 0004 已验收；Task-Domain Integration 里程碑已验收）。**当前 V2 状态：`2.0.0` 已发布 / 维护中** —— 见上文“当前 V2 路线”。

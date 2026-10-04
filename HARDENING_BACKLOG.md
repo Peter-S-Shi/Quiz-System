@@ -1,6 +1,6 @@
 # Quiz Studio V2 — Product Hardening backlog
 
-**Phase:** Product Hardening (PH) — **PASS — ACCEPTED / COMPLETE** (Product Owner Human Hardening Gate PASS, 2026-10-03; candidate: green CI-L2 run 37172021453, head `4c04181`). Next phase: **Release Candidate — verified by engineering, awaiting the Human RC Gate** (see `docs/V2_RELEASE_CANDIDATE.md`). Entry truth: [`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md). Milestone record: [`docs/V2_HARDENING.md`](docs/V2_HARDENING.md).
+**Phase:** Product Hardening (PH) — **PASS — ACCEPTED / COMPLETE** (Product Owner Human Hardening Gate PASS, 2026-10-03; candidate: green CI-L2 run 37172021453, head `4c04181`). Next phase: **Release Candidate — ACCEPTED (Human RC Gate PASS); Quiz Studio V2 `2.0.0` released / maintenance** (see `docs/V2_RELEASE_CANDIDATE.md`). Entry truth: [`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md). Milestone record: [`docs/V2_HARDENING.md`](docs/V2_HARDENING.md).
 **Rules:** Feature Freeze applies. No new features, no bundled fonts, no signing or auto-update, no RC work. Final app icon and release version are RC acceptance items.
 
 This file is the single canonical inventory. It was reconciled against the real checklists in `manual-qa/v2-*.md` (not only the summary docs), so it includes **D5**, which the summaries omit.

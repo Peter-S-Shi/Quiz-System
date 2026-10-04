@@ -15,7 +15,7 @@
 
 ---
 
-> **Quiz Studio V2（Windows 桌面版）—— `v2` 分支上的发布候选版 `2.0.0-rc.1`。** 一款本地优先、支持客观题、翻译与跟打练习的桌面应用。它只是候选版，**尚未发布也尚未合并**，且**仅在 Windows 上验证**。请从 [V2 桌面版快速上手](docs/V2_QUICKSTART.zh-CN.md) 开始。以下章节描述的是 **Quiz Studio V1**——浏览器版（`v1.0.0`，维护冻结），它在本仓库中保持不变。
+> **Quiz Studio V2 `2.0.0` —— 已发布。** 一款本地优先的 **Windows 桌面**学习工作台，支持客观题、翻译与跟打练习，包含今日、日历、资料库、证据历史、批改、交换与备份、设置；完全离线，带备份 / 恢复与 V1 迁移。安装包请从 [GitHub Release `v2.0.0`](https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0) 获取，并从 [V2 桌面版快速上手](docs/V2_QUICKSTART.zh-CN.md) 开始。Windows 是经过验证的平台；安装包未签名。以下章节描述的是 **Quiz Studio V1**——浏览器版（`v1.0.0`，维护冻结），它在本仓库中保持不变，作为保留的 V1 记录。
 
 ---
 
@@ -215,6 +215,6 @@ Quiz System/
 
 ## 项目状态与开源协议
 
-- **当前版本**：V1 浏览器版 `v1.0.0`（最终定版 / 维护冻结）；V2 桌面版 `2.0.0-rc.1`（`v2` 分支上的发布候选版；尚未发布或合并）
+- **当前版本**：V2 桌面版 `2.0.0`（已发布；维护中）；V1 浏览器版 `v1.0.0`（最终定版 / 维护冻结，予以保留）
 - **设计规范**：Layered Paper Study Desk (`DESIGN.md`)
 - **开源协议**：[MIT License](LICENSE) © 2026 Quiz Studio Contributors

@@ -1,14 +1,14 @@
-# Quiz Studio V2 — desktop quick start (Release Candidate 2.0.0-rc.1)
+# Quiz Studio V2 — desktop quick start (2.0.0)
 
 Quiz Studio V2 is a Windows desktop app for local-first practice: Objective papers, Translation practice with Teacher Review, and Typing practice, with an evidence history and a study calendar. It runs entirely on your computer, with no account, no cloud and no network use.
 
-> **Status: release candidate.** `2.0.0-rc.1` is the candidate for `2.0.0`. It is verified on **Windows only** (Windows 11, WebView2). macOS is deferred and **not verified**. It is not yet released.
+> **Status: released, `2.0.0`.** Verified on **Windows only** (Windows 11, WebView2). macOS is deferred and **not verified**.
 
 ## Install and launch
 
-1. Run the installer (`quiz-studio_2.0.0-rc.1_x64-setup.exe`). It installs **per user**; it does not need administrator rights.
+1. Run the installer (`quiz-studio_2.0.0_x64-setup.exe`, from the GitHub Release `v2.0.0`; check its SHA-256 against the checksum file published with it). It installs **per user**; it does not need administrator rights.
 2. The app needs the Microsoft **WebView2** runtime, which current Windows 11 already includes. If it is missing, the installer downloads it once; that is the only time the installer uses the network.
-3. Start **Quiz Studio** from the Start menu. **Settings → System** shows the version (`Quiz Studio 2.0.0-rc.1`).
+3. Start **Quiz Studio** from the Start menu. **Settings → System** shows the version (`Quiz Studio 2.0.0`).
 
 ## Where your data lives
 
@@ -36,9 +36,9 @@ Everything you create is stored on your computer, in your personal Windows appli
 
 Uninstall from Windows Settings. The uninstaller asks whether to **delete your application data**: leave the box unticked to keep your data for a later reinstall, or tick it to remove everything.
 
-## Known limitations in this candidate
+## Known limitations in 2.0.0
 
-- **Large histories load slower.** Library state and Today read the whole history; after several thousand finished sessions these views take noticeably longer to appear (see `docs/V2_RELEASE_CANDIDATE.md` for the measured numbers). Nothing is lost or wrong.
+- **Large histories load slower.** Library state and Today read the whole history; after several thousand finished sessions these views take noticeably longer to appear (see `docs/V2_RELEASE_CANDIDATE.md` for the measured numbers: about 1 s for the Library and about 1.6 s for Today at 5 000 finished sessions on a current laptop). Nothing is lost or wrong.
 - **Export overwrites the file you choose in place.** An exchange export writes directly to the file you pick in the Save dialog. It never touches your Quiz Studio data; if a write fails, only that export file is affected.
 - **Windows only.** macOS and Linux are not supported or verified.
 - The application is not code-signed and does not update itself; Windows may show an "unrecognized app" prompt on first run.

@@ -15,7 +15,7 @@
 
 ---
 
-> **Quiz Studio V2 (Windows desktop) — release candidate `2.0.0-rc.1` on the `v2` branch.** A local-first desktop app for Objective, Translation and Typing practice. It is a candidate, **not yet released or merged**, and is verified on **Windows only**. Start with the [V2 desktop quick start](docs/V2_QUICKSTART.md). The sections below describe **Quiz Studio V1**, the browser edition (`v1.0.0`, maintenance hold), which stays in this repository unchanged.
+> **Quiz Studio V2 `2.0.0` — released.** A local-first **Windows desktop** learning workspace for Objective, Translation and Typing practice, with Today, Calendar, Library, Evidence history, Review, Exchange & backup and Settings; fully offline, with backup / restore and V1 migration. Get the installer from the [GitHub Release `v2.0.0`](https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0) and start with the [V2 desktop quick start](docs/V2_QUICKSTART.md). Windows is the verified platform; the installer is unsigned. The sections below describe **Quiz Studio V1**, the browser edition (`v1.0.0`, maintenance hold), which stays in this repository unchanged as the preserved V1 record.
 
 ---
 
@@ -217,6 +217,6 @@ Quiz System/
 
 ## Project Status & License
 
-- **Current Version**: V1 browser edition `v1.0.0` (Finalized / Maintenance Hold); V2 desktop `2.0.0-rc.1` (release candidate on branch `v2`; not yet released or merged)
+- **Current Version**: V2 desktop `2.0.0` (released; maintenance); V1 browser edition `v1.0.0` (Finalized / Maintenance Hold, preserved)
 - **Design System**: Layered Paper Study Desk (`DESIGN.md`)
 - **License**: [MIT License](LICENSE) © 2026 Quiz Studio Contributors
