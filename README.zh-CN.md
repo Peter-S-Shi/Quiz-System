@@ -1,220 +1,413 @@
 # Quiz Studio
 
 <p align="center">
-  <img src="assets/readme/hero.svg" alt="Quiz Studio Banner - 本地优先学习书桌与开放教学交换体系" width="100%">
+  <img src="assets/readme/quiz-studio-v2-hero-banner.png" alt="Quiz Studio —— 证据优先、本地优先的桌面学习工作台" width="100%">
 </p>
 
 <p align="center">
-  <a href="#快速开始"><img src="https://img.shields.io/badge/运行环境-原生%20ESM%20%C2%B7%20零构建-blue?style=flat-square" alt="零构建步骤"></a>
-  <a href="#工程设计亮点"><img src="https://img.shields.io/badge/架构体系-100%25%20本地优先-success?style=flat-square" alt="本地优先"></a>
-  <a href="#工程设计亮点"><img src="https://img.shields.io/badge/测试用例-292%20全部通过-brightgreen?style=flat-square" alt="292 测试通过"></a>
-  <a href="docs/OPEN_TEACHING_INTERCHANGE.zh-CN.md"><img src="https://img.shields.io/badge/交换协议-JSON%20Schema%20标准-orange?style=flat-square" alt="开放教学交换"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/开源协议-MIT-informational?style=flat-square" alt="MIT License"></a>
-  <a href="README.md"><img src="https://img.shields.io/badge/Documentation-English-blueviolet?style=flat-square" alt="English Documentation"></a>
+  <strong>一款以学习证据为核心，连接刻意练习、学习安排、批改与长期记录的 Windows 桌面工作台。</strong>
 </p>
-
----
-
-> **Quiz Studio V2 `2.0.0` —— 已发布。** 一款本地优先的 **Windows 桌面**学习工作台，支持客观题、翻译与跟打练习，包含今日、日历、资料库、证据历史、批改、交换与备份、设置；完全离线，带备份 / 恢复与 V1 迁移。安装包请从 [GitHub Release `v2.0.0`](https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0) 获取，并从 [V2 桌面版快速上手](docs/V2_QUICKSTART.zh-CN.md) 开始。Windows 是经过验证的平台；安装包未签名。以下章节描述的是 **Quiz Studio V1**——浏览器版（`v1.0.0`，维护冻结），它在本仓库中保持不变，作为保留的 V1 记录。
-
----
-
-## 概述
-
-**Quiz Studio** 是一个专为专注自学与刻意练习打造的**本地优先（Local-First）**个人学习工作区。它基于**分层纸质书桌（Layered Paper Study Desk）**设计隐喻，无缝整合了两大互补学习体系：
-1. **客观题刷题工作区**：支持 5 类基础题型、多媒体附件、即时/交卷反馈模式、会话中断恢复与错题针对性重练。
-2. **定性翻译练习工作区**：支持逐句独立翻译、学习者译文元认知不确定性标注、富文本教师批改工作区与基于可移植文件的开放教学交换。
-
-Quiz Studio 践行 **“AI 原生，API 可选（AI-Native & API-Optional）”** 架构哲学：借助版本化公开 JSON Schema，学习者可与外部真人教师或任意 AI 模型（ChatGPT、Claude、Codex 或本地大模型）完成异步评阅批改与补救练习流转，**全程无需配置云端数据库、注册账号、依赖网络连接或绑定付费 API Key**。
-
----
-
-## 核心功能
 
 <p align="center">
-  <img src="assets/readme/capabilities.svg" alt="Quiz Studio 核心学习表面" width="100%">
+  引擎负责推荐；学习者保留决定权。
 </p>
-
-### 1. 客观题练习台与试卷编排
-- **支持 5 大题型**：单选题、多选题、填空题、判断题与一对一连线题。
-- **内嵌多媒体附件**：题目支持插入图片（支持模态缩放查看器）与音频（支持内嵌播放器），依托浏览器端 IndexedDB Blob 独立安全持久化。
-- **多样化做题反馈模式**：自由选择 *即时反馈模式*（答题即判分并提供提示）或 *交卷反馈模式*（还原真实模拟考场）。
-- **会话持久化与选项打乱**：做题时随机乱序题支与连线项；意外刷新浏览器可无缝恢复中断的练习会话。
-- **试卷库分层归档**：支持“分类 → 试卷 → 题目”三级侧边栏层级导航、关键词搜索、标签管理与单卷/整库 JSON 备份导出。
-
-### 2. 翻译工作区与元认知标记
-- **定性刻意练习**：逐句翻译界面，参考译文默认隐藏且按需查看，彻底摆脱机械死板的自动对错评分。
-- **主动式元认知置信度标记**：学习者在提交前可高亮选中自己译文中的特定字词短语，标记为 **不认识 (Unknown)**、**不确定 (Uncertain)** 或 **应该会 (Should know)**。
-- **批量文本导入**：支持纯原文文本行粘贴，或中英双语制表符（`source<TAB>reference`）表格快速批量建卷。
-- **受保护的学习记录证据**：完成练习后生成不可篡改、带时间戳的 Learner Response 快照，完整保留原始译文与元认知标记。
-
-### 3. 教师批改台与富文本修订
-- **实体墨水批注工具**：评阅者可自由应用展示样式（**加粗**、**斜体**、**高亮**、**下划线**、专属墨水色彩）及结构性修订（**插入**、**替换**、**删除线**）。
-- **印章评判与批语反馈**：支持敲印评判（*正确*、*错误*、*部分正确*、*需重温*）、题级针对性批语及整句建议修订。
-- **多评阅版本并存**：同一份作答记录可随时间积累多位教师或 AI 评阅者的独立批改，绝不篡改原始作答。
-
-### 4. 溯源历史与精准重练闭环
-- **持久化证据档案库**：即使原始试卷或翻译文档被删除，全部作答历史、评阅状态与谱系链依然完整可查。
-- **针对性重练模式**：支持整卷重练、自选题目重练，或一键触发 **“针对薄弱项重练 (Retry Needs-Work Items)”**（智能抽取带有不确定性标记或被教师批改指出的条目发起专属复习）。
-- **严谨的谱系完整性**：重练与补救练习均具备独立的身份标识与双向谱系追踪（`resolveResponseLineage`），并内置级联删除依赖安全分析。
-
----
-
-## 系统架构：开放教学交换 (Open Teaching Interchange)
-
-Quiz Studio 提出了 **开放教学交换（Open Teaching Interchange）** 架构——一套基于文件的标准化离线协作协议，连接学习者、真人导师与各类 AI 智能体。
 
 <p align="center">
-  <img src="assets/readme/architecture.svg" alt="开放教学交换生命周期" width="100%">
+  <a href="https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0"><strong>下载 v2.0.0</strong></a>
+  ·
+  <a href="#看看真实产品">看看真实产品</a>
+  ·
+  <a href="#工程深度">工程设计</a>
+  ·
+  <a href="docs/V2_QUICKSTART.zh-CN.md">快速上手</a>
+  ·
+  <a href="README.md">English</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Peter-S-Shi/Quiz-System/releases"><img alt="Release" src="https://img.shields.io/github/v/release/Peter-S-Shi/Quiz-System?display_name=tag"></a>
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows-2563eb">
+  <img alt="Local first" src="https://img.shields.io/badge/data-local--first-15803d">
+  <img alt="Desktop" src="https://img.shields.io/badge/desktop-Tauri%202-24C8DB">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-informational"></a>
+</p>
+
+Quiz Studio 围绕一个很简单的学习原则构建：
+
+> **证据是规范事实；解释可以被替换。**
+
+你真正答过什么、打过什么、标记过什么、接受过怎样的批改、如何重练与安排学习，都应该能够被回看，而不应该被后续编辑、推荐或评价悄悄改写。
+
+Quiz Studio 把 **客观题（Objective）**、**翻译（Translation）** 与 **跟打（Typing）** 放进同一个本地优先桌面工作区，再通过 **Evidence History、Review、Today 与 Calendar** 把一次练习连接到下一次练习，同时保留学习者的最终决定权。
+
+---
+
+## 看看真实产品
+
+下面的画面来自正式发布的 **v2.0.0** Windows 桌面版本，并使用合成演示数据。
+
+<p align="center">
+  <img src="assets/readme/quiz-studio-v2-product-proof.png" alt="Quiz Studio 产品实机：Today、Calendar、Library 与 Focused Practice" width="100%">
+</p>
+
+Quiz Studio 不是“一个刷题页加一个历史记录页”。它把材料、练习、证据、批改与安排连接成一个完整工作流，同时保持这些概念之间清晰的边界。
+
+---
+
+## 为什么做 Quiz Studio？
+
+| 历史证据保持诚实 | 推荐保持可解释 | 数据保持在自己手里 |
+| --- | --- | --- |
+| 完成后的练习以事实记录保存。之后编辑或删除源材料，不会静默改写已经发生的学习历史。 | Today 与 Calendar 可以说明“为什么值得练”，但学习者可以忽略、改期、手动开始，或选择别的 Domain / Intent。 | 核心数据保留在本机。正常使用不需要账号、云数据库、遥测服务或内置远程 AI。 |
+
+---
+
+## 一个工作区，三个学习 Domain
+
+### Objective｜客观题
+
+支持五种基础题型：单选、多选、填空、判断与一对一匹配。
+
+Objective Practice 支持：
+
+- **即时反馈**或**整卷提交后反馈**；
+- 单次会话可选题目顺序打乱；
+- 图片与音频附件；
+- 在正确反馈时机显示 Answer Explanation；
+- 错题重练；
+- 完成后的结果快照保留当时的答案、解释与媒体语境。
+
+### Translation｜翻译
+
+Translation 被刻意设计为定性练习，不把复杂译文压缩成一个虚假的分数。
+
+学习者可以：
+
+- 逐句翻译；
+- 在提交前标记自己的不确定内容；
+- 把原始 Learner Response 保存为只读证据；
+- 创建或导入独立 Teacher Review；
+- 整体重练或针对 Needs-Work 条目重练；
+- 用可移植文件交换 review request 与 teacher review。
+
+### Typing｜跟打
+
+Typing 关注“最终提交的文本”而不是原始键盘事件。
+
+它支持：
+
+- 长文本练习；
+- 真实输入法提交文本；
+- Practice / Test intent；
+- 确定性的 grapheme-level comparison；
+- 对剩余错误进行重练；
+- 记录完成耗时与不可变 attempt；
+- 中断后恢复，而不把 WPM 或 accuracy 伪装成 mastery。
+
+---
+
+## 从练习，到证据，再到下一次练习
+
+<p align="center">
+  <img src="assets/readme/quiz-studio-v2-evidence-loop.png" alt="Quiz Studio 学习闭环：练习、证据历史、批改、重练与下一次安排" width="100%">
 </p>
 
 ```text
-外部出题排版 (JSON / AI 提示词)
-  │
-  ▼
-学习者练习书桌 (客观题库与翻译练习台)
-  │
-  ▼
-固化受保护证据 (不可篡改的 Learner Response)
-  │
-  ├──► 导出 "review-request.json" ──► 外部真人教师 / AI 评阅者
-  │                                                │
-  ▼                                                ▼
-薄弱项针对性重练 ◄── 导入 "teacher-review.json" 批改文件
+学习材料
+   │
+   ▼
+Focused Practice
+   │
+   ▼
+Canonical Evidence
+   │
+   ├────────► Teacher Review / 外部批改
+   │
+   ├────────► Retry / Remediation
+   │
+   └────────► Today / Calendar 推荐
+                         │
+                         ▼
+                    学习者决定
 ```
 
-### 为什么选择基于文件的交换？
-- **零 API 门槛**：应用无需内置 OpenAI、Anthropic 等特定厂商的 API Key，避免网络限制与计费依赖。
-- **全模型通用兼容**：导出一份标准的 `quiz-studio.review-request` JSON，可直接投喂给任意大模型 Web 界面、本地 Ollama 或外部导师，再将生成的 `quiz-studio.teacher-review` 导入即可。
-- **数据主权归还用户**：学习数据严格保留在用户本地，绝不在后台静默上传。
+这几个概念被刻意分开：
+
+- **Evidence** 记录“发生了什么”；
+- **Review** 添加解释，但不修改原始答案；
+- **Scheduling** 添加上下文，但不成为 Evidence；
+- **Recommendation** 是可替换的派生结果，而不是事实本身。
 
 ---
 
-## 工程设计亮点
+## 安排学习，但不替学习者做主
 
-### 1. 100% 本地优先与双存储协同引擎
-- 基于**原生 ES 模块（ESM）**、HTML5 与现代 CSS 开发，零打包工具（无需 webpack/Vite），即开即用。
-- **双客户端存储架构**：
-  - `localStorage`：负责结构化元数据、试卷信息、翻译文档与历史轻量索引的高速读写。
-  - `IndexedDB`（`quiz-studio-media-db`）：独立存储音频与图片二进制 Blob 数据，避免占用 localStorage 配额。
-- 完整配置 **Service Worker ESM 预缓存**，支持离线独立运行。
+Quiz Studio 提供的是轻量学习安排，而不是一个完整生产力规划器。
 
-### 2. 字符锚定级元认知标记引擎
-- 自研字符索引精确锚定算法，精准记录学习者译文中的选区范围。
-- **确定性冲突消解**：优雅处理重叠选区、增删文本后的位置偏移，并在完成提交时锁定证据谱系。
+**Today** 会呈现：
 
-### 3. 基于 Web Audio 的动态程序化音频合成
-- 纯代码生成拟真物理音效，**零外部音频文件加载**：
-  - *翻书纸张沙沙声*：白噪与粉噪的指数带通滤波扫频（180ms）。
-  - *铅笔书写摩擦声*：高 Q 值的局部高频带通突发脉冲（90ms）。
-  - *橡胶印章盖印声*：低频谐振正弦波配合瞬态冲击音（120ms）。
-- 顶栏一键静音切换，完全尊重系统级 `prefers-reduced-motion` 动效设置。
+- 今天到期的练习；
+- Overdue；
+- 未完成 session；
+- 带可读理由的 Suggested Practice。
 
-### 4. 公开版本化 JSON Schema 契约
-- 仓库 [`schemas/`](schemas/) 目录下维护完整的标准化数据协议：
-  - [`quiz-paper.schema.json`](schemas/quiz-paper.schema.json)：标准化客观题试卷格式。
-  - [`learner-response.schema.json`](schemas/learner-response.schema.json)：学习者作答证据快照。
-  - [`teacher-review.schema.json`](schemas/teacher-review.schema.json)：富文本修订、评判与批注。
-  - [`translation-document.schema.json`](schemas/translation-document.schema.json)：定性翻译材料格式。
-  - [`review-request.schema.json`](schemas/review-request.schema.json) 与 [`remediation-request.schema.json`](schemas/remediation-request.schema.json)：可移植外部流转信封。
+**Calendar** 提供 date-only 学习安排、重复计划、改期、取消与 occurrence-level 操作。
 
-### 5. 全面完备的自动化验证体系
-- 覆盖题型逻辑、评分引擎、标记碰撞、Schema 校验与存储迁移的全量测试套件：
-  ```bash
-  node --test
-  ```
-- **292 个单元与集成测试全部通过**，依托 Node.js 原生测试运行器，无任何第三方测试框架依赖。
+最重要的原则是：
+
+> **用户手动建立的 schedule 拥有最终主权。**
+
+引擎不会偷偷覆盖学习者安排；发生冲突时，产品展示差异，而不是替用户做决定。
 
 ---
 
-## 快速开始
+## Review、Remediation 与 Open Teaching Interchange
 
-### 环境要求
-- Python 3.8+（用于本地静态服务托管）或 Node.js 18+
-- 现代主流浏览器（Chrome、Edge、Firefox、Safari）
+Translation learner response 是不可变证据；Teacher Review 是另一条独立记录。
 
-### 方式 A：Windows 一键启动
-直接双击仓库根目录下的 **`start-local.bat`**。
-> *启动器会自动通过本地 Python 启动服务并打开默认浏览器访问 `http://localhost:8000`。*
+因此，真人教师或外部 AI 可以批改答案，却不会覆盖学习者最初写下的内容。
 
-### 方式 B：终端命令行启动
-```bash
-# 启动本地标准服务
-python -u scripts/dev-server.py
-```
-在浏览器中打开 **`http://localhost:8000`**。
-
-> [!NOTE]
-> 端口 `8000` 是严格绑定的，因为浏览器的本地存储（localStorage 与 IndexedDB）严格隔离于源（Origin）。出于 ES 模块安全规范，不支持直接通过 `file://` 双击打开 HTML。
-
----
-
-## 自动化测试与质量检验
-
-```bash
-# 核心语法检查
-node --check src/app.js
-
-# 运行完整自动化测试套件 (292 项测试)
-node --test
-```
-
----
-
-## 60 秒快速上手体验
+Quiz Studio 支持基于文件的 **Open Teaching Interchange**：
 
 ```text
-1. 启动服务 ──► 浏览器访问 http://localhost:8000
-2. 选择模式 ──► 进入“客观题练习”或“翻译工作区”
-3. 专注做题 ──► 答题或翻译，并可划词添加元认知标记
-4. 固化提交 ──► 完成练习，保存受保护的作答快照
-5. 批改复习 ──► 打开批改台批阅，或导出 JSON 与外部 AI 交互
+Learner Response
+      │
+      ▼
+review-request.json
+      │
+      ├────► 真人教师
+      └────► 外部 AI
+                    │
+                    ▼
+          teacher-review.json
+                    │
+                    ▼
+             Quiz Studio Review
+                    │
+                    ▼
+          Retry / remediation
 ```
 
-1. **体验客观题练习**：点击题库中的预置试卷，选择 **开始做题**，提交答案并查看即时解析与得分对比。
-2. **体验翻译与元认知标注**：切换到 **翻译练习** 标签，打开示例单元并开始练习，在答题框中输入译文并选中词语标记为 **不确定**。
-3. **体验富文本批改台**：提交翻译后进入 **批改工作区**，对译文选区进行 **替换**、**划删除线** 或敲下 **评阅印章**。
+应用内部不需要 API Key，也不要求云端账号。只有学习者主动导出文件时，数据才离开产品数据边界。
 
 ---
 
-## 项目结构导航
+## Library、Evidence History 与长期记录
+
+**Library** 保存学习材料，不保存历史 attempt。每一项只展示事实状态：
+
+- **Not started**
+- **In progress**
+- **Practiced**
+
+这些是运行状态，不是 mastery 标签。
+
+**Evidence History** 保存完成后的练习记录。即使源材料之后被编辑或删除，历史 attempt 依然保持原样。
+
+材料可以编辑；历史证据不能被静默重写。
+
+---
+
+## Local-first by design
 
 ```text
-Quiz System/
-├── assets/readme/          # README 项目原生 SVG 横幅、架构图与功能看板
-├── docs/                   # 详细规范与技术指南
-│   ├── USER_GUIDE.zh-CN.md         # 完整用户手册
-│   ├── DEVELOPER_GUIDE.zh-CN.md    # 架构与开发者指南
-│   ├── OPEN_TEACHING_INTERCHANGE.zh-CN.md # 数据交换协议规范
-│   ├── TRANSLATION_DOMAIN.zh-CN.md # 翻译练习领域模型
-│   └── SAFETY.zh-CN.md             # 隐私、安全与数据保护原则
-├── examples/               # 合成示例试卷与交换 JSON 样例
-├── schemas/                # 公开 JSON Schema 数据契约 (v1.0.0)
-├── scripts/                # Python 本地开发服务器
-├── src/                    # 核心应用源码 (原生 ESM)
-│   ├── core/               # 题目模型、评分机制、标注引擎与谱系历史
-│   ├── storage/            # 浏览器 localStorage 与 IndexedDB 存储边界
-│   └── app.js              # UI 渲染控制器、路由与本地化字典
-├── tests/                  # 自动化测试用例套件 (292 tests)
-├── DESIGN.md               # 分层纸质书桌设计系统与视觉 Token
-├── PROJECT_STATUS.zh-CN.md # 生命周期路线图与项目状态
-├── index.html              # 应用入口 HTML 骨架
-├── styles.css              # 书桌主题与响应式样式表
-└── sw.js                   # 离线运行 Service Worker 预缓存
+Objective · Translation · Typing 材料
+                 │
+                 ▼
+          Focused Practice
+                 │
+                 ▼
+     SQLite + content-addressed media
+                 │
+       ┌─────────┴─────────┐
+       ▼                   ▼
+Evidence / Review      Backup / Restore
+       │
+       └─────────► 你的 Windows 设备
 ```
 
+核心使用是本地且离线的：
+
+- 无账号；
+- 无托管数据库；
+- 无遥测；
+- 无远程 AI 依赖；
+- 无 CDN / 网络字体依赖；
+- 浏览器 origin storage 不承担 canonical data。
+
+唯一安装阶段的网络例外，是设备缺少 WebView2 Runtime 时由安装程序执行 bootstrap。
+
 ---
 
-## 数据主权与隐私保护
+## 备份、恢复与 V1 迁移
 
-- **零远程跟踪**：所有试卷草稿、做题记录、多媒体资源、评分统计与标注墨水均 100% 保存在用户浏览器本地。
-- **无应用内埋点**：无任何第三方统计脚本、追踪像素或远程服务器同步。
-- **自主导出控制**：数据导出完全由用户自主手动触发与管理。
+Quiz Studio V2 把数据耐久性当成产品能力，而不是附加功能。
+
+### Backup / Restore
+
+**Exchange & backup** 会创建包含结构化数据与 media 的版本化归档。Restore 会在正式激活之前完成验证，并在替换现有状态前保存安全快照。
+
+### V1 → V2 Migration
+
+桌面版可以通过 staged migration 导入 Quiz Studio V1 backup。
+
+迁移会尽可能保留受支持的历史记录、media 引用、Teacher Review、retry lineage、已有时间戳与 recovery artifacts；遇到歧义、损坏或无法证明安全的数据时会 fail closed，而不是静默丢弃。
 
 ---
 
-## 项目状态与开源协议
+## 工程深度
 
-- **当前版本**：V2 桌面版 `2.0.0`（已发布；维护中）；V1 浏览器版 `v1.0.0`（最终定版 / 维护冻结，予以保留）
-- **设计规范**：Layered Paper Study Desk (`DESIGN.md`)
-- **开源协议**：[MIT License](LICENSE) © 2026 Quiz Studio Contributors
+Quiz Studio 的 portfolio 价值来自产品背后的工程判断，而不是依赖项数量。
+
+| 工程方向 | 项目体现 |
+| --- | --- |
+| **Evidence-first domain architecture** | Evidence、Scheduling Context、Review 与 Recommendation 分离，而不是塞进一个万能记录。 |
+| **本地优先桌面耐久性** | Rust-owned SQLite、单 Unit of Work、staging / activation、snapshot、recovery 与 content-addressed media。 |
+| **Loss-aware migration** | V1 intake 只读、分阶段、schema detection、preview、atomic activation，并有明确 conservation contract。 |
+| **Learner-sovereign orchestration** | Date-only schedule、recurrence、occurrence identity、manual ownership、可解释 recommendation。 |
+| **输入正确性** | Typing 使用项目控制的 grapheme comparison，并接收 IME committed text，而不是只依赖 composition lifecycle。 |
+| **桌面真实验证** | Windows 安装、clean install、upgrade preservation、uninstall、packaged smoke、crash/recovery 与 exact-candidate SHA-256。 |
+| **风险分级交付** | 开发、milestone、hardening 与 RC 使用不同深度的验证，而不是每次修改都跑同一套重型 CI。 |
+
+<p align="center">
+  <img src="assets/readme/quiz-studio-v2-engineering-journey.png" alt="Quiz Studio V2 从浏览器版基线到 Windows 正式发布的工程旅程" width="100%">
+</p>
+
+V2 经历了完整的产品生命周期：
+
+```text
+V1 baseline
+   ↓
+Desktop Foundation
+   ↓
+V1 Migration
+   ↓
+Scheduling + Recommendation
+   ↓
+Objective / Translation / Typing integration
+   ↓
+Focused Practice + Product UI
+   ↓
+Human Evaluation
+   ↓
+Product Hardening
+   ↓
+Release Candidate
+   ↓
+Quiz Studio 2.0.0
+```
+
+更完整的验证记录见 [PROJECT_STATUS.md](PROJECT_STATUS.md)、[ROADMAP.md](ROADMAP.md) 与 [docs/V2_RELEASE_CANDIDATE.md](docs/V2_RELEASE_CANDIDATE.md)。
+
+---
+
+## 下载 Quiz Studio 2.0.0
+
+### Windows
+
+1. 打开 [Quiz Studio v2.0.0 GitHub Release](https://github.com/Peter-S-Shi/Quiz-System/releases/tag/v2.0.0)。
+2. 下载 `quiz-studio_2.0.0_x64-setup.exe`。
+3. 如需校验，可用 `SHA256SUMS.txt` 对照 SHA-256。
+4. 运行 per-user installer。
+5. 从开始菜单启动 **Quiz Studio**。
+
+正常安装不需要管理员权限。
+
+安装包目前未进行代码签名，因此 Windows 可能显示 unknown publisher / unrecognized app 提示。
+
+---
+
+## 2.0.0 已知限制
+
+- **仅验证 Windows。** Windows 11 / WebView2 是正式验证平台；macOS 与 Linux 未支持、未验证。
+- **安装包未签名。** Code signing 不属于 2.0.0 范围。
+- **没有自动更新。** 更新仍是手动下载新 Release 并安装。
+- **超大历史会增加读取时间。** 在约 5,000 个 completed sessions 的 release build 实测中，Library 约 0.9 秒、Today 约 1.6 秒进入 ready；没有发现数据完整性问题。
+- **Export 直接写入用户选中的目标文件。** 它不会修改 Quiz Studio canonical store，但选中的 export file 会被原地写入。
+
+---
+
+## 有意保留的产品边界
+
+Quiz Studio 2.0.0 并不试图成为：
+
+- 云账号平台；
+- 协作 SaaS；
+- 完整 Goal / Exam / workload planner；
+- mastery scoring engine；
+- gamified streak system；
+- 内置 AI Tutor；
+- 会覆盖用户决定的自动 schedule 引擎；
+- macOS 产品。
+
+外部 AI 可以通过 review 文件参与，但 Quiz Studio 的核心能力并不依赖它。
+
+---
+
+## 技术栈
+
+**Desktop：** Tauri 2 · Rust · WebView2 · Windows/MSVC · NSIS  
+**本地数据：** SQLite · content-addressed media · staged activation / recovery  
+**UI：** HTML · CSS · JavaScript ES modules  
+**测试：** Node test runner · Rust tests · headless Edge · packaged WebView2 checks · installer/upgrade acceptance  
+**交付：** GitHub Actions · GitHub Releases
+
+技术选择服务于产品架构，而不是产品故事本身。
+
+---
+
+## 从源码构建
+
+正式桌面开发环境与命令以 [`desktop/README.md`](desktop/README.md) 为准。
+
+Windows release path 使用 MSVC Rust toolchain、Node 22+ 与 Tauri CLI 2.12.1。
+
+```powershell
+cd desktop
+. .\scripts\env.ps1
+
+node --test "ui/tests/*.spec.mjs"
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace --exclude qs-desktop
+
+cd app/src-tauri
+cargo tauri build --bundles nsis
+```
+
+Packaged app、migration、fault-injection、recovery 与 installer acceptance 的详细说明见 [`desktop/README.md`](desktop/README.md) 与各 V2 milestone 文档。
+
+---
+
+## 深入技术文档
+
+- [`docs/V2_QUICKSTART.zh-CN.md`](docs/V2_QUICKSTART.zh-CN.md) — 正式桌面版快速上手
+- [`V2_PRODUCT_SCOPE_FREEZE.md`](V2_PRODUCT_SCOPE_FREEZE.md) — V2 产品边界与冻结范围
+- [`docs/V2_DESKTOP_FOUNDATION.md`](docs/V2_DESKTOP_FOUNDATION.md) — 桌面架构与耐久性基础
+- [`docs/V2_MIGRATION.md`](docs/V2_MIGRATION.md) — V1 → V2 migration 架构与证据
+- [`docs/V2_ORCHESTRATION.md`](docs/V2_ORCHESTRATION.md) — scheduling、recommendation 与 Calendar
+- [`docs/V2_TASK_DOMAINS.md`](docs/V2_TASK_DOMAINS.md) — Objective、Translation、Typing 与 evidence integration
+- [`docs/V2_PRODUCT_UI.md`](docs/V2_PRODUCT_UI.md) — 最终产品 UI integration
+- [`docs/V2_HARDENING.md`](docs/V2_HARDENING.md) — Product Hardening 证据
+- [`docs/V2_RELEASE_CANDIDATE.md`](docs/V2_RELEASE_CANDIDATE.md) — RC / Release provenance 与 exact-candidate evidence
+- [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — 当前生命周期状态
+- [`ROADMAP.md`](ROADMAP.md) — milestone 历史
+
+---
+
+## V1 历史版本
+
+Quiz Studio V1（`v1.0.0`）继续保留在本仓库中，作为早期浏览器版本以及 V2 migration source。
+
+V1 的浏览器架构、public JSON schema、Open Teaching Interchange 与历史文档仍然是项目演进的重要证据，但**当前正式产品是 Quiz Studio V2 `2.0.0`**。
+
+---
+
+## Release status
+
+**当前版本：** `v2.0.0`  
+**生命周期：** Released / Maintenance  
+**正式验证平台：** Windows  
+**License：** [MIT](LICENSE)
+
+V2 在发布前完成了 Feature Freeze、Product Hardening、exact-candidate CI-L3、Windows packaged acceptance 与 Human RC Gate。
