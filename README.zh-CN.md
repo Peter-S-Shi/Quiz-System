@@ -36,7 +36,7 @@ Quiz Studio 围绕一个很简单的学习原则构建：
 
 > **证据是规范事实；解释可以被替换。**
 
-你真正答过什么、打过什么、标记过什么、接受过怎样的批改、如何重练与安排学习，都应该能够被回看，而不应该被后续编辑、推荐或评价悄悄改写。
+你真正答过什么、打过什么、标记过什么（包括元认知标记），构成规范证据（canonical evidence），并始终可以被回看。Review、推荐、重练与安排学习都围绕证据演化，但不会改写证据本身。
 
 Quiz Studio 把 **客观题（Objective）**、**翻译（Translation）** 与 **跟打（Typing）** 放进同一个本地优先桌面工作区，再通过 **Evidence History、Review、Today 与 Calendar** 把一次练习连接到下一次练习，同时保留学习者的最终决定权。
 
@@ -101,7 +101,7 @@ Typing 关注“最终提交的文本”而不是原始键盘事件。
 - Practice / Test intent；
 - 确定性的 grapheme-level comparison；
 - 对剩余错误进行重练；
-- 记录完成耗时与不可变 attempt；
+- 用时（Time taken）由已保存的 session 开始/结束时间戳派生，并保留不可变 attempt；
 - 中断后恢复，而不把 WPM 或 accuracy 伪装成 mastery。
 
 ---

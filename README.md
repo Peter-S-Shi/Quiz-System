@@ -36,7 +36,7 @@ Quiz Studio is built around a simple learning principle:
 
 > **Evidence is canonical. Interpretation is replaceable.**
 
-What you actually answered, typed, marked, reviewed, retried, or scheduled should remain inspectable as evidence. Recommendations, review judgments, and scheduling decisions can evolve without rewriting that history.
+What you actually answered, typed, and marked (including metacognitive marks) forms the canonical evidence and stays inspectable. Review, recommendations, retries, and scheduling evolve around that evidence without rewriting it.
 
 Quiz Studio brings **Objective**, **Translation**, and **Typing** practice into one local-first desktop workspace, then connects each finished session to **Evidence History**, **Review**, **Today**, and **Calendar** so the next practice decision is informed without becoming automatic or opaque.
 
@@ -101,7 +101,7 @@ It supports:
 - practice and test intent;
 - deterministic grapheme-level comparison;
 - retry of remaining errors;
-- saved duration and durable attempt history;
+- Time taken derived from the saved session start/end timestamps, and durable attempt history;
 - resume after interruption without turning typing speed into a mastery score.
 
 ---

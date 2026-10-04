@@ -207,10 +207,11 @@ Deferred boundaries preserved: macOS environment remains **DEFERRED / NOT VERIFI
 
 - Default branch: `main`
 - Remote: `origin`
-- Repository lifecycle state: V1 Finalized / Maintenance Hold + V2 (branch `v2`): Desktop Foundation ACCEPTED, ADR 0002 ACCEPTED, V1 Migration milestone ACCEPTED, ADR 0003 ACCEPTED, Learning Orchestration + Calendar milestone ACCEPTED, ADR 0004 ACCEPTED, Task-Domain Integration milestone ACCEPTED
-- V2 development branch: `v2` (from `main@8eb6608`; pushed; long-lived; no open PR to `main`)
-- Final release version: `1.0.0`
-- Accepted candidate tag: `v1.0.0-rc.1` (points to immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`)
+- Repository lifecycle state: **Quiz Studio V2 `2.0.0` — RELEASED / MAINTENANCE** (current released product). Quiz Studio V1 `1.0.0` is preserved historical material in Maintenance Hold.
+- Current GA tag / release: `v2.0.0` (GitHub Release `v2.0.0`; immutable GA runtime commit `62b76b7c4454df971f380d649ea986dbdb0e476a`). `main` may contain later docs/portfolio commits after this immutable GA tag.
+- V2 long-lived branch: `v2`, retained at the GA runtime commit `62b76b7c4454df971f380d649ea986dbdb0e476a`.
+- RC provenance tag: `v2.0.0-rc.1` → the accepted RC runtime commit `cec737b53b59d2e88b98817880baf41abb6f2304`.
+- V1 history (explicitly V1 only): V1 final release version `1.0.0` (tag `v1.0.0`); V1 accepted candidate tag `v1.0.0-rc.1` (immutable commit `f33bafcfe42ac8dd521466026c343102dc18897a`).
 - Commit and merge tracking: Use Git history for `main` commit identity and PR merge history
 - Current documentation revision: the commit containing this status file; use Git history for its immutable identifier
 - Publication status: Refer to GitHub Releases page for published release distribution status

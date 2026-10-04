@@ -109,7 +109,7 @@ Run on the developer machine (Windows 11, i7-12700H) before the candidate was pu
 | Evidence artifact | `rc-evidence-2.0.0-rc.1-cec737b` (`rc-evidence.json`, package report, data-journeys report) |
 | Test-only upgrade source | commit `4c0418116c8f948f18ae3a1c9a851c92c92e491b` (version `2.0.0-dev.0`); not an RC artifact, not uploaded |
 | Hosted WebView2 for the installed-app checks | Edge/WebView2 153.x on the runner |
-| Packaged / manual evidence source | developer machine (DEV-PASS, section 7); Product Owner smoke pending |
+| Packaged / manual evidence source | developer machine (DEV-PASS, section 7); Product Owner smoke: Human RC Gate PASS at gate level (section 11) — the per-item R1–R10 environment and results were not supplied and are not invented |
 | F1 / F2 disposition | accepted known limitations (section 6) |
 
 The installer is an unsigned, per-user NSIS package; code signing and auto-update are outside the frozen V2 Core.
@@ -117,12 +117,12 @@ The installer is an unsigned, per-user NSIS package; code signing and auto-updat
 ## 9. User-facing documentation
 
 - [`V2_QUICKSTART.md`](V2_QUICKSTART.md) / [`.zh-CN`](V2_QUICKSTART.zh-CN.md): install, offline / data concept (no raw paths), main views, backup / restore, V1 migration, uninstall data choice, known limitations F1 / F2, Windows-only.
-- Root `README.md` / `README.zh-CN.md`: a V2 release-candidate notice at the top and an honest "Current Version" line; the V1 sections stay as the preserved V1 record.
+- Root `README.md` / `README.zh-CN.md`: now present the released V2 `2.0.0` as the primary product and preserve V1 as the historical edition. (At candidate time they carried a V2 release-candidate notice; that notice has been replaced.)
 - **Merge-time changes** (they were prepared in the GA promotion commit, as listed here): in `README.md` / `README.zh-CN.md` change "release candidate `2.0.0-rc.1` … not yet released or merged" to the final `2.0.0` wording and make V2 the primary section; in the quick starts drop "Release Candidate / candidate" and the "not yet released" notes; bump the version from `2.0.0-rc.1` to `2.0.0` in `desktop/Cargo.toml`, `tauri.conf.json` and `Cargo.lock`, then rebuild.
 
 ## 10. Product Owner RC smoke
 
-[`../manual-qa/v2-rc-smoke.md`](../manual-qa/v2-rc-smoke.md) (+ `.zh-CN`): about 15–30 minutes, ten items R1–R10, every result blank. **Ready for the Product Owner; nothing is pre-marked and nothing is PASS until performed.** Step 1 of its setup is to compare the downloaded installer's SHA-256 with section 8.
+[`../manual-qa/v2-rc-smoke.md`](../manual-qa/v2-rc-smoke.md) (+ `.zh-CN`): about 15–30 minutes, ten items R1–R10. At candidate time the guide was blank and ready for the Product Owner, with nothing pre-marked; subsequently the Human RC Gate passed at gate level — see section 11. Step 1 of its setup is to compare the downloaded installer's SHA-256 with section 8.
 
 ## 11. Human RC Gate and GA promotion
 

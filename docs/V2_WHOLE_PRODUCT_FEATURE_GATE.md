@@ -19,7 +19,7 @@
 
 ## Remaining items are evidence debt, not feature debt
 
-These move to Product Hardening / RC. They stay **OPEN — not PASS, not waived**; this record does not close any of them.
+*Historical record at the time of this Gate.* These items were **OPEN evidence debt** when the Feature Gate passed — not PASS, not waived, and this record did not close any of them. They moved to Product Hardening / RC, and were subsequently closed or given a final disposition at the Human Hardening Gate (2026-10-03) and the RC / GA promotion (see `V2_HARDENING.md`, `HARDENING_BACKLOG.md` and `V2_RELEASE_CANDIDATE.md`).
 
 - Final Product UI manual items **M-U1–M-U8** (`manual-qa/v2-final-product-ui.md`).
 - Task-domain manual items **M-T1b/d/e, M-T2a–d, M-T3a–c**.

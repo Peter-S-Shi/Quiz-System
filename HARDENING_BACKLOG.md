@@ -1,7 +1,7 @@
 # Quiz Studio V2 — Product Hardening backlog
 
 **Phase:** Product Hardening (PH) — **PASS — ACCEPTED / COMPLETE** (Product Owner Human Hardening Gate PASS, 2026-10-03; candidate: green CI-L2 run 37172021453, head `4c04181`). Next phase: **Release Candidate — ACCEPTED (Human RC Gate PASS); Quiz Studio V2 `2.0.0` released / maintenance** (see `docs/V2_RELEASE_CANDIDATE.md`). Entry truth: [`docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md`](docs/V2_WHOLE_PRODUCT_FEATURE_GATE.md). Milestone record: [`docs/V2_HARDENING.md`](docs/V2_HARDENING.md).
-**Rules:** Feature Freeze applies. No new features, no bundled fonts, no signing or auto-update, no RC work. Final app icon and release version are RC acceptance items.
+**Rules:** Feature Freeze applies. No new features, no bundled fonts, no signing or auto-update (PH-era rule: no RC work during PH). Final app icon and release version were RC acceptance items — final dispositions are recorded in section C.
 
 This file is the single canonical inventory. It was reconciled against the real checklists in `manual-qa/v2-*.md` (not only the summary docs), so it includes **D5**, which the summaries omit.
 
@@ -69,7 +69,7 @@ This file is the single canonical inventory. It was reconciled against the real 
 
 ## C. Not PH work (carried, not waived)
 
-- Final application icon and release version → **RC acceptance items.**
+- Final application icon and release version → **RC acceptance items.** Final disposition: the final icon is **Concept A "Ink-tail Q", accepted** by the Product Owner; the release identity is **`2.0.0`, released** (GA promotion).
 - System font stacks: **accepted**; no font assets.
 - Code signing, auto-update: outside the frozen V2 Core unless the Product Owner decides otherwise.
 - The disposable `spike/desktop-runtime` branch stays unmerged.
@@ -78,4 +78,4 @@ This file is the single canonical inventory. It was reconciled against the real 
 
 Defects and observations found during hardening are listed in `docs/V2_HARDENING.md` (section "Findings") with their classification (defect / observation / freeze-reopening candidate).
 
-- **F1** large-history read cost (linear, not small) and **F2** exchange export written in place: both stay **known RC observations**; the Human Hardening Gate PASS does not resolve or remove them.
+- **F1** large-history read cost (linear, not small) and **F2** exchange export written in place: carried through RC as known observations (the Human Hardening Gate PASS did not resolve or remove them) and finally **accepted known limitations for `2.0.0`** (see `docs/V2_RELEASE_CANDIDATE.md` section 6). They are not fixed.
