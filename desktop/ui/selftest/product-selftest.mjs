@@ -34,8 +34,12 @@ const key = (name) => b.key(KEYS[name].key ?? name, { code: KEYS[name].code ?? n
 const q = (sel) => b.eval(`!!document.querySelector(${JSON.stringify(sel)})`);
 const txt = (sel = '#main') => b.eval(`document.querySelector(${JSON.stringify(sel)})?.innerText ?? ''`);
 const click = (sel) => b.exec(`const el = document.querySelector(${JSON.stringify(sel)}); if (!el) throw new Error(${JSON.stringify(`no ${sel}`)}); el.click();`);
-const clickText = (label, scope = '#main', tag = 'button') => b.exec(`const el = [...document.querySelectorAll(${JSON.stringify(`${scope} ${tag}`)})].find((x) => x.textContent.trim() === ${JSON.stringify(label)} && !x.disabled); if (!el) throw new Error(${JSON.stringify(`no ${tag} "${label}" in ${scope}`)}); el.click();`);
-const clickStarts = (label, scope = '#main') => b.exec(`const el = [...document.querySelectorAll(${JSON.stringify(`${scope} button`)})].find((x) => x.textContent.trim().startsWith(${JSON.stringify(label)}) && !x.disabled); if (!el) throw new Error(${JSON.stringify(`no button starting with "${label}" in ${scope}`)}); el.click();`);
+const clickTextNow = (label, scope = '#main', tag = 'button') => b.exec(`const el = [...document.querySelectorAll(${JSON.stringify(`${scope} ${tag}`)})].find((x) => x.textContent.trim() === ${JSON.stringify(label)} && !x.disabled); if (!el) throw new Error(${JSON.stringify(`no ${tag} "${label}" in ${scope}`)}); el.click();`);
+const clickStartsNow = (label, scope = '#main') => b.exec(`const el = [...document.querySelectorAll(${JSON.stringify(`${scope} button`)})].find((x) => x.textContent.trim().startsWith(${JSON.stringify(label)}) && !x.disabled); if (!el) throw new Error(${JSON.stringify(`no button starting with "${label}" in ${scope}`)}); el.click();`);
+// a button that is not there YET is a timing matter, not a failure: ask again until it appears (bounded), then report the original error
+const whenPresent = async (fn) => { const end = Date.now() + 20000; for (;;) { try { return await fn(); } catch (e) { if (!/no (button|[a-z]+) /.test(String(e.message)) || Date.now() > end) throw e; await b.sleep(100); } } };
+const clickText = (label, scope = '#main', tag = 'button') => whenPresent(() => clickTextNow(label, scope, tag));
+const clickStarts = (label, scope = '#main') => whenPresent(() => clickStartsNow(label, scope));
 const clickDialog = (label) => clickText(label, 'dialog[open]');
 const setValue = (sel, value) => b.exec(`const el = document.querySelector(${JSON.stringify(sel)}); el.value = ${JSON.stringify(value)}; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));`);
 // a view renders asynchronously from the store: wait until #main has content and has stopped changing (never a fixed sleep)
@@ -49,7 +53,9 @@ const show = async (name, params = {}) => {
     if (await b.eval(`document.querySelector('[aria-current=page]')?.dataset.view === ${JSON.stringify(name)}`)) return;
   }
 };
-const waitFor = async (expr, ms = 4000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await b.eval(expr)) return true; await b.sleep(60); } return false; };
+// conditions return as soon as they hold; the generous default only costs time when something is really wrong (a slow hosted runner
+// can take many seconds to finalize and render a result - a fixed short budget made this suite flaky there)
+const waitFor = async (expr, ms = 20000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await b.eval(expr)) return true; await b.sleep(60); } return false; };
 /** Poll a node-side predicate (e.g. a store read) until it holds. */
 const until = async (fn, ms = 4000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await fn()) return true; await b.sleep(60); } return false; };
 const toastText = () => b.eval("document.getElementById('toast').hidden ? '' : document.getElementById('toast').textContent");
@@ -412,9 +418,15 @@ try {
       await b.sleep(60);
       if (i < total - 1) await clickText('Next');
     }
+    // Finish is disabled until the last answer has been checked and rendered; a click on a disabled button is silently lost
+    await waitFor("!!document.querySelector('[data-act=finish]:not([disabled])')");
     await b.exec("document.querySelector('[data-act=finish]').click();");
-    await b.sleep(120);
-    await b.exec("const d = document.querySelector('dialog[open]'); if (d) [...d.querySelectorAll('button')].pop().click();");
+    // a confirmation dialog may or may not appear, and a slow machine may open it late: confirm whenever it is open, stop once Done is offered
+    for (let n = 0; n < 200; n += 1) {
+      if (await b.eval("[...document.querySelectorAll('.practice button')].some((x) => x.textContent.trim() === 'Done')")) break;
+      await b.exec("const d = document.querySelector('dialog[open]'); if (d) [...d.querySelectorAll('button')].pop().click();");
+      await b.sleep(100);
+    }
   };
   await show('history');
   const rowCount = await b.eval("document.querySelectorAll('#main .row-item').length");

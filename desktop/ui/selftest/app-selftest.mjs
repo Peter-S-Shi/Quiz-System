@@ -34,7 +34,7 @@ const key = (name) => b.key(KEYS[name].key ?? name, { code: KEYS[name].code ?? n
 const text = () => b.eval("document.getElementById('main').innerText");
 const clickText = (label, within = "document.getElementById('main')") => b.exec(`const el = [...${within}.querySelectorAll('button')].find((x) => x.textContent.trim() === ${JSON.stringify(label)} && !x.disabled); if (!el) throw new Error(${JSON.stringify('no button ' + label)}); el.click();`);
 const rows = (c) => port.read(c);
-const waitFor = async (expr, ms = 4000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await b.eval(expr)) return true; await b.sleep(60); } return false; };
+const waitFor = async (expr, ms = 20000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await b.eval(expr)) return true; await b.sleep(60); } return false; };
 const home = '/selftest/product-harness.html?today=2026-10-02';
 const openLibraryItem = async (title) => {
   await b.eval("window.product.show('library')");
